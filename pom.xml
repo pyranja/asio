@@ -1,0 +1,77 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>at.ac.univie.isc</groupId>
+	<artifactId>vqs</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>war</packaging>
+
+	<name>Vienna Query Service</name>
+	<description>HTTP endpoint for querying dataset services</description>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<version.compiler>1.7</version.compiler>
+		<version.cxf>2.7.4</version.cxf>
+		<version.spring>3.2.2.RELEASE</version.spring>
+	</properties>
+
+	<scm>
+		<developerConnection>scm:git:https://github.com/Pyranja/vqs.git</developerConnection>
+	</scm>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.0</version>
+					<configuration>
+						<source>${version.compiler}</source>
+						<target>${version.compiler}</target>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>2.4.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.eclipse.jetty</groupId>
+					<artifactId>jetty-maven-plugin</artifactId>
+					<version>9.0.0.v20130308</version>
+					<configuration>
+						<reload>manual</reload>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+
+	<dependencies>
+	  <!-- cxf jax-rs impl -->
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-frontend-jaxrs</artifactId>
+			<version>${version.cxf}</version>
+		</dependency>
+		<!-- spring components required by cxf -->
+		<dependency>
+		  <groupId>org.springframework</groupId>
+		  <artifactId>spring-core</artifactId>
+		  <version>${version.spring}</version>
+		</dependency>
+		<dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+      <version>${version.spring}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-web</artifactId>
+      <version>${version.spring}</version>
+    </dependency>
+	</dependencies>
+</project>
