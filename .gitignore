@@ -1,1 +1,7 @@
+# eclipse #
+.settings/
+.project
+.classpath
+
+# mvn #
 target/
