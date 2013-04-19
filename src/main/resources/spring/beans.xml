@@ -19,5 +19,5 @@ http://cxf.apache.org/schemas/jaxrs.xsd">
     </jaxrs:serviceBeans>
   </jaxrs:server>
 
-  <bean id="vqs_facade" class="at.ac.univie.isc.vqs.QueryService" />
+  <bean id="vqs_facade" class="at.ac.univie.isc.vqs.SqlEndpoint" />
 </beans>
