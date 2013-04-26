@@ -1,4 +1,4 @@
-package at.ac.univie.isc.vqs;
+package at.ac.univie.isc.asio;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -8,7 +8,7 @@ public class SqlEndpoint implements QueryEndpoint {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see at.ac.univie.isc.vqs.QueryEndpoint#acceptUriQuery(java.lang.String)
+	 * @see at.ac.univie.isc.asio.QueryEndpoint#acceptUriQuery(java.lang.String)
 	 */
 	@Override
 	public Response acceptUriQuery(final String query) {
@@ -18,7 +18,7 @@ public class SqlEndpoint implements QueryEndpoint {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see at.ac.univie.isc.vqs.QueryEndpoint#acceptFormQuery(java.lang.String)
+	 * @see at.ac.univie.isc.asio.QueryEndpoint#acceptFormQuery(java.lang.String)
 	 */
 	@Override
 	public Response acceptFormQuery(final String query) {
@@ -28,7 +28,7 @@ public class SqlEndpoint implements QueryEndpoint {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see at.ac.univie.isc.vqs.QueryEndpoint#acceptQuery(java.lang.String)
+	 * @see at.ac.univie.isc.asio.QueryEndpoint#acceptQuery(java.lang.String)
 	 */
 	@Override
 	public Response acceptQuery(final String query) {

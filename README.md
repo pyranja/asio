@@ -1,4 +1,4 @@
-vqs
-===
+asio
+====
 
-Vienna Query Service - HTTP endpoints for querying dataset services
+Codename asio - HTTP endpoints for querying dataset services
