@@ -11,14 +11,15 @@
 	<description>HTTP endpoint for querying dataset services</description>
 
 	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<version.compiler>1.7</version.compiler>
 		<version.cxf>2.7.4</version.cxf>
 		<version.spring>3.2.2.RELEASE</version.spring>
 	</properties>
 
 	<scm>
-		<developerConnection>scm:git:https://github.com/Pyranja/vqs.git</developerConnection>
+		<!-- TODO change to gitorious@univie -->
+		<developerConnection>scm|git|git@gitorious.cs.univie.ac.at:vce/vqs.git</developerConnection>
 	</scm>
 
 	<build>
