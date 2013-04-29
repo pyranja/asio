@@ -13,11 +13,13 @@ http://cxf.apache.org/schemas/jaxrs.xsd">
   <import resource="classpath:META-INF/cxf/cxf.xml" />
   <import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
 
-  <jaxrs:server id="asio" address="/vqs">
+  <!-- asio http endpoint -->
+  <jaxrs:server id="asio" address="/asio">
     <jaxrs:serviceBeans>
       <ref bean="asio_facade" />
     </jaxrs:serviceBeans>
   </jaxrs:server>
 
+  <!-- asio inernals XXX change to java config -->
   <bean id="asio_facade" class="at.ac.univie.isc.asio.SqlEndpoint" />
 </beans>

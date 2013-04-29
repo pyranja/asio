@@ -8,10 +8,32 @@
       http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
       version="3.0">
       
+  <display-name>asio-ogsadai</display-name>
+  <description>OGSADAI container with asio frontend</description>     
+      
   <context-param>
     <param-name>contextConfigLocation</param-name>
-    <param-value>WEB-INF/classes/spring/beans.xml</param-value>
+    <param-value>WEB-INF/classes/spring/asio.xml</param-value>
   </context-param>
+  <!-- 
+    must be specified as classpath reference for OGSADAI initalization
+    i.e. relative to WEB-INF/classes 
+   -->
+  <context-param>
+    <param-name>ogsadaiConfigLocation</param-name>
+    <param-value>spring/ogsadai-context.xml</param-value>
+  </context-param>
+  
+  <session-config>
+    <session-timeout>10</session-timeout> <!-- minutes -->
+  </session-config>
+
+  <!-- ogsadai must be initialized before asio -->
+  <listener>
+    <listener-class>
+      uk.org.ogsadai.context.OgsadaiContextLoaderListener
+    </listener-class>
+  </listener>
 
   <listener>
     <listener-class>
@@ -19,6 +41,7 @@
     </listener-class>
   </listener>
 
+  <!-- cxf dispatch -->
   <servlet>
     <servlet-name>CXFServlet</servlet-name>
     <servlet-class>

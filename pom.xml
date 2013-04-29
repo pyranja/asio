@@ -11,7 +11,7 @@
 	<description>HTTP endpoint for querying dataset services</description>
 
 	<properties>
-      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<version.compiler>1.7</version.compiler>
 		<version.cxf>2.7.4</version.cxf>
 		<version.spring>3.2.2.RELEASE</version.spring>
@@ -92,6 +92,13 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-web</artifactId>
 			<version>${version.spring}</version>
+		</dependency>
+		<!-- provided servlet api -->
+		<dependency>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>6.0.36</version>
+			<scope>provided</scope>
 		</dependency>
 		<!-- test -->
 		<dependency>
