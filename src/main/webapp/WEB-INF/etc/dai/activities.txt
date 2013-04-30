@@ -2,6 +2,8 @@
 id=at.ac.univie.isc.DeliverToStream
 class=uk.org.ogsadai.activity.delivery.DeliverToStreamActivity
 description=Redirects activity results to an in-process stream
+CONFIG
+END
 # endof ASIO deliver
 id=uk.org.ogsadai.Tee
 class=uk.org.ogsadai.activity.block.TeeActivity

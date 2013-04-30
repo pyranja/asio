@@ -45,10 +45,12 @@ public class OgsadaiContextLoaderListener implements ServletContextListener {
 		}
 		final String ogsadaiConfigLocation = readConfigLocation(event
 				.getServletContext());
+		log.config("using " + ogsadaiConfigLocation + " as ogsadai context");
 		try {
 			OGSADAIContext.initialize(ogsadaiConfigLocation, parent);
 		} catch (final Exception e) {
-			throw new IllegalStateException("ogsadai initialization - failed",
+			throw new IllegalStateException(
+					"ogsadai initialization - failed to create OGSADAIContext",
 					e);
 		}
 		OGSADAIContext.getInstance().logEntries();

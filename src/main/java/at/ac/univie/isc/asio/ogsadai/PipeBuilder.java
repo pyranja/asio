@@ -44,7 +44,7 @@ public class PipeBuilder {
     *           tuple producing and consuming activity
     * @return builder
     */
-   public PipeBuilder attach(final ProducerAndConsumer next) {
+   public PipeBuilder into(final ProducerAndConsumer next) {
       checkNotNull(next, "given activity is null");
       pipe.connect(last.activity(), last.output(), next.activity(), next.input());
       last = next;

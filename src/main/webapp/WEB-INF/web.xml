@@ -11,10 +11,16 @@
   <display-name>asio-ogsadai</display-name>
   <description>OGSADAI container with asio frontend</description>     
       
+  <!-- spring configuration setup - using annotation config -->
+  <context-param>
+    <param-name>contextClass</param-name>
+    <param-value>org.springframework.web.context.support.AnnotationConfigWebApplicationContext</param-value>
+  </context-param>
   <context-param>
     <param-name>contextConfigLocation</param-name>
-    <param-value>WEB-INF/classes/spring/asio.xml</param-value>
+    <param-value>at.ac.univie.isc.asio.AsioConfiguration at.ac.univie.isc.asio.ogsadai.AsioOgsadaiConfiguration</param-value>
   </context-param>
+  
   <!-- 
     must be specified as classpath reference for OGSADAI initalization
     i.e. relative to WEB-INF/classes 

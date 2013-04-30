@@ -1,7 +1,10 @@
 package at.ac.univie.isc.asio.ogsadai;
 
+import java.io.OutputStream;
+import java.util.Random;
 import java.util.UUID;
 
+import uk.org.ogsadai.activity.delivery.StreamExchanger;
 import uk.org.ogsadai.activity.workflow.Workflow;
 import uk.org.ogsadai.engine.RequestRejectedException;
 import uk.org.ogsadai.exception.RequestProcessingException;
@@ -24,16 +27,22 @@ import at.ac.univie.isc.asio.DatasetUsageException;
  */
 public class OgsadaiAdapter {
 
-	private static final String REQUEST_QUALIFIER = "asio";
+	private static final String ID_QUALIFIER = "asio";
 
 	private final DRER drer;
+	private final StreamExchanger exchanger;
 
-	OgsadaiAdapter(final DRER drer) {
+	private final Random rng;
+
+	OgsadaiAdapter(final DRER drer, final StreamExchanger exchanger) {
 		this.drer = drer;
+		this.exchanger = exchanger;
+		rng = new Random();
 	}
 
 	/**
-	 * Create an asynchronous OGSADAI request to execute the given workflow.
+	 * Create and submit a synchronous OGSADAI request to execute the given
+	 * workflow.
 	 * 
 	 * @param workflow
 	 *            to be executed
@@ -41,12 +50,14 @@ public class OgsadaiAdapter {
 	 * @throws DatasetException
 	 *             if an error occurs while communicating with OGSADAI
 	 */
-	public ResourceID submit(final Workflow workflow) throws DatasetException {
+	public ResourceID executeSynchronous(final Workflow workflow)
+			throws DatasetException {
+		final ResourceID requestId = new ResourceID(generateId(), "");
 		final CandidateRequestDescriptor request = new SimpleCandidateRequestDescriptor(
-				makeRequestId(), // randomized with qualifier
+				requestId, // randomized with qualifier
 				null, // no session
 				false, // no session
-				false, // asynchronous
+				true, // synchronous
 				false, // no private resources
 				workflow);
 		try {
@@ -60,9 +71,26 @@ public class OgsadaiAdapter {
 		}
 	}
 
-	private ResourceID makeRequestId() {
-		final UUID id = UUID.randomUUID();
-		return new ResourceID(REQUEST_QUALIFIER, id.toString());
+	private String generateId() {
+		final long lsb = rng.nextLong();
+		final long msb = rng.nextLong();
+		final UUID id = new UUID(msb, lsb);
+		return ID_QUALIFIER + " - " + id.toString();
+	}
+
+	/**
+	 * Attach the given stream to the OGSADAI context. The returned id can be
+	 * used to retrieve the stream from the {@link StreamExchanger} in the
+	 * OGSADAI context.
+	 * 
+	 * @param stream
+	 *            to be attached
+	 * @return id associated to the attached stream
+	 */
+	public String register(final OutputStream stream) {
+		final String streamId = generateId();
+		exchanger.offer(streamId, stream); // uuids should not collide
+		return streamId;
 	}
 
 }

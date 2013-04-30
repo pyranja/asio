@@ -42,7 +42,7 @@
 				<plugin>
 					<groupId>org.eclipse.jetty</groupId>
 					<artifactId>jetty-maven-plugin</artifactId>
-					<version>9.0.0.v20130308</version>
+					<version>9.0.0.M5</version>
 					<configuration>
 						<reload>manual</reload>
 					</configuration>
@@ -66,11 +66,16 @@
 		<!-- ogsadai -->
 		<dependency>
 			<groupId>uk.org.ogsadai</groupId>
-			<artifactId>isc-cxf</artifactId>
+			<artifactId>ogsadai-core</artifactId>
 			<version>4.1.0</version>
-			<scope>provided</scope>
 			<type>pom</type>
 		</dependency>
+      <dependency>
+         <groupId>uk.org.ogsadai</groupId>
+         <artifactId>ogsadai-relational</artifactId>
+         <version>4.1.0</version>
+         <type>pom</type>
+      </dependency>
 		<!-- cxf jax-rs impl -->
 		<dependency>
 			<groupId>org.apache.cxf</groupId>

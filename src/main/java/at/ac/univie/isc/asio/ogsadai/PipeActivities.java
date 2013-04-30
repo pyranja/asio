@@ -14,49 +14,53 @@ import at.ac.univie.isc.asio.ogsadai.PipeElements.ProducerAndConsumer;
  * 
  * @author pyranja
  */
-public class PipeActivities {
+public final class PipeActivities {
 
-   // PRODUCER
-   private static final String SQL_QUERY_ACTIVITY = "uk.org.ogsadai.SQLQuery";
+	// PRODUCER
+	private static final String SQL_QUERY_ACTIVITY = "uk.org.ogsadai.SQLQuery";
 
-   public Producer sqlQuery(final ResourceID target, final String query) {
-      final ActivityDescriptor product = new SimpleActivityDescriptor(target, SQL_QUERY_ACTIVITY);
-      product.addInput(new ActivityInputLiteral("expression", query));
-      return PipeElements.producer(product, "data");
-   }
+	public static Producer sqlQuery(final ResourceID target, final String query) {
+		final ActivityDescriptor product = new SimpleActivityDescriptor(target,
+				SQL_QUERY_ACTIVITY);
+		product.addInput(new ActivityInputLiteral("expression", query));
+		return PipeElements.producer(product, "data");
+	}
 
-   // BOTH
-   private static final String WEBROWSET_TRANSFORMER_ACTIVITY = "uk.org.ogsadai.TupleToWebRowSetCharArrays";
+	// BOTH
+	private static final String WEBROWSET_TRANSFORMER_ACTIVITY = "uk.org.ogsadai.TupleToWebRowSetCharArrays";
 
-   public ProducerAndConsumer tupleToWebRowSetCharArrays() {
-      final ActivityDescriptor product = new SimpleActivityDescriptor(
-            WEBROWSET_TRANSFORMER_ACTIVITY);
-      return PipeElements.both(product, "data", "result");
-   }
+	public static ProducerAndConsumer tupleToWebRowSetCharArrays() {
+		final ActivityDescriptor product = new SimpleActivityDescriptor(
+				WEBROWSET_TRANSFORMER_ACTIVITY);
+		return PipeElements.both(product, "data", "result");
+	}
 
-   private static final String CSV_TRANSFORMER_ACTIVITY = "uk.org.ogsadai.TupleToCSV";
+	private static final String CSV_TRANSFORMER_ACTIVITY = "uk.org.ogsadai.TupleToCSV";
 
-   public ProducerAndConsumer tupleToCsv() {
-      final ActivityDescriptor product = new SimpleActivityDescriptor(CSV_TRANSFORMER_ACTIVITY);
-      product.addInput(new ActivityInputLiteral("includeHeader", "true"));
-      return PipeElements.both(product, "data", "result");
-   }
+	public static ProducerAndConsumer tupleToCsv() {
+		final ActivityDescriptor product = new SimpleActivityDescriptor(
+				CSV_TRANSFORMER_ACTIVITY);
+		product.addInput(new ActivityInputLiteral("includeHeader", "true"));
+		return PipeElements.both(product, "data", "result");
+	}
 
-   // CONSUMER
-   private static final String REQUESTSTATUS_DELIVERY = "uk.org.ogsadai.DeliverToRequestStatus";
+	// CONSUMER
+	private static final String REQUESTSTATUS_DELIVERY = "uk.org.ogsadai.DeliverToRequestStatus";
 
-   public Consumer deliverToRequestStatus() {
-      final ActivityDescriptor product = new SimpleActivityDescriptor(REQUESTSTATUS_DELIVERY);
-      return PipeElements.consumer(product, "input");
-   }
+	public static Consumer deliverToRequestStatus() {
+		final ActivityDescriptor product = new SimpleActivityDescriptor(
+				REQUESTSTATUS_DELIVERY);
+		return PipeElements.consumer(product, "input");
+	}
 
-   private static final String STREAM_DELIVERY = "at.ac.univie.isc.DeliverToStream";
+	private static final String STREAM_DELIVERY = "at.ac.univie.isc.DeliverToStream";
 
-   public Consumer deliverToStream(final String streamId) {
-      final ActivityDescriptor product = new SimpleActivityDescriptor(STREAM_DELIVERY);
-      product.addInput(new ActivityInputLiteral("streamId", streamId));
-      return PipeElements.consumer(product, "input");
-   }
+	public static Consumer deliverToStream(final String streamId) {
+		final ActivityDescriptor product = new SimpleActivityDescriptor(
+				STREAM_DELIVERY);
+		product.addInput(new ActivityInputLiteral("streamId", streamId));
+		return PipeElements.consumer(product, "input");
+	}
 
-   private PipeActivities() {/* static helper */};
+	private PipeActivities() {/* static helper */};
 }

@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:cxf="http://cxf.apache.org/core"
   xmlns:jaxrs="http://cxf.apache.org/jaxrs"
   xsi:schemaLocation="
 http://www.springframework.org/schema/beans
 http://www.springframework.org/schema/beans/spring-beans.xsd
+http://cxf.apache.org/core
+http://cxf.apache.org/schemas/core.xsd
 http://cxf.apache.org/jaxrs
 http://cxf.apache.org/schemas/jaxrs.xsd">
 
@@ -14,12 +17,13 @@ http://cxf.apache.org/schemas/jaxrs.xsd">
   <import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
 
   <!-- asio http endpoint -->
-  <jaxrs:server id="asio" address="/asio">
+  <jaxrs:server id="asio" address="/v1/asio">
     <jaxrs:serviceBeans>
       <ref bean="asio_facade" />
     </jaxrs:serviceBeans>
+    <jaxrs:features>
+      <cxf:logging />
+    </jaxrs:features>
   </jaxrs:server>
 
-  <!-- asio inernals XXX change to java config -->
-  <bean id="asio_facade" class="at.ac.univie.isc.asio.SqlEndpoint" />
 </beans>
