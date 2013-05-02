@@ -74,6 +74,10 @@
     <bean id="at.ac.univie.isc.STREAM_EXCHANGER" 
       class="uk.org.ogsadai.activity.delivery.StreamExchanger" />
 
+    <!-- request listening logger -->
+    <bean id="at.ac.univie.isc.REQUEST_EVENT_LOGGER"
+      class="uk.org.ogsadai.activity.event.LoggingRequestListener" />
+
     <!--
     <bean id="uk.org.ogsadai.MONITORING_FRAMEWORK" 
           class="uk.org.ogsadai.monitoring.activity.ActivityProgressMonitoringFramework"/>

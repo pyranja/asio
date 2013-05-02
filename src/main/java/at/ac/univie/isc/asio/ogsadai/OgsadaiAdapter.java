@@ -7,6 +7,7 @@ import java.util.UUID;
 import uk.org.ogsadai.activity.delivery.StreamExchanger;
 import uk.org.ogsadai.activity.workflow.Workflow;
 import uk.org.ogsadai.engine.RequestRejectedException;
+import uk.org.ogsadai.exception.RequestException;
 import uk.org.ogsadai.exception.RequestProcessingException;
 import uk.org.ogsadai.exception.RequestTerminatedException;
 import uk.org.ogsadai.exception.RequestUserException;
@@ -14,6 +15,7 @@ import uk.org.ogsadai.resource.ResourceID;
 import uk.org.ogsadai.resource.drer.DRER;
 import uk.org.ogsadai.resource.drer.ExecutionResult;
 import uk.org.ogsadai.resource.request.CandidateRequestDescriptor;
+import uk.org.ogsadai.resource.request.RequestExecutionStatus;
 import uk.org.ogsadai.resource.request.SimpleCandidateRequestDescriptor;
 import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.DatasetFailureException;
@@ -62,20 +64,48 @@ public class OgsadaiAdapter {
 				workflow);
 		try {
 			final ExecutionResult result = drer.execute(request);
+			// determine if request succeeded
+			final RequestExecutionStatus resultState = result
+					.getRequestStatus().getExecutionStatus();
+			failOnRequestError(resultState);
 			return result.getRequestID();
-		} catch (final RequestProcessingException | RequestRejectedException
-				| RequestTerminatedException e) {
+		} catch (final RequestException | RequestRejectedException e) {
 			throw new DatasetFailureException(e);
 		} catch (final RequestUserException e) {
 			throw new DatasetUsageException(e);
 		}
 	}
 
+	private void failOnRequestError(final RequestExecutionStatus state)
+			throws RequestException {
+		assert state.hasFinished() : "synchronous result execution not finished";
+		if (state == RequestExecutionStatus.COMPLETED_WITH_ERROR
+				|| state == RequestExecutionStatus.ERROR) {
+			throw new RequestProcessingException(new IllegalStateException(
+					"request failed with unknown error"));
+		} else if (state == RequestExecutionStatus.TERMINATED) {
+			throw new RequestTerminatedException();
+		} else if (state == RequestExecutionStatus.PROCESSING
+				|| state == RequestExecutionStatus.PROCESSING_WITH_ERROR
+				|| state == RequestExecutionStatus.UNSTARTED) {
+			throw new AssertionError("encountered unfinished request status ("
+					+ state + ") after synchronous execution");
+		} else if (state != RequestExecutionStatus.COMPLETED) {
+			throw new RequestProcessingException(new IllegalArgumentException(
+					"unrecognized execution status " + state));
+		}
+		assert state == RequestExecutionStatus.COMPLETED : "did not fail on uncompleted request state "
+				+ state;
+	}
+
+	/**
+	 * @return an id that is probably unique in this JVM process.
+	 */
 	private String generateId() {
 		final long lsb = rng.nextLong();
-		final long msb = rng.nextLong();
+		final long msb = System.currentTimeMillis();
 		final UUID id = new UUID(msb, lsb);
-		return ID_QUALIFIER + " - " + id.toString();
+		return ID_QUALIFIER + "-" + id.toString();
 	}
 
 	/**
