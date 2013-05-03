@@ -3,7 +3,7 @@
 
 	<groupId>at.ac.univie.isc</groupId>
 	<artifactId>vqs</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2-SNAPSHOT</version>
 	<packaging>war</packaging>
 
 	<name>Vienna Query Service</name>
@@ -19,7 +19,7 @@
 	<scm>
 		<!-- TODO change to gitorious@univie -->
 		<developerConnection>scm|git|git@gitorious.cs.univie.ac.at:vce/vqs.git</developerConnection>
-	  <tag>release-0.0.1</tag>
+	  <tag>HEAD</tag>
   </scm>
 
 	<build>
