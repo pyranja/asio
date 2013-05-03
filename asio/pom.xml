@@ -1,0 +1,45 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>at.ac.univie.isc</groupId>
+		<artifactId>vqs</artifactId>
+		<version>0.0.2-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>asio</artifactId>
+	<packaging>jar</packaging>
+
+	<name>asio</name>
+	<description>HTTP endpoint for querying dataset services</description>
+
+	<dependencies>
+		<!-- logging -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.5</version>
+		</dependency>
+		<dependency>  <!-- logging over ogsadai's log4j -->
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.5</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- JAX-RS -->
+		<dependency>
+			<groupId>javax.ws.rs</groupId>
+			<artifactId>javax.ws.rs-api</artifactId>
+			<version>2.0-rc3</version>
+			<scope>provided</scope>
+		</dependency>
+		<!-- ogsadai -->
+		<dependency>
+			<groupId>uk.org.ogsadai</groupId>
+			<artifactId>ogsadai-core</artifactId>
+			<version>${version.ogsadai}</version>
+			<type>pom</type>
+		</dependency>
+	</dependencies>
+</project>
