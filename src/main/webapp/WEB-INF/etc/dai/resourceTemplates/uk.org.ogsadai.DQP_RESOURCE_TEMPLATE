@@ -1,0 +1,15 @@
+id=uk.org.ogsadai.DATA_RESOURCE
+type=uk.org.ogsadai.DATA_RESOURCE
+creationTime=null
+terminationTime=null
+PROPERTIES
+END
+CONFIG
+dqp.resource.config.class=uk.org.ogsadai.dqp.presentation.common.SimpleDQPFederation
+dqp.compiler.config.path=dqp/DQPCompilerConfig.xml
+END
+ACTIVITIES
+uk.org.ogsadai.ExtractTableSchema=uk.org.ogsadai.ExtractTableSchemaDQP
+uk.org.ogsadai.SQLQuery=uk.org.ogsadai.SQLQueryDQP
+END
+dataResourceClass=uk.org.ogsadai.resource.dataresource.dqp.DQPResource
