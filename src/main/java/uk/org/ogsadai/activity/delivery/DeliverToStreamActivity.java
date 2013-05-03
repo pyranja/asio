@@ -1,4 +1,4 @@
-// Copyright (c) The University of Edinburgh,  2007.
+// Copyright (c) The University of Edinburgh, 2007.
 //
 // LICENCE-START
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -7,7 +7,7 @@
 //
 // http://www.apache.org/licenses/LICENSE-2.0
 //
-// Unless required by applicable law or agreed to in writing, software 
+// Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
@@ -96,123 +96,115 @@ import com.google.common.io.ByteStreams;
  */
 public class DeliverToStreamActivity extends MatchedIterativeActivity {
 
-	/** Logger object for logging in this class. */
-	private static final DAILogger LOG = DAILogger
-			.getLogger(DeliverToStreamActivity.class);
+   /** Logger object for logging in this class. */
+   private static final DAILogger LOG = DAILogger.getLogger(DeliverToStreamActivity.class);
 
-	/** Activity input name - stream id */
-	public static final String INPUT_STREAM_ID = "streamId";
+   /** Activity input name - stream id */
+   public static final String INPUT_STREAM_ID = "streamId";
 
-	/** Activity input name - Data. */
-	public static final String INPUT_DATA = "input";
+   /** Activity input name - Data. */
+   public static final String INPUT_DATA = "input";
 
-	/** id of stream exchanger in the {@link OGSADAIContext} */
-	public static final ID STREAM_EXCHANGER = new ID(
-			"at.ac.univie.isc.STREAM_EXCHANGER");
+   /** id of stream exchanger in the {@link OGSADAIContext} */
+   public static final ID STREAM_EXCHANGER = new ID("at.ac.univie.isc.STREAM_EXCHANGER");
 
-	// provides task id -> stream mappings
-	private final StreamExchanger streamProvider;
+   // provides task id -> stream mappings
+   private final StreamExchanger streamProvider;
 
-	/**
-	 * Retrieves the {@link VceOgsadaiConnector} on construction.
-	 */
-	public DeliverToStreamActivity() {
-		super();
-		streamProvider = (StreamExchanger) OGSADAIContext.getInstance().get(
-				STREAM_EXCHANGER);
-	}
+   /**
+    * Retrieves the {@link VceOgsadaiConnector} on construction.
+    */
+   public DeliverToStreamActivity() {
+      super();
+      streamProvider = (StreamExchanger) OGSADAIContext.getInstance().get(STREAM_EXCHANGER);
+   }
 
-	@VisibleForTesting
-	DeliverToStreamActivity(final StreamExchanger streamProvider) {
-		super();
-		this.streamProvider = streamProvider;
-	}
+   @VisibleForTesting
+   DeliverToStreamActivity(final StreamExchanger streamProvider) {
+      super();
+      this.streamProvider = streamProvider;
+   }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	protected ActivityInput[] getIterationInputs() {
-		return new ActivityInput[] {
-				new TypedActivityInput(INPUT_STREAM_ID, String.class),
-				new InputStreamActivityInput(INPUT_DATA) };
-	}
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ActivityInput[] getIterationInputs() {
+      return new ActivityInput[] { new TypedActivityInput(INPUT_STREAM_ID, String.class),
+            new InputStreamActivityInput(INPUT_DATA) };
+   }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	protected void preprocess() throws ActivityUserException,
-			ActivityProcessingException, ActivityTerminatedException {
-		// no pre-processing required
-	}
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected void preprocess() throws ActivityUserException, ActivityProcessingException,
+         ActivityTerminatedException {
+      // no pre-processing required
+   }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 */
-	@Override
-	protected void processIteration(final Object[] iterationData)
-			throws ActivityProcessingException, ActivityTerminatedException,
-			ActivityUserException {
-		// check input
-		final String streamId = (String) checkNotNull(iterationData[0],
-				"no task id given for delivery: is null");
-		final InputStream data = (InputStream) checkNotNull(iterationData[1],
-				"no data given for delivery: is null");
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("Delivering activity data to stream #" + streamId);
-		}
-		// process
-		final Optional<OutputStream> taken = streamProvider.take(streamId);
-		try {
-			if (taken.isPresent()) {
-				try (final OutputStream sink = taken.get();) {
-					ByteStreams.copy(data, sink);
-				} catch (final IOException e) {
-					LOG.debug("IO error on streaming activity results - "
-							+ e.getLocalizedMessage());
-					LOG.error(e, true);
-					throw new ActivityIOException(e);
-				}
-			} else {
-				final NoSuchElementException cause = new NoSuchElementException(
-						"no stream with id #" + streamId + " available");
-				LOG.error(cause, true);
-				throw new ActivityUserException(
-						ErrorID.INVALID_INPUT_VALUE_EXCEPTION, new Object[] {
-								INPUT_STREAM_ID, streamId }, cause);
-			}
-		} finally {
-			this.close(data);
-		}
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("Finished delivering activity data to #" + streamId);
-		}
-	}
+   /**
+    * {@inheritDoc}
+    * 
+    */
+   @Override
+   protected void processIteration(final Object[] iterationData)
+         throws ActivityProcessingException, ActivityTerminatedException, ActivityUserException {
+      // check input
+      final String streamId = (String) checkNotNull(iterationData[0],
+            "no stream id given for delivery: is null");
+      final InputStream data = (InputStream) checkNotNull(iterationData[1],
+            "no data given for delivery to #%s: is null", streamId);
+      if (LOG.isDebugEnabled()) {
+         LOG.debug("Delivering activity data to stream #" + streamId);
+      }
+      // process
+      final Optional<OutputStream> providedStream = streamProvider.take(streamId);
+      try {
+         if (providedStream.isPresent()) {
+            try (final OutputStream sink = providedStream.get();) {
+               ByteStreams.copy(data, sink);
+            } catch (final IOException e) {
+               LOG.debug("IO error on streaming activity results - " + e.getLocalizedMessage());
+               LOG.error(e, true);
+               throw new ActivityIOException(e);
+            }
+         } else {
+            final NoSuchElementException cause = new NoSuchElementException("no stream with id #"
+                  + streamId + " available");
+            LOG.error(cause, true);
+            throw new ActivityUserException(ErrorID.INVALID_INPUT_VALUE_EXCEPTION, new Object[] {
+                  INPUT_STREAM_ID, streamId }, cause);
+         }
+      } finally {
+         this.close(data);
+      }
+      if (LOG.isDebugEnabled()) {
+         LOG.debug("Finished delivering activity data to #" + streamId);
+      }
+   }
 
-	/* close a stream without failing but log errors that occur */
-	private void close(final Closeable stream) {
-		if (stream != null) {
-			try {
-				stream.close();
-			} catch (final IOException e) {
-				LOG.debug("failed to close the activity result stream after delivering to VCE: "
-						+ e.getLocalizedMessage());
-				LOG.error(e, true);
-			}
-		} else {
-			LOG.warn(new NullPointerException(
-					"failed to close activity result stream after delivering to VCE: stream is null"));
-		}
-	}
+   /* close a stream without failing but log errors that occur */
+   private void close(final Closeable stream) {
+      if (stream != null) {
+         try {
+            stream.close();
+         } catch (final IOException e) {
+            LOG.debug("IO error on closing the activity results - " + e.getLocalizedMessage());
+            LOG.error(e, true);
+         }
+      } else {
+         LOG.warn(new NullPointerException(
+               "IO error on closing the activity results - stream is null"));
+      }
+   }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	protected void postprocess() throws ActivityUserException,
-			ActivityProcessingException, ActivityTerminatedException {
-		// no post-processing required
-	}
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected void postprocess() throws ActivityUserException, ActivityProcessingException,
+         ActivityTerminatedException {
+      // no post-processing required
+   }
 }
