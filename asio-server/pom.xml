@@ -25,17 +25,17 @@
 		</dependency>
 		<!-- ogsadai -->
 		<dependency>
-      <groupId>uk.org.ogsadai</groupId>
-      <artifactId>ogsadai-core</artifactId>
-      <version>${version.ogsadai}</version>
-      <type>pom</type>
-    </dependency>
-    <dependency>
-      <groupId>uk.org.ogsadai</groupId>
-      <artifactId>ogsadai-relational</artifactId>
-      <version>${version.ogsadai}</version>
-      <type>pom</type>
-    </dependency>
+			<groupId>uk.org.ogsadai</groupId>
+			<artifactId>ogsadai-core</artifactId>
+			<version>${version.ogsadai}</version>
+			<type>pom</type>
+		</dependency>
+		<dependency>
+			<groupId>uk.org.ogsadai</groupId>
+			<artifactId>ogsadai-relational</artifactId>
+			<version>${version.ogsadai}</version>
+			<type>pom</type>
+		</dependency>
 		<!-- cxf jax-rs impl -->
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
@@ -54,9 +54,9 @@
 			<version>${version.spring}</version>
 		</dependency>
 		<dependency>
-		  <groupId>org.springframework</groupId>
-		  <artifactId>spring-beans</artifactId>
-		  <version>${version.spring}</version>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+			<version>${version.spring}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -70,16 +70,28 @@
 			<version>6.0.36</version>
 			<scope>provided</scope>
 		</dependency>
+		<!-- enable asio logging over ogsadai's log4j -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.5</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>  <!-- override ogsa log4j version for slf4j -->
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
+		</dependency>
 	</dependencies>
 
 	<build>
 		<pluginManagement>
 			<plugins>
-			  <plugin>
-			    <groupId>org.apache.maven.plugins</groupId>
-			    <artifactId>maven-war-plugin</artifactId>
-			    <version>2.3</version>
-			  </plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-war-plugin</artifactId>
+					<version>2.3</version>
+				</plugin>
 				<plugin>
 					<groupId>org.eclipse.jetty</groupId>
 					<artifactId>jetty-maven-plugin</artifactId>
