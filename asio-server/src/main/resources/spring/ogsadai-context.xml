@@ -77,7 +77,8 @@
     <!-- request listening logger -->
     <!-- used also as monitoring framework to enable per request activity listeners -->
     <bean id="uk.org.ogsadai.MONITORING_FRAMEWORK"
-      class="uk.org.ogsadai.activity.event.LoggingRequestListener" />
+      class="uk.org.ogsadai.activity.event.RequestEventRouter"
+      destroy-method="clear" />
 
     <!--
     <bean id="uk.org.ogsadai.MONITORING_FRAMEWORK" 

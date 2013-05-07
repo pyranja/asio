@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Configuration;
 
 import uk.org.ogsadai.activity.delivery.DeliverToStreamActivity;
 import uk.org.ogsadai.activity.delivery.StreamExchanger;
+import uk.org.ogsadai.activity.event.RequestEventRouter;
+import uk.org.ogsadai.common.ID;
 import uk.org.ogsadai.context.OGSADAIContext;
 import uk.org.ogsadai.resource.ResourceID;
 import uk.org.ogsadai.resource.ResourceManager;
@@ -29,6 +31,9 @@ public class AsioOgsadaiConfiguration {
 
 	private static final ResourceID TEST_RESOURCE = new ResourceID("mock_data",
 			"");
+	private static final ID STREAM_EXCHANGER_ID = DeliverToStreamActivity.STREAM_EXCHANGER;
+	private static final ID ROUTER_ID = new ID(
+			"uk.org.ogsadai.MONITORING_FRAMEWORK");
 
 	@Autowired FileResultRepository resultRepository;
 
@@ -41,9 +46,11 @@ public class AsioOgsadaiConfiguration {
 	public OgsadaiAdapter adapter() {
 		final OGSADAIContext context = OGSADAIContext.getInstance();
 		final StreamExchanger exchanger = (StreamExchanger) context
-				.get(DeliverToStreamActivity.STREAM_EXCHANGER);
+				.get(STREAM_EXCHANGER_ID);
+		final RequestEventRouter router = (RequestEventRouter) context
+				.get(ROUTER_ID);
 		final DRER drer = findDRER(context);
-		return new OgsadaiAdapter(drer, exchanger);
+		return new OgsadaiAdapter(drer, exchanger, router);
 	}
 
 	private DRER findDRER(final OGSADAIContext context) {
