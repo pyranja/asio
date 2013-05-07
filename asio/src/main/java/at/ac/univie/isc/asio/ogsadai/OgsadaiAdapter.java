@@ -5,6 +5,7 @@ import java.util.Random;
 import java.util.UUID;
 
 import uk.org.ogsadai.activity.delivery.StreamExchanger;
+import uk.org.ogsadai.activity.event.RequestEventRouter;
 import uk.org.ogsadai.activity.workflow.Workflow;
 import uk.org.ogsadai.engine.RequestRejectedException;
 import uk.org.ogsadai.exception.RequestException;
@@ -19,6 +20,7 @@ import uk.org.ogsadai.resource.request.RequestExecutionStatus;
 import uk.org.ogsadai.resource.request.SimpleCandidateRequestDescriptor;
 import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.DatasetFailureException;
+import at.ac.univie.isc.asio.DatasetOperationTracker;
 import at.ac.univie.isc.asio.DatasetUsageException;
 
 /**
@@ -33,12 +35,15 @@ public class OgsadaiAdapter {
 
 	private final DRER drer;
 	private final StreamExchanger exchanger;
+	private final RequestEventRouter router;
 
 	private final Random rng;
 
-	OgsadaiAdapter(final DRER drer, final StreamExchanger exchanger) {
+	OgsadaiAdapter(final DRER drer, final StreamExchanger exchanger,
+			final RequestEventRouter router) {
 		this.drer = drer;
 		this.exchanger = exchanger;
+		this.router = router;
 		rng = new Random();
 	}
 
@@ -52,9 +57,10 @@ public class OgsadaiAdapter {
 	 * @throws DatasetException
 	 *             if an error occurs while communicating with OGSADAI
 	 */
-	public ResourceID executeSynchronous(final Workflow workflow)
-			throws DatasetException {
+	public ResourceID executeSynchronous(final Workflow workflow,
+			final DatasetOperationTracker tracker) throws DatasetException {
 		final ResourceID requestId = new ResourceID(generateId(), "");
+		router.track(requestId, tracker);
 		final CandidateRequestDescriptor request = new SimpleCandidateRequestDescriptor(
 				requestId, // randomized with qualifier
 				null, // no session
@@ -73,6 +79,8 @@ public class OgsadaiAdapter {
 			throw new DatasetFailureException(e);
 		} catch (final RequestUserException e) {
 			throw new DatasetUsageException(e);
+		} finally {
+			router.stopTracking(requestId);
 		}
 	}
 

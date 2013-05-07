@@ -12,8 +12,10 @@ import java.io.OutputStream;
 import uk.org.ogsadai.activity.workflow.Workflow;
 import uk.org.ogsadai.resource.ResourceID;
 import at.ac.univie.isc.asio.DatasetEngine;
+import at.ac.univie.isc.asio.DatasetOperationTracker;
 import at.ac.univie.isc.asio.DatasetTransportException;
 import at.ac.univie.isc.asio.DatasetUsageException;
+import at.ac.univie.isc.asio.MockOperationTracker;
 import at.ac.univie.isc.asio.transport.FileResult;
 import at.ac.univie.isc.asio.transport.FileResultRepository;
 
@@ -38,7 +40,9 @@ public class OgsadaiEngine implements DatasetEngine {
 		try (OutputStream resultSink = handler.getOutput();) {
 			final String streamId = ogsadai.register(resultSink);
 			final Workflow workflow = createWorkflow(query, streamId);
-			ogsadai.executeSynchronous(workflow);
+			// FIXME pass as argument from endpoint to engine
+			final DatasetOperationTracker tracker = new MockOperationTracker();
+			ogsadai.executeSynchronous(workflow, tracker);
 		} catch (final IOException e) {
 			throw new DatasetTransportException(e);
 		}

@@ -75,8 +75,10 @@
       class="uk.org.ogsadai.activity.delivery.StreamExchanger" />
 
     <!-- request listening logger -->
-    <bean id="at.ac.univie.isc.REQUEST_EVENT_LOGGER"
-      class="uk.org.ogsadai.activity.event.LoggingRequestListener" />
+    <!-- used also as monitoring framework to enable per request activity listeners -->
+    <bean id="uk.org.ogsadai.MONITORING_FRAMEWORK"
+      class="uk.org.ogsadai.activity.event.RequestEventRouter"
+      destroy-method="clear" />
 
     <!--
     <bean id="uk.org.ogsadai.MONITORING_FRAMEWORK" 
