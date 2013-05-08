@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 
+import at.ac.univie.asio.frontend.QueryEndpoint;
+import at.ac.univie.asio.frontend.SqlEndpoint;
 import at.ac.univie.isc.asio.transport.FileResultRepository;
 
 /**
@@ -27,7 +29,7 @@ public class AsioConfiguration {
 		return new SqlEndpoint(engine);
 	}
 
-	@Bean
+	@Bean(destroyMethod = "dispose")
 	public FileResultRepository resultRepository() throws IOException {
 		final Path resultsDirectory = Files
 				.createTempDirectory("asio-results-");

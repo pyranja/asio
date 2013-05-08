@@ -5,6 +5,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import at.ac.univie.isc.asio.DatasetTransportException;
+import at.ac.univie.isc.asio.ResultHandler;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Use temporary files in the given directory to store results.
@@ -19,7 +22,12 @@ public class FileResultRepository {
 		this.root = root;
 	}
 
-	public FileResult newResult() throws DatasetTransportException {
+	public ResultHandler newHandler() throws DatasetTransportException {
+		return new CompletionResultHandler(newResult());
+	}
+
+	@VisibleForTesting
+	FileResult newResult() {
 		Path resultFile;
 		try {
 			resultFile = Files.createTempFile(root, "asio-", ".result");
@@ -27,5 +35,9 @@ public class FileResultRepository {
 			throw new DatasetTransportException(e);
 		}
 		return new FileResult(resultFile);
+	}
+
+	public void dispose() throws IOException {
+		Files.walkFileTree(root, new PurgeVisitor());
 	}
 }

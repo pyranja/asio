@@ -29,7 +29,6 @@ import uk.org.ogsadai.resource.drer.SimpleExecutionResult;
 import uk.org.ogsadai.resource.request.CandidateRequestDescriptor;
 import uk.org.ogsadai.resource.request.RequestExecutionStatus;
 import at.ac.univie.isc.asio.DatasetFailureException;
-import at.ac.univie.isc.asio.DatasetOperationTracker;
 import at.ac.univie.isc.asio.DatasetUsageException;
 
 @RunWith(MockitoJUnitRunner.class)

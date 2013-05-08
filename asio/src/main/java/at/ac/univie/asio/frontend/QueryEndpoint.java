@@ -1,4 +1,4 @@
-package at.ac.univie.isc.asio;
+package at.ac.univie.asio.frontend;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;

@@ -20,7 +20,6 @@ import uk.org.ogsadai.resource.request.RequestExecutionStatus;
 import uk.org.ogsadai.resource.request.SimpleCandidateRequestDescriptor;
 import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.DatasetFailureException;
-import at.ac.univie.isc.asio.DatasetOperationTracker;
 import at.ac.univie.isc.asio.DatasetUsageException;
 
 /**
