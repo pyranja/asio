@@ -23,7 +23,7 @@ import uk.org.ogsadai.exception.RequestException;
 import uk.org.ogsadai.exception.RequestTerminatedException;
 import uk.org.ogsadai.resource.ResourceID;
 import uk.org.ogsadai.resource.request.RequestExecutionStatus;
-import at.ac.univie.isc.asio.DatasetOperationTracker;
+import at.ac.univie.isc.asio.ogsadai.DatasetOperationTracker;
 
 import com.google.common.base.Optional;
 

@@ -1,4 +1,4 @@
-package at.ac.univie.isc.asio;
+package at.ac.univie.isc.asio.ogsadai;
 
 /**
  * Accept notifications about the progress of a dataset operation.

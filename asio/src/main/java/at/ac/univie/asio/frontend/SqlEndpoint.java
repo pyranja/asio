@@ -1,4 +1,4 @@
-package at.ac.univie.isc.asio;
+package at.ac.univie.asio.frontend;
 
 import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
@@ -8,6 +8,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import at.ac.univie.isc.asio.DatasetEngine;
+import at.ac.univie.isc.asio.DatasetUsageException;
+
 import com.google.common.io.InputSupplier;
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -15,7 +18,7 @@ public class SqlEndpoint implements QueryEndpoint {
 
 	private final DatasetEngine engine;
 
-	SqlEndpoint(final DatasetEngine engine) {
+	public SqlEndpoint(final DatasetEngine engine) {
 		super();
 		this.engine = engine;
 	}

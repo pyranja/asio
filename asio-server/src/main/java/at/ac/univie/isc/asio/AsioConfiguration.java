@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 
+import at.ac.univie.asio.frontend.QueryEndpoint;
+import at.ac.univie.asio.frontend.SqlEndpoint;
 import at.ac.univie.isc.asio.transport.FileResultRepository;
 
 /**
