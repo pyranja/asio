@@ -7,16 +7,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.io.InputSupplier;
-import com.google.common.io.OutputSupplier;
 
 /**
  * Enable writing and reading of streamed result data to/from a file.
  * 
  * @author Chris Borckholder
  */
-public class FileResult implements OutputSupplier<OutputStream>,
-		InputSupplier<InputStream> {
+public class FileResult implements Buffer {
 
 	private final Path backing;
 

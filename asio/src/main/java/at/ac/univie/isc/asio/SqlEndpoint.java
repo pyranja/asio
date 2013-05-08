@@ -1,11 +1,15 @@
 package at.ac.univie.isc.asio;
 
+import java.io.InputStream;
+import java.util.concurrent.ExecutionException;
+
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import at.ac.univie.isc.asio.transport.FileResult;
+import com.google.common.io.InputSupplier;
+import com.google.common.util.concurrent.ListenableFuture;
 
 public class SqlEndpoint implements QueryEndpoint {
 
@@ -47,11 +51,23 @@ public class SqlEndpoint implements QueryEndpoint {
 		return process(query);
 	}
 
+	// TODO clean up error handling
 	private Response process(final String query) {
 		try {
-			final FileResult result = engine.submit(query);
-			return Response.ok(result.getInput(),
-					MediaType.APPLICATION_XML_TYPE).build();
+			final ListenableFuture<InputSupplier<InputStream>> result = engine
+					.submit(query);
+			try {
+				final InputSupplier<InputStream> resultData = result.get();
+				return Response.ok(resultData.getInput(),
+						MediaType.APPLICATION_XML_TYPE).build();
+			} catch (final ExecutionException e) {
+				final Throwable cause = e.getCause();
+				if (cause != null && cause instanceof Exception) {
+					throw (Exception) cause;
+				} else {
+					throw e;
+				}
+			}
 		} catch (final DatasetUsageException e) {
 			throw new WebApplicationException(e, Response
 					.status(Status.BAD_REQUEST).entity(e.getMessage()).build());

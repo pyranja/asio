@@ -1,8 +1,11 @@
 package at.ac.univie.isc.asio;
 
-import at.ac.univie.isc.asio.transport.FileResult;
+import java.io.InputStream;
+
+import com.google.common.io.InputSupplier;
+import com.google.common.util.concurrent.ListenableFuture;
 
 public interface DatasetEngine {
 
-	FileResult submit(String query);
+	ListenableFuture<InputSupplier<InputStream>> submit(String query);
 }

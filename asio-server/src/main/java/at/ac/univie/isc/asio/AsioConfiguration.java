@@ -27,7 +27,7 @@ public class AsioConfiguration {
 		return new SqlEndpoint(engine);
 	}
 
-	@Bean
+	@Bean(destroyMethod = "dispose")
 	public FileResultRepository resultRepository() throws IOException {
 		final Path resultsDirectory = Files
 				.createTempDirectory("asio-results-");
