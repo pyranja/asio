@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>at.ac.univie.isc</groupId>
@@ -8,10 +9,10 @@
 
 	<name>Vienna Query Service</name>
 	<description>HTTP endpoint for querying dataset services</description>
-	
+
 	<modules>
-	  <module>asio</module>
-	  <module>asio-server</module>
+		<module>asio</module>
+		<module>asio-server</module>
 	</modules>
 
 	<properties>
@@ -23,10 +24,10 @@
 	</properties>
 
 	<scm>
-		<developerConnection>scm|git|git@gitorious.cs.univie.ac.at:vce/vqs.git</developerConnection>
-  </scm>
+		<developerConnection>scm:git|git@gitorious.cs.univie.ac.at:vce/vqs.git</developerConnection>
+	</scm>
 
-  <!-- shared dependencies -->
+	<!-- shared dependencies -->
 	<dependencies>
 		<!-- utils -->
 		<dependency>
@@ -53,7 +54,7 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	
+
 	<build>
 		<pluginManagement>
 			<plugins>
@@ -74,4 +75,22 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>2.6</version>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>findbugs-maven-plugin</artifactId>
+				<version>2.5.2</version>
+				<configuration>
+					<xmlOutput>true</xmlOutput>
+				</configuration>
+			</plugin>
+		</plugins>
+	</reporting>
 </project>
