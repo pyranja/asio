@@ -1,5 +1,7 @@
 package uk.org.ogsadai.activity.event;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -11,43 +13,98 @@ import uk.org.ogsadai.activity.request.OGSADAIRequestConfiguration;
 import uk.org.ogsadai.activity.workflow.Workflow;
 import uk.org.ogsadai.authorization.SecurityContext;
 import uk.org.ogsadai.exception.DAIException;
-import uk.org.ogsadai.exception.RequestProcessingException;
-import uk.org.ogsadai.exception.RequestTerminatedException;
 import uk.org.ogsadai.monitoring.MonitoringFramework;
 import uk.org.ogsadai.resource.ResourceID;
 import uk.org.ogsadai.resource.request.RequestExecutionStatus;
-import at.ac.univie.isc.asio.ogsadai.DatasetOperationTracker;
 
 import com.google.common.base.Optional;
 
 /**
- * Route filtered OGSADAI request events and errors to active
- * {@link DatasetOperationTracker}s.
+ * Route filtered OGSADAI request completion and errors to active
+ * {@link CompletionCallback}s.
+ * 
+ * <p>
+ * If a {@link CompletionCallback} is registered for a request id, any change in
+ * the request's status that signals the termination of the request is inspected
+ * and the either the {@link CompletionCallback#complete()} or
+ * {@link CompletionCallback#fail(Exception)} callback method are called. Once a
+ * request either terminated, it will not be tracked anymore.
+ * </p>
+ * <p>
+ * Additionally, if a request id is setup for tracking before the request is
+ * created by OGSADAI, appropriate listeners are created with it, to also listen
+ * for errors in its activities. If any activity encounters an error, it is
+ * assumed that the request fails.
+ * </p>
  * 
  * @author Chris Borckholder
  */
 @ThreadSafe
 public class RequestEventRouter implements MonitoringFramework, RequestListener {
 
-	private final ConcurrentMap<ResourceID, DatasetOperationTracker> trackers;
+	private final ConcurrentMap<ResourceID, EventAcceptor> handlers;
 
 	public RequestEventRouter() {
-		trackers = new ConcurrentHashMap<>();
+		handlers = new ConcurrentHashMap<>();
+	}
+
+	/**
+	 * Forward interesting request statuses if requestId is tracked.
+	 */
+	@Override
+	public void requestExecutionStatusEvent(final ResourceID requestId,
+			final RequestExecutionStatus status) {
+		final EventAcceptor acceptor = handlers.get(requestId);
+		if (acceptor != null) {
+			if (acceptor.handleStateAndStop(status)) {
+				stopTracking(requestId);
+			}
+		}
+	}
+
+	/**
+	 * Forward the error if requestId is tracked.
+	 */
+	@Override
+	public void requestErrorEvent(final ResourceID requestId,
+			final DAIException cause) {
+		final EventAcceptor acceptor = handlers.get(requestId);
+		if (acceptor != null) {
+			if (acceptor.handleErrorAndStop(cause)) {
+				stopTracking(requestId);
+			}
+		}
+	}
+
+	/**
+	 * Register an activity error listener if the created request is tracked.
+	 */
+	@Override
+	public void registerListeners(final RequestDescriptor request,
+			final OGSADAIRequestConfiguration context) {
+		final ResourceID requestId = context.getRequestID();
+		if (handlers.containsKey(requestId)) {
+			context.registerActivityListener(new ActivityErrorListener(this,
+					requestId));
+		}
 	}
 
 	/**
 	 * Atomically associate the given request id with the given
-	 * {@link DatasetOperationTracker}.
+	 * {@link CompletionCallback}.
 	 * 
 	 * @param requestId
 	 *            to be tracked
 	 * @param callback
 	 *            routing target for events with requestId
+	 * @throws IllegalArgumentException
+	 *             if the given requestId is already tracked
 	 */
 	public void track(final ResourceID requestId,
-			final DatasetOperationTracker callback) {
-		final DatasetOperationTracker former = trackers.putIfAbsent(requestId,
-				callback);
+			final CompletionCallback callback) {
+		checkNotNull(callback, "cannot track with null callback");
+		final EventAcceptor acceptor = new EventAcceptor(callback);
+		final EventAcceptor former = handlers.putIfAbsent(requestId, acceptor);
 		if (former != null) {
 			throw new IllegalArgumentException("request [" + requestId
 					+ "] already tracked");
@@ -62,45 +119,12 @@ public class RequestEventRouter implements MonitoringFramework, RequestListener 
 	 * @return the tracker that was associated with the given id, if there was
 	 *         one
 	 */
-	public Optional<DatasetOperationTracker> stopTracking(
-			final ResourceID requestId) {
-		final DatasetOperationTracker tracker = trackers.remove(requestId);
-		return Optional.fromNullable(tracker);
-	}
-
-	/**
-	 * Forward interesting request statuses.
-	 */
-	@Override
-	public void requestExecutionStatusEvent(final ResourceID requestId,
-			final RequestExecutionStatus status) {
-		final DatasetOperationTracker tracker = trackers.get(requestId);
-		if (tracker != null) {
-			if (forward(status, tracker)) {
-				stopTracking(requestId);
-			}
-		}
-	}
-
-	/**
-	 * Forward the error.
-	 */
-	@Override
-	public void requestErrorEvent(final ResourceID requestID,
-			final DAIException cause) {
-		final DatasetOperationTracker tracker = trackers.get(requestID);
-		if (tracker != null) {
-			forwardError(cause, tracker);
-		}
-	}
-
-	@Override
-	public void registerListeners(final RequestDescriptor request,
-			final OGSADAIRequestConfiguration context) {
-		final ResourceID requestId = context.getRequestID();
-		if (trackers.containsKey(requestId)) {
-			context.registerActivityListener(new ActivityErrorListener(this,
-					requestId));
+	public Optional<CompletionCallback> stopTracking(final ResourceID requestId) {
+		final EventAcceptor acceptor = handlers.remove(requestId);
+		if (acceptor != null) {
+			return Optional.of(acceptor.getDelegate());
+		} else {
+			return Optional.absent();
 		}
 	}
 
@@ -109,50 +133,7 @@ public class RequestEventRouter implements MonitoringFramework, RequestListener 
 	 */
 	@Override
 	public void clear() {
-		trackers.clear();
-	}
-
-	/**
-	 * Examine the request status and forward appropriately.
-	 * 
-	 * @param status
-	 *            of request
-	 * @param tracker
-	 *            of request
-	 * @return true if the request processing ended
-	 */
-	private boolean forward(final RequestExecutionStatus status,
-			final DatasetOperationTracker tracker) {
-		boolean terminal = false;
-		if (status == RequestExecutionStatus.COMPLETED) {
-			tracker.complete();
-			terminal = true;
-		} else if (status == RequestExecutionStatus.TERMINATED) {
-			forwardError(new RequestTerminatedException(), tracker);
-			terminal = true;
-		} else if (status == RequestExecutionStatus.COMPLETED_WITH_ERROR
-				|| status == RequestExecutionStatus.ERROR) {
-			// this should be caught beforehand by activity listeners
-			final RequestProcessingException cause = new RequestProcessingException(
-					new IllegalStateException(
-							"request failed with unknown error"));
-			forwardError(cause, tracker);
-			terminal = true;
-		}
-		return terminal;
-	}
-
-	/**
-	 * Notify the given tracker of an error
-	 * 
-	 * @param cause
-	 *            of error
-	 * @param tracker
-	 *            to be notified
-	 */
-	private void forwardError(final DAIException cause,
-			final DatasetOperationTracker tracker) {
-		tracker.fail(cause);
+		handlers.clear();
 	}
 
 	// ignored request events

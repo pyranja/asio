@@ -5,6 +5,7 @@ import java.util.Random;
 import java.util.UUID;
 
 import uk.org.ogsadai.activity.delivery.StreamExchanger;
+import uk.org.ogsadai.activity.event.CompletionCallback;
 import uk.org.ogsadai.activity.event.RequestEventRouter;
 import uk.org.ogsadai.activity.workflow.Workflow;
 import uk.org.ogsadai.engine.RequestRejectedException;
@@ -57,7 +58,7 @@ public class OgsadaiAdapter {
 	 *             if an error occurs while communicating with OGSADAI
 	 */
 	public ResourceID executeSynchronous(final Workflow workflow,
-			final DatasetOperationTracker tracker) throws DatasetException {
+			final CompletionCallback tracker) throws DatasetException {
 		final ResourceID requestId = new ResourceID(generateId(), "");
 		router.track(requestId, tracker);
 		final CandidateRequestDescriptor request = new SimpleCandidateRequestDescriptor(
