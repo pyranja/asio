@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -19,11 +20,10 @@ import uk.org.ogsadai.activity.RequestDescriptor;
 import uk.org.ogsadai.activity.SimpleRequestDescriptor;
 import uk.org.ogsadai.activity.request.OGSADAIRequestConfiguration;
 import uk.org.ogsadai.exception.DAIException;
-import uk.org.ogsadai.exception.RequestException;
+import uk.org.ogsadai.exception.RequestProcessingException;
 import uk.org.ogsadai.exception.RequestTerminatedException;
 import uk.org.ogsadai.resource.ResourceID;
 import uk.org.ogsadai.resource.request.RequestExecutionStatus;
-import at.ac.univie.isc.asio.ogsadai.DatasetOperationTracker;
 
 import com.google.common.base.Optional;
 
@@ -34,7 +34,7 @@ public class RequestEventRouterTest {
 	private static final ResourceID REQUEST = new ResourceID("request", "test");
 
 	private RequestEventRouter subject;
-	@Mock private DatasetOperationTracker tracker;
+	@Mock private CompletionCallback tracker;
 	@Mock private OGSADAIRequestConfiguration context;
 	private RequestDescriptor request;
 
@@ -73,10 +73,29 @@ public class RequestEventRouterTest {
 		verify(tracker).complete();
 	}
 
+	@Test(expected = AssertionError.class)
+	public void propagates_unexpected_completion_with_error_as_error()
+			throws Exception {
+		subject.track(REQUEST, tracker);
+		subject.requestExecutionStatusEvent(REQUEST,
+				RequestExecutionStatus.COMPLETED_WITH_ERROR);
+		verify(tracker).fail(any(RequestProcessingException.class));
+	}
+
+	// handled by EventAcceptor
+	@Ignore
+	@Test
+	public void propagates_unexpected_error_state_as_error() throws Exception {
+		subject.track(REQUEST, tracker);
+		subject.requestExecutionStatusEvent(REQUEST,
+				RequestExecutionStatus.ERROR);
+		verify(tracker).fail(any(RequestProcessingException.class));
+	}
+
 	@Test
 	public void propagates_request_error() throws Exception {
 		subject.track(REQUEST, tracker);
-		final DAIException cause = new RequestException(null);
+		final DAIException cause = new MockDaiException("test cause");
 		subject.requestErrorEvent(REQUEST, cause);
 		verify(tracker).fail(cause);
 	}
@@ -110,7 +129,7 @@ public class RequestEventRouterTest {
 				RequestExecutionStatus.COMPLETED);
 		subject.requestExecutionStatusEvent(REQUEST,
 				RequestExecutionStatus.TERMINATED);
-		subject.requestErrorEvent(REQUEST, new RequestException(null));
+		subject.requestErrorEvent(REQUEST, new MockDaiException(null));
 		verifyZeroInteractions(tracker);
 	}
 
@@ -133,12 +152,12 @@ public class RequestEventRouterTest {
 	@Test
 	public void does_not_forward_after_stopping_tracking() throws Exception {
 		subject.track(REQUEST, tracker);
-		subject.requestErrorEvent(REQUEST, new RequestException(null));
+		subject.requestErrorEvent(REQUEST, new MockDaiException(null));
 		Mockito.verify(tracker).fail(any(Exception.class));
-		final Optional<DatasetOperationTracker> removed = subject
+		final Optional<CompletionCallback> removed = subject
 				.stopTracking(REQUEST);
 		assertTrue(removed.isPresent());
-		subject.requestErrorEvent(REQUEST, new RequestException(null));
+		subject.requestErrorEvent(REQUEST, new MockDaiException(null));
 		Mockito.verifyNoMoreInteractions(tracker);
 	}
 
@@ -147,7 +166,7 @@ public class RequestEventRouterTest {
 		subject.track(REQUEST, tracker);
 		subject.requestExecutionStatusEvent(REQUEST,
 				RequestExecutionStatus.COMPLETED);
-		final Optional<DatasetOperationTracker> removed = subject
+		final Optional<CompletionCallback> removed = subject
 				.stopTracking(REQUEST);
 		assertFalse(removed.isPresent());
 	}
@@ -157,7 +176,6 @@ public class RequestEventRouterTest {
 	public void unused_monitoring_methods_fail_fast() throws Exception {
 		subject.addActivityListener(null);
 		subject.addPipeListener(null);
-		subject.clear();
 		subject.removeActivityListener(null);
 		subject.removePipeListener(null);
 	}

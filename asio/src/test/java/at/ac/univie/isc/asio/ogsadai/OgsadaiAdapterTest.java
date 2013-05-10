@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import uk.org.ogsadai.activity.delivery.StreamExchanger;
+import uk.org.ogsadai.activity.event.CompletionCallback;
 import uk.org.ogsadai.activity.event.RequestEventRouter;
 import uk.org.ogsadai.activity.request.status.SimpleRequestStatus;
 import uk.org.ogsadai.activity.workflow.Workflow;
@@ -39,7 +40,7 @@ public class OgsadaiAdapterTest {
 	@Mock private Workflow workflow;
 	@Mock private StreamExchanger exchanger;
 	@Mock private RequestEventRouter router;
-	@Mock private DatasetOperationTracker tracker;
+	@Mock private CompletionCallback tracker;
 
 	@Before
 	public void setUp() throws Exception {

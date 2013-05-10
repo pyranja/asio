@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import uk.org.ogsadai.activity.event.CompletionCallback;
 import uk.org.ogsadai.activity.workflow.Workflow;
 import uk.org.ogsadai.resource.ResourceID;
 import at.ac.univie.isc.asio.DatasetEngine;
@@ -44,7 +45,7 @@ public class OgsadaiEngine implements DatasetEngine {
 			final String streamId = ogsadai.register(resultSink);
 			final Workflow workflow = createWorkflow(query, streamId);
 			// FIXME pass as argument from endpoint to engine
-			final DatasetOperationTracker tracker = new MockOperationTracker();
+			final CompletionCallback tracker = new MockCompletionCallback();
 			ogsadai.executeSynchronous(workflow, tracker);
 		} catch (final IOException e) {
 			throw new DatasetTransportException(e);
