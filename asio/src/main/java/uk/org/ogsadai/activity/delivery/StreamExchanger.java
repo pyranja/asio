@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentMap;
 import javax.annotation.concurrent.ThreadSafe;
 
 import com.google.common.base.Optional;
+import com.google.common.io.OutputSupplier;
 
 /**
  * Provide a temporary container for id->{@link OutputStream} pairs. A stream is
@@ -41,14 +42,14 @@ public class StreamExchanger {
 		}
 	}
 
-	private final ConcurrentMap<String, OutputStream> streams;
+	private final ConcurrentMap<String, OutputSupplier<OutputStream>> streams;
 
 	/**
 	 * Create an empty exchanger.
 	 */
 	public StreamExchanger() {
 		super();
-		streams = new ConcurrentHashMap<String, OutputStream>();
+		streams = new ConcurrentHashMap<>();
 	}
 
 	/**
@@ -57,16 +58,18 @@ public class StreamExchanger {
 	 * 
 	 * @param id
 	 *            to be associated with given stream
-	 * @param stream
+	 * @param supplier
 	 *            to be stored
 	 * @throws IdTakenException
 	 *             if the given id is already associated with a sink
 	 */
-	public void offer(final String id, final OutputStream stream)
+	public void offer(final String id,
+			final OutputSupplier<OutputStream> supplier)
 			throws IdTakenException {
 		checkNotNull(id, "invalid sink id : null");
-		checkNotNull(stream, "invalid sink for id %s : null", id);
-		final OutputStream former = streams.putIfAbsent(id, stream);
+		checkNotNull(supplier, "invalid supplier for id %s : null", id);
+		final OutputSupplier<OutputStream> former = streams.putIfAbsent(id,
+				supplier);
 		if (former != null) {
 			throw new IdTakenException(id);
 		}
@@ -79,9 +82,9 @@ public class StreamExchanger {
 	 *            of required stream
 	 * @return Optional containing the stream
 	 */
-	public Optional<OutputStream> take(final String id) {
+	public Optional<OutputSupplier<OutputStream>> take(final String id) {
 		checkNotNull(id, "invalid sink id : null");
-		final OutputStream stream = streams.remove(id);
+		final OutputSupplier<OutputStream> stream = streams.remove(id);
 		return Optional.fromNullable(stream);
 	}
 

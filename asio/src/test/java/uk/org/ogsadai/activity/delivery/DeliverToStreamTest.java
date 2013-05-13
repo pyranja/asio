@@ -24,6 +24,7 @@ import uk.org.ogsadai.activity.io.ActivityIOException;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
+import com.google.common.io.OutputSupplier;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DeliverToStreamTest {
@@ -35,12 +36,14 @@ public class DeliverToStreamTest {
 	@Spy private final InputStream source = new ByteArrayInputStream(PAYLOAD);
 	@Spy private final ByteArrayOutputStream sink = new ByteArrayOutputStream();
 	@Mock private StreamExchanger exchanger;
+	@Mock private OutputSupplier<OutputStream> supplier;
 
 	@Before
-	public void setUp() {
+	public void setUp() throws IOException {
 		subject = new DeliverToStreamActivity(exchanger);
+		when(supplier.getOutput()).thenReturn(sink);
 		when(exchanger.take(STREAM_ID)).thenReturn(
-				Optional.<OutputStream> of(sink));
+				Optional.<OutputSupplier<OutputStream>> of(supplier));
 	}
 
 	@Test(expected = NullPointerException.class)
@@ -64,7 +67,18 @@ public class DeliverToStreamTest {
 	@Test(expected = ActivityUserException.class)
 	public void exchanger_has_no_stream() throws Exception {
 		when(exchanger.take(STREAM_ID)).thenReturn(
-				Optional.<OutputStream> absent());
+				Optional.<OutputSupplier<OutputStream>> absent());
+		try {
+			subject.processIteration(asArgs(STREAM_ID, source));
+		} finally {
+			verify(source).close();
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test(expected = ActivityIOException.class)
+	public void supplying_fails() throws Exception {
+		when(supplier.getOutput()).thenThrow(IOException.class);
 		try {
 			subject.processIteration(asArgs(STREAM_ID, source));
 		} finally {

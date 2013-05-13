@@ -15,12 +15,13 @@ import org.mockito.runners.MockitoJUnitRunner;
 import uk.org.ogsadai.activity.delivery.StreamExchanger.IdTakenException;
 
 import com.google.common.base.Optional;
+import com.google.common.io.OutputSupplier;
 
 @RunWith(MockitoJUnitRunner.class)
 public class StreamExchangerTest {
 
 	private StreamExchanger subject;
-	@Mock private OutputStream stream;
+	@Mock private OutputSupplier<OutputStream> stream;
 
 	@Before
 	public void setUp() {
@@ -51,14 +52,16 @@ public class StreamExchangerTest {
 	@Test
 	public void can_take_offered_stream() {
 		subject.offer("test", stream);
-		final Optional<OutputStream> taken = subject.take("test");
+		final Optional<OutputSupplier<OutputStream>> taken = subject
+				.take("test");
 		assertTrue(taken.isPresent());
 		assertSame(stream, taken.get());
 	}
 
 	@Test
 	public void taking_not_mapped_yields_absent_optional() {
-		final Optional<OutputStream> taken = subject.take("not-there");
+		final Optional<OutputSupplier<OutputStream>> taken = subject
+				.take("not-there");
 		assertFalse(taken.isPresent());
 	}
 
@@ -66,7 +69,8 @@ public class StreamExchangerTest {
 	public void stream_is_absent_after_take() {
 		subject.offer("test", stream);
 		subject.take("test");
-		final Optional<OutputStream> taken = subject.take("test");
+		final Optional<OutputSupplier<OutputStream>> taken = subject
+				.take("test");
 		assertFalse(taken.isPresent());
 	}
 
