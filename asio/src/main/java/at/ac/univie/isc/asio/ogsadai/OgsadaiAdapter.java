@@ -1,8 +1,10 @@
 package at.ac.univie.isc.asio.ogsadai;
 
+import static java.lang.String.format;
+import static java.util.Locale.ENGLISH;
+import static uk.org.ogsadai.resource.request.RequestExecutionStatus.UNSTARTED;
+
 import java.io.OutputStream;
-import java.util.Random;
-import java.util.UUID;
 
 import uk.org.ogsadai.activity.delivery.StreamExchanger;
 import uk.org.ogsadai.activity.event.CompletionCallback;
@@ -10,8 +12,6 @@ import uk.org.ogsadai.activity.event.RequestEventRouter;
 import uk.org.ogsadai.activity.workflow.Workflow;
 import uk.org.ogsadai.engine.RequestRejectedException;
 import uk.org.ogsadai.exception.RequestException;
-import uk.org.ogsadai.exception.RequestProcessingException;
-import uk.org.ogsadai.exception.RequestTerminatedException;
 import uk.org.ogsadai.exception.RequestUserException;
 import uk.org.ogsadai.resource.ResourceID;
 import uk.org.ogsadai.resource.drer.DRER;
@@ -22,6 +22,9 @@ import uk.org.ogsadai.resource.request.SimpleCandidateRequestDescriptor;
 import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.DatasetFailureException;
 import at.ac.univie.isc.asio.DatasetUsageException;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.io.OutputSupplier;
 
 /**
  * Use an OGSADAI {@link DRER} to create requests and retrieve the status of
@@ -36,99 +39,105 @@ public class OgsadaiAdapter {
 	private final DRER drer;
 	private final StreamExchanger exchanger;
 	private final RequestEventRouter router;
+	private final IdGenerator ids;
 
-	private final Random rng;
-
+	@VisibleForTesting
 	OgsadaiAdapter(final DRER drer, final StreamExchanger exchanger,
-			final RequestEventRouter router) {
+			final RequestEventRouter router, final IdGenerator ids) {
 		this.drer = drer;
 		this.exchanger = exchanger;
 		this.router = router;
-		rng = new Random();
+		this.ids = ids;
+	}
+
+	OgsadaiAdapter(final DRER drer, final StreamExchanger exchanger,
+			final RequestEventRouter router) {
+		this(drer, exchanger, router, new RandomIdGenerator(ID_QUALIFIER));
 	}
 
 	/**
-	 * Create and submit a synchronous OGSADAI request to execute the given
-	 * workflow.
+	 * Attach the given stream supplier to the OGSADAI context. The returned id
+	 * can be used to retrieve the supplier from the {@link StreamExchanger} in
+	 * the OGSADAI context.
+	 * 
+	 * @param supplier
+	 *            to be attached
+	 * @return id associated to the attached supplier
+	 */
+	public String register(final OutputSupplier<OutputStream> supplier) {
+		final String supplierId = ids.next();
+		exchanger.offer(supplierId, supplier); // should not collide
+		return supplierId;
+	}
+
+	/**
+	 * Invalidate the supplier which may have been registered with the given id.
+	 * 
+	 * @param supplierId
+	 *            of invalid supplier
+	 */
+	public void revokeSupplier(final String supplierId) {
+		exchanger.take(supplierId);
+	}
+
+	/**
+	 * Create and submit an asynchronous OGSADAI request to execute the given
+	 * workflow. Setup request listening to notify the given
+	 * {@link CompletionCallback}.
 	 * 
 	 * @param workflow
 	 *            to be executed
+	 * @param tracker
+	 *            callback for request termination
 	 * @return id of the submitted request
 	 * @throws DatasetException
 	 *             if an error occurs while communicating with OGSADAI
 	 */
-	public ResourceID executeSynchronous(final Workflow workflow,
+	public ResourceID invoke(final Workflow workflow,
 			final CompletionCallback tracker) throws DatasetException {
-		final ResourceID requestId = new ResourceID(generateId(), "");
+		final ResourceID requestId = new ResourceID(ids.next(), "");
 		router.track(requestId, tracker);
 		final CandidateRequestDescriptor request = new SimpleCandidateRequestDescriptor(
 				requestId, // randomized with qualifier
 				null, // no session
 				false, // no session
-				true, // synchronous
+				false, // asynchronous
 				false, // no private resources
 				workflow);
 		try {
 			final ExecutionResult result = drer.execute(request);
-			// determine if request succeeded
-			final RequestExecutionStatus resultState = result
-					.getRequestStatus().getExecutionStatus();
-			failOnRequestError(resultState);
-			return result.getRequestID();
+			verifyExecutionResponse(result, requestId);
+			return requestId;
+			// XXX do not throw here but let callback fail
 		} catch (final RequestException | RequestRejectedException e) {
+			router.stopTracking(requestId);
 			throw new DatasetFailureException(e);
 		} catch (final RequestUserException e) {
-			throw new DatasetUsageException(e);
-		} finally {
 			router.stopTracking(requestId);
+			throw new DatasetUsageException(e);
 		}
 	}
 
-	private void failOnRequestError(final RequestExecutionStatus state)
-			throws RequestException {
-		assert state.hasFinished() : "synchronous result execution not finished";
-		if (state == RequestExecutionStatus.COMPLETED_WITH_ERROR
-				|| state == RequestExecutionStatus.ERROR) {
-			throw new RequestProcessingException(new IllegalStateException(
-					"request failed with unknown error"));
-		} else if (state == RequestExecutionStatus.TERMINATED) {
-			throw new RequestTerminatedException();
-		} else if (state == RequestExecutionStatus.PROCESSING
-				|| state == RequestExecutionStatus.PROCESSING_WITH_ERROR
-				|| state == RequestExecutionStatus.UNSTARTED) {
-			throw new AssertionError("encountered unfinished request status ("
-					+ state + ") after synchronous execution");
-		} else if (state != RequestExecutionStatus.COMPLETED) {
-			throw new RequestProcessingException(new IllegalArgumentException(
-					"unrecognized execution status " + state));
-		}
-		assert state == RequestExecutionStatus.COMPLETED : "did not fail on uncompleted request state "
-				+ state;
-	}
-
 	/**
-	 * @return an id that is probably unique in this JVM process.
-	 */
-	private String generateId() {
-		final long lsb = rng.nextLong();
-		final long msb = System.currentTimeMillis();
-		final UUID id = new UUID(msb, lsb);
-		return ID_QUALIFIER + "-" + id.toString();
-	}
-
-	/**
-	 * Attach the given stream to the OGSADAI context. The returned id can be
-	 * used to retrieve the stream from the {@link StreamExchanger} in the
-	 * OGSADAI context.
+	 * Test whether the OGSADAI ExecutionResult satisfies the expectations.
 	 * 
-	 * @param stream
-	 *            to be attached
-	 * @return id associated to the attached stream
+	 * @param response
+	 *            from OGSADAI
+	 * @param expectedId
+	 *            submitted request id
+	 * @throws AssertionError
+	 *             if assertions are enabled and the response is malformed
 	 */
-	public String register(final OutputStream stream) {
-		final String streamId = generateId();
-		exchanger.offer(streamId, stream); // uuids should not collide
-		return streamId;
+	private void verifyExecutionResponse(final ExecutionResult response,
+			final ResourceID expectedId) {
+		// assert response invariances
+		final RequestExecutionStatus state = response.getRequestStatus()
+				.getExecutionStatus();
+		assert state == UNSTARTED : format(ENGLISH,
+				"unexpected execution status %s", state);
+		final ResourceID createdRequestId = response.getRequestID();
+		assert expectedId.equals(createdRequestId) : format(ENGLISH,
+				"id mismatch : submitted [%s] <> created [%s]", expectedId,
+				createdRequestId);
 	}
-
 }

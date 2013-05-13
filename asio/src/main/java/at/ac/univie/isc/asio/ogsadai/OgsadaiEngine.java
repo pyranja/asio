@@ -6,15 +6,13 @@ import static at.ac.univie.isc.asio.ogsadai.PipeActivities.tupleToWebRowSetCharA
 import static at.ac.univie.isc.asio.ogsadai.PipeBuilder.pipe;
 import static com.google.common.base.Strings.emptyToNull;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 
 import uk.org.ogsadai.activity.event.CompletionCallback;
 import uk.org.ogsadai.activity.workflow.Workflow;
 import uk.org.ogsadai.resource.ResourceID;
 import at.ac.univie.isc.asio.DatasetEngine;
-import at.ac.univie.isc.asio.DatasetTransportException;
+import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.DatasetUsageException;
 import at.ac.univie.isc.asio.ResultHandler;
 import at.ac.univie.isc.asio.transport.FileResultRepository;
@@ -41,17 +39,36 @@ public class OgsadaiEngine implements DatasetEngine {
 			final String query) {
 		validateQuery(query);
 		final ResultHandler handler = results.newHandler();
-		try (OutputStream resultSink = handler.getOutput();) {
-			final String streamId = ogsadai.register(resultSink);
-			final Workflow workflow = createWorkflow(query, streamId);
-			// FIXME pass as argument from endpoint to engine
-			final CompletionCallback tracker = new MockCompletionCallback();
-			ogsadai.executeSynchronous(workflow, tracker);
-		} catch (final IOException e) {
-			throw new DatasetTransportException(e);
+		final String handlerId = ogsadai.register(handler);
+		final Workflow workflow = createWorkflow(query, handlerId);
+		final CompletionCallback tracker = delegateTo(handler);
+		try {
+			ogsadai.invoke(workflow, tracker);
+		} catch (final DatasetException cause) {
+			// clean up exchange
+			ogsadai.revokeSupplier(handlerId);
+			handler.fail(cause);
 		}
-		handler.complete();
 		return handler.asFutureResult();
+	}
+
+	/**
+	 * Create a CompletionCallback that delegates to the given ResultHandler.
+	 */
+	private CompletionCallback delegateTo(final ResultHandler handler) {
+		return new CompletionCallback() {
+
+			@Override
+			public void complete() {
+				handler.complete();
+			}
+
+			@Override
+			public void fail(final Exception cause) {
+				handler.fail(cause);
+			}
+
+		};
 	}
 
 	private Workflow createWorkflow(final String query, final String streamId) {
