@@ -17,6 +17,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<version.compiler>1.7</version.compiler>
 		<version.cxf>2.7.4</version.cxf>
 		<version.spring>3.2.2.RELEASE</version.spring>
