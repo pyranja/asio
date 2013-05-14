@@ -1,4 +1,4 @@
-package at.ac.univie.asio.frontend;
+package at.ac.univie.isc.asio.frontend;
 
 import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
