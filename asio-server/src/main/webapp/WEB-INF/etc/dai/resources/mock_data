@@ -5,8 +5,8 @@ terminationTime=null
 PROPERTIES
 END
 CONFIG
-dai.driver.class=org.gjt.mm.mysql.Driver
-dai.data.resource.uri=jdbc:mysql://localhost:3350/test
+dai.driver.class=org.h2.Driver
+dai.data.resource.uri=jdbc:h2:tcp://localhost/mem:test
 dai.login.provider=uk.org.ogsadai.LOGIN_PROVIDER
 END
 ACTIVITIES
