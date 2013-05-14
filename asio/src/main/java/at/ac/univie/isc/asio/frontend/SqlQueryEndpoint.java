@@ -3,6 +3,13 @@ package at.ac.univie.isc.asio.frontend;
 import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
 
+import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -17,49 +24,72 @@ import at.ac.univie.isc.asio.DatasetUsageException;
 import com.google.common.io.InputSupplier;
 import com.google.common.util.concurrent.ListenableFuture;
 
-public class SqlEndpoint implements QueryEndpoint {
+/**
+ * Endpoint for read-only SQL queries.
+ * 
+ * @author Chris Borckholder
+ */
+@Path("/query/")
+@Produces(MediaType.APPLICATION_XML)
+public class SqlQueryEndpoint {
 
 	/* slf4j-logger */
-	final static Logger log = LoggerFactory.getLogger(SqlEndpoint.class);
+	final static Logger log = LoggerFactory.getLogger(SqlQueryEndpoint.class);
+
+	private static final String PARAM_QUERY = "query";
 
 	private final DatasetEngine engine;
 
-	public SqlEndpoint(final DatasetEngine engine) {
+	public SqlQueryEndpoint(final DatasetEngine engine) {
 		super();
 		this.engine = engine;
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * Accept queries from the request URL's query string.
 	 * 
-	 * @see at.ac.univie.isc.asio.QueryEndpoint#acceptUriQuery(java.lang.String)
+	 * @param query
+	 *            to be executed
+	 * @return query results
 	 */
-	@Override
-	public Response acceptUriQuery(final String query) {
+	@GET
+	public Response acceptUriQuery(@QueryParam(PARAM_QUERY) final String query) {
 		return process(query);
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * Accept queries submitted as url encoded form parameters.
 	 * 
-	 * @see
-	 * at.ac.univie.isc.asio.QueryEndpoint#acceptFormQuery(java.lang.String)
+	 * @param query
+	 *            to be executed
+	 * @return query results
 	 */
-	@Override
-	public Response acceptFormQuery(final String query) {
+	@POST
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public Response acceptFormQuery(@FormParam(PARAM_QUERY) final String query) {
 		return process(query);
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * Accept queries submitted as unencoded request entity
 	 * 
-	 * @see at.ac.univie.isc.asio.QueryEndpoint#acceptQuery(java.lang.String)
+	 * @param query
+	 *            to be executed
+	 * @return query results
 	 */
-	@Override
+	@POST
+	@Consumes("application/sql-query")
 	public Response acceptQuery(final String query) {
 		return process(query);
 	}
 
+	/**
+	 * Delegate query processing to the configured {@link DatasetEngine}.
+	 * 
+	 * @param query
+	 *            received
+	 * @return http response containing the query results or an error.
+	 */
 	// TODO clean up error handling
 	private Response process(final String query) {
 		log.info("processing [{}]", query);
