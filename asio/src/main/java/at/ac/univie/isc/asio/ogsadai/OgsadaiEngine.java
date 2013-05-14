@@ -8,6 +8,9 @@ import static com.google.common.base.Strings.emptyToNull;
 
 import java.io.InputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import uk.org.ogsadai.activity.event.CompletionCallback;
 import uk.org.ogsadai.activity.workflow.Workflow;
 import uk.org.ogsadai.resource.ResourceID;
@@ -26,6 +29,9 @@ import com.google.common.util.concurrent.ListenableFuture;
  * @author Chris Borckholder
  */
 public class OgsadaiEngine implements DatasetEngine {
+
+	/* slf4j-logger */
+	final static Logger log = LoggerFactory.getLogger(OgsadaiEngine.class);
 
 	private final OgsadaiAdapter ogsadai;
 	private final FileResultRepository results;
@@ -55,7 +61,10 @@ public class OgsadaiEngine implements DatasetEngine {
 		validateQuery(query);
 		final ResultHandler handler = results.newHandler();
 		final String handlerId = ogsadai.register(handler);
+		log.trace("[{}] registered handler [{}] with exchanger", query,
+				handlerId);
 		final Workflow workflow = createWorkflow(query, handlerId);
+		log.trace("[{}] using workflow :\n{}", query, workflow);
 		final CompletionCallback tracker = delegateTo(handler);
 		try {
 			ogsadai.invoke(workflow, tracker);
