@@ -35,7 +35,7 @@ public class DeliverToStreamTest {
 	private DeliverToStreamActivity subject;
 	@Spy private final InputStream source = new ByteArrayInputStream(PAYLOAD);
 	@Spy private final ByteArrayOutputStream sink = new ByteArrayOutputStream();
-	@Mock private StreamExchanger exchanger;
+	@Mock private ObjectExchanger<OutputSupplier<OutputStream>> exchanger;
 	@Mock private OutputSupplier<OutputStream> supplier;
 
 	@Before

@@ -72,7 +72,7 @@
     
     <!-- stream registry for the DeliverToStreamActivity -->
     <bean id="at.ac.univie.isc.STREAM_EXCHANGER" 
-      class="uk.org.ogsadai.activity.delivery.StreamExchanger" />
+      class="uk.org.ogsadai.activity.delivery.ObjectExchanger" />
 
     <!-- request listening logger -->
     <!-- used also as monitoring framework to enable per request activity listeners -->

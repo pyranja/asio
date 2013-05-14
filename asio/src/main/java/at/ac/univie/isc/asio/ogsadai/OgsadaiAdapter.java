@@ -8,7 +8,7 @@ import java.io.OutputStream;
 
 import javax.annotation.concurrent.ThreadSafe;
 
-import uk.org.ogsadai.activity.delivery.StreamExchanger;
+import uk.org.ogsadai.activity.delivery.ObjectExchanger;
 import uk.org.ogsadai.activity.event.CompletionCallback;
 import uk.org.ogsadai.activity.event.RequestEventRouter;
 import uk.org.ogsadai.activity.workflow.Workflow;
@@ -34,7 +34,7 @@ import com.google.common.io.OutputSupplier;
  * <p>
  * Use an OGSADAI {@link DRER} to invoke requests. Through an installed
  * {@link RequestEventRouter} the status of submitted requests is tracked. A
- * shared {@link StreamExchanger} is used to pass result data sinks to OGSADAI
+ * shared {@link ObjectExchanger} is used to pass result data sinks to OGSADAI
  * delivery activities.
  * </p>
  * <p>
@@ -53,12 +53,13 @@ public class OgsadaiAdapter {
 	private static final String ID_QUALIFIER = "asio";
 
 	private final DRER drer;
-	private final StreamExchanger exchanger;
+	private final ObjectExchanger<OutputSupplier<OutputStream>> exchanger;
 	private final RequestEventRouter router;
 	private final IdGenerator ids;
 
 	@VisibleForTesting
-	OgsadaiAdapter(final DRER drer, final StreamExchanger exchanger,
+	OgsadaiAdapter(final DRER drer,
+			final ObjectExchanger<OutputSupplier<OutputStream>> exchanger,
 			final RequestEventRouter router, final IdGenerator ids) {
 		this.drer = drer;
 		this.exchanger = exchanger;
@@ -66,14 +67,15 @@ public class OgsadaiAdapter {
 		this.ids = ids;
 	}
 
-	OgsadaiAdapter(final DRER drer, final StreamExchanger exchanger,
+	OgsadaiAdapter(final DRER drer,
+			final ObjectExchanger<OutputSupplier<OutputStream>> exchanger,
 			final RequestEventRouter router) {
 		this(drer, exchanger, router, new RandomIdGenerator(ID_QUALIFIER));
 	}
 
 	/**
 	 * Attach the given stream supplier to the OGSADAI context. The returned id
-	 * can be used to retrieve the supplier from the {@link StreamExchanger} in
+	 * can be used to retrieve the supplier from the {@link ObjectExchanger} in
 	 * the OGSADAI context.
 	 * 
 	 * @param supplier

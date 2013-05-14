@@ -44,10 +44,10 @@ import com.google.common.io.OutputSupplier;
 
 /**
  * An activity that delivers data to an in-process {@link OutputStream}. This
- * activity requires an additional component, the {@link StreamExchanger}, to be
+ * activity requires an additional component, the {@link ObjectExchanger}, to be
  * setup and available under the id {@link #STREAM_EXCHANGER} from the
  * {@link OGSADAIContext}. The OutputStream to be used must be available from
- * the set StreamExchanger under the id given as input {@link #INPUT_STREAM_ID}
+ * the set ObjectExchanger under the id given as input {@link #INPUT_STREAM_ID}
  * to this activity.
  * <p>
  * Inputs:
@@ -55,7 +55,7 @@ import com.google.common.io.OutputSupplier;
  * <ul>
  * <li>
  * <code>streamId</code>. Type: {@link java.lang.String}. Id of the required
- * stream in the StreamExchanger.</li>
+ * stream in the ObjectExchanger.</li>
  * <code>input</code>. Type: One of OGSA-DAI list of <code>char[]</code>,
  * OGSA-DAI list of <code>byte[]</code>, {@link java.sql.Clob} or
  * {@link java.sql.Blob}. The data that will be streamed to the retrieved
@@ -85,9 +85,9 @@ import com.google.common.io.OutputSupplier;
  * <ul>
  * <li>
  * The activity attempts to retrieve the stream associated with the given id
- * from the {@link StreamExchanger} and writes the received input data to that
- * OutputStream. After the input data is exhausted or an error occured, both the
- * InputStream and OutputStream will be closed.</li>
+ * from the {@link ObjectExchanger} and writes the received input data to that
+ * OutputStream. After the input data is exhausted or an error occurred, both
+ * the InputStream and OutputStream will be closed.</li>
  * <li>
  * An <code>ActivityProcessingException</code> will be thrown if the given id
  * has no associated stream or an I/O error is encountered.</li>
@@ -112,19 +112,20 @@ public class DeliverToStreamActivity extends MatchedIterativeActivity {
 			"at.ac.univie.isc.STREAM_EXCHANGER");
 
 	// provides task id -> stream mappings
-	private final StreamExchanger streamProvider;
+	private final ObjectExchanger<OutputSupplier<OutputStream>> streamProvider;
 
 	/**
 	 * Retrieves the {@link VceOgsadaiConnector} on construction.
 	 */
+	@SuppressWarnings("unchecked")
 	public DeliverToStreamActivity() {
 		super();
-		streamProvider = (StreamExchanger) OGSADAIContext.getInstance().get(
-				STREAM_EXCHANGER);
+		streamProvider = (ObjectExchanger<OutputSupplier<OutputStream>>) OGSADAIContext
+				.getInstance().get(STREAM_EXCHANGER);
 	}
 
 	@VisibleForTesting
-	DeliverToStreamActivity(final StreamExchanger streamProvider) {
+	DeliverToStreamActivity(final ObjectExchanger<OutputSupplier<OutputStream>> streamProvider) {
 		super();
 		this.streamProvider = streamProvider;
 	}
