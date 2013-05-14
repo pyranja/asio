@@ -22,6 +22,14 @@ public class FileResultRepository {
 		this.root = root;
 	}
 
+	/**
+	 * Create a new {@link ResultHandler} that uses temporary files in the set
+	 * directory to store result data.
+	 * 
+	 * @return the created handler
+	 * @throws DatasetTransportException
+	 *             if file creation failed
+	 */
 	public ResultHandler newHandler() throws DatasetTransportException {
 		return new CompletionResultHandler(newResult());
 	}
@@ -37,6 +45,12 @@ public class FileResultRepository {
 		return new FileResult(resultFile);
 	}
 
+	/**
+	 * Delete the directory used by this repository and all of its contents.
+	 * 
+	 * @throws IOException
+	 *             encountered while deleting
+	 */
 	public void dispose() throws IOException {
 		Files.walkFileTree(root, new PurgeVisitor());
 	}

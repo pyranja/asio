@@ -7,7 +7,6 @@ package at.ac.univie.isc.asio;
  * @author Chris Borckholder
  */
 // XXX add dataset informations -> id ?
-// XXX use String.format for concatenation
 public abstract class DatasetException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;

@@ -27,14 +27,17 @@ import com.google.common.base.Optional;
  * If a {@link CompletionCallback} is registered for a request id, any change in
  * the request's status that signals the termination of the request is inspected
  * and the either the {@link CompletionCallback#complete()} or
- * {@link CompletionCallback#fail(Exception)} callback method are called. Once a
- * request either terminated, it will not be tracked anymore.
+ * {@link CompletionCallback#fail(Exception)} method are called. As soon as a
+ * request reached a terminal state, it will not be tracked anymore.
  * </p>
  * <p>
  * Additionally, if a request id is setup for tracking before the request is
- * created by OGSADAI, appropriate listeners are created with it, to also listen
- * for errors in its activities. If any activity encounters an error, it is
- * assumed that the request fails.
+ * created by OGSADAI, appropriate listeners are attached to it, which also
+ * listen for errors in its activities. If any activity encounters an error, it
+ * is assumed that the request is failing and
+ * {@link CompletionCallback#fail(Exception)} is called. Note that if multiple
+ * activities encounter errors, {@link CompletionCallback#fail(Exception)} may
+ * be called multiple times, until the request terminates.
  * </p>
  * 
  * @author Chris Borckholder

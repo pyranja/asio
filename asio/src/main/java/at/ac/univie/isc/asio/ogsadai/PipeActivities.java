@@ -12,7 +12,7 @@ import at.ac.univie.isc.asio.ogsadai.PipeElements.ProducerAndConsumer;
  * Collection of static factory methods for {@link Producer} and
  * {@link Consumer} in an OGSADAI pipeline workflow.
  * 
- * @author pyranja
+ * @author Chris Borckholder
  */
 public final class PipeActivities {
 

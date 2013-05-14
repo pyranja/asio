@@ -20,6 +20,11 @@ import at.ac.univie.isc.asio.transport.FileResultRepository;
 import com.google.common.io.InputSupplier;
 import com.google.common.util.concurrent.ListenableFuture;
 
+/**
+ * Defer DatasetOperations to an OGSADAI server instance.
+ * 
+ * @author Chris Borckholder
+ */
 public class OgsadaiEngine implements DatasetEngine {
 
 	private final OgsadaiAdapter ogsadai;
@@ -34,6 +39,16 @@ public class OgsadaiEngine implements DatasetEngine {
 		this.resource = resource;
 	}
 
+	/**
+	 * Create and invoke an OGSADAI {@link Workflow} which executes the query
+	 * asynchronously and provide the result data through the returned future.
+	 * This method will not throw exceptions but sets the execution state of the
+	 * returned {@link ListenableFuture} instead.
+	 * 
+	 * @param query
+	 *            to be executed
+	 * @return future holding result data or execution error
+	 */
 	@Override
 	public ListenableFuture<InputSupplier<InputStream>> submit(
 			final String query) {

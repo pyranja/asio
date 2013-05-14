@@ -1,8 +1,7 @@
 package at.ac.univie.isc.asio.ogsadai;
 
-
 /**
- * Generate string identifier.
+ * Generate string identifiers.
  * 
  * @author Chris Borckholder
  */

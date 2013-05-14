@@ -6,6 +6,8 @@ import static uk.org.ogsadai.resource.request.RequestExecutionStatus.UNSTARTED;
 
 import java.io.OutputStream;
 
+import javax.annotation.concurrent.ThreadSafe;
+
 import uk.org.ogsadai.activity.delivery.StreamExchanger;
 import uk.org.ogsadai.activity.event.CompletionCallback;
 import uk.org.ogsadai.activity.event.RequestEventRouter;
@@ -27,11 +29,25 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.OutputSupplier;
 
 /**
- * Use an OGSADAI {@link DRER} to create requests and retrieve the status of
- * submitted requests.
+ * Interact with an in-process OGSADAI instance to execute workflows
+ * asynchronously.
+ * <p>
+ * Use an OGSADAI {@link DRER} to invoke requests. Through an installed
+ * {@link RequestEventRouter} the status of submitted requests is tracked. A
+ * shared {@link StreamExchanger} is used to pass result data sinks to OGSADAI
+ * delivery activities.
+ * </p>
+ * <p>
+ * If a result sink has to be shared, it should be published through
+ * {@link #register(OutputSupplier)} <strong>before</strong> the workflow is
+ * passed to {@link #invoke(Workflow, CompletionCallback)}. If the request
+ * invocation fails, it should be invalidated through
+ * {@link #revokeSupplier(String)} to avoid memory leaks.
+ * </p>
  * 
  * @author Chris Borckholder
  */
+@ThreadSafe
 public class OgsadaiAdapter {
 
 	private static final String ID_QUALIFIER = "asio";
@@ -108,7 +124,6 @@ public class OgsadaiAdapter {
 			final ExecutionResult result = drer.execute(request);
 			verifyExecutionResponse(result, requestId);
 			return requestId;
-			// XXX do not throw here but let callback fail
 		} catch (final RequestException | RequestRejectedException e) {
 			router.stopTracking(requestId);
 			throw new DatasetFailureException(e);

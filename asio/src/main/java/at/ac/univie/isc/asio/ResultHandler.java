@@ -26,7 +26,7 @@ public interface ResultHandler extends OutputSupplier<OutputStream> {
 	 * 
 	 * @return OutputStream delivery stream
 	 * @throws IOException
-	 *             if stream retrievel failed
+	 *             if stream retrieval failed
 	 */
 	@Override
 	OutputStream getOutput() throws IOException;
