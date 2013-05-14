@@ -1,11 +1,12 @@
 package at.ac.univie.isc.asio.frontend;
 
+import static java.util.Collections.singleton;
 import static javax.ws.rs.core.Response.Status.fromStatusCode;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
@@ -22,6 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import at.ac.univie.isc.asio.DatasetException;
+import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
 import at.ac.univie.isc.asio.DatasetUsageException;
 
 import com.google.common.base.Charsets;
@@ -34,12 +36,23 @@ public class SqlQueryEndpointTest extends EndpointTestFixture {
 
 	private static final byte[] PAYLOAD = "TEST-PAYLOAD"
 			.getBytes(Charsets.UTF_8);
+	private static final SerializationFormat MOCK_FORMAT = new SerializationFormat() {
+		@Override
+		public com.google.common.net.MediaType asMediaType() {
+			return com.google.common.net.MediaType
+					.create("application", "test");
+		}
+	};
+	private static final MediaType MOCK_CONTENT_TYPE = MediaType
+			.valueOf("application/test");
 
 	private Response response;
 
 	@Before
 	public void setUp() {
-		client.path("query").accept(MediaType.APPLICATION_XML_TYPE);
+		when(engine.supportedFormats()).thenReturn(singleton(MOCK_FORMAT));
+		endpoint.initializeVariants();
+		client.path("query").accept(MOCK_CONTENT_TYPE);
 	}
 
 	@After
@@ -58,10 +71,10 @@ public class SqlQueryEndpointTest extends EndpointTestFixture {
 
 	@Test
 	public void success_response_has_requested_content_type() throws Exception {
-		client.reset().path("query").accept(MediaType.APPLICATION_XML_TYPE);
 		when(engine.submit("test-query")).thenReturn(successFuture());
 		response = client.query("query", "test-query").get();
-		assertEquals(MediaType.APPLICATION_XML_TYPE, response.getMediaType());
+		assertEquals(MediaType.valueOf("application/test"),
+				response.getMediaType());
 	}
 
 	@Test
@@ -103,7 +116,7 @@ public class SqlQueryEndpointTest extends EndpointTestFixture {
 		response = client.post("query");
 		assertEquals(Status.UNSUPPORTED_MEDIA_TYPE,
 				fromStatusCode(response.getStatus()));
-		verifyZeroInteractions(engine);
+		verify(engine, never()).submit(anyString());
 	}
 
 	@Test
@@ -112,7 +125,7 @@ public class SqlQueryEndpointTest extends EndpointTestFixture {
 		response = client.get();
 		assertEquals(Status.NOT_ACCEPTABLE,
 				fromStatusCode(response.getStatus()));
-		verifyZeroInteractions(engine);
+		verify(engine, never()).submit(anyString());
 	}
 
 	// ERROR PROPAGATION

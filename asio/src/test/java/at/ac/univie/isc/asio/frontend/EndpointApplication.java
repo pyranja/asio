@@ -21,15 +21,16 @@ import com.google.common.collect.ImmutableSet;
 public class EndpointApplication extends Application {
 
 	private final DatasetEngine mockEngine;
+	private final SqlQueryEndpoint endpoint;
 
 	EndpointApplication() {
 		super();
 		mockEngine = Mockito.mock(DatasetEngine.class);
+		endpoint = new SqlQueryEndpoint(mockEngine);
 	}
 
 	@Override
 	public Set<Object> getSingletons() {
-		final SqlQueryEndpoint endpoint = new SqlQueryEndpoint(mockEngine);
 		return ImmutableSet.<Object> of(endpoint);
 	}
 
@@ -38,5 +39,12 @@ public class EndpointApplication extends Application {
 	 */
 	public DatasetEngine getMockEngine() {
 		return mockEngine;
+	}
+
+	/**
+	 * @return the endpoint service instance
+	 */
+	public SqlQueryEndpoint getEndpoint() {
+		return endpoint;
 	}
 }

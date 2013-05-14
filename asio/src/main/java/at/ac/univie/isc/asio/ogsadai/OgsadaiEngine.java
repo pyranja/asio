@@ -7,6 +7,7 @@ import static at.ac.univie.isc.asio.ogsadai.PipeBuilder.pipe;
 import static com.google.common.base.Strings.emptyToNull;
 
 import java.io.InputStream;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +17,7 @@ import uk.org.ogsadai.activity.workflow.Workflow;
 import uk.org.ogsadai.resource.ResourceID;
 import at.ac.univie.isc.asio.DatasetEngine;
 import at.ac.univie.isc.asio.DatasetException;
+import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
 import at.ac.univie.isc.asio.DatasetUsageException;
 import at.ac.univie.isc.asio.ResultHandler;
 import at.ac.univie.isc.asio.transport.FileResultRepository;
@@ -43,6 +45,11 @@ public final class OgsadaiEngine implements DatasetEngine {
 		this.ogsadai = ogsadai;
 		this.results = results;
 		this.resource = resource;
+	}
+
+	@Override
+	public Set<SerializationFormat> supportedFormats() {
+		return OgsadaiFormats.asSet();
 	}
 
 	/**

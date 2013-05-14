@@ -5,6 +5,7 @@ import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static javax.ws.rs.core.Response.Status.Family.familyOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import javax.ws.rs.core.Response;
 
@@ -65,6 +66,6 @@ public class SqlQueryTest {
 
 	private void verify(final Response response) {
 		assertEquals(SUCCESSFUL, familyOf(response.getStatus()));
-		assertEquals(APPLICATION_XML_TYPE, response.getMediaType());
+		assertTrue(APPLICATION_XML_TYPE.isCompatible(response.getMediaType()));
 	}
 }
