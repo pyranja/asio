@@ -3,54 +3,32 @@
 
 	<groupId>at.ac.univie.isc</groupId>
 	<artifactId>vqs</artifactId>
-	<version>0.0.1-RELEASE</version>
-	<packaging>war</packaging>
+	<version>0.0.2-RELEASE</version>
+	<packaging>pom</packaging>
 
 	<name>Vienna Query Service</name>
 	<description>HTTP endpoint for querying dataset services</description>
 
+	<modules>
+		<module>asio</module>
+		<module>asio-server</module>
+	</modules>
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<version.compiler>1.7</version.compiler>
 		<version.cxf>2.7.4</version.cxf>
 		<version.spring>3.2.2.RELEASE</version.spring>
+		<version.ogsadai>4.1.0</version.ogsadai>
 	</properties>
 
 	<scm>
-		<!-- TODO change to gitorious@univie -->
-		<developerConnection>scm|git|git@gitorious.cs.univie.ac.at:vce/vqs.git</developerConnection>
-	  <tag>release-0.0.1</tag>
+		<developerConnection>scm:git|git@gitorious.cs.univie.ac.at:vce/vqs.git</developerConnection>
+	  <tag>release-0.0.2</tag>
   </scm>
 
-	<build>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.0</version>
-					<configuration>
-						<source>${version.compiler}</source>
-						<target>${version.compiler}</target>
-					</configuration>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-release-plugin</artifactId>
-					<version>2.4.1</version>
-				</plugin>
-				<plugin>
-					<groupId>org.eclipse.jetty</groupId>
-					<artifactId>jetty-maven-plugin</artifactId>
-					<version>9.0.0.M5</version>
-					<configuration>
-						<reload>manual</reload>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-	</build>
-
+	<!-- shared dependencies -->
 	<dependencies>
 		<!-- utils -->
 		<dependency>
@@ -62,58 +40,6 @@
 			<groupId>com.google.code.findbugs</groupId>
 			<artifactId>jsr305</artifactId>
 			<version>2.0.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>1.7.5</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.5</version>
-		</dependency>
-		<!-- ogsadai -->
-		<dependency>
-			<groupId>uk.org.ogsadai</groupId>
-			<artifactId>ogsadai-core</artifactId>
-			<version>4.1.0</version>
-			<type>pom</type>
-		</dependency>
-		<dependency>
-			<groupId>uk.org.ogsadai</groupId>
-			<artifactId>ogsadai-relational</artifactId>
-			<version>4.1.0</version>
-			<type>pom</type>
-		</dependency>
-		<!-- cxf jax-rs impl -->
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-frontend-jaxrs</artifactId>
-			<version>${version.cxf}</version>
-		</dependency>
-		<!-- spring components required by cxf -->
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
-			<version>${version.spring}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context</artifactId>
-			<version>${version.spring}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-web</artifactId>
-			<version>${version.spring}</version>
-		</dependency>
-		<!-- provided servlet api -->
-		<dependency>
-			<groupId>org.apache.tomcat</groupId>
-			<artifactId>servlet-api</artifactId>
-			<version>6.0.36</version>
-			<scope>provided</scope>
 		</dependency>
 		<!-- test -->
 		<dependency>
@@ -129,4 +55,64 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.0</version>
+					<configuration>
+						<source>${version.compiler}</source>
+						<target>${version.compiler}</target>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>2.14.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>2.4.1</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>2.6</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.9</version>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>findbugs-maven-plugin</artifactId>
+				<version>2.5.2</version>
+				<configuration>
+					<xmlOutput>true</xmlOutput>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>cobertura-maven-plugin</artifactId>
+				<version>2.5.2</version>
+				<configuration>
+					<formats>
+						<format>html</format>
+						<format>xml</format>
+					</formats>
+				</configuration>
+			</plugin>
+		</plugins>
+	</reporting>
 </project>
