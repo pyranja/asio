@@ -11,7 +11,7 @@
   </appender>
 
   <logger name="at.ac.univie.isc">
-    <level value="trace" /> 
+    <level value="info" /> 
   </logger>
   
   <logger name="uk.org.ogsadai">
