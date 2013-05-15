@@ -17,7 +17,7 @@ import com.google.common.util.concurrent.SettableFuture;
  * 
  * @author Chris Borckholder
  */
-public class CompletionResultHandler implements ResultHandler {
+public final class CompletionResultHandler implements ResultHandler {
 
 	private final Buffer buffer;
 	private final SettableFuture<InputSupplier<InputStream>> future;

@@ -24,6 +24,8 @@ import uk.org.ogsadai.resource.request.SimpleCandidateRequestDescriptor;
 import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.DatasetFailureException;
 import at.ac.univie.isc.asio.DatasetUsageException;
+import at.ac.univie.isc.asio.common.IdGenerator;
+import at.ac.univie.isc.asio.common.RandomIdGenerator;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.OutputSupplier;
@@ -70,7 +72,8 @@ public class OgsadaiAdapter {
 	OgsadaiAdapter(final DRER drer,
 			final ObjectExchanger<OutputSupplier<OutputStream>> exchanger,
 			final RequestEventRouter router) {
-		this(drer, exchanger, router, new RandomIdGenerator(ID_QUALIFIER));
+		this(drer, exchanger, router, RandomIdGenerator
+				.withPrefix(ID_QUALIFIER));
 	}
 
 	/**

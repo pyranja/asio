@@ -28,7 +28,7 @@ import com.google.common.util.concurrent.ListenableFuture;
  * 
  * @author Chris Borckholder
  */
-public class OgsadaiEngine implements DatasetEngine {
+public final class OgsadaiEngine implements DatasetEngine {
 
 	/* slf4j-logger */
 	final static Logger log = LoggerFactory.getLogger(OgsadaiEngine.class);

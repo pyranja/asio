@@ -14,7 +14,7 @@ import at.ac.univie.isc.asio.ogsadai.PipeElements.ProducerAndConsumer;
  * 
  * @author Chris Borckholder
  */
-public class PipeBuilder {
+public final class PipeBuilder {
 
 	/**
 	 * Start the creation of a pipeline workflow.

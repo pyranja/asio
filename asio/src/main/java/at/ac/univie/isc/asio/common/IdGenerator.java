@@ -1,4 +1,4 @@
-package at.ac.univie.isc.asio.ogsadai;
+package at.ac.univie.isc.asio.common;
 
 /**
  * Generate string identifiers.

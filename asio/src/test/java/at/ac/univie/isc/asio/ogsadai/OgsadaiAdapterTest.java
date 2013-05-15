@@ -35,6 +35,7 @@ import uk.org.ogsadai.resource.request.CandidateRequestDescriptor;
 import uk.org.ogsadai.resource.request.RequestStatus;
 import at.ac.univie.isc.asio.DatasetFailureException;
 import at.ac.univie.isc.asio.DatasetUsageException;
+import at.ac.univie.isc.asio.common.IdGenerator;
 
 import com.google.common.io.OutputSupplier;
 

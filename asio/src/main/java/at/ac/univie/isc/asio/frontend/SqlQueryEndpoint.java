@@ -31,7 +31,7 @@ import com.google.common.util.concurrent.ListenableFuture;
  */
 @Path("/query/")
 @Produces(MediaType.APPLICATION_XML)
-public class SqlQueryEndpoint {
+public final class SqlQueryEndpoint {
 
 	/* slf4j-logger */
 	final static Logger log = LoggerFactory.getLogger(SqlQueryEndpoint.class);
