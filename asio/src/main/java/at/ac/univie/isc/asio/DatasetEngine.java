@@ -1,11 +1,9 @@
 package at.ac.univie.isc.asio;
 
-import java.io.InputStream;
 import java.util.Set;
 
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
 
-import com.google.common.io.InputSupplier;
 import com.google.common.util.concurrent.ListenableFuture;
 
 /**
@@ -30,11 +28,11 @@ public interface DatasetEngine {
 	 *            to be executed
 	 * @return future holding the result data or errors encountered
 	 */
-	ListenableFuture<InputSupplier<InputStream>> submit(
-			DatasetOperation operation);
+	ListenableFuture<Result> submit(DatasetOperation operation);
 
 	/**
-	 * @return all {@link SerializationFormat}s supported by this engine.
+	 * @return all {@link SerializationFormat result formats} supported by this
+	 *         engine.
 	 */
 	Set<SerializationFormat> supportedFormats();
 }

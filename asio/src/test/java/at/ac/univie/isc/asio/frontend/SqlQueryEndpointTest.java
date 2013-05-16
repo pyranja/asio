@@ -29,12 +29,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
-import at.ac.univie.isc.asio.common.MockSerializationFormat;
 import at.ac.univie.isc.asio.DatasetUsageException;
+import at.ac.univie.isc.asio.Result;
+import at.ac.univie.isc.asio.common.MockSerializationFormat;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.ByteStreams;
-import com.google.common.io.InputSupplier;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 
@@ -183,13 +183,17 @@ public class SqlQueryEndpointTest extends EndpointTestFixture {
 		assertEquals(cause.getMessage(), received);
 	}
 
-	private ListenableFuture<InputSupplier<InputStream>> successFuture() {
-		final SettableFuture<InputSupplier<InputStream>> future = SettableFuture
-				.create();
-		future.set(new InputSupplier<InputStream>() {
+	private ListenableFuture<Result> successFuture() {
+		final SettableFuture<Result> future = SettableFuture.create();
+		future.set(new Result() {
 			@Override
 			public InputStream getInput() throws IOException {
 				return new ByteArrayInputStream(PAYLOAD);
+			}
+
+			@Override
+			public com.google.common.net.MediaType mediaType() {
+				return MOCK_FORMAT.asMediaType();
 			}
 		});
 		return future;

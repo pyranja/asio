@@ -1,6 +1,5 @@
 package at.ac.univie.isc.asio.frontend;
 
-import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,12 +26,12 @@ import at.ac.univie.isc.asio.DatasetEngine;
 import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
 import at.ac.univie.isc.asio.DatasetUsageException;
+import at.ac.univie.isc.asio.Result;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
-import com.google.common.io.InputSupplier;
 import com.google.common.util.concurrent.ListenableFuture;
 
 /**
@@ -131,15 +130,13 @@ public final class SqlQueryEndpoint {
 		try {
 			final DatasetOperation operation = DatasetOperation.query(query,
 					format);
-			final ListenableFuture<InputSupplier<InputStream>> result = engine
-					.submit(operation);
+			final ListenableFuture<Result> future = engine.submit(operation);
 			try {
-				final InputSupplier<InputStream> resultData = result.get();
+				final Result result = future.get();
 				log.info("processed [{}] successfully", query);
-				final MediaType responseFormat = converter.asContentType(format
-						.asMediaType());
-				return Response.ok(resultData.getInput(), responseFormat)
-						.build();
+				final MediaType responseFormat = converter.asContentType(result
+						.mediaType());
+				return Response.ok(result.getInput(), responseFormat).build();
 			} catch (final ExecutionException e) {
 				final Throwable cause = e.getCause();
 				log.warn("processing [{}] failed with {} as cause", query,

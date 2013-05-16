@@ -1,10 +1,8 @@
 package at.ac.univie.isc.asio;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.google.common.io.InputSupplier;
 import com.google.common.io.OutputSupplier;
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -51,5 +49,5 @@ public interface ResultHandler extends OutputSupplier<OutputStream> {
 	 * 
 	 * @return a future that represents the delivery of this result.
 	 */
-	ListenableFuture<InputSupplier<InputStream>> asFutureResult();
+	ListenableFuture<Result> asFutureResult();
 }

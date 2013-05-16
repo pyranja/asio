@@ -6,7 +6,6 @@ import static at.ac.univie.isc.asio.ogsadai.PipeActivities.tupleToWebRowSetCharA
 import static at.ac.univie.isc.asio.ogsadai.PipeBuilder.pipe;
 import static com.google.common.base.Strings.emptyToNull;
 
-import java.io.InputStream;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -20,11 +19,11 @@ import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
 import at.ac.univie.isc.asio.DatasetUsageException;
+import at.ac.univie.isc.asio.Result;
 import at.ac.univie.isc.asio.ResultHandler;
 import at.ac.univie.isc.asio.transport.FileResultRepository;
 
 import com.google.common.base.Optional;
-import com.google.common.io.InputSupplier;
 import com.google.common.util.concurrent.ListenableFuture;
 
 /**
@@ -65,18 +64,17 @@ public final class OgsadaiEngine implements DatasetEngine {
 	 * @return future holding result data or execution error
 	 */
 	@Override
-	public ListenableFuture<InputSupplier<InputStream>> submit(
-			final DatasetOperation operation) {
+	public ListenableFuture<Result> submit(final DatasetOperation operation) {
 		final String query = validateQuery(operation.command());
-		final ResultHandler handler = results.newHandler();
+		final ResultHandler handler = results.newHandler(operation.format());
 		final String handlerId = ogsadai.register(handler);
 		log.trace("[{}] registered handler [{}] with exchanger", query,
 				handlerId);
 		final Workflow workflow = createWorkflow(query, handlerId);
 		log.trace("[{}] using workflow :\n{}", query, workflow);
-		final CompletionCallback tracker = delegateTo(handler);
+		final CompletionCallback callback = delegateTo(handler);
 		try {
-			ogsadai.invoke(workflow, tracker);
+			ogsadai.invoke(workflow, callback);
 		} catch (final DatasetException cause) {
 			// clean up exchange
 			ogsadai.revokeSupplier(handlerId);
