@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import at.ac.univie.isc.asio.DatasetEngine;
+import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
 import at.ac.univie.isc.asio.DatasetUsageException;
 
@@ -128,8 +129,10 @@ public final class SqlQueryEndpoint {
 		final SerializationFormat format = matchFormat(request);
 		log.debug("selected {}", format);
 		try {
+			final DatasetOperation operation = DatasetOperation.query(query,
+					format);
 			final ListenableFuture<InputSupplier<InputStream>> result = engine
-					.submit(query);
+					.submit(operation);
 			try {
 				final InputSupplier<InputStream> resultData = result.get();
 				log.info("processed [{}] successfully", query);

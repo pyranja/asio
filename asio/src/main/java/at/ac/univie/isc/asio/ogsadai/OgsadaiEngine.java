@@ -17,11 +17,13 @@ import uk.org.ogsadai.activity.workflow.Workflow;
 import uk.org.ogsadai.resource.ResourceID;
 import at.ac.univie.isc.asio.DatasetEngine;
 import at.ac.univie.isc.asio.DatasetException;
+import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
 import at.ac.univie.isc.asio.DatasetUsageException;
 import at.ac.univie.isc.asio.ResultHandler;
 import at.ac.univie.isc.asio.transport.FileResultRepository;
 
+import com.google.common.base.Optional;
 import com.google.common.io.InputSupplier;
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -64,8 +66,8 @@ public final class OgsadaiEngine implements DatasetEngine {
 	 */
 	@Override
 	public ListenableFuture<InputSupplier<InputStream>> submit(
-			final String query) {
-		validateQuery(query);
+			final DatasetOperation operation) {
+		final String query = validateQuery(operation.command());
 		final ResultHandler handler = results.newHandler();
 		final String handlerId = ogsadai.register(handler);
 		log.trace("[{}] registered handler [{}] with exchanger", query,
@@ -107,9 +109,11 @@ public final class OgsadaiEngine implements DatasetEngine {
 				tupleToWebRowSetCharArrays()).finish(deliverToStream(streamId));
 	}
 
-	private void validateQuery(final String query) {
+	private String validateQuery(final Optional<String> maybeQuery) {
+		final String query = maybeQuery.orNull();
 		if (emptyToNull(query) == null) {
 			throw new DatasetUsageException("invalid query \"" + query + "\"");
 		}
+		return query;
 	}
 }

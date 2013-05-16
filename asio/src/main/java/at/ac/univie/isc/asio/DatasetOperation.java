@@ -14,6 +14,20 @@ import com.google.common.net.MediaType;
 public class DatasetOperation {
 
 	/**
+	 * Create a QUERY dataset operation
+	 * 
+	 * @param query
+	 *            to be executed
+	 * @param format
+	 *            for result rendering
+	 * @return the parameterized operation
+	 */
+	public static DatasetOperation query(final String query,
+			final SerializationFormat format) {
+		return new DatasetOperation(query, format);
+	}
+
+	/**
 	 * Marker interface for result output media types.
 	 * 
 	 * @author Chris Borckholder
