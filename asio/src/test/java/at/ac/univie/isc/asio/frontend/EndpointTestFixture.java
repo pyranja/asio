@@ -55,11 +55,13 @@ public class EndpointTestFixture {
 
 	protected WebClient client;
 	protected DatasetEngine engine;
+	protected SqlQueryEndpoint endpoint;
 
 	@Before
 	public void prepareClientAndMock() {
 		client = WebClient.create(SERVER_URI);
 		engine = application.getMockEngine();
+		endpoint = application.getEndpoint();
 	}
 
 	@After

@@ -1,8 +1,13 @@
 package at.ac.univie.isc.asio.ogsadai;
 
+import static uk.org.ogsadai.activity.delivery.DeliverToStreamActivity.INPUT_STREAM_ID;
+import static uk.org.ogsadai.activity.transform.TupleToCSVActivity.INPUT_FIELDSESCAPED;
+import static uk.org.ogsadai.activity.transform.TupleToCSVActivity.INPUT_HEADERINCLUDED;
 import uk.org.ogsadai.activity.pipeline.ActivityDescriptor;
 import uk.org.ogsadai.activity.pipeline.ActivityInputLiteral;
+import uk.org.ogsadai.activity.pipeline.Literal;
 import uk.org.ogsadai.activity.pipeline.SimpleActivityDescriptor;
+import uk.org.ogsadai.activity.pipeline.SimpleLiteral;
 import uk.org.ogsadai.resource.ResourceID;
 import at.ac.univie.isc.asio.ogsadai.PipeElements.Consumer;
 import at.ac.univie.isc.asio.ogsadai.PipeElements.Producer;
@@ -15,6 +20,16 @@ import at.ac.univie.isc.asio.ogsadai.PipeElements.ProducerAndConsumer;
  * @author Chris Borckholder
  */
 public final class PipeActivities {
+
+	// LITERALS
+	// must use generator methods here, as literals are mutated while processing
+	private static Literal TRUE() {
+		return new SimpleLiteral(true);
+	}
+
+	private static Literal FALSE() {
+		return new SimpleLiteral(false);
+	}
 
 	// PRODUCER
 	private static final String SQL_QUERY_ACTIVITY = "uk.org.ogsadai.SQLQuery";
@@ -40,7 +55,8 @@ public final class PipeActivities {
 	public static ProducerAndConsumer tupleToCsv() {
 		final ActivityDescriptor product = new SimpleActivityDescriptor(
 				CSV_TRANSFORMER_ACTIVITY);
-		product.addInput(new ActivityInputLiteral("includeHeader", "true"));
+		product.addInput(new ActivityInputLiteral(INPUT_HEADERINCLUDED, TRUE()));
+		product.addInput(new ActivityInputLiteral(INPUT_FIELDSESCAPED, TRUE()));
 		return PipeElements.both(product, "data", "result");
 	}
 
@@ -58,7 +74,7 @@ public final class PipeActivities {
 	public static Consumer deliverToStream(final String streamId) {
 		final ActivityDescriptor product = new SimpleActivityDescriptor(
 				STREAM_DELIVERY);
-		product.addInput(new ActivityInputLiteral("streamId", streamId));
+		product.addInput(new ActivityInputLiteral(INPUT_STREAM_ID, streamId));
 		return PipeElements.consumer(product, "input");
 	}
 

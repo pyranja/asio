@@ -23,6 +23,7 @@ import uk.org.ogsadai.exception.RequestProcessingException;
 import uk.org.ogsadai.exception.RequestTerminatedException;
 import uk.org.ogsadai.resource.ResourceID;
 import uk.org.ogsadai.resource.request.RequestExecutionStatus;
+import at.ac.univie.isc.asio.test.MockDaiException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RequestEventRouterTest {
@@ -84,7 +85,7 @@ public class RequestEventRouterTest {
 	@Test
 	public void propagates_request_exception() throws Exception {
 		subject.track(REQUEST, tracker);
-		final DAIException cause = new MockDaiException("test cause");
+		final DAIException cause = new MockDaiException();
 		subject.requestErrorEvent(REQUEST, cause);
 		verify(tracker).fail(cause);
 	}
@@ -118,7 +119,7 @@ public class RequestEventRouterTest {
 				RequestExecutionStatus.COMPLETED);
 		subject.requestExecutionStatusEvent(REQUEST,
 				RequestExecutionStatus.TERMINATED);
-		subject.requestErrorEvent(REQUEST, new MockDaiException(null));
+		subject.requestErrorEvent(REQUEST, new MockDaiException());
 		verifyZeroInteractions(tracker);
 	}
 
@@ -141,10 +142,10 @@ public class RequestEventRouterTest {
 	@Test
 	public void does_not_forward_after_stopping_tracking() throws Exception {
 		subject.track(REQUEST, tracker);
-		subject.requestErrorEvent(REQUEST, new MockDaiException(null));
+		subject.requestErrorEvent(REQUEST, new MockDaiException());
 		Mockito.verify(tracker).fail(any(Exception.class));
 		assertTrue(subject.stopTracking(REQUEST).isPresent());
-		subject.requestErrorEvent(REQUEST, new MockDaiException(null));
+		subject.requestErrorEvent(REQUEST, new MockDaiException());
 		Mockito.verifyNoMoreInteractions(tracker);
 	}
 
