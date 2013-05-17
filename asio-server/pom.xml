@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -110,10 +111,10 @@
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<version>2.14.1</version>
 				<configuration>
-				  <failIfNoTests>true</failIfNoTests>
-				  <includes>
-				    <include>**/*.java</include>
-				  </includes>
+					<failIfNoTests>true</failIfNoTests>
+					<includes>
+						<include>**/*.java</include>
+					</includes>
 					<groups>at.ac.univie.isc.asio.IntegrationTest</groups>
 				</configuration>
 				<executions>
@@ -133,6 +134,19 @@
 				<configuration>
 					<monitorKey>inmemdb</monitorKey>
 					<monitorPort>11527</monitorPort>
+					<daemon>true</daemon>
+					<type>h2</type>
+					<database>test</database>
+					<username>root</username>
+					<password>change</password>
+					<sources>
+						<script>
+							<sourceFile>${basedir}/src/test/resources/database/create_db.sql</sourceFile>
+						</script>
+						<dataSet>
+							<sourceFile>${basedir}/src/test/resources/database/fill_person.sql</sourceFile>
+						</dataSet>
+					</sources>
 				</configuration>
 				<executions>
 					<execution>
@@ -141,20 +155,8 @@
 						<goals>
 							<goal>run</goal>
 						</goals>
-						<configuration>
-							<daemon>true</daemon>
-							<type>h2</type>
-							<database>test</database>
-							<username>root</username>
-							<password>change</password>
-							<sources>
-								<script>
-									<sourceFile>${basedir}/src/test/resources/database/create_db.sql</sourceFile>
-								</script>
-								<dataSet>
-									<sourceFile>${basedir}/src/test/resources/database/fill_person.sql</sourceFile>
-								</dataSet>
-							</sources>
+						<configuration> 
+						  <daemon>true</daemon>
 						</configuration>
 					</execution>
 					<execution>

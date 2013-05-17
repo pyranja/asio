@@ -2,6 +2,7 @@ package at.ac.univie.isc.asio.ogsadai;
 
 import static at.ac.univie.isc.asio.ogsadai.PipeActivities.deliverToStream;
 import static at.ac.univie.isc.asio.ogsadai.PipeActivities.sqlQuery;
+import static at.ac.univie.isc.asio.ogsadai.PipeActivities.tupleToCsv;
 import static at.ac.univie.isc.asio.ogsadai.PipeActivities.tupleToWebRowSetCharArrays;
 import static at.ac.univie.isc.asio.ogsadai.PipeBuilder.pipe;
 import static com.google.common.base.Strings.emptyToNull;
@@ -70,7 +71,8 @@ public final class OgsadaiEngine implements DatasetEngine {
 		final String handlerId = ogsadai.register(handler);
 		log.trace("[{}] registered handler [{}] with exchanger", query,
 				handlerId);
-		final Workflow workflow = createWorkflow(query, handlerId);
+		final Workflow workflow = createWorkflow(query, operation.format(),
+				handlerId);
 		log.trace("[{}] using workflow :\n{}", query, workflow);
 		final CompletionCallback callback = delegateTo(handler);
 		try {
@@ -102,9 +104,18 @@ public final class OgsadaiEngine implements DatasetEngine {
 		};
 	}
 
-	private Workflow createWorkflow(final String query, final String streamId) {
-		return pipe(sqlQuery(resource, query)).into(
-				tupleToWebRowSetCharArrays()).finish(deliverToStream(streamId));
+	// TODO extract to WorkflowComposer class
+	private Workflow createWorkflow(final String query,
+			final SerializationFormat format, final String streamId) {
+		final PipeBuilder pipe = pipe(sqlQuery(resource, query));
+		if (format == OgsadaiFormats.XML) {
+			pipe.into(tupleToWebRowSetCharArrays());
+		} else if (format == OgsadaiFormats.CSV) {
+			pipe.into(tupleToCsv());
+		} else {
+			throw new AssertionError("encountered unknown format " + format);
+		}
+		return pipe.finish(deliverToStream(streamId));
 	}
 
 	private String validateQuery(final Optional<String> maybeQuery) {

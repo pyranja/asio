@@ -31,7 +31,7 @@ import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
 import at.ac.univie.isc.asio.DatasetUsageException;
 import at.ac.univie.isc.asio.Result;
-import at.ac.univie.isc.asio.common.MockSerializationFormat;
+import at.ac.univie.isc.asio.test.MockSerializationFormat;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.ByteStreams;
