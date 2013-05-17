@@ -68,6 +68,15 @@ public class EventAcceptorTest {
 		subject.handleStateAndStop(COMPLETED_WITH_ERROR);
 	}
 
+	@Test(expected = AssertionError.class)
+	public void propagate_fail_on_illegal_status() throws Exception {
+		try {
+			subject.handleStateAndStop(COMPLETED_WITH_ERROR);
+		} finally {
+			verify(delegate).fail(any(DAIException.class));
+		}
+	}
+
 	@Test
 	public void propagates_errors() throws Exception {
 		final DAIException cause = new MockDaiException("test error");
