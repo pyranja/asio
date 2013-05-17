@@ -38,12 +38,14 @@ import com.google.common.io.ByteStreams;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 
+// TODO test operation type aware formats
 @RunWith(MockitoJUnitRunner.class)
 public class SqlQueryEndpointTest extends EndpointTestFixture {
 
 	private static final byte[] PAYLOAD = "TEST-PAYLOAD"
 			.getBytes(Charsets.UTF_8);
 	private static final SerializationFormat MOCK_FORMAT = new MockSerializationFormat();
+	// XXX move to MockSerializationFormat ?
 	private static final MediaType MOCK_CONTENT_TYPE = MediaType
 			.valueOf("application/test");
 

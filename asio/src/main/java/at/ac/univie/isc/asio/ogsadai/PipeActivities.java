@@ -41,6 +41,15 @@ public final class PipeActivities {
 		return PipeElements.producer(product, "data");
 	}
 
+	private static final String SQL_SCHEMA_ACTIVITY = "uk.org.ogsadai.ExtractTableSchema";
+
+	public static Producer extractSchema(final ResourceID target) {
+		final ActivityDescriptor product = new SimpleActivityDescriptor(target,
+				SQL_SCHEMA_ACTIVITY);
+		product.addInput(new ActivityInputLiteral("name", "%"));// wildcard
+		return PipeElements.producer(product, "data");
+	}
+
 	// BOTH
 	private static final String WEBROWSET_TRANSFORMER_ACTIVITY = "uk.org.ogsadai.TupleToWebRowSetCharArrays";
 
@@ -57,6 +66,14 @@ public final class PipeActivities {
 				CSV_TRANSFORMER_ACTIVITY);
 		product.addInput(new ActivityInputLiteral(INPUT_HEADERINCLUDED, TRUE()));
 		product.addInput(new ActivityInputLiteral(INPUT_FIELDSESCAPED, TRUE()));
+		return PipeElements.both(product, "data", "result");
+	}
+
+	private static final String XML_TABLEMETADATA_TRANSFORMER_ACTIVITY = "uk.org.ogsadai.TableMetadataToXMLCharArraysList";
+
+	public static ProducerAndConsumer metadataToXml() {
+		final ActivityDescriptor product = new SimpleActivityDescriptor(
+				XML_TABLEMETADATA_TRANSFORMER_ACTIVITY);
 		return PipeElements.both(product, "data", "result");
 	}
 
