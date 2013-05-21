@@ -8,8 +8,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URI;
+import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -17,7 +17,7 @@ import javax.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.jaxrs.ext.form.Form;
 import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -26,9 +26,11 @@ import org.slf4j.LoggerFactory;
 
 import at.ac.univie.isc.asio.FunctionalTest;
 import at.ac.univie.isc.asio.JaxrsClientProvider;
+import at.ac.univie.isc.asio.converter.CsvToMap;
+import at.ac.univie.isc.asio.converter.ResultSetToMap;
+import at.ac.univie.isc.asio.sql.KeyedRow;
 
 import com.google.common.base.Charsets;
-import com.google.common.io.CharStreams;
 
 @Category(FunctionalTest.class)
 public class SqlQueryTest {
@@ -42,20 +44,25 @@ public class SqlQueryTest {
 	private static final String PARAM_QUERY = "query";
 	private static final String COUNT_QUERY = "SELECT COUNT(*) FROM person";
 	private static final String SCAN_QUERY = "SELECT * FROM person";
-
-	private static final String PERSON_CSV_REFERENCE = "/reference/person_full.csv";
-	private static final String PERSON_XML_REFERENCE = "/reference/person_full.xml";
+	private static final String SCAN_PK_LABEL = "ID";
 
 	private static final MediaType CSV = MediaType.valueOf("text/csv")
 			.withCharset(Charsets.UTF_8.name());
 	private static final MediaType XML = MediaType.APPLICATION_XML_TYPE
 			.withCharset(Charsets.UTF_8.name());
 
+	private static ReferenceQuery EXPECTED;
+
 	private WebClient client;
 	private Response response;
 
 	@Rule public JaxrsClientProvider provider = new JaxrsClientProvider(
 			SERVER_URL);
+
+	@BeforeClass
+	public static void fetchReferenceData() {
+		EXPECTED = ReferenceQuery.forQuery(SCAN_QUERY, SCAN_PK_LABEL);
+	}
 
 	@Before
 	public void setUp() {
@@ -85,45 +92,41 @@ public class SqlQueryTest {
 		verify(response);
 	}
 
-	@Ignore
 	@Test
 	public void delivers_csv() throws Exception {
 		client.accept(CSV).query(PARAM_QUERY, SCAN_QUERY);
 		response = client.get();
 		assertEquals(SUCCESSFUL, familyOf(response.getStatus()));
 		assertTrue(CSV.isCompatible(response.getMediaType()));
-		final InputStream content = (InputStream) response.getEntity();
-		final String contentText = CharStreams.toString(new InputStreamReader(
-				content, "UTF-8"));
-		final InputStream expected = this.getClass().getResourceAsStream(
-				PERSON_CSV_REFERENCE);
-		final String expectedText = CharStreams.toString(new InputStreamReader(
-				expected, "UTF-8"));
+		final Map<String, KeyedRow> results = CsvToMap.convertStream(
+				(InputStream) response.getEntity(), SCAN_PK_LABEL);
 		assertEquals("response body not matching expected query result",
-				expectedText, contentText);
+				EXPECTED.getReference(), results);
 	}
 
-	@Ignore
 	@Test
 	public void delivers_xml() throws Exception {
-		client.accept(MediaType.APPLICATION_XML).query(PARAM_QUERY, SCAN_QUERY);
+		client.accept(XML).query(PARAM_QUERY, SCAN_QUERY);
 		response = client.get();
 		assertEquals(SUCCESSFUL, familyOf(response.getStatus()));
 		assertTrue(XML.isCompatible(response.getMediaType()));
-		final InputStream content = (InputStream) response.getEntity();
-		final String contentText = CharStreams.toString(new InputStreamReader(
-				content, "UTF-8"));
-		final InputStream expected = this.getClass().getResourceAsStream(
-				PERSON_XML_REFERENCE);
-		final String expectedText = CharStreams.toString(new InputStreamReader(
-				expected, "UTF-8"));
+		final Map<String, KeyedRow> results = ResultSetToMap.convertStream(
+				(InputStream) response.getEntity(), SCAN_PK_LABEL);
 		assertEquals("response body not matching expected query result",
-				expectedText, contentText);
+				EXPECTED.getReference(), results);
 	}
 
 	@Test
 	public void bad_query_parameter() throws Exception {
 		client.accept(APPLICATION_XML_TYPE).query(PARAM_QUERY, "");
+		response = client.get();
+		assertEquals(CLIENT_ERROR, familyOf(response.getStatus()));
+	}
+
+	@Test
+	public void inacceptable_media_type() throws Exception {
+		client.accept(MediaType.valueOf("test/notexisting")).query(PARAM_QUERY,
+				COUNT_QUERY);
 		response = client.get();
 		assertEquals(CLIENT_ERROR, familyOf(response.getStatus()));
 	}

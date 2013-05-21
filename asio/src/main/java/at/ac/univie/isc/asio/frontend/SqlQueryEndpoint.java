@@ -134,9 +134,9 @@ public final class SqlQueryEndpoint {
 			try {
 				final Result result = future.get();
 				log.info("processed [{}] successfully", query);
-				final MediaType responseFormat = converter.asContentType(result
+				final MediaType contentType = converter.asContentType(result
 						.mediaType());
-				return Response.ok(result.getInput(), responseFormat).build();
+				return Response.ok(result.getInput(), contentType).build();
 			} catch (final ExecutionException e) {
 				final Throwable cause = e.getCause();
 				log.warn("processing [{}] failed with {} as cause", query,

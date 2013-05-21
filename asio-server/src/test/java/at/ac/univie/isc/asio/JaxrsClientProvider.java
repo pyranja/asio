@@ -42,6 +42,9 @@ public class JaxrsClientProvider extends TestWatcher {
 		}
 		log.error("{} failed with {} on\n{}", description, e.getMessage(),
 				responseText);
+		if (e instanceof Exception) { // not an assertion error -> log all
+			log.error("{} failed with internal error", description, e);
+		}
 	}
 
 	@Override
