@@ -21,7 +21,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import uk.org.ogsadai.exception.DAIException;
 import uk.org.ogsadai.exception.RequestTerminatedException;
-import at.ac.univie.isc.asio.test.MockDaiException;
+import at.ac.univie.isc.asio.MockDaiException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EventAcceptorTest {

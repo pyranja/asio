@@ -31,7 +31,7 @@ public class EndpointTestFixture {
 	// standalone servlet container setup
 
 	private static Server server;
-	private static EndpointApplication application;
+	protected static EndpointApplication application;
 
 	@BeforeClass
 	public static void initialize() {
@@ -55,13 +55,11 @@ public class EndpointTestFixture {
 
 	protected WebClient client;
 	protected DatasetEngine engine;
-	protected SqlQueryEndpoint endpoint;
 
 	@Before
 	public void prepareClientAndMock() {
 		client = WebClient.create(SERVER_URI);
 		engine = application.getMockEngine();
-		endpoint = application.getEndpoint();
 	}
 
 	@After

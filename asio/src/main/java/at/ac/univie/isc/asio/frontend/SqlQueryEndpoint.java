@@ -26,6 +26,7 @@ import at.ac.univie.isc.asio.DatasetEngine;
 import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
 import at.ac.univie.isc.asio.DatasetUsageException;
+import at.ac.univie.isc.asio.OperationFactory;
 import at.ac.univie.isc.asio.Result;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -48,13 +49,16 @@ public final class SqlQueryEndpoint {
 	private static final String PARAM_QUERY = "query";
 
 	private final DatasetEngine engine;
+	private final OperationFactory create;
 	private final VariantConverter converter;
 
 	private Map<Variant, SerializationFormat> variant2format;
 
-	public SqlQueryEndpoint(final DatasetEngine engine) {
+	public SqlQueryEndpoint(final DatasetEngine engine,
+			final OperationFactory create) {
 		super();
 		this.engine = engine;
+		this.create = create;
 		converter = VariantConverter.getInstance();
 		initializeVariants();
 	}
@@ -128,8 +132,7 @@ public final class SqlQueryEndpoint {
 		final SerializationFormat format = matchFormat(request);
 		log.debug("selected {}", format);
 		try {
-			final DatasetOperation operation = DatasetOperation.query(query,
-					format);
+			final DatasetOperation operation = create.query(query, format);
 			final ListenableFuture<Result> future = engine.submit(operation);
 			try {
 				final Result result = future.get();

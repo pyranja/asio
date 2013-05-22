@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 
+import at.ac.univie.isc.asio.common.RandomIdGenerator;
 import at.ac.univie.isc.asio.frontend.SqlQueryEndpoint;
 import at.ac.univie.isc.asio.transport.FileResultRepository;
 
@@ -23,9 +24,14 @@ public class AsioConfiguration {
 
 	@Autowired DatasetEngine engine;
 
+	@Bean
+	public OperationFactory operationFactory() {
+		return new OperationFactory(RandomIdGenerator.withPrefix("asio"));
+	}
+
 	@Bean(name = "asio_facade")
 	public SqlQueryEndpoint asioFacade() {
-		return new SqlQueryEndpoint(engine);
+		return new SqlQueryEndpoint(engine, operationFactory());
 	}
 
 	@Bean(destroyMethod = "dispose")

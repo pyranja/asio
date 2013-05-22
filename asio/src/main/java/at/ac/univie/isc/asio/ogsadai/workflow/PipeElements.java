@@ -1,4 +1,4 @@
-package at.ac.univie.isc.asio.ogsadai;
+package at.ac.univie.isc.asio.ogsadai.workflow;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.emptyToNull;

@@ -1,11 +1,11 @@
 package at.ac.univie.isc.asio.ogsadai;
 
-import static at.ac.univie.isc.asio.DatasetOperation.OperationType.QUERY;
-import static at.ac.univie.isc.asio.DatasetOperation.OperationType.SCHEMA;
+import static at.ac.univie.isc.asio.DatasetOperation.Action.QUERY;
+import static at.ac.univie.isc.asio.DatasetOperation.Action.SCHEMA;
 
 import java.util.Set;
 
-import at.ac.univie.isc.asio.DatasetOperation.OperationType;
+import at.ac.univie.isc.asio.DatasetOperation.Action;
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
 
 import com.google.common.base.Charsets;
@@ -39,10 +39,10 @@ public enum OgsadaiFormats implements SerializationFormat {
 	}
 
 	private final MediaType mime;
-	private final Set<OperationType> operations;
+	private final Set<Action> operations;
 
 	private OgsadaiFormats(final MediaType mediaType,
-			final OperationType... operationTypes) {
+			final Action... operationTypes) {
 		mime = mediaType;
 		operations = ImmutableSet.copyOf(operationTypes);
 		validate();
@@ -61,7 +61,7 @@ public enum OgsadaiFormats implements SerializationFormat {
 	}
 
 	@Override
-	public final boolean applicableOn(final OperationType type) {
+	public final boolean applicableOn(final Action type) {
 		return operations.contains(type);
 	}
 

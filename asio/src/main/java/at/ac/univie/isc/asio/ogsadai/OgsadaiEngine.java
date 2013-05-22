@@ -1,12 +1,5 @@
 package at.ac.univie.isc.asio.ogsadai;
 
-import static at.ac.univie.isc.asio.ogsadai.PipeActivities.deliverToStream;
-import static at.ac.univie.isc.asio.ogsadai.PipeActivities.sqlQuery;
-import static at.ac.univie.isc.asio.ogsadai.PipeActivities.tupleToCsv;
-import static at.ac.univie.isc.asio.ogsadai.PipeActivities.tupleToWebRowSetCharArrays;
-import static at.ac.univie.isc.asio.ogsadai.PipeBuilder.pipe;
-import static com.google.common.base.Strings.emptyToNull;
-
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -14,17 +7,14 @@ import org.slf4j.LoggerFactory;
 
 import uk.org.ogsadai.activity.event.CompletionCallback;
 import uk.org.ogsadai.activity.workflow.Workflow;
-import uk.org.ogsadai.resource.ResourceID;
 import at.ac.univie.isc.asio.DatasetEngine;
 import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
-import at.ac.univie.isc.asio.DatasetUsageException;
 import at.ac.univie.isc.asio.Result;
 import at.ac.univie.isc.asio.ResultHandler;
 import at.ac.univie.isc.asio.transport.FileResultRepository;
 
-import com.google.common.base.Optional;
 import com.google.common.util.concurrent.ListenableFuture;
 
 /**
@@ -39,14 +29,14 @@ public final class OgsadaiEngine implements DatasetEngine {
 
 	private final OgsadaiAdapter ogsadai;
 	private final FileResultRepository results;
-	private final ResourceID resource;
+	private final WorkflowComposer composer;
 
 	OgsadaiEngine(final OgsadaiAdapter ogsadai,
-			final FileResultRepository results, final ResourceID resource) {
+			final FileResultRepository results, final WorkflowComposer composer) {
 		super();
 		this.ogsadai = ogsadai;
 		this.results = results;
-		this.resource = resource;
+		this.composer = composer;
 	}
 
 	@Override
@@ -66,14 +56,12 @@ public final class OgsadaiEngine implements DatasetEngine {
 	 */
 	@Override
 	public ListenableFuture<Result> submit(final DatasetOperation operation) {
-		final String query = validateQuery(operation.command());
 		final ResultHandler handler = results.newHandler(operation.format());
 		final String handlerId = ogsadai.register(handler);
-		log.trace("[{}] registered handler [{}] with exchanger", query,
+		log.trace("[{}] registered handler [{}] with exchanger", operation,
 				handlerId);
-		final Workflow workflow = createWorkflow(query, operation.format(),
-				handlerId);
-		log.trace("[{}] using workflow :\n{}", query, workflow);
+		final Workflow workflow = composer.createFrom(operation, handlerId);
+		log.trace("[{}] using workflow :\n{}", operation, workflow);
 		final CompletionCallback callback = delegateTo(handler);
 		try {
 			ogsadai.invoke(workflow, callback);
@@ -102,27 +90,5 @@ public final class OgsadaiEngine implements DatasetEngine {
 			}
 
 		};
-	}
-
-	// TODO extract to WorkflowComposer class
-	private Workflow createWorkflow(final String query,
-			final SerializationFormat format, final String streamId) {
-		final PipeBuilder pipe = pipe(sqlQuery(resource, query));
-		if (format == OgsadaiFormats.XML) {
-			pipe.into(tupleToWebRowSetCharArrays());
-		} else if (format == OgsadaiFormats.CSV) {
-			pipe.into(tupleToCsv());
-		} else {
-			throw new AssertionError("encountered unknown format " + format);
-		}
-		return pipe.finish(deliverToStream(streamId));
-	}
-
-	private String validateQuery(final Optional<String> maybeQuery) {
-		final String query = maybeQuery.orNull();
-		if (emptyToNull(query) == null) {
-			throw new DatasetUsageException("invalid query \"" + query + "\"");
-		}
-		return query;
 	}
 }

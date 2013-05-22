@@ -14,36 +14,11 @@ import com.google.common.net.MediaType;
 public class DatasetOperation {
 
 	/**
-	 * Create a QUERY dataset operation
-	 * 
-	 * @param query
-	 *            to be executed
-	 * @param format
-	 *            for result rendering
-	 * @return the parameterized operation
-	 */
-	public static DatasetOperation query(final String query,
-			final SerializationFormat format) {
-		return new DatasetOperation(OperationType.QUERY, query, format);
-	}
-
-	/**
-	 * Create a SCHEMA dataset operation
-	 * 
-	 * @param format
-	 *            for result rendering
-	 * @return the parameterized operation
-	 */
-	public static DatasetOperation schema(final SerializationFormat format) {
-		return new DatasetOperation(OperationType.SCHEMA, null, format);
-	}
-
-	/**
 	 * The different possible types of DatasetOperations.
 	 * 
 	 * @author Chris Borckholder
 	 */
-	public static enum OperationType {
+	public static enum Action {
 		QUERY,
 		SCHEMA,
 		UPDATE,
@@ -62,32 +37,42 @@ public class DatasetOperation {
 		MediaType asMediaType();
 
 		/**
-		 * @param type
+		 * @param action
 		 *            of operation
-		 * @return true if this format is supported for the given operation type
+		 * @return true if this format is supported for the given operation
+		 *         action
 		 */
-		boolean applicableOn(OperationType type);
+		boolean applicableOn(Action action);
 	}
 
-	private final OperationType type;
+	private final String id;
+	private final Action action;
 	private final Optional<String> command;
 	private final SerializationFormat format;
 
-	private DatasetOperation(final OperationType type,
+	DatasetOperation(final String id, final Action action,
 			@Nullable final String command, final SerializationFormat format) {
 		super();
-		this.type = type;
+		this.id = id;
+		this.action = action;
 		this.command = Optional.fromNullable(command);
 		this.format = format;
 	}
 
 	/**
-	 * The type of operation described by this instance.
-	 * 
-	 * @return one of the {@link OperationType operation types}
+	 * @return the unique id of this operation instance.
 	 */
-	public OperationType type() {
-		return type;
+	public String id() {
+		return id;
+	}
+
+	/**
+	 * The action of operation described by this instance.
+	 * 
+	 * @return one of the possible {@link Action dataset actions}
+	 */
+	public Action action() {
+		return action;
 	}
 
 	/**
@@ -97,6 +82,22 @@ public class DatasetOperation {
 	 */
 	public Optional<String> command() {
 		return command;
+	}
+
+	/**
+	 * If a command is required, this getter will fail fast if it is not present
+	 * with a {@link DatasetUsageException} holding details of this operation.
+	 * 
+	 * @return the command if it is present
+	 * @throws DatasetUsageException
+	 *             if the command is not present
+	 */
+	public String commandOrFail() throws DatasetUsageException {
+		if (command.isPresent()) {
+			return command.get();
+		} else {
+			throw new DatasetUsageException("required command missing");
+		}
 	}
 
 	/**
@@ -112,7 +113,7 @@ public class DatasetOperation {
 	@Override
 	public String toString() {
 		return String.format(
-				"DatasetOperation [type=%s, command=%s, format=%s]", type,
+				"DatasetOperation [action=%s, command=%s, format=%s]", action,
 				command, format);
 	}
 }

@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.frontend;
 
+import static at.ac.univie.isc.asio.MockFormat.MOCK_CONTENT_TYPE;
 import static java.util.Collections.singleton;
 import static javax.ws.rs.core.Response.Status.fromStatusCode;
 import static org.junit.Assert.assertArrayEquals;
@@ -9,8 +10,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 
 import javax.ws.rs.core.MediaType;
@@ -28,32 +27,27 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.DatasetOperation;
+import at.ac.univie.isc.asio.DatasetOperation.Action;
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
 import at.ac.univie.isc.asio.DatasetUsageException;
-import at.ac.univie.isc.asio.Result;
-import at.ac.univie.isc.asio.test.MockSerializationFormat;
+import at.ac.univie.isc.asio.MockFormat;
+import at.ac.univie.isc.asio.MockResult;
 
-import com.google.common.base.Charsets;
 import com.google.common.io.ByteStreams;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.SettableFuture;
 
 // TODO test operation type aware formats
 @RunWith(MockitoJUnitRunner.class)
 public class SqlQueryEndpointTest extends EndpointTestFixture {
 
-	private static final byte[] PAYLOAD = "TEST-PAYLOAD"
-			.getBytes(Charsets.UTF_8);
-	private static final SerializationFormat MOCK_FORMAT = new MockSerializationFormat();
-	// XXX move to MockSerializationFormat ?
-	private static final MediaType MOCK_CONTENT_TYPE = MediaType
-			.valueOf("application/test");
+	private static final SerializationFormat MOCK_FORMAT = new MockFormat();
 
+	private SqlQueryEndpoint endpoint;
 	private Response response;
 	@Captor private ArgumentCaptor<DatasetOperation> submittedOperation;
 
 	@Before
 	public void setUp() {
+		endpoint = application.getQueryEndpoint();
 		when(engine.supportedFormats()).thenReturn(singleton(MOCK_FORMAT));
 		endpoint.initializeVariants();
 		client.path("query").accept(MOCK_CONTENT_TYPE);
@@ -69,7 +63,7 @@ public class SqlQueryEndpointTest extends EndpointTestFixture {
 	@Test
 	public void success_response_has_ok_status() throws Exception {
 		when(engine.submit(any(DatasetOperation.class))).thenReturn(
-				successFuture());
+				MockResult.successFuture());
 		response = client.query("query", "test-query").get();
 		assertEquals(Status.OK, fromStatusCode(response.getStatus()));
 	}
@@ -77,7 +71,7 @@ public class SqlQueryEndpointTest extends EndpointTestFixture {
 	@Test
 	public void success_response_has_requested_content_type() throws Exception {
 		when(engine.submit(any(DatasetOperation.class))).thenReturn(
-				successFuture());
+				MockResult.successFuture());
 		response = client.query("query", "test-query").get();
 		assertEquals(MediaType.valueOf("application/test"),
 				response.getMediaType());
@@ -86,11 +80,11 @@ public class SqlQueryEndpointTest extends EndpointTestFixture {
 	@Test
 	public void success_response_contains_result_data() throws Exception {
 		when(engine.submit(any(DatasetOperation.class))).thenReturn(
-				successFuture());
+				MockResult.successFuture());
 		response = client.query("query", "test-query").get();
 		final byte[] received = ByteStreams.toByteArray((InputStream) response
 				.getEntity());
-		assertArrayEquals(PAYLOAD, received);
+		assertArrayEquals(MockResult.PAYLOAD, received);
 	}
 
 	// QUERY METHOD VARIATIONS
@@ -117,12 +111,20 @@ public class SqlQueryEndpointTest extends EndpointTestFixture {
 
 	private void verifyInvocation() {
 		verify(engine).submit(submittedOperation.capture());
-		assertEquals("test-query", submittedOperation.getValue().command()
-				.orNull());
-		assertEquals(MOCK_FORMAT, submittedOperation.getValue().format());
+		final DatasetOperation op = submittedOperation.getValue();
+		assertEquals(Action.QUERY, op.action());
+		assertEquals("test-query", op.command().orNull());
+		assertEquals(MOCK_FORMAT, op.format());
 	}
 
 	// REJECTIONS
+
+	@Test
+	public void rejects_missing_query_param() throws Exception {
+		response = client.get();
+		assertEquals(Status.BAD_REQUEST, fromStatusCode(response.getStatus()));
+		verify(engine, never()).submit(any(DatasetOperation.class));
+	}
 
 	@Test
 	public void rejects_non_query_content_body() throws Exception {
@@ -149,7 +151,7 @@ public class SqlQueryEndpointTest extends EndpointTestFixture {
 	public void usage_error_generates_bad_request_response() throws Exception {
 		when(engine.submit(any(DatasetOperation.class))).thenThrow(
 				DatasetUsageException.class);
-		response = client.get();
+		response = client.query("query", "test-query").get();
 		assertEquals(Status.BAD_REQUEST, fromStatusCode(response.getStatus()));
 	}
 
@@ -158,7 +160,7 @@ public class SqlQueryEndpointTest extends EndpointTestFixture {
 		final DatasetUsageException cause = new DatasetUsageException(
 				"test-message");
 		when(engine.submit(any(DatasetOperation.class))).thenThrow(cause);
-		response = client.get();
+		response = client.query("query", "test-query").get();
 		final String received = new String(
 				ByteStreams.toByteArray((InputStream) response.getEntity()));
 		assertEquals(cause.getMessage(), received);
@@ -170,7 +172,7 @@ public class SqlQueryEndpointTest extends EndpointTestFixture {
 			throws Exception {
 		when(engine.submit(any(DatasetOperation.class))).thenThrow(
 				DatasetException.class);
-		response = client.get();
+		response = client.query("query", "test-query").get();
 		assertEquals(Status.INTERNAL_SERVER_ERROR,
 				fromStatusCode(response.getStatus()));
 	}
@@ -179,25 +181,9 @@ public class SqlQueryEndpointTest extends EndpointTestFixture {
 	public void dataset_error_response_contains_cause() throws Exception {
 		final DatasetException cause = new DatasetUsageException("test-message");
 		when(engine.submit(any(DatasetOperation.class))).thenThrow(cause);
-		response = client.get();
+		response = client.query("query", "test-query").get();
 		final String received = new String(
 				ByteStreams.toByteArray((InputStream) response.getEntity()));
 		assertEquals(cause.getMessage(), received);
-	}
-
-	private ListenableFuture<Result> successFuture() {
-		final SettableFuture<Result> future = SettableFuture.create();
-		future.set(new Result() {
-			@Override
-			public InputStream getInput() throws IOException {
-				return new ByteArrayInputStream(PAYLOAD);
-			}
-
-			@Override
-			public com.google.common.net.MediaType mediaType() {
-				return MOCK_FORMAT.asMediaType();
-			}
-		});
-		return future;
 	}
 }

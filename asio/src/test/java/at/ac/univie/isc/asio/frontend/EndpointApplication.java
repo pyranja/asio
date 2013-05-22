@@ -8,6 +8,8 @@ import javax.ws.rs.core.Application;
 import org.mockito.Mockito;
 
 import at.ac.univie.isc.asio.DatasetEngine;
+import at.ac.univie.isc.asio.OperationFactory;
+import at.ac.univie.isc.asio.common.RandomIdGenerator;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -20,31 +22,44 @@ import com.google.common.collect.ImmutableSet;
 @ApplicationPath("/")
 public class EndpointApplication extends Application {
 
+	private final SqlQueryEndpoint queryEndpoint;
+	private final SchemaEndpoint schemaEndpoint;
+
 	private final DatasetEngine mockEngine;
-	private final SqlQueryEndpoint endpoint;
+	private final OperationFactory factory;
 
 	EndpointApplication() {
 		super();
 		mockEngine = Mockito.mock(DatasetEngine.class);
-		endpoint = new SqlQueryEndpoint(mockEngine);
+		factory = new OperationFactory(
+				RandomIdGenerator.withPrefix("integration"));
+		queryEndpoint = new SqlQueryEndpoint(mockEngine, factory);
+		schemaEndpoint = new SchemaEndpoint(mockEngine, factory);
 	}
 
 	@Override
 	public Set<Object> getSingletons() {
-		return ImmutableSet.<Object> of(endpoint);
+		return ImmutableSet.<Object> of(queryEndpoint, schemaEndpoint);
 	}
 
 	/**
-	 * @return the mockito mock engine used by the set up endpoint
+	 * @return the mockito mock engine used by the set up queryEndpoint
 	 */
 	public DatasetEngine getMockEngine() {
 		return mockEngine;
 	}
 
 	/**
-	 * @return the endpoint service instance
+	 * @return the queryEndpoint service instance
 	 */
-	public SqlQueryEndpoint getEndpoint() {
-		return endpoint;
+	public SqlQueryEndpoint getQueryEndpoint() {
+		return queryEndpoint;
+	}
+
+	/**
+	 * @return the schemaEndpoint service instance
+	 */
+	public SchemaEndpoint getSchemaEndpoint() {
+		return schemaEndpoint;
 	}
 }

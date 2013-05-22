@@ -1,7 +1,7 @@
 package at.ac.univie.isc.asio.ogsadai;
 
-import static at.ac.univie.isc.asio.DatasetOperation.OperationType.QUERY;
-import static at.ac.univie.isc.asio.DatasetOperation.OperationType.SCHEMA;
+import static at.ac.univie.isc.asio.DatasetOperation.Action.QUERY;
+import static at.ac.univie.isc.asio.DatasetOperation.Action.SCHEMA;
 import static at.ac.univie.isc.asio.ogsadai.OgsadaiFormats.CSV;
 import static at.ac.univie.isc.asio.ogsadai.OgsadaiFormats.XML;
 import static org.junit.Assert.assertTrue;
