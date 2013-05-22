@@ -5,4 +5,4 @@ package at.ac.univie.isc.asio;
  * 
  * @author Chris Borckholder
  */
-public interface IntegrationTest {}
+public interface FunctionalTest {}
