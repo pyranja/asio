@@ -5,5 +5,5 @@ import at.ac.univie.isc.asio.DatasetOperation;
 
 public interface WorkflowComposer {
 
-	Workflow createFrom(DatasetOperation operation, String streamId);
+	Workflow createFrom(DatasetOperation operation);
 }

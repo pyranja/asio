@@ -24,8 +24,7 @@ public class SqlComposer implements WorkflowComposer {
 	}
 
 	@Override
-	public ActivityPipelineWorkflow createFrom(
-			final DatasetOperation operation, final String streamId) {
+	public ActivityPipelineWorkflow createFrom(final DatasetOperation operation) {
 		final Action action = operation.action();
 		PipeBuilder pipe;
 		switch (action) {
@@ -39,7 +38,7 @@ public class SqlComposer implements WorkflowComposer {
 				throw new UnsupportedOperationException("not implemented "
 						+ action);
 		}
-		return pipe.finish(deliverToStream(streamId));
+		return pipe.finish(deliverToStream(operation.id()));
 	}
 
 	private PipeBuilder makeSchema(final DatasetOperation op) {
