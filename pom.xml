@@ -3,7 +3,7 @@
 
 	<groupId>at.ac.univie.isc</groupId>
 	<artifactId>vqs</artifactId>
-	<version>0.0.3-SNAPSHOT</version>
+	<version>0.1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Vienna Query Service</name>
@@ -25,7 +25,7 @@
 
 	<scm>
 		<developerConnection>scm:git|git@gitorious.cs.univie.ac.at:vce/vqs.git</developerConnection>
-	  <tag>release-0.1.0</tag>
+	  <tag>HEAD</tag>
   </scm>
 
 	<!-- shared dependencies -->
