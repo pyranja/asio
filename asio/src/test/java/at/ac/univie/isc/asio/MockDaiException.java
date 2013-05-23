@@ -1,4 +1,4 @@
-package at.ac.univie.isc.asio.test;
+package at.ac.univie.isc.asio;
 
 import uk.org.ogsadai.exception.DAIException;
 import uk.org.ogsadai.exception.ErrorID;

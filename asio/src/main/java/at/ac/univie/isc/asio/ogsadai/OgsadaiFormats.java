@@ -1,7 +1,11 @@
 package at.ac.univie.isc.asio.ogsadai;
 
+import static at.ac.univie.isc.asio.DatasetOperation.Action.QUERY;
+import static at.ac.univie.isc.asio.DatasetOperation.Action.SCHEMA;
+
 import java.util.Set;
 
+import at.ac.univie.isc.asio.DatasetOperation.Action;
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
 
 import com.google.common.base.Charsets;
@@ -16,13 +20,16 @@ import com.google.common.net.MediaType;
 public enum OgsadaiFormats implements SerializationFormat {
 
 	/**
-	 * webrowset representation
+	 * webrowset/tablemetadata representation
 	 */
-	XML(MediaType.create("application", "xml").withCharset(Charsets.UTF_8)),
+	XML(
+			MediaType.create("application", "xml").withCharset(Charsets.UTF_8),
+			QUERY,
+			SCHEMA),
 	/**
 	 * tabular, comma-separated representation
 	 */
-	CSV(MediaType.CSV_UTF_8);
+	CSV(MediaType.CSV_UTF_8, QUERY);
 
 	private static final Set<SerializationFormat> valueSet = ImmutableSet
 			.<SerializationFormat> copyOf(OgsadaiFormats.values());
@@ -31,15 +38,36 @@ public enum OgsadaiFormats implements SerializationFormat {
 		return valueSet;
 	}
 
-	private final MediaType type;
+	private final MediaType mime;
+	private final Set<Action> operations;
 
-	private OgsadaiFormats(final MediaType type) {
-		this.type = type;
+	private OgsadaiFormats(final MediaType mediaType,
+			final Action... operationTypes) {
+		mime = mediaType;
+		operations = ImmutableSet.copyOf(operationTypes);
+		validate();
+	}
+
+	private void validate() {
+		assert (mime != null) : "invalid format " + this
+				+ ": no mime type given";
+		assert (!operations.isEmpty()) : "invalid format " + this
+				+ ": no operations given";
 	}
 
 	@Override
-	public MediaType asMediaType() {
-		return type;
+	public final MediaType asMediaType() {
+		return mime;
 	}
 
+	@Override
+	public final boolean applicableOn(final Action type) {
+		return operations.contains(type);
+	}
+
+	@Override
+	public final String toString() {
+		return String.format("OgsadaiFormat [name=%s, mime=%s, operations=%s]",
+				name(), mime, operations);
+	}
 }

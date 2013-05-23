@@ -14,17 +14,15 @@ import com.google.common.net.MediaType;
 public class DatasetOperation {
 
 	/**
-	 * Create a QUERY dataset operation
+	 * The different possible types of DatasetOperations.
 	 * 
-	 * @param query
-	 *            to be executed
-	 * @param format
-	 *            for result rendering
-	 * @return the parameterized operation
+	 * @author Chris Borckholder
 	 */
-	public static DatasetOperation query(final String query,
-			final SerializationFormat format) {
-		return new DatasetOperation(query, format);
+	public static enum Action {
+		QUERY,
+		SCHEMA,
+		UPDATE,
+		BATCH;
 	}
 
 	/**
@@ -37,16 +35,44 @@ public class DatasetOperation {
 		 * @return the common internet media type of this format
 		 */
 		MediaType asMediaType();
+
+		/**
+		 * @param action
+		 *            of operation
+		 * @return true if this format is supported for the given operation
+		 *         action
+		 */
+		boolean applicableOn(Action action);
 	}
 
+	private final String id;
+	private final Action action;
 	private final Optional<String> command;
 	private final SerializationFormat format;
 
-	private DatasetOperation(@Nullable final String command,
-			final SerializationFormat format) {
+	DatasetOperation(final String id, final Action action,
+			@Nullable final String command, final SerializationFormat format) {
 		super();
+		this.id = id;
+		this.action = action;
 		this.command = Optional.fromNullable(command);
 		this.format = format;
+	}
+
+	/**
+	 * @return the unique id of this operation instance.
+	 */
+	public String id() {
+		return id;
+	}
+
+	/**
+	 * The action of operation described by this instance.
+	 * 
+	 * @return one of the possible {@link Action dataset actions}
+	 */
+	public Action action() {
+		return action;
 	}
 
 	/**
@@ -59,6 +85,22 @@ public class DatasetOperation {
 	}
 
 	/**
+	 * If a command is required, this getter will fail fast if it is not present
+	 * with a {@link DatasetUsageException} holding details of this operation.
+	 * 
+	 * @return the command if it is present
+	 * @throws DatasetUsageException
+	 *             if the command is not present
+	 */
+	public String commandOrFail() throws DatasetUsageException {
+		if (command.isPresent()) {
+			return command.get();
+		} else {
+			throw new DatasetUsageException("required command missing");
+		}
+	}
+
+	/**
 	 * The output format in which the results of this operation must be
 	 * rendered.
 	 * 
@@ -66,5 +108,12 @@ public class DatasetOperation {
 	 */
 	public SerializationFormat format() {
 		return format;
+	}
+
+	@Override
+	public String toString() {
+		return String.format(
+				"DatasetOperation [action=%s, command=%s, format=%s]", action,
+				command, format);
 	}
 }

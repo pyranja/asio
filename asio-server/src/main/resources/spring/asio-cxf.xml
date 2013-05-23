@@ -19,7 +19,8 @@ http://cxf.apache.org/schemas/jaxrs.xsd">
   <!-- asio http endpoint -->
   <jaxrs:server id="asio" address="/v1/asio">
     <jaxrs:serviceBeans>
-      <ref bean="asio_facade" />
+      <ref bean="asio_query" />
+      <ref bean="asio_schema" />
     </jaxrs:serviceBeans>
     <jaxrs:features>
       <cxf:logging />

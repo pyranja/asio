@@ -1,8 +1,5 @@
 package at.ac.univie.isc.asio.frontend;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import javax.ws.rs.Consumes;
@@ -17,21 +14,18 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.Variant;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import at.ac.univie.isc.asio.DatasetEngine;
 import at.ac.univie.isc.asio.DatasetOperation;
+import at.ac.univie.isc.asio.DatasetOperation.Action;
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
 import at.ac.univie.isc.asio.DatasetUsageException;
+import at.ac.univie.isc.asio.OperationFactory;
 import at.ac.univie.isc.asio.Result;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.util.concurrent.ListenableFuture;
 
 /**
@@ -40,38 +34,16 @@ import com.google.common.util.concurrent.ListenableFuture;
  * @author Chris Borckholder
  */
 @Path("/query/")
-public final class SqlQueryEndpoint {
+public final class QueryEndpoint extends AbstractEndpoint {
 
 	/* slf4j-logger */
-	final static Logger log = LoggerFactory.getLogger(SqlQueryEndpoint.class);
+	final static Logger log = LoggerFactory.getLogger(QueryEndpoint.class);
 
 	private static final String PARAM_QUERY = "query";
 
-	private final DatasetEngine engine;
-	private final VariantConverter converter;
-
-	private Map<Variant, SerializationFormat> variant2format;
-
-	public SqlQueryEndpoint(final DatasetEngine engine) {
-		super();
-		this.engine = engine;
-		converter = VariantConverter.getInstance();
-		initializeVariants();
-	}
-
-	/**
-	 * Create the reverse mapping between variants and serialization formats.
-	 */
-	@VisibleForTesting
-	void initializeVariants() {
-		final Set<SerializationFormat> formats = engine.supportedFormats();
-		final Builder<Variant, SerializationFormat> map = ImmutableMap
-				.builder();
-		for (final SerializationFormat each : formats) {
-			final Variant variant = converter.asVariant(each.asMediaType());
-			map.put(variant, each);
-		}
-		variant2format = map.build();
+	public QueryEndpoint(final DatasetEngine engine,
+			final OperationFactory create) {
+		super(engine, create, Action.QUERY);
 	}
 
 	/**
@@ -128,8 +100,7 @@ public final class SqlQueryEndpoint {
 		final SerializationFormat format = matchFormat(request);
 		log.debug("selected {}", format);
 		try {
-			final DatasetOperation operation = DatasetOperation.query(query,
-					format);
+			final DatasetOperation operation = create.query(query, format);
 			final ListenableFuture<Result> future = engine.submit(operation);
 			try {
 				final Result result = future.get();
@@ -155,18 +126,6 @@ public final class SqlQueryEndpoint {
 			log.warn("processing [{}] failed with internal error", query, e);
 			throw new WebApplicationException(e, Response.serverError()
 					.entity(e.getMessage()).build());
-		}
-	}
-
-	private SerializationFormat matchFormat(final Request request) {
-		final List<Variant> candidates = ImmutableList.copyOf(variant2format
-				.keySet()); // not really copying
-		final Variant selected = request.selectVariant(candidates);
-		if (selected != null) {
-			return variant2format.get(selected);
-		} else {
-			throw new WebApplicationException(Response
-					.notAcceptable(candidates).build());
 		}
 	}
 }

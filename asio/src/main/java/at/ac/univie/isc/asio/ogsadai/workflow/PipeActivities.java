@@ -1,17 +1,18 @@
-package at.ac.univie.isc.asio.ogsadai;
+package at.ac.univie.isc.asio.ogsadai.workflow;
 
 import static uk.org.ogsadai.activity.delivery.DeliverToStreamActivity.INPUT_STREAM_ID;
 import static uk.org.ogsadai.activity.transform.TupleToCSVActivity.INPUT_FIELDSESCAPED;
 import static uk.org.ogsadai.activity.transform.TupleToCSVActivity.INPUT_HEADERINCLUDED;
+import uk.org.ogsadai.activity.ActivityName;
 import uk.org.ogsadai.activity.pipeline.ActivityDescriptor;
 import uk.org.ogsadai.activity.pipeline.ActivityInputLiteral;
 import uk.org.ogsadai.activity.pipeline.Literal;
 import uk.org.ogsadai.activity.pipeline.SimpleActivityDescriptor;
 import uk.org.ogsadai.activity.pipeline.SimpleLiteral;
 import uk.org.ogsadai.resource.ResourceID;
-import at.ac.univie.isc.asio.ogsadai.PipeElements.Consumer;
-import at.ac.univie.isc.asio.ogsadai.PipeElements.Producer;
-import at.ac.univie.isc.asio.ogsadai.PipeElements.ProducerAndConsumer;
+import at.ac.univie.isc.asio.ogsadai.workflow.PipeElements.Consumer;
+import at.ac.univie.isc.asio.ogsadai.workflow.PipeElements.Producer;
+import at.ac.univie.isc.asio.ogsadai.workflow.PipeElements.ProducerAndConsumer;
 
 /**
  * Collection of static factory methods for {@link Producer} and
@@ -20,6 +21,12 @@ import at.ac.univie.isc.asio.ogsadai.PipeElements.ProducerAndConsumer;
  * @author Chris Borckholder
  */
 public final class PipeActivities {
+
+	// HELPER
+	// type safety and eases tests
+	private static ActivityName asName(final String plain) {
+		return new ActivityName(plain);
+	}
 
 	// LITERALS
 	// must use generator methods here, as literals are mutated while processing
@@ -32,7 +39,7 @@ public final class PipeActivities {
 	}
 
 	// PRODUCER
-	private static final String SQL_QUERY_ACTIVITY = "uk.org.ogsadai.SQLQuery";
+	static final ActivityName SQL_QUERY_ACTIVITY = asName("uk.org.ogsadai.SQLQuery");
 
 	public static Producer sqlQuery(final ResourceID target, final String query) {
 		final ActivityDescriptor product = new SimpleActivityDescriptor(target,
@@ -41,27 +48,44 @@ public final class PipeActivities {
 		return PipeElements.producer(product, "data");
 	}
 
+	static final ActivityName SQL_SCHEMA_ACTIVITY = asName("uk.org.ogsadai.ExtractTableSchema");
+
+	public static Producer extractSchema(final ResourceID target) {
+		final ActivityDescriptor product = new SimpleActivityDescriptor(target,
+				SQL_SCHEMA_ACTIVITY);
+		product.addInput(new ActivityInputLiteral("name", "%"));// wildcard
+		return PipeElements.producer(product, "data");
+	}
+
 	// BOTH
-	private static final String WEBROWSET_TRANSFORMER_ACTIVITY = "uk.org.ogsadai.TupleToWebRowSetCharArrays";
+	static final ActivityName TUPLE_WEBROWSET_TRANSFORMER_ACTIVITY = asName("uk.org.ogsadai.TupleToWebRowSetCharArrays");
 
 	public static ProducerAndConsumer tupleToWebRowSetCharArrays() {
 		final ActivityDescriptor product = new SimpleActivityDescriptor(
-				WEBROWSET_TRANSFORMER_ACTIVITY);
+				TUPLE_WEBROWSET_TRANSFORMER_ACTIVITY);
 		return PipeElements.both(product, "data", "result");
 	}
 
-	private static final String CSV_TRANSFORMER_ACTIVITY = "uk.org.ogsadai.TupleToCSV";
+	static final ActivityName TUPLE_CSV_TRANSFORMER_ACTIVITY = asName("uk.org.ogsadai.TupleToCSV");
 
 	public static ProducerAndConsumer tupleToCsv() {
 		final ActivityDescriptor product = new SimpleActivityDescriptor(
-				CSV_TRANSFORMER_ACTIVITY);
+				TUPLE_CSV_TRANSFORMER_ACTIVITY);
 		product.addInput(new ActivityInputLiteral(INPUT_HEADERINCLUDED, TRUE()));
 		product.addInput(new ActivityInputLiteral(INPUT_FIELDSESCAPED, TRUE()));
 		return PipeElements.both(product, "data", "result");
 	}
 
+	static final ActivityName TABLEMETADATA_XML_TRANSFORMER_ACTIVITY = asName("uk.org.ogsadai.TableMetadataToXMLCharArraysList");
+
+	public static ProducerAndConsumer metadataToXml() {
+		final ActivityDescriptor product = new SimpleActivityDescriptor(
+				TABLEMETADATA_XML_TRANSFORMER_ACTIVITY);
+		return PipeElements.both(product, "data", "result");
+	}
+
 	// CONSUMER
-	private static final String REQUESTSTATUS_DELIVERY = "uk.org.ogsadai.DeliverToRequestStatus";
+	static final ActivityName REQUESTSTATUS_DELIVERY = asName("uk.org.ogsadai.DeliverToRequestStatus");
 
 	public static Consumer deliverToRequestStatus() {
 		final ActivityDescriptor product = new SimpleActivityDescriptor(
@@ -69,7 +93,7 @@ public final class PipeActivities {
 		return PipeElements.consumer(product, "input");
 	}
 
-	private static final String STREAM_DELIVERY = "at.ac.univie.isc.DeliverToStream";
+	static final ActivityName STREAM_DELIVERY = asName("at.ac.univie.isc.DeliverToStream");
 
 	public static Consumer deliverToStream(final String streamId) {
 		final ActivityDescriptor product = new SimpleActivityDescriptor(

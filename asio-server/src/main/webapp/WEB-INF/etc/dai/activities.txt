@@ -5,6 +5,14 @@ description=Redirects activity results to an in-process stream
 CONFIG
 END
 # endof ASIO deliver
+# H2 sql activities
+id=uk.org.ogsadai.ExtractH2TableSchema
+class=uk.org.ogsadai.activity.sql.ExtractTableSchemaActivity
+description=hides H2 system tables
+CONFIG
+dai.table.types=TABLE,VIEW
+END
+# endof H2 sql activities
 id=uk.org.ogsadai.Tee
 class=uk.org.ogsadai.activity.block.TeeActivity
 description=

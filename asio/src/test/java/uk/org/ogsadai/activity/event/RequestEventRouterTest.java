@@ -23,7 +23,7 @@ import uk.org.ogsadai.exception.RequestProcessingException;
 import uk.org.ogsadai.exception.RequestTerminatedException;
 import uk.org.ogsadai.resource.ResourceID;
 import uk.org.ogsadai.resource.request.RequestExecutionStatus;
-import at.ac.univie.isc.asio.test.MockDaiException;
+import at.ac.univie.isc.asio.MockDaiException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RequestEventRouterTest {
