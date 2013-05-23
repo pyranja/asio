@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
 import at.ac.univie.isc.asio.DatasetTransportException;
 import at.ac.univie.isc.asio.ResultHandler;
 
@@ -37,8 +38,11 @@ public class FileResultRepository {
 	 * @throws DatasetTransportException
 	 *             if file creation failed
 	 */
-	public ResultHandler newHandler() throws DatasetTransportException {
-		return new CompletionResultHandler(newResult());
+	public ResultHandler newHandler(
+			final SerializationFormat serializationFormat)
+			throws DatasetTransportException {
+		return new CompletionResultHandler(newResult(),
+				serializationFormat.asMediaType());
 	}
 
 	@VisibleForTesting

@@ -1,6 +1,5 @@
 package at.ac.univie.isc.asio.frontend;
 
-import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
 
 import javax.ws.rs.Consumes;
@@ -8,10 +7,11 @@ import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -19,9 +19,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import at.ac.univie.isc.asio.DatasetEngine;
+import at.ac.univie.isc.asio.DatasetOperation;
+import at.ac.univie.isc.asio.DatasetOperation.Action;
+import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
 import at.ac.univie.isc.asio.DatasetUsageException;
+import at.ac.univie.isc.asio.OperationFactory;
+import at.ac.univie.isc.asio.Result;
 
-import com.google.common.io.InputSupplier;
 import com.google.common.util.concurrent.ListenableFuture;
 
 /**
@@ -30,19 +34,16 @@ import com.google.common.util.concurrent.ListenableFuture;
  * @author Chris Borckholder
  */
 @Path("/query/")
-@Produces(MediaType.APPLICATION_XML)
-public class SqlQueryEndpoint {
+public final class QueryEndpoint extends AbstractEndpoint {
 
 	/* slf4j-logger */
-	final static Logger log = LoggerFactory.getLogger(SqlQueryEndpoint.class);
+	final static Logger log = LoggerFactory.getLogger(QueryEndpoint.class);
 
 	private static final String PARAM_QUERY = "query";
 
-	private final DatasetEngine engine;
-
-	public SqlQueryEndpoint(final DatasetEngine engine) {
-		super();
-		this.engine = engine;
+	public QueryEndpoint(final DatasetEngine engine,
+			final OperationFactory create) {
+		super(engine, create, Action.QUERY);
 	}
 
 	/**
@@ -53,8 +54,9 @@ public class SqlQueryEndpoint {
 	 * @return query results
 	 */
 	@GET
-	public Response acceptUriQuery(@QueryParam(PARAM_QUERY) final String query) {
-		return process(query);
+	public Response acceptUriQuery(@QueryParam(PARAM_QUERY) final String query,
+			@Context final Request request) {
+		return process(query, request);
 	}
 
 	/**
@@ -66,8 +68,9 @@ public class SqlQueryEndpoint {
 	 */
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	public Response acceptFormQuery(@FormParam(PARAM_QUERY) final String query) {
-		return process(query);
+	public Response acceptFormQuery(@FormParam(PARAM_QUERY) final String query,
+			@Context final Request request) {
+		return process(query, request);
 	}
 
 	/**
@@ -79,8 +82,9 @@ public class SqlQueryEndpoint {
 	 */
 	@POST
 	@Consumes("application/sql-query")
-	public Response acceptQuery(final String query) {
-		return process(query);
+	public Response acceptQuery(final String query,
+			@Context final Request request) {
+		return process(query, request);
 	}
 
 	/**
@@ -91,16 +95,19 @@ public class SqlQueryEndpoint {
 	 * @return http response containing the query results or an error.
 	 */
 	// TODO clean up error handling
-	private Response process(final String query) {
+	private Response process(final String query, final Request request) {
 		log.info("processing [{}]", query);
+		final SerializationFormat format = matchFormat(request);
+		log.debug("selected {}", format);
 		try {
-			final ListenableFuture<InputSupplier<InputStream>> result = engine
-					.submit(query);
+			final DatasetOperation operation = create.query(query, format);
+			final ListenableFuture<Result> future = engine.submit(operation);
 			try {
-				final InputSupplier<InputStream> resultData = result.get();
+				final Result result = future.get();
 				log.info("processed [{}] successfully", query);
-				return Response.ok(resultData.getInput(),
-						MediaType.APPLICATION_XML_TYPE).build();
+				final MediaType contentType = converter.asContentType(result
+						.mediaType());
+				return Response.ok(result.getInput(), contentType).build();
 			} catch (final ExecutionException e) {
 				final Throwable cause = e.getCause();
 				log.warn("processing [{}] failed with {} as cause", query,

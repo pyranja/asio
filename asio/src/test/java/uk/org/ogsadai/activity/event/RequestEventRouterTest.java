@@ -9,7 +9,6 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -24,8 +23,7 @@ import uk.org.ogsadai.exception.RequestProcessingException;
 import uk.org.ogsadai.exception.RequestTerminatedException;
 import uk.org.ogsadai.resource.ResourceID;
 import uk.org.ogsadai.resource.request.RequestExecutionStatus;
-
-import com.google.common.base.Optional;
+import at.ac.univie.isc.asio.MockDaiException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RequestEventRouterTest {
@@ -74,7 +72,7 @@ public class RequestEventRouterTest {
 	}
 
 	@Test(expected = AssertionError.class)
-	public void propagates_unexpected_completion_with_error_as_error()
+	public void propagates_unexpected_completion_with_error_as_exception()
 			throws Exception {
 		subject.track(REQUEST, tracker);
 		subject.requestExecutionStatusEvent(REQUEST,
@@ -83,19 +81,11 @@ public class RequestEventRouterTest {
 	}
 
 	// handled by EventAcceptor
-	@Ignore
-	@Test
-	public void propagates_unexpected_error_state_as_error() throws Exception {
-		subject.track(REQUEST, tracker);
-		subject.requestExecutionStatusEvent(REQUEST,
-				RequestExecutionStatus.ERROR);
-		verify(tracker).fail(any(RequestProcessingException.class));
-	}
 
 	@Test
-	public void propagates_request_error() throws Exception {
+	public void propagates_request_exception() throws Exception {
 		subject.track(REQUEST, tracker);
-		final DAIException cause = new MockDaiException("test cause");
+		final DAIException cause = new MockDaiException();
 		subject.requestErrorEvent(REQUEST, cause);
 		verify(tracker).fail(cause);
 	}
@@ -129,7 +119,7 @@ public class RequestEventRouterTest {
 				RequestExecutionStatus.COMPLETED);
 		subject.requestExecutionStatusEvent(REQUEST,
 				RequestExecutionStatus.TERMINATED);
-		subject.requestErrorEvent(REQUEST, new MockDaiException(null));
+		subject.requestErrorEvent(REQUEST, new MockDaiException());
 		verifyZeroInteractions(tracker);
 	}
 
@@ -152,23 +142,59 @@ public class RequestEventRouterTest {
 	@Test
 	public void does_not_forward_after_stopping_tracking() throws Exception {
 		subject.track(REQUEST, tracker);
-		subject.requestErrorEvent(REQUEST, new MockDaiException(null));
+		subject.requestErrorEvent(REQUEST, new MockDaiException());
 		Mockito.verify(tracker).fail(any(Exception.class));
-		final Optional<CompletionCallback> removed = subject
-				.stopTracking(REQUEST);
-		assertTrue(removed.isPresent());
-		subject.requestErrorEvent(REQUEST, new MockDaiException(null));
+		assertTrue(subject.stopTracking(REQUEST).isPresent());
+		subject.requestErrorEvent(REQUEST, new MockDaiException());
 		Mockito.verifyNoMoreInteractions(tracker);
 	}
 
 	@Test
-	public void terminal_request_status_stops_tracking() throws Exception {
+	public void terminal_request_removes_callback_of_terminated_request()
+			throws Exception {
 		subject.track(REQUEST, tracker);
 		subject.requestExecutionStatusEvent(REQUEST,
 				RequestExecutionStatus.COMPLETED);
-		final Optional<CompletionCallback> removed = subject
-				.stopTracking(REQUEST);
-		assertFalse(removed.isPresent());
+		assertFalse(subject.stopTracking(REQUEST).isPresent());
+	}
+
+	@Test
+	public void exception_does_not_stop_tracking_if_not_in_error_state()
+			throws Exception {
+		final DAIException cause = new MockDaiException(null);
+		subject.track(REQUEST, tracker);
+		subject.requestErrorEvent(REQUEST, cause);
+		assertTrue(subject.stopTracking(REQUEST).isPresent());
+		verify(tracker).fail(cause);
+	}
+
+	@Test
+	public void error_state_is_terminal_if_already_exceptions_received()
+			throws Exception {
+		subject.track(REQUEST, tracker);
+		subject.requestErrorEvent(REQUEST, new MockDaiException(null));
+		subject.requestExecutionStatusEvent(REQUEST,
+				RequestExecutionStatus.ERROR);
+		assertFalse(subject.stopTracking(REQUEST).isPresent());
+	}
+
+	@Test
+	public void first_exception_after_error_state_stops_tracking()
+			throws Exception {
+		final DAIException cause = new MockDaiException(null);
+		subject.track(REQUEST, tracker);
+		subject.requestExecutionStatusEvent(REQUEST,
+				RequestExecutionStatus.ERROR);
+		subject.requestErrorEvent(REQUEST, cause);
+		assertFalse(subject.stopTracking(REQUEST).isPresent());
+		verify(tracker).fail(cause);
+	}
+
+	@Test
+	public void clearing_removes_callbacks() throws Exception {
+		subject.track(REQUEST, tracker);
+		subject.clear();
+		assertFalse(subject.stopTracking(REQUEST).isPresent());
 	}
 
 	@SuppressWarnings("deprecation")

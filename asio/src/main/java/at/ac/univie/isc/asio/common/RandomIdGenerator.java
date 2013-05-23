@@ -1,4 +1,7 @@
-package at.ac.univie.isc.asio.ogsadai;
+package at.ac.univie.isc.asio.common;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Strings.emptyToNull;
 
 import java.util.Random;
 import java.util.UUID;
@@ -11,21 +14,21 @@ import com.google.common.annotations.VisibleForTesting;
  * 
  * @author Chris Borckholder
  */
-public class RandomIdGenerator implements IdGenerator {
+public final class RandomIdGenerator implements IdGenerator {
+
+	public static IdGenerator withPrefix(final String prefix) {
+		checkNotNull(emptyToNull(prefix));
+		return new RandomIdGenerator(prefix);
+	}
 
 	private final String prefix;
 	private final Random rng;
 
+	@VisibleForTesting
 	RandomIdGenerator(final String prefix) {
 		super();
 		this.prefix = prefix;
 		rng = new Random();
-	}
-
-	@VisibleForTesting
-	RandomIdGenerator(final Random rng) {
-		prefix = "test";
-		this.rng = rng;
 	}
 
 	/**

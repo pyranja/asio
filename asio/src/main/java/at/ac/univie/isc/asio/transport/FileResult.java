@@ -13,7 +13,7 @@ import com.google.common.annotations.VisibleForTesting;
  * 
  * @author Chris Borckholder
  */
-public class FileResult implements Buffer {
+public final class FileResult implements Buffer {
 
 	private final Path backing;
 

@@ -18,6 +18,7 @@ import uk.org.ogsadai.resource.ResourceType;
 import uk.org.ogsadai.resource.ResourceUnknownException;
 import uk.org.ogsadai.resource.drer.DRER;
 import at.ac.univie.isc.asio.DatasetEngine;
+import at.ac.univie.isc.asio.ogsadai.workflow.SqlComposer;
 import at.ac.univie.isc.asio.transport.FileResultRepository;
 
 import com.google.common.collect.Iterables;
@@ -41,7 +42,12 @@ public class AsioOgsadaiConfiguration {
 
 	@Bean
 	public DatasetEngine ogsadaiEngine() {
-		return new OgsadaiEngine(adapter(), resultRepository, TEST_RESOURCE);
+		return new OgsadaiEngine(adapter(), resultRepository, composer());
+	}
+
+	@Bean
+	public WorkflowComposer composer() {
+		return new SqlComposer(TEST_RESOURCE);
 	}
 
 	@Bean

@@ -9,6 +9,11 @@
     </layout>
   </appender>
   
+  <!-- log integration test execution -->
+  <logger name="at.ac.univie.isc.asio">
+    <level value="info" /> 
+  </logger>
+  
   <!-- ignore all logs for testing -->
   <root>
     <level value="off"/>

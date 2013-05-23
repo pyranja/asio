@@ -6,9 +6,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import at.ac.univie.isc.asio.Result;
 import at.ac.univie.isc.asio.ResultHandler;
 
-import com.google.common.io.InputSupplier;
+import com.google.common.net.MediaType;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 
@@ -17,13 +18,15 @@ import com.google.common.util.concurrent.SettableFuture;
  * 
  * @author Chris Borckholder
  */
-public class CompletionResultHandler implements ResultHandler {
+public final class CompletionResultHandler implements ResultHandler {
 
 	private final Buffer buffer;
-	private final SettableFuture<InputSupplier<InputStream>> future;
+	private final MediaType contentType;
+	private final SettableFuture<Result> future;
 
-	CompletionResultHandler(final Buffer buffer) {
+	CompletionResultHandler(final Buffer buffer, final MediaType contentType) {
 		this.buffer = buffer;
+		this.contentType = contentType;
 		future = SettableFuture.create();
 	}
 
@@ -40,11 +43,22 @@ public class CompletionResultHandler implements ResultHandler {
 
 	@Override
 	public void complete() {
-		future.set(buffer);
+		future.set(new Result() {
+			@Override
+			public InputStream getInput() throws IOException {
+				return buffer.getInput();
+			}
+
+			@Override
+			public MediaType mediaType() {
+				return contentType;
+			}
+
+		});
 	}
 
 	@Override
-	public ListenableFuture<InputSupplier<InputStream>> asFutureResult() {
+	public ListenableFuture<Result> asFutureResult() {
 		return future;
 	}
 

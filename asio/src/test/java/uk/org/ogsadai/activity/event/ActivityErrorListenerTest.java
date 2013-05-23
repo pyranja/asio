@@ -10,8 +10,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import uk.org.ogsadai.exception.DAIException;
-import uk.org.ogsadai.exception.RequestException;
 import uk.org.ogsadai.resource.ResourceID;
+import at.ac.univie.isc.asio.MockDaiException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ActivityErrorListenerTest {
@@ -28,7 +28,7 @@ public class ActivityErrorListenerTest {
 
 	@Test
 	public void forward_error_with_correct_request_id() throws Exception {
-		final DAIException error = new RequestException(null);
+		final DAIException error = new MockDaiException();
 		subject.error(null, error);
 		verify(parent).requestErrorEvent(REQUEST, error);
 	}

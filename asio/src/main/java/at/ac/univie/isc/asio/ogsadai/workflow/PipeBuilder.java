@@ -1,20 +1,19 @@
-package at.ac.univie.isc.asio.ogsadai;
+package at.ac.univie.isc.asio.ogsadai.workflow;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import uk.org.ogsadai.activity.pipeline.ActivityPipeline;
 import uk.org.ogsadai.activity.pipeline.SimpleActivityPipeline;
 import uk.org.ogsadai.activity.workflow.ActivityPipelineWorkflow;
-import uk.org.ogsadai.activity.workflow.Workflow;
-import at.ac.univie.isc.asio.ogsadai.PipeElements.Consumer;
-import at.ac.univie.isc.asio.ogsadai.PipeElements.Producer;
-import at.ac.univie.isc.asio.ogsadai.PipeElements.ProducerAndConsumer;
+import at.ac.univie.isc.asio.ogsadai.workflow.PipeElements.Consumer;
+import at.ac.univie.isc.asio.ogsadai.workflow.PipeElements.Producer;
+import at.ac.univie.isc.asio.ogsadai.workflow.PipeElements.ProducerAndConsumer;
 
 /**
  * Create activity pipeline workflows in a fluent way.
  * 
  * @author Chris Borckholder
  */
-public class PipeBuilder {
+public final class PipeBuilder {
 
 	/**
 	 * Start the creation of a pipeline workflow.
@@ -59,7 +58,7 @@ public class PipeBuilder {
 	 *            tuple consumer
 	 * @return created workflow
 	 */
-	public Workflow finish(final Consumer end) {
+	public ActivityPipelineWorkflow finish(final Consumer end) {
 		checkNotNull(end, "given activity is null");
 		pipe.connect(last.activity(), last.output(), end.activity(),
 				end.input());

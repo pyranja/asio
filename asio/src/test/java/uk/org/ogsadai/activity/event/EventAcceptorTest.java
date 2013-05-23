@@ -21,6 +21,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import uk.org.ogsadai.exception.DAIException;
 import uk.org.ogsadai.exception.RequestTerminatedException;
+import at.ac.univie.isc.asio.MockDaiException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EventAcceptorTest {
@@ -68,23 +69,32 @@ public class EventAcceptorTest {
 		subject.handleStateAndStop(COMPLETED_WITH_ERROR);
 	}
 
+	@Test(expected = AssertionError.class)
+	public void propagate_fail_on_illegal_status() throws Exception {
+		try {
+			subject.handleStateAndStop(COMPLETED_WITH_ERROR);
+		} finally {
+			verify(delegate).fail(any(DAIException.class));
+		}
+	}
+
 	@Test
 	public void propagates_errors() throws Exception {
-		final DAIException cause = new MockDaiException("test error");
+		final DAIException cause = new MockDaiException();
 		subject.handleErrorAndStop(cause);
 		verify(delegate).fail(cause);
 	}
 
 	@Test
 	public void signal_continue_after_error() throws Exception {
-		final DAIException cause = new MockDaiException("test error");
+		final DAIException cause = new MockDaiException();
 		assertFalse(subject.handleErrorAndStop(cause));
 	}
 
 	@Test
 	public void signal_stop_after_error_if_in_error_state() throws Exception {
 		subject.handleStateAndStop(ERROR);
-		final DAIException cause = new MockDaiException("test error");
+		final DAIException cause = new MockDaiException();
 		assertTrue(subject.handleErrorAndStop(cause));
 	}
 
@@ -97,7 +107,7 @@ public class EventAcceptorTest {
 	@Test
 	public void signal_stop_on_request_error_state_and_previous_exceptions()
 			throws Exception {
-		subject.handleErrorAndStop(new MockDaiException("test error"));
+		subject.handleErrorAndStop(new MockDaiException());
 		assertTrue("signaled continue", subject.handleStateAndStop(ERROR));
 	}
 }
