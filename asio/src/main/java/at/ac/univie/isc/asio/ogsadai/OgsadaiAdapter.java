@@ -24,8 +24,6 @@ import uk.org.ogsadai.resource.request.SimpleCandidateRequestDescriptor;
 import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.DatasetFailureException;
 import at.ac.univie.isc.asio.DatasetUsageException;
-import at.ac.univie.isc.asio.common.IdGenerator;
-import at.ac.univie.isc.asio.common.RandomIdGenerator;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.OutputSupplier;
@@ -52,28 +50,17 @@ import com.google.common.io.OutputSupplier;
 @ThreadSafe
 public class OgsadaiAdapter {
 
-	private static final String ID_QUALIFIER = "asio";
-
 	private final DRER drer;
 	private final ObjectExchanger<OutputSupplier<OutputStream>> exchanger;
 	private final RequestEventRouter router;
-	private final IdGenerator ids;
 
 	@VisibleForTesting
 	OgsadaiAdapter(final DRER drer,
 			final ObjectExchanger<OutputSupplier<OutputStream>> exchanger,
-			final RequestEventRouter router, final IdGenerator ids) {
+			final RequestEventRouter router) {
 		this.drer = drer;
 		this.exchanger = exchanger;
 		this.router = router;
-		this.ids = ids;
-	}
-
-	OgsadaiAdapter(final DRER drer,
-			final ObjectExchanger<OutputSupplier<OutputStream>> exchanger,
-			final RequestEventRouter router) {
-		this(drer, exchanger, router, RandomIdGenerator
-				.withPrefix(ID_QUALIFIER));
 	}
 
 	/**
@@ -81,14 +68,17 @@ public class OgsadaiAdapter {
 	 * can be used to retrieve the supplier from the {@link ObjectExchanger} in
 	 * the OGSADAI context.
 	 * 
+	 * @param id
+	 *            under which the supplier should be available
+	 * 
 	 * @param supplier
 	 *            to be attached
 	 * @return id associated to the attached supplier
 	 */
-	public String register(final OutputSupplier<OutputStream> supplier) {
-		final String supplierId = ids.next();
-		exchanger.offer(supplierId, supplier); // should not collide
-		return supplierId;
+	public String register(final String id,
+			final OutputSupplier<OutputStream> supplier) {
+		exchanger.offer(id, supplier); // should not collide
+		return id;
 	}
 
 	/**
@@ -106,6 +96,9 @@ public class OgsadaiAdapter {
 	 * workflow. Setup request listening to notify the given
 	 * {@link CompletionCallback}.
 	 * 
+	 * @param id
+	 *            of the request
+	 * 
 	 * @param workflow
 	 *            to be executed
 	 * @param tracker
@@ -114,9 +107,9 @@ public class OgsadaiAdapter {
 	 * @throws DatasetException
 	 *             if an error occurs while communicating with OGSADAI
 	 */
-	public ResourceID invoke(final Workflow workflow,
+	public ResourceID invoke(final String id, final Workflow workflow,
 			final CompletionCallback tracker) throws DatasetException {
-		final ResourceID requestId = new ResourceID(ids.next(), "");
+		final ResourceID requestId = new ResourceID(id, "");
 		router.track(requestId, tracker);
 		final CandidateRequestDescriptor request = new SimpleCandidateRequestDescriptor(
 				requestId, // randomized with qualifier

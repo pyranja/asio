@@ -22,7 +22,6 @@ import at.ac.univie.isc.asio.MockOperations;
 public class SqlComposerTest {
 
 	private static final ResourceID RESOURCE = new ResourceID("test");
-	private static final String STREAM = "TEST-STREAM";
 
 	private SqlComposer subject;
 	private Set<ActivityDescriptor> activities;
@@ -83,7 +82,7 @@ public class SqlComposerTest {
 
 	@SuppressWarnings("unchecked")
 	private void createWorkflowFor(final DatasetOperation op) {
-		final ActivityPipelineWorkflow wf = subject.createFrom(op, STREAM);
+		final ActivityPipelineWorkflow wf = subject.createFrom(op);
 		final ActivityPipeline pipe = wf.getActivityPipeline();
 		activities = pipe.getActivities();
 	}

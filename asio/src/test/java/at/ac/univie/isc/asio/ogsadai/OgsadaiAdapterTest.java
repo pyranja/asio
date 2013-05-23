@@ -35,7 +35,6 @@ import uk.org.ogsadai.resource.request.CandidateRequestDescriptor;
 import uk.org.ogsadai.resource.request.RequestStatus;
 import at.ac.univie.isc.asio.DatasetFailureException;
 import at.ac.univie.isc.asio.DatasetUsageException;
-import at.ac.univie.isc.asio.common.IdGenerator;
 
 import com.google.common.io.OutputSupplier;
 
@@ -50,42 +49,41 @@ public class OgsadaiAdapterTest {
 	@Mock private ObjectExchanger<OutputSupplier<OutputStream>> exchanger;
 	@Mock private RequestEventRouter router;
 	@Mock private CompletionCallback tracker;
-	@Mock private IdGenerator ids;
 	@Captor private ArgumentCaptor<CandidateRequestDescriptor> submittedRequest;
 
 	@Before
 	public void setUp() throws Exception {
 		when(drer.execute(any(CandidateRequestDescriptor.class))).thenReturn(
 				mock_response());
-		when(ids.next()).thenReturn(MOCK_IDENTIFIER);
-		subject = new OgsadaiAdapter(drer, exchanger, router, ids);
+		subject = new OgsadaiAdapter(drer, exchanger, router);
 	}
 
 	@Test
 	public void attaches_stream_to_exchanger() throws Exception {
 		@SuppressWarnings("unchecked")
 		final OutputSupplier<OutputStream> supplier = mock(OutputSupplier.class);
-		final String streamId = subject.register(supplier);
-		verify(exchanger).offer(streamId, supplier);
+		final String streamId = subject.register(MOCK_IDENTIFIER, supplier);
+		verify(exchanger).offer(MOCK_IDENTIFIER, supplier);
+		assertEquals(MOCK_IDENTIFIER, streamId);
 	}
 
 	@Test
 	public void tracks_submitted_request() throws Exception {
 		final ResourceID expectedId = new ResourceID(MOCK_IDENTIFIER);
-		subject.invoke(workflow, tracker);
+		subject.invoke(MOCK_IDENTIFIER, workflow, tracker);
 		verify(router).track(eq(expectedId), same(tracker));
 	}
 
 	@Test
 	public void submits_request_with_given_workflow() throws Exception {
-		subject.invoke(workflow, tracker);
+		subject.invoke(MOCK_IDENTIFIER, workflow, tracker);
 		verify(drer).execute(submittedRequest.capture());
 		assertSame(workflow, submittedRequest.getValue().getWorkflow());
 	}
 
 	@Test
 	public void submits_asynchronous_request() throws Exception {
-		subject.invoke(workflow, tracker);
+		subject.invoke(MOCK_IDENTIFIER, workflow, tracker);
 		verify(drer).execute(submittedRequest.capture());
 		assertFalse(submittedRequest.getValue().isSynchronous());
 	}
@@ -93,7 +91,8 @@ public class OgsadaiAdapterTest {
 	@Test
 	public void returns_id_of_created_request() throws Exception {
 		final ResourceID expected = new ResourceID(MOCK_IDENTIFIER);
-		final ResourceID returned = subject.invoke(workflow, tracker);
+		final ResourceID returned = subject.invoke(MOCK_IDENTIFIER, workflow,
+				tracker);
 		assertEquals(expected, returned);
 	}
 
@@ -101,14 +100,14 @@ public class OgsadaiAdapterTest {
 	public void translates_dai_user_exception() throws Exception {
 		when(drer.execute(any(CandidateRequestDescriptor.class))).thenThrow(
 				new RequestUserException());
-		subject.invoke(workflow, tracker);
+		subject.invoke(MOCK_IDENTIFIER, workflow, tracker);
 	}
 
 	@Test(expected = DatasetFailureException.class)
 	public void translates_dai_processing_exception() throws Exception {
 		when(drer.execute(any(CandidateRequestDescriptor.class))).thenThrow(
 				new RequestProcessingException());
-		subject.invoke(workflow, tracker);
+		subject.invoke(MOCK_IDENTIFIER, workflow, tracker);
 	}
 
 	// should resemble an async execution result

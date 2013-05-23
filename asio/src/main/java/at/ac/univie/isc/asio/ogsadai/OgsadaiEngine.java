@@ -39,6 +39,9 @@ public final class OgsadaiEngine implements DatasetEngine {
 		this.composer = composer;
 	}
 
+	/**
+	 * @return all {@link OgsadaiFormats formats} supported by OGSADAI.
+	 */
 	@Override
 	public Set<SerializationFormat> supportedFormats() {
 		return OgsadaiFormats.asSet();
@@ -57,17 +60,16 @@ public final class OgsadaiEngine implements DatasetEngine {
 	@Override
 	public ListenableFuture<Result> submit(final DatasetOperation operation) {
 		final ResultHandler handler = results.newHandler(operation.format());
-		final String handlerId = ogsadai.register(handler);
-		log.trace("[{}] registered handler [{}] with exchanger", operation,
-				handlerId);
-		final Workflow workflow = composer.createFrom(operation, handlerId);
+		ogsadai.register(operation.id(), handler);
+		log.trace("[{}] registered handler with exchanger", operation);
+		final Workflow workflow = composer.createFrom(operation);
 		log.trace("[{}] using workflow :\n{}", operation, workflow);
 		final CompletionCallback callback = delegateTo(handler);
 		try {
-			ogsadai.invoke(workflow, callback);
+			ogsadai.invoke(operation.id(), workflow, callback);
 		} catch (final DatasetException cause) {
 			// clean up exchange
-			ogsadai.revokeSupplier(handlerId);
+			ogsadai.revokeSupplier(operation.id());
 			handler.fail(cause);
 		}
 		return handler.asFutureResult();
