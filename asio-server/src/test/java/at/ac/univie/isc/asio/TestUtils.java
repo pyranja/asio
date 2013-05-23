@@ -14,6 +14,22 @@ import com.google.common.io.CharStreams;
 public class TestUtils {
 
 	/**
+	 * Tests two strings for equality ignoring case.
+	 * 
+	 * @param expected
+	 *            value
+	 * @param given
+	 *            real value
+	 */
+	public static void assertEqualsIgnoreCase(final String expected,
+			final String given) {
+		if (!expected.equalsIgnoreCase(given)) {
+			throw new AssertionError("expected [" + expected + "] but was ["
+					+ given + "]");
+		}
+	}
+
+	/**
 	 * @param response
 	 *            to be printed
 	 * @return the header and body of this response as text

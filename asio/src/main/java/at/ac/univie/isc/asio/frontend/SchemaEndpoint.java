@@ -1,8 +1,5 @@
 package at.ac.univie.isc.asio.frontend;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import javax.ws.rs.GET;
@@ -13,22 +10,18 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.Variant;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import at.ac.univie.isc.asio.DatasetEngine;
 import at.ac.univie.isc.asio.DatasetOperation;
+import at.ac.univie.isc.asio.DatasetOperation.Action;
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
 import at.ac.univie.isc.asio.DatasetUsageException;
 import at.ac.univie.isc.asio.OperationFactory;
 import at.ac.univie.isc.asio.Result;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.util.concurrent.ListenableFuture;
 
 /**
@@ -37,39 +30,14 @@ import com.google.common.util.concurrent.ListenableFuture;
  * @author Chris Borckholder
  */
 @Path("/schema/")
-public final class SchemaEndpoint {
+public final class SchemaEndpoint extends AbstractEndpoint {
 
 	/* slf4j-logger */
 	final static Logger log = LoggerFactory.getLogger(SchemaEndpoint.class);
 
-	private final DatasetEngine engine;
-	private final OperationFactory create;
-	private final VariantConverter converter;
-
-	private Map<Variant, SerializationFormat> variant2format;
-
 	public SchemaEndpoint(final DatasetEngine engine,
 			final OperationFactory create) {
-		super();
-		this.engine = engine;
-		this.create = create;
-		converter = VariantConverter.getInstance();
-		initializeVariants();
-	}
-
-	/**
-	 * Create the reverse mapping between variants and serialization formats.
-	 */
-	@VisibleForTesting
-	void initializeVariants() {
-		final Set<SerializationFormat> formats = engine.supportedFormats();
-		final Builder<Variant, SerializationFormat> map = ImmutableMap
-				.builder();
-		for (final SerializationFormat each : formats) {
-			final Variant variant = converter.asVariant(each.asMediaType());
-			map.put(variant, each);
-		}
-		variant2format = map.build();
+		super(engine, create, Action.SCHEMA);
 	}
 
 	/**
@@ -110,18 +78,6 @@ public final class SchemaEndpoint {
 			log.warn("{} failed with internal error", operation, e);
 			throw new WebApplicationException(e, Response.serverError()
 					.entity(e.getMessage()).build());
-		}
-	}
-
-	private SerializationFormat matchFormat(final Request request) {
-		final List<Variant> candidates = ImmutableList.copyOf(variant2format
-				.keySet()); // not really copying
-		final Variant selected = request.selectVariant(candidates);
-		if (selected != null) {
-			return variant2format.get(selected);
-		} else {
-			throw new WebApplicationException(Response
-					.notAcceptable(candidates).build());
 		}
 	}
 }

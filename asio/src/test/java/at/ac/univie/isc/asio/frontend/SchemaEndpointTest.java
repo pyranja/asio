@@ -1,6 +1,5 @@
 package at.ac.univie.isc.asio.frontend;
 
-import static java.util.Collections.singleton;
 import static javax.ws.rs.core.Response.Status.fromStatusCode;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -27,8 +26,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.Action;
-import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
-import at.ac.univie.isc.asio.MockFormat;
+import at.ac.univie.isc.asio.MockFormats;
 import at.ac.univie.isc.asio.MockResult;
 
 import com.google.common.io.ByteStreams;
@@ -36,17 +34,12 @@ import com.google.common.io.ByteStreams;
 @RunWith(MockitoJUnitRunner.class)
 public class SchemaEndpointTest extends EndpointTestFixture {
 
-	private static final SerializationFormat MOCK_FORMAT = new MockFormat();
-	private SchemaEndpoint endpoint;
 	private Response response;
 	@Captor private ArgumentCaptor<DatasetOperation> submittedOperation;
 
 	@Before
 	public void setUp() {
-		endpoint = application.getSchemaEndpoint();
-		when(engine.supportedFormats()).thenReturn(singleton(MOCK_FORMAT));
-		endpoint.initializeVariants();
-		client.path("schema").accept(MockFormat.MOCK_CONTENT_TYPE);
+		client.path("schema").accept(MockFormats.APPLICABLE_CONTENT_TYPE);
 	}
 
 	@After
@@ -69,7 +62,8 @@ public class SchemaEndpointTest extends EndpointTestFixture {
 		when(engine.submit(any(DatasetOperation.class))).thenReturn(
 				MockResult.successFuture());
 		response = client.get();
-		assertEquals(MockFormat.MOCK_CONTENT_TYPE, response.getMediaType());
+		assertEquals(MockFormats.APPLICABLE_CONTENT_TYPE,
+				response.getMediaType());
 	}
 
 	@Test
@@ -89,7 +83,7 @@ public class SchemaEndpointTest extends EndpointTestFixture {
 		final DatasetOperation op = submittedOperation.getValue();
 		assertEquals(Action.SCHEMA, op.action());
 		assertFalse(op.command().isPresent());
-		assertEquals(MOCK_FORMAT, op.format());
+		assertEquals(VALID_FORMAT, op.format());
 	}
 
 	// REJECTIONS

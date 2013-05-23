@@ -22,7 +22,7 @@ import com.google.common.collect.ImmutableSet;
 @ApplicationPath("/")
 public class EndpointApplication extends Application {
 
-	private final SqlQueryEndpoint queryEndpoint;
+	private final QueryEndpoint queryEndpoint;
 	private final SchemaEndpoint schemaEndpoint;
 
 	private final DatasetEngine mockEngine;
@@ -33,7 +33,7 @@ public class EndpointApplication extends Application {
 		mockEngine = Mockito.mock(DatasetEngine.class);
 		factory = new OperationFactory(
 				RandomIdGenerator.withPrefix("integration"));
-		queryEndpoint = new SqlQueryEndpoint(mockEngine, factory);
+		queryEndpoint = new QueryEndpoint(mockEngine, factory);
 		schemaEndpoint = new SchemaEndpoint(mockEngine, factory);
 	}
 
@@ -50,9 +50,16 @@ public class EndpointApplication extends Application {
 	}
 
 	/**
+	 * @return all defined endpoints
+	 */
+	public Set<AbstractEndpoint> getEndpoints() {
+		return ImmutableSet.of(queryEndpoint, schemaEndpoint);
+	}
+
+	/**
 	 * @return the queryEndpoint service instance
 	 */
-	public SqlQueryEndpoint getQueryEndpoint() {
+	public QueryEndpoint getQueryEndpoint() {
 		return queryEndpoint;
 	}
 

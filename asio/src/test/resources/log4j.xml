@@ -11,7 +11,8 @@
   
   <!-- ignore all logs for testing -->
   <root>
-    <level value="info"/>
+<!--     <level value="info" /> -->
+    <level value="off"/> 
     <appender-ref ref="stdout"/>
   </root>
   
