@@ -1,6 +1,7 @@
 package at.ac.univie.isc.asio.ogsadai.workflow;
 
 import static uk.org.ogsadai.activity.delivery.DeliverToStreamActivity.INPUT_STREAM_ID;
+import static uk.org.ogsadai.activity.transform.DynamicSerializationActivity.INPUT_TRANSFORMER;
 import static uk.org.ogsadai.activity.transform.TupleToCSVActivity.INPUT_FIELDSESCAPED;
 import static uk.org.ogsadai.activity.transform.TupleToCSVActivity.INPUT_HEADERINCLUDED;
 import uk.org.ogsadai.activity.ActivityName;
@@ -9,6 +10,7 @@ import uk.org.ogsadai.activity.pipeline.ActivityInputLiteral;
 import uk.org.ogsadai.activity.pipeline.Literal;
 import uk.org.ogsadai.activity.pipeline.SimpleActivityDescriptor;
 import uk.org.ogsadai.activity.pipeline.SimpleLiteral;
+import uk.org.ogsadai.activity.transform.BlockTransformer;
 import uk.org.ogsadai.resource.ResourceID;
 import at.ac.univie.isc.asio.ogsadai.workflow.PipeElements.Consumer;
 import at.ac.univie.isc.asio.ogsadai.workflow.PipeElements.Producer;
@@ -31,11 +33,16 @@ public final class PipeActivities {
 	// LITERALS
 	// must use generator methods here, as literals are mutated while processing
 	private static Literal TRUE() {
-		return new SimpleLiteral(true);
+		return new SimpleLiteral(Boolean.TRUE);
 	}
 
+	@SuppressWarnings("unused")
 	private static Literal FALSE() {
-		return new SimpleLiteral(false);
+		return new SimpleLiteral(Boolean.FALSE);
+	}
+
+	private static Literal from(final Object that) {
+		return new SimpleLiteral(that);
 	}
 
 	// PRODUCER
@@ -81,6 +88,17 @@ public final class PipeActivities {
 	public static ProducerAndConsumer metadataToXml() {
 		final ActivityDescriptor product = new SimpleActivityDescriptor(
 				TABLEMETADATA_XML_TRANSFORMER_ACTIVITY);
+		return PipeElements.both(product, "data", "result");
+	}
+
+	static final ActivityName DYNAMIC_TRANSFORMER_ACTIVITY = asName("at.ac.univie.isc.DynamicSerialization");
+
+	public static ProducerAndConsumer dynamicSerializer(
+			final BlockTransformer transformer) {
+		final ActivityDescriptor product = new SimpleActivityDescriptor(
+				DYNAMIC_TRANSFORMER_ACTIVITY);
+		product.addInput(new ActivityInputLiteral(INPUT_TRANSFORMER,
+				from(transformer)));
 		return PipeElements.both(product, "data", "result");
 	}
 
