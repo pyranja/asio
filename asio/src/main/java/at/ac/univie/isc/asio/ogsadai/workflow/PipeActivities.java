@@ -1,5 +1,8 @@
 package at.ac.univie.isc.asio.ogsadai.workflow;
 
+import static at.ac.univie.isc.asio.ogsadai.workflow.PipeElements.both;
+import static at.ac.univie.isc.asio.ogsadai.workflow.PipeElements.consumer;
+import static at.ac.univie.isc.asio.ogsadai.workflow.PipeElements.producer;
 import static uk.org.ogsadai.activity.delivery.DeliverToStreamActivity.INPUT_STREAM_ID;
 import static uk.org.ogsadai.activity.transform.DynamicSerializationActivity.INPUT_TRANSFORMER;
 import static uk.org.ogsadai.activity.transform.TupleToCSVActivity.INPUT_FIELDSESCAPED;
@@ -52,7 +55,7 @@ public final class PipeActivities {
 		final ActivityDescriptor product = new SimpleActivityDescriptor(target,
 				SQL_QUERY_ACTIVITY);
 		product.addInput(new ActivityInputLiteral("expression", query));
-		return PipeElements.producer(product, "data");
+		return producer(product, "data");
 	}
 
 	static final ActivityName SQL_SCHEMA_ACTIVITY = asName("uk.org.ogsadai.ExtractTableSchema");
@@ -61,7 +64,17 @@ public final class PipeActivities {
 		final ActivityDescriptor product = new SimpleActivityDescriptor(target,
 				SQL_SCHEMA_ACTIVITY);
 		product.addInput(new ActivityInputLiteral("name", "%"));// wildcard
-		return PipeElements.producer(product, "data");
+		return producer(product, "data");
+	}
+
+	static final ActivityName SQL_UPDATE_ACTIVITY = asName("uk.org.ogsdai.SQLUpdate");
+
+	public static Producer sqlUpdate(final ResourceID target,
+			final String update) {
+		final ActivityDescriptor product = new SimpleActivityDescriptor(target,
+				SQL_UPDATE_ACTIVITY);
+		product.addInput(new ActivityInputLiteral("expression", update));
+		return producer(product, "result");
 	}
 
 	// BOTH
@@ -70,7 +83,7 @@ public final class PipeActivities {
 	public static ProducerAndConsumer tupleToWebRowSetCharArrays() {
 		final ActivityDescriptor product = new SimpleActivityDescriptor(
 				TUPLE_WEBROWSET_TRANSFORMER_ACTIVITY);
-		return PipeElements.both(product, "data", "result");
+		return both(product, "data", "result");
 	}
 
 	static final ActivityName TUPLE_CSV_TRANSFORMER_ACTIVITY = asName("uk.org.ogsadai.TupleToCSV");
@@ -80,7 +93,7 @@ public final class PipeActivities {
 				TUPLE_CSV_TRANSFORMER_ACTIVITY);
 		product.addInput(new ActivityInputLiteral(INPUT_HEADERINCLUDED, TRUE()));
 		product.addInput(new ActivityInputLiteral(INPUT_FIELDSESCAPED, TRUE()));
-		return PipeElements.both(product, "data", "result");
+		return both(product, "data", "result");
 	}
 
 	static final ActivityName TABLEMETADATA_XML_TRANSFORMER_ACTIVITY = asName("uk.org.ogsadai.TableMetadataToXMLCharArraysList");
@@ -88,7 +101,7 @@ public final class PipeActivities {
 	public static ProducerAndConsumer metadataToXml() {
 		final ActivityDescriptor product = new SimpleActivityDescriptor(
 				TABLEMETADATA_XML_TRANSFORMER_ACTIVITY);
-		return PipeElements.both(product, "data", "result");
+		return both(product, "data", "result");
 	}
 
 	static final ActivityName DYNAMIC_TRANSFORMER_ACTIVITY = asName("at.ac.univie.isc.DynamicSerialization");
@@ -99,7 +112,7 @@ public final class PipeActivities {
 				DYNAMIC_TRANSFORMER_ACTIVITY);
 		product.addInput(new ActivityInputLiteral(INPUT_TRANSFORMER,
 				from(transformer)));
-		return PipeElements.both(product, "data", "result");
+		return both(product, "data", "result");
 	}
 
 	// CONSUMER
@@ -108,7 +121,7 @@ public final class PipeActivities {
 	public static Consumer deliverToRequestStatus() {
 		final ActivityDescriptor product = new SimpleActivityDescriptor(
 				REQUESTSTATUS_DELIVERY);
-		return PipeElements.consumer(product, "input");
+		return consumer(product, "input");
 	}
 
 	static final ActivityName STREAM_DELIVERY = asName("at.ac.univie.isc.DeliverToStream");
@@ -117,7 +130,7 @@ public final class PipeActivities {
 		final ActivityDescriptor product = new SimpleActivityDescriptor(
 				STREAM_DELIVERY);
 		product.addInput(new ActivityInputLiteral(INPUT_STREAM_ID, streamId));
-		return PipeElements.consumer(product, "input");
+		return consumer(product, "input");
 	}
 
 	private PipeActivities() {/* static helper */};

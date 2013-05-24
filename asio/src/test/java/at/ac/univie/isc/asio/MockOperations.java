@@ -16,5 +16,10 @@ public class MockOperations {
 		return new DatasetOperation(TEST_ID, Action.SCHEMA, null, format);
 	}
 
+	public static DatasetOperation update(final String update,
+			final SerializationFormat format) {
+		return new DatasetOperation(TEST_ID, Action.UPDATE, update, format);
+	}
+
 	private MockOperations() {}
 }

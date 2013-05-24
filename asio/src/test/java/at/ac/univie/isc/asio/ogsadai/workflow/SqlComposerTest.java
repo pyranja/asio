@@ -70,7 +70,9 @@ public class SqlComposerTest {
 	public void schema_workflow_has_extract_schema() throws Exception {
 		final DatasetOperation op = MockOperations.schema(XML);
 		createWorkflowFor(op);
-		assertTrue(isPresent(PipeActivities.SQL_SCHEMA_ACTIVITY));
+		final ActivityDescriptor sql = getByType(PipeActivities.SQL_SCHEMA_ACTIVITY);
+		assertNotNull("sql schema activity missing in workflow", sql);
+		RESOURCE.equals(sql.getTargetResource());
 	}
 
 	@Test
@@ -78,6 +80,22 @@ public class SqlComposerTest {
 		final DatasetOperation op = MockOperations.schema(XML);
 		createWorkflowFor(op);
 		assertTrue(isPresent(PipeActivities.TABLEMETADATA_XML_TRANSFORMER_ACTIVITY));
+	}
+
+	@Test
+	public void update_workflow_has_update_activity() throws Exception {
+		final DatasetOperation op = MockOperations.update("update", XML);
+		createWorkflowFor(op);
+		final ActivityDescriptor sql = getByType(PipeActivities.SQL_UPDATE_ACTIVITY);
+		assertNotNull("sql update activity missing in workflow", sql);
+		RESOURCE.equals(sql.getTargetResource());
+	}
+
+	@Test
+	public void update_workflow_has_transformer() throws Exception {
+		final DatasetOperation op = MockOperations.update("update", XML);
+		createWorkflowFor(op);
+		assertTrue(isPresent(PipeActivities.DYNAMIC_TRANSFORMER_ACTIVITY));
 	}
 
 	@SuppressWarnings("unchecked")

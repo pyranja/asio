@@ -23,7 +23,7 @@ public class PlainUpdateCountTransformer implements BlockTransformer {
 
 	private final String query;
 
-	private PlainUpdateCountTransformer(final String query) {
+	PlainUpdateCountTransformer(final String query) {
 		super();
 		this.query = query;
 	}
