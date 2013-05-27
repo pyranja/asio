@@ -13,9 +13,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import at.ac.univie.isc.asio.DatasetEngine;
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
@@ -32,7 +30,6 @@ import com.google.common.collect.ImmutableSet;
  * 
  * @author Chris Borckholder
  */
-@RunWith(MockitoJUnitRunner.class)
 public class EndpointTestFixture {
 
 	private static final URI SERVER_URI = URI.create("http://localhost:1337/");

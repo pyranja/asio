@@ -17,6 +17,8 @@ import uk.org.ogsadai.activity.io.PipeTerminatedException;
 import uk.org.ogsadai.activity.io.ProcessingIOException;
 import uk.org.ogsadai.activity.io.TerminatedIOException;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /**
  * Adapt an enclosed {@link BlockWriter} to the {@link OutputStream} interface.
  * Bytes written to this stream are divided into fixed size byte arrays and
@@ -126,5 +128,10 @@ public class BlockWriterStreamAdapter extends OutputStream {
 		} catch (final PipeTerminatedException e) {
 			throw new TerminatedIOException(e);
 		}
+	}
+
+	@VisibleForTesting
+	BlockWriter getBlockWriter() {
+		return writer;
 	}
 }

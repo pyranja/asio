@@ -2,6 +2,7 @@ package at.ac.univie.isc.asio.ogsadai;
 
 import static at.ac.univie.isc.asio.DatasetOperation.Action.QUERY;
 import static at.ac.univie.isc.asio.DatasetOperation.Action.SCHEMA;
+import static at.ac.univie.isc.asio.DatasetOperation.Action.UPDATE;
 
 import java.util.Set;
 
@@ -22,14 +23,16 @@ public enum OgsadaiFormats implements SerializationFormat {
 	/**
 	 * webrowset/tablemetadata representation
 	 */
-	XML(
-			MediaType.create("application", "xml").withCharset(Charsets.UTF_8),
-			QUERY,
-			SCHEMA),
+	XML(MediaType.create("application", "xml").withCharset(Charsets.UTF_8),
+			QUERY, UPDATE, SCHEMA),
 	/**
 	 * tabular, comma-separated representation
 	 */
-	CSV(MediaType.CSV_UTF_8, QUERY);
+	CSV(MediaType.CSV_UTF_8, QUERY),
+	/**
+	 * simple plain text representation
+	 */
+	PLAIN(MediaType.PLAIN_TEXT_UTF_8, UPDATE);
 
 	private static final Set<SerializationFormat> valueSet = ImmutableSet
 			.<SerializationFormat> copyOf(OgsadaiFormats.values());
