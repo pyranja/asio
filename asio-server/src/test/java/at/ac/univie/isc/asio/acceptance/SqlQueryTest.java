@@ -21,8 +21,6 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import at.ac.univie.isc.asio.FunctionalTest;
 import at.ac.univie.isc.asio.JaxrsClientProvider;
@@ -34,9 +32,6 @@ import com.google.common.base.Charsets;
 
 @Category(FunctionalTest.class)
 public class SqlQueryTest {
-
-	/* slf4j-logger */
-	final static Logger log = LoggerFactory.getLogger(SqlQueryTest.class);
 
 	private static final URI SERVER_URL = URI
 			.create("http://localhost:8080/v1/asio/query");

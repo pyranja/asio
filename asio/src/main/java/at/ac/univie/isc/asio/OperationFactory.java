@@ -52,6 +52,22 @@ public class OperationFactory {
 	}
 
 	/**
+	 * Create an UPDATE dataset operation
+	 * 
+	 * @param update
+	 *            to be executed
+	 * @param format
+	 *            for results rendering
+	 * @return the parameterized operation
+	 */
+	public DatasetOperation update(final String update,
+			final SerializationFormat format) {
+		userErrorIfNull(emptyToNull(update), "illegal update %s", update);
+		checkNotNull(format, "format is null");
+		return new DatasetOperation(ids.next(), Action.UPDATE, update, format);
+	}
+
+	/**
 	 * Like {@link Preconditions#checkNotNull(Object, String, Object...)}, but
 	 * throws {@link DatasetUsageException}.
 	 */

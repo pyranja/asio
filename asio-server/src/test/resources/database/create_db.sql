@@ -8,3 +8,9 @@ CREATE TABLE person (
   postalcode varchar(10) default NULL,
   PRIMARY KEY (id)
 );
+
+CREATE TABLE patient (
+  id INT NOT NULL,
+  name varchar(255) default NULL,
+  PRIMARY KEY (id)
+);

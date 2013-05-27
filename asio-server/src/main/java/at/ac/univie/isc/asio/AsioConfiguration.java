@@ -12,6 +12,7 @@ import org.springframework.context.annotation.ImportResource;
 import at.ac.univie.isc.asio.common.RandomIdGenerator;
 import at.ac.univie.isc.asio.frontend.QueryEndpoint;
 import at.ac.univie.isc.asio.frontend.SchemaEndpoint;
+import at.ac.univie.isc.asio.frontend.UpdateEndpoint;
 import at.ac.univie.isc.asio.transport.FileResultRepository;
 
 /**
@@ -38,6 +39,11 @@ public class AsioConfiguration {
 	@Bean(name = "asio_schema")
 	public SchemaEndpoint schemaService() {
 		return new SchemaEndpoint(engine, operationFactory());
+	}
+
+	@Bean(name = "asio_update")
+	public UpdateEndpoint updateService() {
+		return new UpdateEndpoint(engine, operationFactory());
 	}
 
 	@Bean(destroyMethod = "dispose")

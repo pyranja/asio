@@ -4,7 +4,12 @@ class=uk.org.ogsadai.activity.delivery.DeliverToStreamActivity
 description=Redirects activity results to an in-process stream
 CONFIG
 END
-# endof ASIO deliver
+id=at.ac.univie.isc.DynamicSerialization
+class=uk.org.ogsadai.activity.transform.DynamicSerializationActivity
+description=Uses a given BlockTransformer to serialize object blocks
+CONFIG
+END
+# endof ASIO delivery
 # H2 sql activities
 id=uk.org.ogsadai.ExtractH2TableSchema
 class=uk.org.ogsadai.activity.sql.ExtractTableSchemaActivity
