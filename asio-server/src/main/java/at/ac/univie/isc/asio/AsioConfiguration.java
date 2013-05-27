@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 
 import at.ac.univie.isc.asio.common.RandomIdGenerator;
+import at.ac.univie.isc.asio.frontend.OperationFactory;
 import at.ac.univie.isc.asio.frontend.QueryEndpoint;
 import at.ac.univie.isc.asio.frontend.SchemaEndpoint;
 import at.ac.univie.isc.asio.frontend.UpdateEndpoint;

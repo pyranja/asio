@@ -25,7 +25,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.Action;
-import at.ac.univie.isc.asio.MockFormats;
+import at.ac.univie.isc.asio.MockFormat;
 import at.ac.univie.isc.asio.MockResult;
 
 import com.google.common.io.ByteStreams;
@@ -38,7 +38,7 @@ public class UpdateEndpointTest extends EndpointTestFixture {
 
 	@Before
 	public void setUp() {
-		client.path("update").accept(MockFormats.APPLICABLE_CONTENT_TYPE);
+		client.path("update").accept(MockFormat.APPLICABLE_CONTENT_TYPE);
 	}
 
 	@After
@@ -61,7 +61,7 @@ public class UpdateEndpointTest extends EndpointTestFixture {
 		when(engine.submit(any(DatasetOperation.class))).thenReturn(
 				MockResult.successFuture());
 		response = client.type("application/sql-update").post("test-update");
-		assertEquals(MockFormats.APPLICABLE_CONTENT_TYPE,
+		assertEquals(MockFormat.APPLICABLE_CONTENT_TYPE,
 				response.getMediaType());
 	}
 
@@ -96,7 +96,7 @@ public class UpdateEndpointTest extends EndpointTestFixture {
 		final DatasetOperation op = submitted.getValue();
 		assertEquals(Action.UPDATE, op.action());
 		assertEquals("test-update", op.command().orNull());
-		assertEquals(VALID_FORMAT, op.format());
+		assertEquals(MockFormat.ALWAYS_APPLICABLE, op.format());
 	}
 
 	// REJECTIONS

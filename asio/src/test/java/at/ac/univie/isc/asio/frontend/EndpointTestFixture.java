@@ -16,8 +16,7 @@ import org.junit.BeforeClass;
 import org.mockito.Mockito;
 
 import at.ac.univie.isc.asio.DatasetEngine;
-import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
-import at.ac.univie.isc.asio.MockFormats;
+import at.ac.univie.isc.asio.MockFormat;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -59,23 +58,16 @@ public class EndpointTestFixture {
 
 	// test infrastructure
 
-	protected static final SerializationFormat VALID_FORMAT = MockFormats
-			.thatIsAlwaysApplicable();
-	protected static final SerializationFormat INVALID_FORMAT = MockFormats
-			.thatIsNeverApplicable();
-
 	protected WebClient client;
 	protected DatasetEngine engine;
 
 	@Before
-	public void prepareClientAndMock() {
+	public void prepareClient() {
 		client = WebClient.create(SERVER_URI);
 		engine = application.getMockEngine();
 		when(engine.supportedFormats()).thenReturn(
-				ImmutableSet.of(VALID_FORMAT, INVALID_FORMAT));
-		for (final AbstractEndpoint each : application.getEndpoints()) {
-			each.initializeVariants();
-		}
+				ImmutableSet.of(MockFormat.ALWAYS_APPLICABLE,
+						MockFormat.NEVER_APPLICABLE));
 	}
 
 	@After
