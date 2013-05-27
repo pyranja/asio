@@ -37,7 +37,7 @@ public class XmlUpdateCountTransformer implements BlockTransformer {
 
 	private final String query;
 
-	XmlUpdateCountTransformer(final String query) {
+	public XmlUpdateCountTransformer(final String query) {
 		super();
 		this.query = query;
 	}

@@ -35,7 +35,7 @@ import com.google.common.io.ByteStreams;
 
 // TODO test operation type aware formats
 @RunWith(MockitoJUnitRunner.class)
-public class SqlQueryEndpointTest extends EndpointTestFixture {
+public class QueryEndpointTest extends EndpointTestFixture {
 
 	private Response response;
 	@Captor private ArgumentCaptor<DatasetOperation> submittedOperation;
@@ -114,6 +114,15 @@ public class SqlQueryEndpointTest extends EndpointTestFixture {
 	@Test
 	public void rejects_missing_query_param() throws Exception {
 		response = client.get();
+		assertEquals(Status.BAD_REQUEST, fromStatusCode(response.getStatus()));
+		verify(engine, never()).submit(any(DatasetOperation.class));
+	}
+
+	@Test
+	public void rejects_missing_form_param() throws Exception {
+		final Form values = new Form();
+		values.set("invalid", "anything");
+		response = client.form(values);
 		assertEquals(Status.BAD_REQUEST, fromStatusCode(response.getStatus()));
 		verify(engine, never()).submit(any(DatasetOperation.class));
 	}

@@ -22,8 +22,7 @@ import com.google.common.collect.ImmutableSet;
 @ApplicationPath("/")
 public class EndpointApplication extends Application {
 
-	private final QueryEndpoint queryEndpoint;
-	private final SchemaEndpoint schemaEndpoint;
+	private final Set<AbstractEndpoint> endpoints;
 
 	private final DatasetEngine mockEngine;
 	private final OperationFactory factory;
@@ -33,13 +32,14 @@ public class EndpointApplication extends Application {
 		mockEngine = Mockito.mock(DatasetEngine.class);
 		factory = new OperationFactory(
 				RandomIdGenerator.withPrefix("integration"));
-		queryEndpoint = new QueryEndpoint(mockEngine, factory);
-		schemaEndpoint = new SchemaEndpoint(mockEngine, factory);
+		endpoints = ImmutableSet.of(new QueryEndpoint(mockEngine, factory),
+				new SchemaEndpoint(mockEngine, factory), new UpdateEndpoint(
+						mockEngine, factory));
 	}
 
 	@Override
 	public Set<Object> getSingletons() {
-		return ImmutableSet.<Object> of(queryEndpoint, schemaEndpoint);
+		return ImmutableSet.<Object> copyOf(endpoints);
 	}
 
 	/**
@@ -53,20 +53,6 @@ public class EndpointApplication extends Application {
 	 * @return all defined endpoints
 	 */
 	public Set<AbstractEndpoint> getEndpoints() {
-		return ImmutableSet.of(queryEndpoint, schemaEndpoint);
-	}
-
-	/**
-	 * @return the queryEndpoint service instance
-	 */
-	public QueryEndpoint getQueryEndpoint() {
-		return queryEndpoint;
-	}
-
-	/**
-	 * @return the schemaEndpoint service instance
-	 */
-	public SchemaEndpoint getSchemaEndpoint() {
-		return schemaEndpoint;
+		return endpoints;
 	}
 }

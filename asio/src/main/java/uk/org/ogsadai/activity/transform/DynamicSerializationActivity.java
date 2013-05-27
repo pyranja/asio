@@ -109,10 +109,12 @@ public class DynamicSerializationActivity extends MatchedIterativeActivity {
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("Serializing " + block + " using " + transformer);
 		}
-		try (final OutputStream adapted = new BlockWriterStreamAdapter(output,
-				BLOCK_SIZE)) {
+		try {
 			output.write(ControlBlock.LIST_BEGIN);
-			transformer.writeObject(adapted, block);
+			try (final OutputStream adapted = new BlockWriterStreamAdapter(
+					output, BLOCK_SIZE)) {
+				transformer.writeObject(adapted, block);
+			}
 			output.write(ControlBlock.LIST_END);
 		} catch (final IOException e) {
 			output.closeForWritingDueToError();

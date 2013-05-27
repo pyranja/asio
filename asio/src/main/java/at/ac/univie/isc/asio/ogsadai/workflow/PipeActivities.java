@@ -67,7 +67,7 @@ public final class PipeActivities {
 		return producer(product, "data");
 	}
 
-	static final ActivityName SQL_UPDATE_ACTIVITY = asName("uk.org.ogsdai.SQLUpdate");
+	static final ActivityName SQL_UPDATE_ACTIVITY = asName("uk.org.ogsadai.SQLUpdate");
 
 	public static Producer sqlUpdate(final ResourceID target,
 			final String update) {

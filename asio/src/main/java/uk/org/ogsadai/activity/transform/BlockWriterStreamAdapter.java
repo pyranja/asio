@@ -74,11 +74,11 @@ public class BlockWriterStreamAdapter extends OutputStream {
 	 */
 	@Override
 	public synchronized void close() throws IOException {
-		super.close();
 		// empty buffer
 		final byte[] block = copyAndClearBuffer();
 		forward(block);
 		closed = true;
+		super.close();
 	}
 
 	private void checkClosed() throws IOException {

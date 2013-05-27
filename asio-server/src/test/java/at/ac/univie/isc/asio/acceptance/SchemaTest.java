@@ -36,7 +36,6 @@ import at.ac.univie.isc.asio.FunctionalTest;
 import at.ac.univie.isc.asio.JaxrsClientProvider;
 
 import com.google.common.base.Charsets;
-import com.google.common.collect.Iterables;
 
 @Category(FunctionalTest.class)
 public class SchemaTest {
@@ -81,9 +80,7 @@ public class SchemaTest {
 	private void verifySchema(final DatabaseSchemaMetaData schema) {
 		@SuppressWarnings("unchecked")
 		final Map<String, TableMetaData> tables = schema.getTables();
-		assertEquals(1, tables.size());
-		final String tableName = Iterables.getOnlyElement(tables.keySet());
-		assertEqualsIgnoreCase("person", tableName);
+		assertEquals(2, tables.size()); // change this if schema changes
 		final TableMetaData table = tables.get("PERSON");
 		assertEqualsIgnoreCase("TEST", table.getCatalogName());
 		assertEquals(5, table.getColumnCount());
