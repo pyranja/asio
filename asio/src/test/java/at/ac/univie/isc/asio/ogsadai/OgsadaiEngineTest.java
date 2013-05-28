@@ -70,7 +70,7 @@ public class OgsadaiEngineTest {
 		final Set<SerializationFormat> supported = subject.supportedFormats();
 		final List<OgsadaiFormats> ogsadaiFormats = Arrays
 				.asList(OgsadaiFormats.values());
-		assertTrue(supported.containsAll(ogsadaiFormats)); // XXX only for QUERY
+		assertTrue(supported.containsAll(ogsadaiFormats));
 		assertTrue(ogsadaiFormats.containsAll(supported));
 	}
 

@@ -19,10 +19,7 @@ public class DatasetOperation {
 	 * @author Chris Borckholder
 	 */
 	public static enum Action {
-		QUERY,
-		SCHEMA,
-		UPDATE,
-		BATCH;
+		QUERY, SCHEMA, UPDATE, BATCH;
 	}
 
 	/**
@@ -50,7 +47,7 @@ public class DatasetOperation {
 	private final Optional<String> command;
 	private final SerializationFormat format;
 
-	DatasetOperation(final String id, final Action action,
+	public DatasetOperation(final String id, final Action action,
 			@Nullable final String command, final SerializationFormat format) {
 		super();
 		this.id = id;

@@ -26,7 +26,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.Action;
-import at.ac.univie.isc.asio.MockFormats;
+import at.ac.univie.isc.asio.MockFormat;
 import at.ac.univie.isc.asio.MockResult;
 
 import com.google.common.io.ByteStreams;
@@ -39,7 +39,7 @@ public class SchemaEndpointTest extends EndpointTestFixture {
 
 	@Before
 	public void setUp() {
-		client.path("schema").accept(MockFormats.APPLICABLE_CONTENT_TYPE);
+		client.path("schema").accept(MockFormat.APPLICABLE_CONTENT_TYPE);
 	}
 
 	@After
@@ -62,7 +62,7 @@ public class SchemaEndpointTest extends EndpointTestFixture {
 		when(engine.submit(any(DatasetOperation.class))).thenReturn(
 				MockResult.successFuture());
 		response = client.get();
-		assertEquals(MockFormats.APPLICABLE_CONTENT_TYPE,
+		assertEquals(MockFormat.APPLICABLE_CONTENT_TYPE,
 				response.getMediaType());
 	}
 
@@ -83,7 +83,7 @@ public class SchemaEndpointTest extends EndpointTestFixture {
 		final DatasetOperation op = submittedOperation.getValue();
 		assertEquals(Action.SCHEMA, op.action());
 		assertFalse(op.command().isPresent());
-		assertEquals(VALID_FORMAT, op.format());
+		assertEquals(MockFormat.ALWAYS_APPLICABLE, op.format());
 	}
 
 	// REJECTIONS
