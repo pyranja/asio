@@ -111,6 +111,6 @@ public class DatasetOperation {
 	public String toString() {
 		return String.format(
 				"DatasetOperation [action=%s, command=%s, format=%s]", action,
-				command, format);
+				command.or("none"), format);
 	}
 }

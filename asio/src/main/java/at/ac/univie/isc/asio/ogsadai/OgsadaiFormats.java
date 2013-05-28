@@ -70,7 +70,7 @@ public enum OgsadaiFormats implements SerializationFormat {
 
 	@Override
 	public final String toString() {
-		return String.format("OgsadaiFormat [name=%s, mime=%s, operations=%s]",
-				name(), mime, operations);
+		return String.format("OGSADAI_%s [mime=(%s), operations=%s]", name(),
+				mime, operations);
 	}
 }

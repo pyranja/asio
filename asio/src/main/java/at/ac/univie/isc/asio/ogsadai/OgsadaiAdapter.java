@@ -22,8 +22,6 @@ import uk.org.ogsadai.resource.request.CandidateRequestDescriptor;
 import uk.org.ogsadai.resource.request.RequestExecutionStatus;
 import uk.org.ogsadai.resource.request.SimpleCandidateRequestDescriptor;
 import at.ac.univie.isc.asio.DatasetException;
-import at.ac.univie.isc.asio.DatasetFailureException;
-import at.ac.univie.isc.asio.DatasetUsageException;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.OutputSupplier;
@@ -98,7 +96,6 @@ public class OgsadaiAdapter {
 	 * 
 	 * @param id
 	 *            of the request
-	 * 
 	 * @param workflow
 	 *            to be executed
 	 * @param tracker
@@ -107,7 +104,7 @@ public class OgsadaiAdapter {
 	 * @throws DatasetException
 	 *             if an error occurs while communicating with OGSADAI
 	 */
-	public ResourceID invoke(final String id, final Workflow workflow,
+	public void invoke(final String id, final Workflow workflow,
 			final CompletionCallback tracker) throws DatasetException {
 		final ResourceID requestId = new ResourceID(id, "");
 		router.track(requestId, tracker);
@@ -121,13 +118,10 @@ public class OgsadaiAdapter {
 		try {
 			final ExecutionResult result = drer.execute(request);
 			verifyExecutionResponse(result, requestId);
-			return requestId;
-		} catch (final RequestException | RequestRejectedException e) {
+		} catch (final RequestException | RequestRejectedException
+				| RequestUserException e) {
 			router.stopTracking(requestId);
-			throw new DatasetFailureException(e);
-		} catch (final RequestUserException e) {
-			router.stopTracking(requestId);
-			throw new DatasetUsageException(e);
+			tracker.fail(e);
 		}
 	}
 

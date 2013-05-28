@@ -30,13 +30,17 @@ public final class OgsadaiEngine implements DatasetEngine {
 	private final OgsadaiAdapter ogsadai;
 	private final FileResultRepository results;
 	private final WorkflowComposer composer;
+	private final DaiExceptionTranslator translator;
 
 	OgsadaiEngine(final OgsadaiAdapter ogsadai,
-			final FileResultRepository results, final WorkflowComposer composer) {
+			final FileResultRepository results,
+			final WorkflowComposer composer,
+			final DaiExceptionTranslator translator) {
 		super();
 		this.ogsadai = ogsadai;
 		this.results = results;
 		this.composer = composer;
+		this.translator = translator;
 	}
 
 	/**
@@ -64,21 +68,24 @@ public final class OgsadaiEngine implements DatasetEngine {
 		log.trace("[{}] registered handler with exchanger", operation);
 		final Workflow workflow = composer.createFrom(operation);
 		log.trace("[{}] using workflow :\n{}", operation, workflow);
-		final CompletionCallback callback = delegateTo(handler);
-		try {
-			ogsadai.invoke(operation.id(), workflow, callback);
-		} catch (final DatasetException cause) {
-			// clean up exchange
-			ogsadai.revokeSupplier(operation.id());
-			handler.fail(cause);
-		}
+		final CompletionCallback callback = delegateTo(handler, operation);
+		// FIXME try block not invoked anymore - fixed when stream passed
+		// directly to deliver activity
+		// try {
+		ogsadai.invoke(operation.id(), workflow, callback);
+		// } catch (final DatasetException cause) {
+		// ogsadai.revokeSupplier(operation.id());
+		// cause.setFailedOperation(operation);
+		// handler.fail(cause);
+		// }
 		return handler.asFutureResult();
 	}
 
 	/**
 	 * Create a CompletionCallback that delegates to the given ResultHandler.
 	 */
-	private CompletionCallback delegateTo(final ResultHandler handler) {
+	private CompletionCallback delegateTo(final ResultHandler handler,
+			final DatasetOperation operation) {
 		return new CompletionCallback() {
 
 			@Override
@@ -88,7 +95,9 @@ public final class OgsadaiEngine implements DatasetEngine {
 
 			@Override
 			public void fail(final Exception cause) {
-				handler.fail(cause);
+				final DatasetException error = translator.translate(cause);
+				error.setFailedOperation(operation);
+				handler.fail(error);
 			}
 
 		};

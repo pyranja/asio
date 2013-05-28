@@ -28,7 +28,7 @@ public class DatasetExceptionMapper implements
 	// @formatter:off
 	private static final String ERROR_MESSAGE = 
 			"[ERROR] %s\n" 	+ 	// top level message
-			"[OP] %s" 		+	// failed operation
+			"[OP] %s\n" 	+	// failed operation
 			"[CAUSE] %s\n" 	+ 	// root level message
 			"[TRACE] %s"	;	// stack trace
 	// @formatter:on
