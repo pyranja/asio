@@ -24,7 +24,7 @@ public final class SchemaEndpoint extends AbstractEndpoint {
 	/* slf4j-logger */
 	final static Logger log = LoggerFactory.getLogger(SchemaEndpoint.class);
 
-	SchemaEndpoint(final FrontendEngineAdapter engine,
+	public SchemaEndpoint(final FrontendEngineAdapter engine,
 			final AsyncProcessor processor, final OperationFactory create) {
 		super(engine, processor, create, Action.SCHEMA);
 	}

@@ -1,5 +1,7 @@
 package at.ac.univie.isc.asio.frontend;
 
+import java.util.concurrent.TimeUnit;
+
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.core.Request;
 
@@ -23,6 +25,9 @@ public class AbstractEndpoint {
 
 	/* slf4j-logger */
 	final static Logger log = LoggerFactory.getLogger(AbstractEndpoint.class);
+
+	// XXX make configurable
+	private static final long TIMEOUT = 10L; // SECONDS
 
 	// dependencies
 	private final FrontendEngineAdapter engine;
@@ -61,17 +66,23 @@ public class AbstractEndpoint {
 	 * @param request
 	 *            JAXRS request
 	 * @param response
-	 *            JAXRS suspenden response
+	 *            JAXRS suspended response
 	 */
 	protected final void complete(final OperationBuilder partial,
 			final Request request, final AsyncResponse response) {
-		final SerializationFormat selected = engine.selectFormat(request, type);
-		log.debug("selected format {}", selected);
-		final DatasetOperation operation = partial.renderAs(selected);
-		// TODO set operation in MDC
-		log.info("submitting operation {}", operation);
-		final ListenableFuture<Result> future = engine.submit(operation);
-		log.info("operation submitted {}", operation);
-		processor.handle(future, response);
+		try {
+			final SerializationFormat selected = engine.selectFormat(request,
+					type);
+			log.debug("selected format {}", selected);
+			final DatasetOperation operation = partial.renderAs(selected);
+			// TODO set operation in MDC
+			log.info("submitting operation {}", operation);
+			final ListenableFuture<Result> future = engine.submit(operation);
+			log.info("operation submitted {}", operation);
+			response.setTimeout(TIMEOUT, TimeUnit.SECONDS);
+			processor.handle(future, response);
+		} catch (final Throwable t) {
+			response.resume(t); // resume immediately on error
+		}
 	}
 }

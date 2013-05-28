@@ -23,6 +23,9 @@ http://cxf.apache.org/schemas/jaxrs.xsd">
       <ref bean="asio_schema" />
       <ref bean="asio_update" />
     </jaxrs:serviceBeans>
+    <jaxrs:providers>
+      <ref bean="asio_error_mapper" />
+    </jaxrs:providers>
     <jaxrs:features>
       <cxf:logging />
     </jaxrs:features>

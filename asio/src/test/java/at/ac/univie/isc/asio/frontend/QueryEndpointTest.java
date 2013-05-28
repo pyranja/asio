@@ -35,7 +35,6 @@ import at.ac.univie.isc.asio.MockResult;
 
 import com.google.common.io.ByteStreams;
 
-// TODO test operation type aware formats
 @RunWith(MockitoJUnitRunner.class)
 public class QueryEndpointTest extends EndpointTestFixture {
 

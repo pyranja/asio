@@ -32,7 +32,8 @@ public class AsyncProcessor {
 	private final ExecutorService exec;
 	private final VariantConverter converter;
 
-	AsyncProcessor(final ExecutorService exec, final VariantConverter converter) {
+	public AsyncProcessor(final ExecutorService exec,
+			final VariantConverter converter) {
 		super();
 		this.exec = exec;
 		this.converter = converter;

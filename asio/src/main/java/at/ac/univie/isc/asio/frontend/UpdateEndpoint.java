@@ -29,7 +29,7 @@ public class UpdateEndpoint extends AbstractEndpoint {
 
 	private static final String PARAM_UPDATE = "update";
 
-	UpdateEndpoint(final FrontendEngineAdapter engine,
+	public UpdateEndpoint(final FrontendEngineAdapter engine,
 			final AsyncProcessor processor, final OperationFactory create) {
 		super(engine, processor, create, Action.UPDATE);
 	}

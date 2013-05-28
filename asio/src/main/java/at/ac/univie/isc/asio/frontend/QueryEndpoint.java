@@ -31,7 +31,7 @@ public final class QueryEndpoint extends AbstractEndpoint {
 
 	private static final String PARAM_QUERY = "query";
 
-	QueryEndpoint(final FrontendEngineAdapter engine,
+	public QueryEndpoint(final FrontendEngineAdapter engine,
 			final AsyncProcessor processor, final OperationFactory create) {
 		super(engine, processor, create, Action.QUERY);
 	}

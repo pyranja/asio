@@ -3,7 +3,6 @@ package at.ac.univie.isc.asio.frontend;
 import static at.ac.univie.isc.asio.MockFormat.ALWAYS_APPLICABLE;
 import static at.ac.univie.isc.asio.MockFormat.NEVER_APPLICABLE;
 import static java.util.Collections.singleton;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -11,7 +10,6 @@ import static org.mockito.Matchers.anyList;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import javax.ws.rs.WebApplicationException;
@@ -28,7 +26,6 @@ import at.ac.univie.isc.asio.DatasetEngine;
 import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.Action;
-import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
 import at.ac.univie.isc.asio.DatasetUsageException;
 import at.ac.univie.isc.asio.MockOperations;
 import at.ac.univie.isc.asio.Result;
@@ -48,12 +45,6 @@ public class FrontentEngineAdapterTest {
 		when(engine.supportedFormats())
 				.thenReturn(singleton(ALWAYS_APPLICABLE));
 		subject = new FrontendEngineAdapter(engine, converter);
-	}
-
-	@Test
-	public void forwards_engines_supported_formats() throws Exception {
-		final Set<SerializationFormat> expected = singleton(ALWAYS_APPLICABLE);
-		assertEquals(expected, subject.supportedFormats());
 	}
 
 	@Test

@@ -7,7 +7,6 @@ import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Request;
@@ -36,7 +35,7 @@ import com.google.common.util.concurrent.ListenableFuture;
  * 
  * @author Chris Borckholder
  */
-public class FrontendEngineAdapter implements DatasetEngine {
+public class FrontendEngineAdapter {
 
 	private static final String UNSUPPORTED_MESSAGE = "%s not supported";
 
@@ -44,7 +43,7 @@ public class FrontendEngineAdapter implements DatasetEngine {
 	private final VariantConverter converter;
 	private Map<Action, Map<Variant, SerializationFormat>> mappingsByAction;
 
-	FrontendEngineAdapter(final DatasetEngine delegate,
+	public FrontendEngineAdapter(final DatasetEngine delegate,
 			final VariantConverter converter) {
 		super();
 		this.delegate = delegate;
@@ -52,7 +51,6 @@ public class FrontendEngineAdapter implements DatasetEngine {
 		mappingsByAction = initializeMappings();
 	}
 
-	@Override
 	public ListenableFuture<Result> submit(final DatasetOperation operation) {
 		try {
 			return delegate.submit(operation);
@@ -65,11 +63,6 @@ public class FrontendEngineAdapter implements DatasetEngine {
 			wrapper.setFailedOperation(operation);
 			return Futures.immediateFailedFuture(wrapper);
 		}
-	}
-
-	@Override
-	public Set<SerializationFormat> supportedFormats() {
-		return delegate.supportedFormats();
 	}
 
 	@VisibleForTesting
