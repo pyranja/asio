@@ -14,6 +14,8 @@ import java.util.concurrent.TimeoutException;
 import org.junit.Before;
 import org.junit.Test;
 
+import at.ac.univie.isc.asio.DatasetException;
+import at.ac.univie.isc.asio.MockDatasetException;
 import at.ac.univie.isc.asio.Result;
 
 import com.google.common.io.InputSupplier;
@@ -40,7 +42,7 @@ public class CompletionResultHandlerTest {
 
 	@Test(timeout = 100)
 	public void fail_completion_rethrows_wrapped_cause() throws Exception {
-		final Exception cause = new IllegalStateException();
+		final DatasetException cause = new MockDatasetException();
 		final ListenableFuture<Result> future = subject.asFutureResult();
 		subject.fail(cause);
 		try {

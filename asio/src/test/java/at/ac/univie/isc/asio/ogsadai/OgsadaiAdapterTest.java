@@ -33,8 +33,6 @@ import uk.org.ogsadai.resource.drer.ExecutionResult;
 import uk.org.ogsadai.resource.drer.SimpleExecutionResult;
 import uk.org.ogsadai.resource.request.CandidateRequestDescriptor;
 import uk.org.ogsadai.resource.request.RequestStatus;
-import at.ac.univie.isc.asio.DatasetFailureException;
-import at.ac.univie.isc.asio.DatasetUsageException;
 
 import com.google.common.io.OutputSupplier;
 
@@ -89,25 +87,30 @@ public class OgsadaiAdapterTest {
 	}
 
 	@Test
-	public void returns_id_of_created_request() throws Exception {
+	public void submits_request_with_given_id() throws Exception {
 		final ResourceID expected = new ResourceID(MOCK_IDENTIFIER);
-		final ResourceID returned = subject.invoke(MOCK_IDENTIFIER, workflow,
-				tracker);
-		assertEquals(expected, returned);
+		subject.invoke(MOCK_IDENTIFIER, workflow, tracker);
+		verify(drer).execute(submittedRequest.capture());
+		assertEquals(expected, submittedRequest.getValue().getRequestID());
 	}
 
-	@Test(expected = DatasetUsageException.class)
-	public void translates_dai_user_exception() throws Exception {
+	@Test
+	public void lets_tracker_fail_on_user_exception() throws Exception {
+		final RequestUserException error = new RequestUserException();
 		when(drer.execute(any(CandidateRequestDescriptor.class))).thenThrow(
-				new RequestUserException());
+				error);
 		subject.invoke(MOCK_IDENTIFIER, workflow, tracker);
+		verify(tracker).fail(same(error));
 	}
 
-	@Test(expected = DatasetFailureException.class)
-	public void translates_dai_processing_exception() throws Exception {
+	@Test
+	public void lets_tracker_fail_on_dai_processing_exception()
+			throws Exception {
+		final RequestProcessingException error = new RequestProcessingException();
 		when(drer.execute(any(CandidateRequestDescriptor.class))).thenThrow(
-				new RequestProcessingException());
+				error);
 		subject.invoke(MOCK_IDENTIFIER, workflow, tracker);
+		verify(tracker).fail(error);
 	}
 
 	// should resemble an async execution result

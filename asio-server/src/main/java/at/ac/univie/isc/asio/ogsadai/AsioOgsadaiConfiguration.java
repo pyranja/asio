@@ -42,7 +42,13 @@ public class AsioOgsadaiConfiguration {
 
 	@Bean
 	public DatasetEngine ogsadaiEngine() {
-		return new OgsadaiEngine(adapter(), resultRepository, composer());
+		return new OgsadaiEngine(adapter(), resultRepository, composer(),
+				translator());
+	}
+
+	@Bean
+	public DaiExceptionTranslator translator() {
+		return new DaiExceptionTranslator();
 	}
 
 	@Bean

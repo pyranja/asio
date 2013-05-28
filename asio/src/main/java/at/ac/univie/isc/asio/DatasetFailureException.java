@@ -16,4 +16,7 @@ public class DatasetFailureException extends DatasetException {
 		super(PREFIX, cause.getLocalizedMessage(), cause);
 	}
 
+	public DatasetFailureException(final String message, final Throwable cause) {
+		super(PREFIX, message, cause);
+	}
 }
