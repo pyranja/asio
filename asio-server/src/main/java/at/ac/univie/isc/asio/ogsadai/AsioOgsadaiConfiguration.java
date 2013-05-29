@@ -1,14 +1,11 @@
 package at.ac.univie.isc.asio.ogsadai;
 
-import java.io.OutputStream;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import uk.org.ogsadai.activity.delivery.DeliverToStreamActivity;
-import uk.org.ogsadai.activity.delivery.ObjectExchanger;
 import uk.org.ogsadai.activity.event.RequestEventRouter;
 import uk.org.ogsadai.common.ID;
 import uk.org.ogsadai.context.OGSADAIContext;
@@ -22,7 +19,6 @@ import at.ac.univie.isc.asio.ogsadai.workflow.SqlComposer;
 import at.ac.univie.isc.asio.transport.FileResultRepository;
 
 import com.google.common.collect.Iterables;
-import com.google.common.io.OutputSupplier;
 
 /**
  * Setup asio connected to an in-process OGSADAI instance.
@@ -34,7 +30,6 @@ public class AsioOgsadaiConfiguration {
 
 	private static final ResourceID TEST_RESOURCE = new ResourceID("mock_data",
 			"");
-	private static final ID STREAM_EXCHANGER_ID = DeliverToStreamActivity.STREAM_EXCHANGER;
 	private static final ID ROUTER_ID = new ID(
 			"uk.org.ogsadai.MONITORING_FRAMEWORK");
 
@@ -59,13 +54,10 @@ public class AsioOgsadaiConfiguration {
 	@Bean
 	public OgsadaiAdapter adapter() {
 		final OGSADAIContext context = OGSADAIContext.getInstance();
-		@SuppressWarnings("unchecked")
-		final ObjectExchanger<OutputSupplier<OutputStream>> exchanger = (ObjectExchanger<OutputSupplier<OutputStream>>) context
-				.get(STREAM_EXCHANGER_ID);
 		final RequestEventRouter router = (RequestEventRouter) context
 				.get(ROUTER_ID);
 		final DRER drer = findDRER(context);
-		return new OgsadaiAdapter(drer, exchanger, router);
+		return new OgsadaiAdapter(drer, router);
 	}
 
 	private DRER findDRER(final OGSADAIContext context) {
