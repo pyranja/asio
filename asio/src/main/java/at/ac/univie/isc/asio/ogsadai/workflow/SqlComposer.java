@@ -9,6 +9,9 @@ import static at.ac.univie.isc.asio.ogsadai.workflow.PipeActivities.sqlUpdate;
 import static at.ac.univie.isc.asio.ogsadai.workflow.PipeActivities.tupleToCsv;
 import static at.ac.univie.isc.asio.ogsadai.workflow.PipeActivities.tupleToWebRowSetCharArrays;
 import static at.ac.univie.isc.asio.ogsadai.workflow.PipeBuilder.pipe;
+
+import java.io.OutputStream;
+
 import uk.org.ogsadai.activity.transform.BlockTransformer;
 import uk.org.ogsadai.activity.workflow.ActivityPipelineWorkflow;
 import uk.org.ogsadai.resource.ResourceID;
@@ -17,6 +20,8 @@ import at.ac.univie.isc.asio.DatasetOperation.Action;
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
 import at.ac.univie.isc.asio.ogsadai.OgsadaiFormats;
 import at.ac.univie.isc.asio.ogsadai.WorkflowComposer;
+
+import com.google.common.io.OutputSupplier;
 
 /**
  * Create SQL workflows for {@link DatasetOperation operations}.
@@ -32,7 +37,9 @@ public class SqlComposer implements WorkflowComposer {
 	}
 
 	@Override
-	public ActivityPipelineWorkflow createFrom(final DatasetOperation operation) {
+	public ActivityPipelineWorkflow createFrom(
+			final DatasetOperation operation,
+			final OutputSupplier<OutputStream> supplier) {
 		final Action action = operation.action();
 		PipeBuilder pipe;
 		switch (action) {
@@ -51,7 +58,7 @@ public class SqlComposer implements WorkflowComposer {
 				throw new UnsupportedOperationException("not implemented "
 						+ action);
 		}
-		return pipe.finish(deliverToStream(operation.id()));
+		return pipe.finish(deliverToStream(supplier));
 	}
 
 	private PipeBuilder makeUpdate(final SerializationFormat format,

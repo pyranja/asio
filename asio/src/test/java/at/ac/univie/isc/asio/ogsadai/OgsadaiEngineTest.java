@@ -4,9 +4,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.same;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,7 +15,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -27,7 +24,6 @@ import uk.org.ogsadai.activity.event.CompletionCallback;
 import uk.org.ogsadai.activity.workflow.Workflow;
 import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
-import at.ac.univie.isc.asio.MockDatasetException;
 import at.ac.univie.isc.asio.MockOperations;
 import at.ac.univie.isc.asio.Result;
 import at.ac.univie.isc.asio.ResultHandler;
@@ -41,7 +37,6 @@ public class OgsadaiEngineTest {
 
 	private static final SerializationFormat MOCK_FORMAT = OgsadaiFormats.XML;
 	private static final String MOCK_QUERY = "test-query";
-	private static final String MOCK_ID = MockOperations.TEST_ID;
 
 	private OgsadaiEngine subject;
 	@Mock private OgsadaiAdapter ogsadai;
@@ -56,12 +51,11 @@ public class OgsadaiEngineTest {
 	@Before
 	public void setUp() throws IOException {
 		operation = MockOperations.query(MOCK_QUERY, MOCK_FORMAT);
-		when(ogsadai.register(eq(MOCK_ID), any(OutputSupplier.class)))
-				.thenReturn(MOCK_ID);
 		when(results.newHandler(any(SerializationFormat.class))).thenReturn(
 				handler);
-		when(composer.createFrom(any(DatasetOperation.class))).thenReturn(
-				dummyWorkflow);
+		when(
+				composer.createFrom(any(DatasetOperation.class),
+						any(OutputSupplier.class))).thenReturn(dummyWorkflow);
 		subject = new OgsadaiEngine(ogsadai, results, composer, translator);
 	}
 
@@ -78,29 +72,23 @@ public class OgsadaiEngineTest {
 
 	// behavior
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void passes_operation_to_composer() throws Exception {
 		subject.submit(operation);
-		verify(composer).createFrom(same(operation));
+		verify(composer).createFrom(same(operation), any(OutputSupplier.class));
+	}
+
+	@Test
+	public void passes_result_handler_to_composer() throws Exception {
+		subject.submit(operation);
+		verify(composer).createFrom(any(DatasetOperation.class), same(handler));
 	}
 
 	@Test
 	public void creates_handler_with_given_format() throws Exception {
 		subject.submit(operation);
 		verify(results).newHandler(MOCK_FORMAT);
-	}
-
-	@Test
-	public void registers_handler_with_ogsadai() throws Exception {
-		subject.submit(operation);
-		verify(ogsadai).register(anyString(), same(handler));
-	}
-
-	@SuppressWarnings("unchecked")
-	@Test
-	public void registers_handler_with_operation_id() throws Exception {
-		subject.submit(operation);
-		verify(ogsadai).register(eq(MOCK_ID), any(OutputSupplier.class));
 	}
 
 	@Test
@@ -116,17 +104,5 @@ public class OgsadaiEngineTest {
 		subject.submit(operation);
 		verify(ogsadai).invoke(anyString(), same(dummyWorkflow),
 				any(CompletionCallback.class));
-	}
-
-	// error handling
-
-	@Test
-	@Ignore
-	// FIXME when stream set directly on activity
-	public void revokes_handler_on_request_invoke_exception() throws Exception {
-		doThrow(new MockDatasetException()).when(ogsadai).invoke(anyString(),
-				any(Workflow.class), any(CompletionCallback.class));
-		subject.submit(operation);
-		verify(ogsadai).revokeSupplier(MOCK_ID);
 	}
 }

@@ -64,20 +64,10 @@ public final class OgsadaiEngine implements DatasetEngine {
 	@Override
 	public ListenableFuture<Result> submit(final DatasetOperation operation) {
 		final ResultHandler handler = results.newHandler(operation.format());
-		ogsadai.register(operation.id(), handler);
-		log.trace("[{}] registered handler with exchanger", operation);
-		final Workflow workflow = composer.createFrom(operation);
-		log.trace("[{}] using workflow :\n{}", operation, workflow);
+		final Workflow workflow = composer.createFrom(operation, handler);
+		log.debug("[{}] using workflow :\n{}", operation, workflow);
 		final CompletionCallback callback = delegateTo(handler, operation);
-		// FIXME try block not invoked anymore - fixed when stream passed
-		// directly to deliver activity
-		// try {
 		ogsadai.invoke(operation.id(), workflow, callback);
-		// } catch (final DatasetException cause) {
-		// ogsadai.revokeSupplier(operation.id());
-		// cause.setFailedOperation(operation);
-		// handler.fail(cause);
-		// }
 		return handler.asFutureResult();
 	}
 

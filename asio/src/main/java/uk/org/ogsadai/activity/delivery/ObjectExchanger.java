@@ -26,6 +26,7 @@ import com.google.common.base.Optional;
  * @author Chris Borckholder
  */
 @ThreadSafe
+@Deprecated
 public class ObjectExchanger<T> {
 
 	/**

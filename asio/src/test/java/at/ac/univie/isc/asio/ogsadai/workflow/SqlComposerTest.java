@@ -5,6 +5,8 @@ import static at.ac.univie.isc.asio.ogsadai.OgsadaiFormats.XML;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Set;
 
 import org.junit.After;
@@ -18,6 +20,8 @@ import uk.org.ogsadai.activity.workflow.ActivityPipelineWorkflow;
 import uk.org.ogsadai.resource.ResourceID;
 import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.MockOperations;
+
+import com.google.common.io.OutputSupplier;
 
 public class SqlComposerTest {
 
@@ -100,7 +104,14 @@ public class SqlComposerTest {
 
 	@SuppressWarnings("unchecked")
 	private void createWorkflowFor(final DatasetOperation op) {
-		final ActivityPipelineWorkflow wf = subject.createFrom(op);
+		final OutputSupplier<OutputStream> mockSupplier = new OutputSupplier<OutputStream>() {
+			@Override
+			public OutputStream getOutput() throws IOException {
+				return null;
+			}
+		};
+		final ActivityPipelineWorkflow wf = subject
+				.createFrom(op, mockSupplier);
 		final ActivityPipeline pipe = wf.getActivityPipeline();
 		activities = pipe.getActivities();
 	}

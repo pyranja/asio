@@ -6,11 +6,8 @@ import static org.junit.Assert.assertSame;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.same;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.io.OutputStream;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -20,7 +17,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import uk.org.ogsadai.activity.delivery.ObjectExchanger;
 import uk.org.ogsadai.activity.event.CompletionCallback;
 import uk.org.ogsadai.activity.event.RequestEventRouter;
 import uk.org.ogsadai.activity.request.status.AsynchronousRequestStatus;
@@ -34,8 +30,6 @@ import uk.org.ogsadai.resource.drer.SimpleExecutionResult;
 import uk.org.ogsadai.resource.request.CandidateRequestDescriptor;
 import uk.org.ogsadai.resource.request.RequestStatus;
 
-import com.google.common.io.OutputSupplier;
-
 @RunWith(MockitoJUnitRunner.class)
 public class OgsadaiAdapterTest {
 
@@ -44,7 +38,6 @@ public class OgsadaiAdapterTest {
 	private OgsadaiAdapter subject;
 	@Mock private DRER drer;
 	@Mock private Workflow workflow;
-	@Mock private ObjectExchanger<OutputSupplier<OutputStream>> exchanger;
 	@Mock private RequestEventRouter router;
 	@Mock private CompletionCallback tracker;
 	@Captor private ArgumentCaptor<CandidateRequestDescriptor> submittedRequest;
@@ -53,16 +46,7 @@ public class OgsadaiAdapterTest {
 	public void setUp() throws Exception {
 		when(drer.execute(any(CandidateRequestDescriptor.class))).thenReturn(
 				mock_response());
-		subject = new OgsadaiAdapter(drer, exchanger, router);
-	}
-
-	@Test
-	public void attaches_stream_to_exchanger() throws Exception {
-		@SuppressWarnings("unchecked")
-		final OutputSupplier<OutputStream> supplier = mock(OutputSupplier.class);
-		final String streamId = subject.register(MOCK_IDENTIFIER, supplier);
-		verify(exchanger).offer(MOCK_IDENTIFIER, supplier);
-		assertEquals(MOCK_IDENTIFIER, streamId);
+		subject = new OgsadaiAdapter(drer, router);
 	}
 
 	@Test

@@ -3,10 +3,13 @@ package at.ac.univie.isc.asio.ogsadai.workflow;
 import static at.ac.univie.isc.asio.ogsadai.workflow.PipeElements.both;
 import static at.ac.univie.isc.asio.ogsadai.workflow.PipeElements.consumer;
 import static at.ac.univie.isc.asio.ogsadai.workflow.PipeElements.producer;
-import static uk.org.ogsadai.activity.delivery.DeliverToStreamActivity.INPUT_STREAM_ID;
+import static uk.org.ogsadai.activity.delivery.DeliverToStreamActivity.INPUT_SUPPLIER;
 import static uk.org.ogsadai.activity.transform.DynamicSerializationActivity.INPUT_TRANSFORMER;
 import static uk.org.ogsadai.activity.transform.TupleToCSVActivity.INPUT_FIELDSESCAPED;
 import static uk.org.ogsadai.activity.transform.TupleToCSVActivity.INPUT_HEADERINCLUDED;
+
+import java.io.OutputStream;
+
 import uk.org.ogsadai.activity.ActivityName;
 import uk.org.ogsadai.activity.pipeline.ActivityDescriptor;
 import uk.org.ogsadai.activity.pipeline.ActivityInputLiteral;
@@ -18,6 +21,8 @@ import uk.org.ogsadai.resource.ResourceID;
 import at.ac.univie.isc.asio.ogsadai.workflow.PipeElements.Consumer;
 import at.ac.univie.isc.asio.ogsadai.workflow.PipeElements.Producer;
 import at.ac.univie.isc.asio.ogsadai.workflow.PipeElements.ProducerAndConsumer;
+
+import com.google.common.io.OutputSupplier;
 
 /**
  * Collection of static factory methods for {@link Producer} and
@@ -126,10 +131,12 @@ public final class PipeActivities {
 
 	static final ActivityName STREAM_DELIVERY = asName("at.ac.univie.isc.DeliverToStream");
 
-	public static Consumer deliverToStream(final String streamId) {
+	public static Consumer deliverToStream(
+			final OutputSupplier<OutputStream> supplier) {
 		final ActivityDescriptor product = new SimpleActivityDescriptor(
 				STREAM_DELIVERY);
-		product.addInput(new ActivityInputLiteral(INPUT_STREAM_ID, streamId));
+		product.addInput(new ActivityInputLiteral(INPUT_SUPPLIER,
+				from(supplier)));
 		return consumer(product, "input");
 	}
 
