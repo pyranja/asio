@@ -37,7 +37,7 @@ public final class SchemaEndpoint extends AbstractEndpoint {
 	@GET
 	public void serveSchema(@Context final Request request,
 			@Suspended final AsyncResponse response) {
-		log.info("serving schema");
+		log.debug("-- serving schema");
 		final OperationBuilder partial = create.schema();
 		complete(partial, request, response);
 	}

@@ -6,7 +6,7 @@ import com.google.common.base.Optional;
 import com.google.common.net.MediaType;
 
 /**
- * Represent an operation on a Dataset, including the command to be executed and
+ * Represent an operation on a dataset, including the command to be executed and
  * the required output format.
  * 
  * @author Chris Borckholder
@@ -109,8 +109,7 @@ public class DatasetOperation {
 
 	@Override
 	public String toString() {
-		return String.format(
-				"DatasetOperation [action=%s, command=%s, format=%s]", action,
+		return String.format("[action=%s, command=\"%s\", format=%s]", action,
 				command.or("none"), format);
 	}
 }

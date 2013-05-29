@@ -65,9 +65,11 @@ public final class OgsadaiEngine implements DatasetEngine {
 	public ListenableFuture<Result> submit(final DatasetOperation operation) {
 		final ResultHandler handler = results.newHandler(operation.format());
 		final Workflow workflow = composer.createFrom(operation, handler);
-		log.debug("[{}] using workflow :\n{}", operation, workflow);
+		log.trace("-- using workflow :\n{}", workflow);
 		final CompletionCallback callback = delegateTo(handler, operation);
+		log.debug(">> invoking OGSADAI request");
 		ogsadai.invoke(operation.id(), workflow, callback);
+		log.debug("<< OGSADAI request invoked");
 		return handler.asFutureResult();
 	}
 

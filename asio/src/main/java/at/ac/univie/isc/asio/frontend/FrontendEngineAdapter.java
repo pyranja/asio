@@ -90,6 +90,7 @@ public class FrontendEngineAdapter {
 		final Map<Variant, SerializationFormat> mapping = mappingsByAction
 				.get(action);
 		if (mapping.isEmpty()) {
+			// TODO throw custom DatasetUsageException
 			throw new WebApplicationException(Response
 					.status(METHOD_NOT_ALLOWED)
 					.allow(Collections.<String> emptySet())
@@ -99,6 +100,7 @@ public class FrontendEngineAdapter {
 		final List<Variant> candidates = ImmutableList.copyOf(mapping.keySet());
 		final Variant selected = request.selectVariant(candidates);
 		if (selected == null) {
+			// TODO throw custom DatsetUsageException
 			throw new WebApplicationException(Response
 					.notAcceptable(candidates).build());
 		}

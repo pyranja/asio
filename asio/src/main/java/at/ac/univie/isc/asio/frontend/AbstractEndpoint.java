@@ -7,11 +7,13 @@ import javax.ws.rs.core.Request;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.Action;
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
 import at.ac.univie.isc.asio.Result;
+import at.ac.univie.isc.asio.common.LogContext;
 import at.ac.univie.isc.asio.frontend.OperationFactory.OperationBuilder;
 
 import com.google.common.util.concurrent.ListenableFuture;
@@ -73,16 +75,19 @@ public class AbstractEndpoint {
 		try {
 			final SerializationFormat selected = engine.selectFormat(request,
 					type);
-			log.debug("selected format {}", selected);
+			log.debug("-- selected format {}", selected);
 			final DatasetOperation operation = partial.renderAs(selected);
-			// TODO set operation in MDC
-			log.info("submitting operation {}", operation);
+			MDC.put(LogContext.KEY_OP, operation.toString());
+			log.info(">> executing operation");
 			final ListenableFuture<Result> future = engine.submit(operation);
-			log.info("operation submitted {}", operation);
+			log.debug("<< operation submitted");
 			response.setTimeout(TIMEOUT, TimeUnit.SECONDS);
 			processor.handle(future, response);
 		} catch (final Throwable t) {
+			log.warn("error on request completion", t);
 			response.resume(t); // resume immediately on error
+		} finally {
+			MDC.clear(); // thread will return to container pool
 		}
 	}
 }
