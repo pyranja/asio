@@ -6,7 +6,6 @@ import java.util.Locale;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Variant;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 
 /**
@@ -17,14 +16,7 @@ import com.google.common.base.Optional;
  */
 public class VariantConverter {
 
-	private static final VariantConverter INSTANCE = new VariantConverter();
-
-	public static VariantConverter getInstance() {
-		return INSTANCE;
-	}
-
-	@VisibleForTesting
-	VariantConverter() {
+	public VariantConverter() {
 		super();
 	}
 

@@ -30,15 +30,22 @@ public final class OgsadaiEngine implements DatasetEngine {
 	private final OgsadaiAdapter ogsadai;
 	private final FileResultRepository results;
 	private final WorkflowComposer composer;
+	private final DaiExceptionTranslator translator;
 
 	OgsadaiEngine(final OgsadaiAdapter ogsadai,
-			final FileResultRepository results, final WorkflowComposer composer) {
+			final FileResultRepository results,
+			final WorkflowComposer composer,
+			final DaiExceptionTranslator translator) {
 		super();
 		this.ogsadai = ogsadai;
 		this.results = results;
 		this.composer = composer;
+		this.translator = translator;
 	}
 
+	/**
+	 * @return all {@link OgsadaiFormats formats} supported by OGSADAI.
+	 */
 	@Override
 	public Set<SerializationFormat> supportedFormats() {
 		return OgsadaiFormats.asSet();
@@ -57,26 +64,20 @@ public final class OgsadaiEngine implements DatasetEngine {
 	@Override
 	public ListenableFuture<Result> submit(final DatasetOperation operation) {
 		final ResultHandler handler = results.newHandler(operation.format());
-		final String handlerId = ogsadai.register(handler);
-		log.trace("[{}] registered handler [{}] with exchanger", operation,
-				handlerId);
-		final Workflow workflow = composer.createFrom(operation, handlerId);
-		log.trace("[{}] using workflow :\n{}", operation, workflow);
-		final CompletionCallback callback = delegateTo(handler);
-		try {
-			ogsadai.invoke(workflow, callback);
-		} catch (final DatasetException cause) {
-			// clean up exchange
-			ogsadai.revokeSupplier(handlerId);
-			handler.fail(cause);
-		}
+		final Workflow workflow = composer.createFrom(operation, handler);
+		log.trace("-- using workflow :\n{}", workflow);
+		final CompletionCallback callback = delegateTo(handler, operation);
+		log.debug(">> invoking OGSADAI request");
+		ogsadai.invoke(operation.id(), workflow, callback);
+		log.debug("<< OGSADAI request invoked");
 		return handler.asFutureResult();
 	}
 
 	/**
 	 * Create a CompletionCallback that delegates to the given ResultHandler.
 	 */
-	private CompletionCallback delegateTo(final ResultHandler handler) {
+	private CompletionCallback delegateTo(final ResultHandler handler,
+			final DatasetOperation operation) {
 		return new CompletionCallback() {
 
 			@Override
@@ -86,7 +87,9 @@ public final class OgsadaiEngine implements DatasetEngine {
 
 			@Override
 			public void fail(final Exception cause) {
-				handler.fail(cause);
+				final DatasetException error = translator.translate(cause);
+				error.setFailedOperation(operation);
+				handler.fail(error);
 			}
 
 		};

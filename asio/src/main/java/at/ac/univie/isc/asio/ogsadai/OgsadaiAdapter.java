@@ -4,11 +4,8 @@ import static java.lang.String.format;
 import static java.util.Locale.ENGLISH;
 import static uk.org.ogsadai.resource.request.RequestExecutionStatus.UNSTARTED;
 
-import java.io.OutputStream;
-
 import javax.annotation.concurrent.ThreadSafe;
 
-import uk.org.ogsadai.activity.delivery.ObjectExchanger;
 import uk.org.ogsadai.activity.event.CompletionCallback;
 import uk.org.ogsadai.activity.event.RequestEventRouter;
 import uk.org.ogsadai.activity.workflow.Workflow;
@@ -22,29 +19,15 @@ import uk.org.ogsadai.resource.request.CandidateRequestDescriptor;
 import uk.org.ogsadai.resource.request.RequestExecutionStatus;
 import uk.org.ogsadai.resource.request.SimpleCandidateRequestDescriptor;
 import at.ac.univie.isc.asio.DatasetException;
-import at.ac.univie.isc.asio.DatasetFailureException;
-import at.ac.univie.isc.asio.DatasetUsageException;
-import at.ac.univie.isc.asio.common.IdGenerator;
-import at.ac.univie.isc.asio.common.RandomIdGenerator;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.io.OutputSupplier;
 
 /**
  * Interact with an in-process OGSADAI instance to execute workflows
  * asynchronously.
  * <p>
  * Use an OGSADAI {@link DRER} to invoke requests. Through an installed
- * {@link RequestEventRouter} the status of submitted requests is tracked. A
- * shared {@link ObjectExchanger} is used to pass result data sinks to OGSADAI
- * delivery activities.
- * </p>
- * <p>
- * If a result sink has to be shared, it should be published through
- * {@link #register(OutputSupplier)} <strong>before</strong> the workflow is
- * passed to {@link #invoke(Workflow, CompletionCallback)}. If the request
- * invocation fails, it should be invalidated through
- * {@link #revokeSupplier(String)} to avoid memory leaks.
+ * {@link RequestEventRouter} the status of submitted requests is tracked.
  * </p>
  * 
  * @author Chris Borckholder
@@ -52,53 +35,13 @@ import com.google.common.io.OutputSupplier;
 @ThreadSafe
 public class OgsadaiAdapter {
 
-	private static final String ID_QUALIFIER = "asio";
-
 	private final DRER drer;
-	private final ObjectExchanger<OutputSupplier<OutputStream>> exchanger;
 	private final RequestEventRouter router;
-	private final IdGenerator ids;
 
 	@VisibleForTesting
-	OgsadaiAdapter(final DRER drer,
-			final ObjectExchanger<OutputSupplier<OutputStream>> exchanger,
-			final RequestEventRouter router, final IdGenerator ids) {
+	OgsadaiAdapter(final DRER drer, final RequestEventRouter router) {
 		this.drer = drer;
-		this.exchanger = exchanger;
 		this.router = router;
-		this.ids = ids;
-	}
-
-	OgsadaiAdapter(final DRER drer,
-			final ObjectExchanger<OutputSupplier<OutputStream>> exchanger,
-			final RequestEventRouter router) {
-		this(drer, exchanger, router, RandomIdGenerator
-				.withPrefix(ID_QUALIFIER));
-	}
-
-	/**
-	 * Attach the given stream supplier to the OGSADAI context. The returned id
-	 * can be used to retrieve the supplier from the {@link ObjectExchanger} in
-	 * the OGSADAI context.
-	 * 
-	 * @param supplier
-	 *            to be attached
-	 * @return id associated to the attached supplier
-	 */
-	public String register(final OutputSupplier<OutputStream> supplier) {
-		final String supplierId = ids.next();
-		exchanger.offer(supplierId, supplier); // should not collide
-		return supplierId;
-	}
-
-	/**
-	 * Invalidate the supplier which may have been registered with the given id.
-	 * 
-	 * @param supplierId
-	 *            of invalid supplier
-	 */
-	public void revokeSupplier(final String supplierId) {
-		exchanger.take(supplierId);
 	}
 
 	/**
@@ -106,6 +49,8 @@ public class OgsadaiAdapter {
 	 * workflow. Setup request listening to notify the given
 	 * {@link CompletionCallback}.
 	 * 
+	 * @param id
+	 *            of the request
 	 * @param workflow
 	 *            to be executed
 	 * @param tracker
@@ -114,9 +59,9 @@ public class OgsadaiAdapter {
 	 * @throws DatasetException
 	 *             if an error occurs while communicating with OGSADAI
 	 */
-	public ResourceID invoke(final Workflow workflow,
+	public void invoke(final String id, final Workflow workflow,
 			final CompletionCallback tracker) throws DatasetException {
-		final ResourceID requestId = new ResourceID(ids.next(), "");
+		final ResourceID requestId = new ResourceID(id, "");
 		router.track(requestId, tracker);
 		final CandidateRequestDescriptor request = new SimpleCandidateRequestDescriptor(
 				requestId, // randomized with qualifier
@@ -128,13 +73,10 @@ public class OgsadaiAdapter {
 		try {
 			final ExecutionResult result = drer.execute(request);
 			verifyExecutionResponse(result, requestId);
-			return requestId;
-		} catch (final RequestException | RequestRejectedException e) {
+		} catch (final RequestException | RequestRejectedException
+				| RequestUserException e) {
 			router.stopTracking(requestId);
-			throw new DatasetFailureException(e);
-		} catch (final RequestUserException e) {
-			router.stopTracking(requestId);
-			throw new DatasetUsageException(e);
+			tracker.fail(e);
 		}
 	}
 

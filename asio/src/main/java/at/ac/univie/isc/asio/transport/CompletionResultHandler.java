@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.Result;
 import at.ac.univie.isc.asio.ResultHandler;
 
@@ -36,7 +37,7 @@ public final class CompletionResultHandler implements ResultHandler {
 	}
 
 	@Override
-	public void fail(final Exception cause) {
+	public void fail(final DatasetException cause) {
 		checkNotNull(cause, "fail must include a cause");
 		future.setException(cause);
 	}

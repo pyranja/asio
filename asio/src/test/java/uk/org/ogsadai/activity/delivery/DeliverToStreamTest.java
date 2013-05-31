@@ -23,56 +23,40 @@ import uk.org.ogsadai.activity.ActivityUserException;
 import uk.org.ogsadai.activity.io.ActivityIOException;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Optional;
 import com.google.common.io.OutputSupplier;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DeliverToStreamTest {
 
 	private static final byte[] PAYLOAD = "TESTDATA".getBytes(Charsets.UTF_8);
-	private static final String STREAM_ID = "stream-id";
 
 	private DeliverToStreamActivity subject;
 	@Spy private final InputStream source = new ByteArrayInputStream(PAYLOAD);
 	@Spy private final ByteArrayOutputStream sink = new ByteArrayOutputStream();
-	@Mock private ObjectExchanger<OutputSupplier<OutputStream>> exchanger;
 	@Mock private OutputSupplier<OutputStream> supplier;
 
 	@Before
 	public void setUp() throws IOException {
-		subject = new DeliverToStreamActivity(exchanger);
+		subject = new DeliverToStreamActivity();
 		when(supplier.getOutput()).thenReturn(sink);
-		when(exchanger.take(STREAM_ID)).thenReturn(
-				Optional.<OutputSupplier<OutputStream>> of(supplier));
 	}
 
-	@Test(expected = NullPointerException.class)
-	public void null_id_input_fails() throws Exception {
-		subject.processIteration(asArgs(null, source));
+	@Test(expected = ActivityUserException.class)
+	public void null_supplier_input_fails() throws Exception {
+		subject.processIteration(asArgs(source, null));
 	}
 
-	@Test(expected = NullPointerException.class)
+	@Test(expected = ActivityUserException.class)
 	public void null_stream_input_fails() throws Exception {
-		subject.processIteration(asArgs(STREAM_ID, null));
+		subject.processIteration(asArgs(null, supplier));
 	}
 
 	@Test
 	public void iteration_writes_data_with_cleanup() throws Exception {
-		subject.processIteration(asArgs(STREAM_ID, source));
+		subject.processIteration(asArgs(source, supplier));
 		assertArrayEquals(PAYLOAD, sink.toByteArray());
 		verify(source).close();
 		verify(sink).close();
-	}
-
-	@Test(expected = ActivityUserException.class)
-	public void exchanger_has_no_stream() throws Exception {
-		when(exchanger.take(STREAM_ID)).thenReturn(
-				Optional.<OutputSupplier<OutputStream>> absent());
-		try {
-			subject.processIteration(asArgs(STREAM_ID, source));
-		} finally {
-			verify(source).close();
-		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -80,7 +64,7 @@ public class DeliverToStreamTest {
 	public void supplying_fails() throws Exception {
 		when(supplier.getOutput()).thenThrow(IOException.class);
 		try {
-			subject.processIteration(asArgs(STREAM_ID, source));
+			subject.processIteration(asArgs(source, supplier));
 		} finally {
 			verify(source).close();
 		}
@@ -93,14 +77,15 @@ public class DeliverToStreamTest {
 		when(mockSource.read(Matchers.<byte[]> any())).thenThrow(
 				new IOException("test-exception"));
 		try {
-			subject.processIteration(asArgs(STREAM_ID, mockSource));
+			subject.processIteration(asArgs(mockSource, supplier));
 		} finally {
 			verify(sink).close();
 			verify(mockSource).close();
 		}
 	}
 
-	private Object[] asArgs(final String id, final InputStream stream) {
-		return new Object[] { id, stream };
+	private Object[] asArgs(final InputStream stream,
+			final OutputSupplier<OutputStream> supplier) {
+		return new Object[] { stream, supplier };
 	}
 }

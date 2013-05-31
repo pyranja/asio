@@ -6,7 +6,7 @@ import com.google.common.base.Optional;
 import com.google.common.net.MediaType;
 
 /**
- * Represent an operation on a Dataset, including the command to be executed and
+ * Represent an operation on a dataset, including the command to be executed and
  * the required output format.
  * 
  * @author Chris Borckholder
@@ -19,10 +19,7 @@ public class DatasetOperation {
 	 * @author Chris Borckholder
 	 */
 	public static enum Action {
-		QUERY,
-		SCHEMA,
-		UPDATE,
-		BATCH;
+		QUERY, SCHEMA, UPDATE, BATCH;
 	}
 
 	/**
@@ -50,7 +47,7 @@ public class DatasetOperation {
 	private final Optional<String> command;
 	private final SerializationFormat format;
 
-	DatasetOperation(final String id, final Action action,
+	public DatasetOperation(final String id, final Action action,
 			@Nullable final String command, final SerializationFormat format) {
 		super();
 		this.id = id;
@@ -112,8 +109,7 @@ public class DatasetOperation {
 
 	@Override
 	public String toString() {
-		return String.format(
-				"DatasetOperation [action=%s, command=%s, format=%s]", action,
-				command, format);
+		return String.format("[action=%s, command=\"%s\", format=%s]", action,
+				command.or("none"), format);
 	}
 }

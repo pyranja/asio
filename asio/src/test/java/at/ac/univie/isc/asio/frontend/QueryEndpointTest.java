@@ -1,9 +1,11 @@
 package at.ac.univie.isc.asio.frontend;
 
-import static at.ac.univie.isc.asio.MockFormats.APPLICABLE_CONTENT_TYPE;
+import static at.ac.univie.isc.asio.MockFormat.APPLICABLE_CONTENT_TYPE;
 import static javax.ws.rs.core.Response.Status.fromStatusCode;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -28,14 +30,13 @@ import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.Action;
 import at.ac.univie.isc.asio.DatasetUsageException;
-import at.ac.univie.isc.asio.MockFormats;
+import at.ac.univie.isc.asio.MockFormat;
 import at.ac.univie.isc.asio.MockResult;
 
 import com.google.common.io.ByteStreams;
 
-// TODO test operation type aware formats
 @RunWith(MockitoJUnitRunner.class)
-public class SqlQueryEndpointTest extends EndpointTestFixture {
+public class QueryEndpointTest extends EndpointTestFixture {
 
 	private Response response;
 	@Captor private ArgumentCaptor<DatasetOperation> submittedOperation;
@@ -65,7 +66,7 @@ public class SqlQueryEndpointTest extends EndpointTestFixture {
 		when(engine.submit(any(DatasetOperation.class))).thenReturn(
 				MockResult.successFuture());
 		response = client.query("query", "test-query").get();
-		assertEquals(MockFormats.APPLICABLE_CONTENT_TYPE,
+		assertEquals(MockFormat.APPLICABLE_CONTENT_TYPE,
 				response.getMediaType());
 	}
 
@@ -106,7 +107,7 @@ public class SqlQueryEndpointTest extends EndpointTestFixture {
 		final DatasetOperation op = submittedOperation.getValue();
 		assertEquals(Action.QUERY, op.action());
 		assertEquals("test-query", op.command().orNull());
-		assertEquals(VALID_FORMAT, op.format());
+		assertEquals(MockFormat.ALWAYS_APPLICABLE, op.format());
 	}
 
 	// REJECTIONS
@@ -114,6 +115,15 @@ public class SqlQueryEndpointTest extends EndpointTestFixture {
 	@Test
 	public void rejects_missing_query_param() throws Exception {
 		response = client.get();
+		assertEquals(Status.BAD_REQUEST, fromStatusCode(response.getStatus()));
+		verify(engine, never()).submit(any(DatasetOperation.class));
+	}
+
+	@Test
+	public void rejects_missing_form_param() throws Exception {
+		final Form values = new Form();
+		values.set("invalid", "anything");
+		response = client.form(values);
 		assertEquals(Status.BAD_REQUEST, fromStatusCode(response.getStatus()));
 		verify(engine, never()).submit(any(DatasetOperation.class));
 	}
@@ -129,7 +139,8 @@ public class SqlQueryEndpointTest extends EndpointTestFixture {
 
 	@Test
 	public void rejects_unsupported_accept_type() throws Exception {
-		client.reset().path("query").accept(MediaType.TEXT_HTML_TYPE);
+		client.reset().path("query").query("query", "test-query")
+				.accept(MediaType.TEXT_HTML_TYPE);
 		response = client.get();
 		assertEquals(Status.NOT_ACCEPTABLE,
 				fromStatusCode(response.getStatus()));
@@ -155,7 +166,7 @@ public class SqlQueryEndpointTest extends EndpointTestFixture {
 		response = client.query("query", "test-query").get();
 		final String received = new String(
 				ByteStreams.toByteArray((InputStream) response.getEntity()));
-		assertEquals(cause.getMessage(), received);
+		assertThat(received, startsWith("[ERROR] " + cause.getMessage()));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -176,6 +187,6 @@ public class SqlQueryEndpointTest extends EndpointTestFixture {
 		response = client.query("query", "test-query").get();
 		final String received = new String(
 				ByteStreams.toByteArray((InputStream) response.getEntity()));
-		assertEquals(cause.getMessage(), received);
+		assertThat(received, startsWith("[ERROR] " + cause.getMessage()));
 	}
 }

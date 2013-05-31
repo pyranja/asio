@@ -23,7 +23,7 @@ public class MockResult {
 
 			@Override
 			public com.google.common.net.MediaType mediaType() {
-				return MockFormats.APPLICABLE_MIME;
+				return MockFormat.APPLICABLE_MIME;
 			}
 		});
 		return future;

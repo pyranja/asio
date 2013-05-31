@@ -1,5 +1,8 @@
 package at.ac.univie.isc.asio.frontend;
 
+import static com.google.common.collect.ImmutableSet.builder;
+import static org.mockito.Mockito.when;
+
 import java.util.Set;
 
 import javax.ws.rs.ApplicationPath;
@@ -8,10 +11,11 @@ import javax.ws.rs.core.Application;
 import org.mockito.Mockito;
 
 import at.ac.univie.isc.asio.DatasetEngine;
-import at.ac.univie.isc.asio.OperationFactory;
+import at.ac.univie.isc.asio.MockFormat;
 import at.ac.univie.isc.asio.common.RandomIdGenerator;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.util.concurrent.MoreExecutors;
 
 /**
  * Manual wiring and configuration of the endpoints for test deployments in a
@@ -22,24 +26,33 @@ import com.google.common.collect.ImmutableSet;
 @ApplicationPath("/")
 public class EndpointApplication extends Application {
 
-	private final QueryEndpoint queryEndpoint;
-	private final SchemaEndpoint schemaEndpoint;
+	private final Set<AbstractEndpoint> endpoints;
 
 	private final DatasetEngine mockEngine;
 	private final OperationFactory factory;
+	private final FrontendEngineAdapter adapter;
 
 	EndpointApplication() {
 		super();
+		final VariantConverter converter = new VariantConverter();
 		mockEngine = Mockito.mock(DatasetEngine.class);
+		when(mockEngine.supportedFormats()).thenReturn(
+				ImmutableSet.of(MockFormat.ALWAYS_APPLICABLE,
+						MockFormat.NEVER_APPLICABLE));
+		adapter = new FrontendEngineAdapter(mockEngine, converter);
 		factory = new OperationFactory(
 				RandomIdGenerator.withPrefix("integration"));
-		queryEndpoint = new QueryEndpoint(mockEngine, factory);
-		schemaEndpoint = new SchemaEndpoint(mockEngine, factory);
+		final AsyncProcessor processor = new AsyncProcessor(
+				MoreExecutors.sameThreadExecutor(), converter);
+		endpoints = ImmutableSet.of(new QueryEndpoint(adapter, processor,
+				factory), new SchemaEndpoint(adapter, processor, factory),
+				new UpdateEndpoint(adapter, processor, factory));
 	}
 
 	@Override
 	public Set<Object> getSingletons() {
-		return ImmutableSet.<Object> of(queryEndpoint, schemaEndpoint);
+		return builder().addAll(endpoints).add(new DatasetExceptionMapper())
+				.build();
 	}
 
 	/**
@@ -53,20 +66,6 @@ public class EndpointApplication extends Application {
 	 * @return all defined endpoints
 	 */
 	public Set<AbstractEndpoint> getEndpoints() {
-		return ImmutableSet.of(queryEndpoint, schemaEndpoint);
-	}
-
-	/**
-	 * @return the queryEndpoint service instance
-	 */
-	public QueryEndpoint getQueryEndpoint() {
-		return queryEndpoint;
-	}
-
-	/**
-	 * @return the schemaEndpoint service instance
-	 */
-	public SchemaEndpoint getSchemaEndpoint() {
-		return schemaEndpoint;
+		return endpoints;
 	}
 }

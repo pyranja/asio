@@ -35,7 +35,7 @@ public interface ResultHandler extends OutputSupplier<OutputStream> {
 	 * @param cause
 	 *            of failure
 	 */
-	void fail(Exception cause);
+	void fail(DatasetException cause);
 
 	/**
 	 * Mark the operation as complete. No more result data will be written to

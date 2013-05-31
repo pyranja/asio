@@ -1,97 +1,93 @@
 package at.ac.univie.isc.asio.frontend;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
-import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.core.Request;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Variant;
 
-import at.ac.univie.isc.asio.DatasetEngine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+
+import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.Action;
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
-import at.ac.univie.isc.asio.OperationFactory;
+import at.ac.univie.isc.asio.Result;
+import at.ac.univie.isc.asio.common.LogContext;
+import at.ac.univie.isc.asio.frontend.OperationFactory.OperationBuilder;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.util.concurrent.ListenableFuture;
 
 /**
- * Provide generic request handling and processing functionality for Endpoints.
+ * Generic request processing for DatasetEndpoints.
  * 
  * @author Chris Borckholder
  */
 public class AbstractEndpoint {
 
+	/* slf4j-logger */
+	final static Logger log = LoggerFactory.getLogger(AbstractEndpoint.class);
+
+	// XXX make configurable
+	private static final long TIMEOUT = 10L; // SECONDS
+
 	// dependencies
-	protected final DatasetEngine engine;
+	private final FrontendEngineAdapter engine;
+	private final AsyncProcessor processor;
 	protected final OperationFactory create;
 	// utils
-	protected final VariantConverter converter;
 	private final Action type;
-	private Map<Variant, SerializationFormat> variant2format;
 
 	/**
 	 * subclass constructor
 	 * 
 	 * @param engine
-	 *            backing dataset
+	 *            adapted backing dataset
+	 * @param processor
+	 *            completes requests asynchronously
 	 * @param create
 	 *            operation factory
 	 * @param type
 	 *            of concrete endpoint
 	 */
-	protected AbstractEndpoint(final DatasetEngine engine,
-			final OperationFactory create, final Action type) {
+	protected AbstractEndpoint(final FrontendEngineAdapter engine,
+			final AsyncProcessor processor, final OperationFactory create,
+			final Action type) {
 		super();
 		this.engine = engine;
+		this.processor = processor;
 		this.create = create;
 		this.type = type;
-		converter = VariantConverter.getInstance();
-		initializeVariants();
 	}
 
 	/**
-	 * Create the reverse mapping between variants and serialization formats.
-	 */
-	@VisibleForTesting
-	void initializeVariants() {
-		final Set<SerializationFormat> supported = engine.supportedFormats();
-		final Builder<Variant, SerializationFormat> map = ImmutableMap
-				.builder();
-		for (final SerializationFormat format : supported) {
-			if (format.applicableOn(type)) {
-				final Variant variant = converter.asVariant(format
-						.asMediaType());
-				map.put(variant, format);
-			}
-		}
-		variant2format = map.build();
-	}
-
-	/**
-	 * Select the {@link SerializationFormat format} from the initialized
-	 * formats which best matches the given request's accept-header.
+	 * Complete the operation information and execute it.
 	 * 
+	 * @param partial
+	 *            dataset operation
 	 * @param request
-	 *            to be handled
-	 * @return the best match found
-	 * @throws WebApplicationException
-	 *             if no format matches the accept header.
+	 *            JAXRS request
+	 * @param response
+	 *            JAXRS suspended response
 	 */
-	protected SerializationFormat matchFormat(final Request request) {
-		final List<Variant> candidates = ImmutableList.copyOf(variant2format
-				.keySet()); // not really copying
-		final Variant selected = request.selectVariant(candidates);
-		if (selected != null) {
-			return variant2format.get(selected);
-		} else {
-			throw new WebApplicationException(Response
-					.notAcceptable(candidates).build());
+	protected final void complete(final OperationBuilder partial,
+			final Request request, final AsyncResponse response) {
+		try {
+			final SerializationFormat selected = engine.selectFormat(request,
+					type);
+			log.debug("-- selected format {}", selected);
+			final DatasetOperation operation = partial.renderAs(selected);
+			MDC.put(LogContext.KEY_OP, operation.toString());
+			log.info(">> executing operation");
+			final ListenableFuture<Result> future = engine.submit(operation);
+			log.debug("<< operation submitted");
+			response.setTimeout(TIMEOUT, TimeUnit.SECONDS);
+			processor.handle(future, response);
+		} catch (final Throwable t) {
+			log.warn("error on request completion", t);
+			response.resume(t); // resume immediately on error
+		} finally {
+			MDC.clear(); // thread will return to container pool
 		}
 	}
-
 }

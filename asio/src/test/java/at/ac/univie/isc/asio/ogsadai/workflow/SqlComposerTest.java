@@ -5,6 +5,8 @@ import static at.ac.univie.isc.asio.ogsadai.OgsadaiFormats.XML;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Set;
 
 import org.junit.After;
@@ -19,10 +21,11 @@ import uk.org.ogsadai.resource.ResourceID;
 import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.MockOperations;
 
+import com.google.common.io.OutputSupplier;
+
 public class SqlComposerTest {
 
 	private static final ResourceID RESOURCE = new ResourceID("test");
-	private static final String STREAM = "TEST-STREAM";
 
 	private SqlComposer subject;
 	private Set<ActivityDescriptor> activities;
@@ -71,7 +74,9 @@ public class SqlComposerTest {
 	public void schema_workflow_has_extract_schema() throws Exception {
 		final DatasetOperation op = MockOperations.schema(XML);
 		createWorkflowFor(op);
-		assertTrue(isPresent(PipeActivities.SQL_SCHEMA_ACTIVITY));
+		final ActivityDescriptor sql = getByType(PipeActivities.SQL_SCHEMA_ACTIVITY);
+		assertNotNull("sql schema activity missing in workflow", sql);
+		RESOURCE.equals(sql.getTargetResource());
 	}
 
 	@Test
@@ -81,9 +86,32 @@ public class SqlComposerTest {
 		assertTrue(isPresent(PipeActivities.TABLEMETADATA_XML_TRANSFORMER_ACTIVITY));
 	}
 
+	@Test
+	public void update_workflow_has_update_activity() throws Exception {
+		final DatasetOperation op = MockOperations.update("update", XML);
+		createWorkflowFor(op);
+		final ActivityDescriptor sql = getByType(PipeActivities.SQL_UPDATE_ACTIVITY);
+		assertNotNull("sql update activity missing in workflow", sql);
+		RESOURCE.equals(sql.getTargetResource());
+	}
+
+	@Test
+	public void update_workflow_has_transformer() throws Exception {
+		final DatasetOperation op = MockOperations.update("update", XML);
+		createWorkflowFor(op);
+		assertTrue(isPresent(PipeActivities.DYNAMIC_TRANSFORMER_ACTIVITY));
+	}
+
 	@SuppressWarnings("unchecked")
 	private void createWorkflowFor(final DatasetOperation op) {
-		final ActivityPipelineWorkflow wf = subject.createFrom(op, STREAM);
+		final OutputSupplier<OutputStream> mockSupplier = new OutputSupplier<OutputStream>() {
+			@Override
+			public OutputStream getOutput() throws IOException {
+				return null;
+			}
+		};
+		final ActivityPipelineWorkflow wf = subject
+				.createFrom(op, mockSupplier);
 		final ActivityPipeline pipe = wf.getActivityPipeline();
 		activities = pipe.getActivities();
 	}

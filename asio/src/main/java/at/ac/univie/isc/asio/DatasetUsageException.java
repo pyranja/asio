@@ -20,4 +20,7 @@ public class DatasetUsageException extends DatasetException {
 		super(PREFIX, message, null);
 	}
 
+	public DatasetUsageException(final String message, final Throwable cause) {
+		super(PREFIX, message, cause);
+	}
 }

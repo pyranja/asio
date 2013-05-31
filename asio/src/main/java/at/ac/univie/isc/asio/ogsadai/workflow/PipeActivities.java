@@ -1,18 +1,28 @@
 package at.ac.univie.isc.asio.ogsadai.workflow;
 
-import static uk.org.ogsadai.activity.delivery.DeliverToStreamActivity.INPUT_STREAM_ID;
+import static at.ac.univie.isc.asio.ogsadai.workflow.PipeElements.both;
+import static at.ac.univie.isc.asio.ogsadai.workflow.PipeElements.consumer;
+import static at.ac.univie.isc.asio.ogsadai.workflow.PipeElements.producer;
+import static uk.org.ogsadai.activity.delivery.DeliverToStreamActivity.INPUT_SUPPLIER;
+import static uk.org.ogsadai.activity.transform.DynamicSerializationActivity.INPUT_TRANSFORMER;
 import static uk.org.ogsadai.activity.transform.TupleToCSVActivity.INPUT_FIELDSESCAPED;
 import static uk.org.ogsadai.activity.transform.TupleToCSVActivity.INPUT_HEADERINCLUDED;
+
+import java.io.OutputStream;
+
 import uk.org.ogsadai.activity.ActivityName;
 import uk.org.ogsadai.activity.pipeline.ActivityDescriptor;
 import uk.org.ogsadai.activity.pipeline.ActivityInputLiteral;
 import uk.org.ogsadai.activity.pipeline.Literal;
 import uk.org.ogsadai.activity.pipeline.SimpleActivityDescriptor;
 import uk.org.ogsadai.activity.pipeline.SimpleLiteral;
+import uk.org.ogsadai.activity.transform.BlockTransformer;
 import uk.org.ogsadai.resource.ResourceID;
 import at.ac.univie.isc.asio.ogsadai.workflow.PipeElements.Consumer;
 import at.ac.univie.isc.asio.ogsadai.workflow.PipeElements.Producer;
 import at.ac.univie.isc.asio.ogsadai.workflow.PipeElements.ProducerAndConsumer;
+
+import com.google.common.io.OutputSupplier;
 
 /**
  * Collection of static factory methods for {@link Producer} and
@@ -31,11 +41,16 @@ public final class PipeActivities {
 	// LITERALS
 	// must use generator methods here, as literals are mutated while processing
 	private static Literal TRUE() {
-		return new SimpleLiteral(true);
+		return new SimpleLiteral(Boolean.TRUE);
 	}
 
+	@SuppressWarnings("unused")
 	private static Literal FALSE() {
-		return new SimpleLiteral(false);
+		return new SimpleLiteral(Boolean.FALSE);
+	}
+
+	private static Literal from(final Object that) {
+		return new SimpleLiteral(that);
 	}
 
 	// PRODUCER
@@ -45,7 +60,7 @@ public final class PipeActivities {
 		final ActivityDescriptor product = new SimpleActivityDescriptor(target,
 				SQL_QUERY_ACTIVITY);
 		product.addInput(new ActivityInputLiteral("expression", query));
-		return PipeElements.producer(product, "data");
+		return producer(product, "data");
 	}
 
 	static final ActivityName SQL_SCHEMA_ACTIVITY = asName("uk.org.ogsadai.ExtractTableSchema");
@@ -54,7 +69,17 @@ public final class PipeActivities {
 		final ActivityDescriptor product = new SimpleActivityDescriptor(target,
 				SQL_SCHEMA_ACTIVITY);
 		product.addInput(new ActivityInputLiteral("name", "%"));// wildcard
-		return PipeElements.producer(product, "data");
+		return producer(product, "data");
+	}
+
+	static final ActivityName SQL_UPDATE_ACTIVITY = asName("uk.org.ogsadai.SQLUpdate");
+
+	public static Producer sqlUpdate(final ResourceID target,
+			final String update) {
+		final ActivityDescriptor product = new SimpleActivityDescriptor(target,
+				SQL_UPDATE_ACTIVITY);
+		product.addInput(new ActivityInputLiteral("expression", update));
+		return producer(product, "result");
 	}
 
 	// BOTH
@@ -63,7 +88,7 @@ public final class PipeActivities {
 	public static ProducerAndConsumer tupleToWebRowSetCharArrays() {
 		final ActivityDescriptor product = new SimpleActivityDescriptor(
 				TUPLE_WEBROWSET_TRANSFORMER_ACTIVITY);
-		return PipeElements.both(product, "data", "result");
+		return both(product, "data", "result");
 	}
 
 	static final ActivityName TUPLE_CSV_TRANSFORMER_ACTIVITY = asName("uk.org.ogsadai.TupleToCSV");
@@ -73,7 +98,7 @@ public final class PipeActivities {
 				TUPLE_CSV_TRANSFORMER_ACTIVITY);
 		product.addInput(new ActivityInputLiteral(INPUT_HEADERINCLUDED, TRUE()));
 		product.addInput(new ActivityInputLiteral(INPUT_FIELDSESCAPED, TRUE()));
-		return PipeElements.both(product, "data", "result");
+		return both(product, "data", "result");
 	}
 
 	static final ActivityName TABLEMETADATA_XML_TRANSFORMER_ACTIVITY = asName("uk.org.ogsadai.TableMetadataToXMLCharArraysList");
@@ -81,7 +106,18 @@ public final class PipeActivities {
 	public static ProducerAndConsumer metadataToXml() {
 		final ActivityDescriptor product = new SimpleActivityDescriptor(
 				TABLEMETADATA_XML_TRANSFORMER_ACTIVITY);
-		return PipeElements.both(product, "data", "result");
+		return both(product, "data", "result");
+	}
+
+	static final ActivityName DYNAMIC_TRANSFORMER_ACTIVITY = asName("at.ac.univie.isc.DynamicSerialization");
+
+	public static ProducerAndConsumer dynamicSerializer(
+			final BlockTransformer transformer) {
+		final ActivityDescriptor product = new SimpleActivityDescriptor(
+				DYNAMIC_TRANSFORMER_ACTIVITY);
+		product.addInput(new ActivityInputLiteral(INPUT_TRANSFORMER,
+				from(transformer)));
+		return both(product, "data", "result");
 	}
 
 	// CONSUMER
@@ -90,16 +126,18 @@ public final class PipeActivities {
 	public static Consumer deliverToRequestStatus() {
 		final ActivityDescriptor product = new SimpleActivityDescriptor(
 				REQUESTSTATUS_DELIVERY);
-		return PipeElements.consumer(product, "input");
+		return consumer(product, "input");
 	}
 
 	static final ActivityName STREAM_DELIVERY = asName("at.ac.univie.isc.DeliverToStream");
 
-	public static Consumer deliverToStream(final String streamId) {
+	public static Consumer deliverToStream(
+			final OutputSupplier<OutputStream> supplier) {
 		final ActivityDescriptor product = new SimpleActivityDescriptor(
 				STREAM_DELIVERY);
-		product.addInput(new ActivityInputLiteral(INPUT_STREAM_ID, streamId));
-		return PipeElements.consumer(product, "input");
+		product.addInput(new ActivityInputLiteral(INPUT_SUPPLIER,
+				from(supplier)));
+		return consumer(product, "input");
 	}
 
 	private PipeActivities() {/* static helper */};

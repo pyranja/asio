@@ -32,13 +32,13 @@ public final class RandomIdGenerator implements IdGenerator {
 	}
 
 	/**
-	 * @return a new identifier in this format "{prefix}-{random UUID}"
+	 * @return a new identifier in this format "{prefix}:{random UUID}"
 	 */
 	@Override
 	public String next() {
 		final long lsb = rng.nextLong();
 		final long msb = System.currentTimeMillis();
 		final UUID id = new UUID(msb, lsb);
-		return prefix + "-" + id.toString();
+		return prefix + ":" + id.toString();
 	}
 }
