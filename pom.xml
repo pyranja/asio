@@ -25,7 +25,7 @@
 
 	<scm>
 		<developerConnection>scm:git|git@gitorious.cs.univie.ac.at:vce/vqs.git</developerConnection>
-	  <tag>HEAD</tag>
+	  <tag>release-0.2.0 -DpushChanges=false</tag>
   </scm>
 
 	<!-- shared dependencies -->
