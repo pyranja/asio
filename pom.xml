@@ -3,7 +3,7 @@
 
 	<groupId>at.ac.univie.isc</groupId>
 	<artifactId>vqs</artifactId>
-	<version>0.1.1-SNAPSHOT</version>
+	<version>0.2.0-RELEASE</version>
 	<packaging>pom</packaging>
 
 	<name>Vienna Query Service</name>
