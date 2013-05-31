@@ -84,7 +84,7 @@ public final class QueryEndpoint extends AbstractEndpoint {
 	 */
 	private void process(final String query, final Request request,
 			final AsyncResponse response) {
-		log.info("processing \"{}\"", query);
+		log.debug("-- processing \"{}\"", query);
 		final OperationBuilder partial = create.query(query);
 		complete(partial, request, response);
 	}

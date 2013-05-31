@@ -69,7 +69,7 @@ public class UpdateEndpoint extends AbstractEndpoint {
 	 */
 	private void process(final String update, final Request request,
 			final AsyncResponse response) {
-		log.info("processing \"{}\"", update);
+		log.debug("-- processing \"{}\"", update);
 		final OperationBuilder partial = create.update(update);
 		complete(partial, request, response);
 	}

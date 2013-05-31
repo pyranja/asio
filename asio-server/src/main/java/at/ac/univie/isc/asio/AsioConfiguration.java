@@ -16,6 +16,7 @@ import at.ac.univie.isc.asio.common.RandomIdGenerator;
 import at.ac.univie.isc.asio.frontend.AsyncProcessor;
 import at.ac.univie.isc.asio.frontend.DatasetExceptionMapper;
 import at.ac.univie.isc.asio.frontend.FrontendEngineAdapter;
+import at.ac.univie.isc.asio.frontend.LogContextFilter;
 import at.ac.univie.isc.asio.frontend.OperationFactory;
 import at.ac.univie.isc.asio.frontend.QueryEndpoint;
 import at.ac.univie.isc.asio.frontend.SchemaEndpoint;
@@ -35,35 +36,18 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 @ImportResource(value = { "classpath:/spring/asio-cxf.xml" })
 public class AsioConfiguration {
 
+	// asio backend components
+
 	@Autowired DatasetEngine engine;
 
-	@Bean(destroyMethod = "shutdown")
-	public ExecutorService responseExecutor() {
-		final ThreadFactory factory = new ThreadFactoryBuilder().setNameFormat(
-				"response-processer-%d").build();
-		return MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(5,
-				factory));
+	@Bean(destroyMethod = "dispose")
+	public FileResultRepository resultRepository() throws IOException {
+		final Path resultsDirectory = Files
+				.createTempDirectory("asio-results-");
+		return new FileResultRepository(resultsDirectory);
 	}
 
-	@Bean
-	public VariantConverter converter() {
-		return new VariantConverter();
-	}
-
-	@Bean
-	public AsyncProcessor processor() {
-		return new AsyncProcessor(responseExecutor(), converter());
-	}
-
-	@Bean
-	public OperationFactory operationFactory() {
-		return new OperationFactory(RandomIdGenerator.withPrefix("asio"));
-	}
-
-	@Bean
-	public FrontendEngineAdapter engineAdapter() {
-		return new FrontendEngineAdapter(engine, converter());
-	}
+	// JAX-RS service endpoints
 
 	@Bean(name = "asio_query")
 	public QueryEndpoint queryService() {
@@ -83,15 +67,45 @@ public class AsioConfiguration {
 				operationFactory());
 	}
 
+	// JAX-RS provider
+
 	@Bean(name = "asio_error_mapper")
 	public DatasetExceptionMapper errorMapper() {
 		return new DatasetExceptionMapper();
 	}
 
-	@Bean(destroyMethod = "dispose")
-	public FileResultRepository resultRepository() throws IOException {
-		final Path resultsDirectory = Files
-				.createTempDirectory("asio-results-");
-		return new FileResultRepository(resultsDirectory);
+	@Bean(name = "asio_log_filter")
+	public LogContextFilter logFilter() {
+		return new LogContextFilter();
+	}
+
+	// asio frontend components
+
+	@Bean
+	public OperationFactory operationFactory() {
+		return new OperationFactory(RandomIdGenerator.withPrefix("asio"));
+	}
+
+	@Bean
+	public FrontendEngineAdapter engineAdapter() {
+		return new FrontendEngineAdapter(engine, converter());
+	}
+
+	@Bean
+	public AsyncProcessor processor() {
+		return new AsyncProcessor(responseExecutor(), converter());
+	}
+
+	@Bean(destroyMethod = "shutdown")
+	public ExecutorService responseExecutor() {
+		final ThreadFactory factory = new ThreadFactoryBuilder().setNameFormat(
+				"response-processer-%d").build();
+		return MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(5,
+				factory));
+	}
+
+	@Bean
+	public VariantConverter converter() {
+		return new VariantConverter();
 	}
 }
