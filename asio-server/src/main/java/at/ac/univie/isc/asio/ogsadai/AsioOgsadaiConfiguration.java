@@ -15,8 +15,8 @@ import uk.org.ogsadai.resource.ResourceType;
 import uk.org.ogsadai.resource.ResourceUnknownException;
 import uk.org.ogsadai.resource.drer.DRER;
 import at.ac.univie.isc.asio.DatasetEngine;
+import at.ac.univie.isc.asio.ResultRepository;
 import at.ac.univie.isc.asio.ogsadai.workflow.SqlComposer;
-import at.ac.univie.isc.asio.transport.FileResultRepository;
 
 import com.google.common.collect.Iterables;
 
@@ -33,7 +33,7 @@ public class AsioOgsadaiConfiguration {
 	private static final ID ROUTER_ID = new ID(
 			"uk.org.ogsadai.MONITORING_FRAMEWORK");
 
-	@Autowired FileResultRepository resultRepository;
+	@Autowired ResultRepository resultRepository;
 
 	@Bean
 	public DatasetEngine ogsadaiEngine() {

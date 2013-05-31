@@ -41,7 +41,7 @@ public class AsioConfiguration {
 	@Autowired DatasetEngine engine;
 
 	@Bean(destroyMethod = "dispose")
-	public FileResultRepository resultRepository() throws IOException {
+	public ResultRepository resultRepository() throws IOException {
 		final Path resultsDirectory = Files
 				.createTempDirectory("asio-results-");
 		return new FileResultRepository(resultsDirectory);
