@@ -14,6 +14,7 @@ import at.ac.univie.isc.asio.DatasetTransportException;
 import at.ac.univie.isc.asio.Result;
 import at.ac.univie.isc.asio.ResultHandler;
 import at.ac.univie.isc.asio.ResultRepository;
+import at.ac.univie.isc.asio.common.Disposable;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -23,7 +24,7 @@ import com.google.common.util.concurrent.ListenableFuture;
  * 
  * @author Chris Borckholder
  */
-public class FileResultRepository implements ResultRepository {
+public class FileResultRepository implements ResultRepository, Disposable {
 
 	/* slf4j-logger */
 	final static Logger log = LoggerFactory
@@ -79,6 +80,7 @@ public class FileResultRepository implements ResultRepository {
 	 * @throws IOException
 	 *             encountered while deleting
 	 */
+	@Override
 	public void dispose() throws IOException {
 		log.info("clearing result directory {}", root);
 		Files.walkFileTree(root, new PurgeVisitor());
