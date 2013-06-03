@@ -13,7 +13,7 @@ import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
 import at.ac.univie.isc.asio.Result;
 import at.ac.univie.isc.asio.ResultHandler;
-import at.ac.univie.isc.asio.transport.FileResultRepository;
+import at.ac.univie.isc.asio.ResultRepository;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -28,12 +28,11 @@ public final class OgsadaiEngine implements DatasetEngine {
 	final static Logger log = LoggerFactory.getLogger(OgsadaiEngine.class);
 
 	private final OgsadaiAdapter ogsadai;
-	private final FileResultRepository results;
+	private final ResultRepository results;
 	private final WorkflowComposer composer;
 	private final DaiExceptionTranslator translator;
 
-	OgsadaiEngine(final OgsadaiAdapter ogsadai,
-			final FileResultRepository results,
+	OgsadaiEngine(final OgsadaiAdapter ogsadai, final ResultRepository results,
 			final WorkflowComposer composer,
 			final DaiExceptionTranslator translator) {
 		super();
@@ -63,7 +62,7 @@ public final class OgsadaiEngine implements DatasetEngine {
 	 */
 	@Override
 	public ListenableFuture<Result> submit(final DatasetOperation operation) {
-		final ResultHandler handler = results.newHandler(operation.format());
+		final ResultHandler handler = results.newHandlerFor(operation);
 		final Workflow workflow = composer.createFrom(operation, handler);
 		log.trace("-- using workflow :\n{}", workflow);
 		final CompletionCallback callback = delegateTo(handler, operation);

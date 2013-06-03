@@ -27,7 +27,7 @@ import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
 import at.ac.univie.isc.asio.MockOperations;
 import at.ac.univie.isc.asio.Result;
 import at.ac.univie.isc.asio.ResultHandler;
-import at.ac.univie.isc.asio.transport.FileResultRepository;
+import at.ac.univie.isc.asio.ResultRepository;
 
 import com.google.common.io.OutputSupplier;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -40,7 +40,7 @@ public class OgsadaiEngineTest {
 
 	private OgsadaiEngine subject;
 	@Mock private OgsadaiAdapter ogsadai;
-	@Mock private FileResultRepository results;
+	@Mock private ResultRepository results;
 	@Mock private ResultHandler handler;
 	@Mock private WorkflowComposer composer;
 	@Mock private Workflow dummyWorkflow;
@@ -51,7 +51,7 @@ public class OgsadaiEngineTest {
 	@Before
 	public void setUp() throws IOException {
 		operation = MockOperations.query(MOCK_QUERY, MOCK_FORMAT);
-		when(results.newHandler(any(SerializationFormat.class))).thenReturn(
+		when(results.newHandlerFor(any(DatasetOperation.class))).thenReturn(
 				handler);
 		when(
 				composer.createFrom(any(DatasetOperation.class),
@@ -88,7 +88,7 @@ public class OgsadaiEngineTest {
 	@Test
 	public void creates_handler_with_given_format() throws Exception {
 		subject.submit(operation);
-		verify(results).newHandler(MOCK_FORMAT);
+		verify(results).newHandlerFor(operation);
 	}
 
 	@Test
