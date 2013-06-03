@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 
 import uk.org.ogsadai.activity.event.RequestEventRouter;
 import uk.org.ogsadai.common.ID;
@@ -28,8 +29,8 @@ import com.google.common.collect.Iterables;
 @Configuration
 public class AsioOgsadaiConfiguration {
 
-	private static final ResourceID TEST_RESOURCE = new ResourceID("mock_data",
-			"");
+	@Autowired Environment env;
+
 	private static final ID ROUTER_ID = new ID(
 			"uk.org.ogsadai.MONITORING_FRAMEWORK");
 
@@ -48,7 +49,10 @@ public class AsioOgsadaiConfiguration {
 
 	@Bean
 	public WorkflowComposer composer() {
-		return new SqlComposer(TEST_RESOURCE);
+		final String resourceName = env
+				.getRequiredProperty("asio.ogsadai.resource");
+		final ResourceID resource = new ResourceID(resourceName, "");
+		return new SqlComposer(resource);
 	}
 
 	@Bean
