@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 
 import at.ac.univie.isc.asio.common.RandomIdGenerator;
 import at.ac.univie.isc.asio.frontend.AsyncProcessor;
@@ -23,6 +25,7 @@ import at.ac.univie.isc.asio.frontend.SchemaEndpoint;
 import at.ac.univie.isc.asio.frontend.UpdateEndpoint;
 import at.ac.univie.isc.asio.frontend.VariantConverter;
 import at.ac.univie.isc.asio.transport.FileResultRepository;
+import at.ac.univie.isc.asio.transport.StreamedResultRepository;
 
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -34,7 +37,10 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  */
 @Configuration
 @ImportResource(value = { "classpath:/spring/asio-cxf.xml" })
+@PropertySource(value = { "classpath:/asio.properties" })
 public class AsioConfiguration {
+
+	@Autowired Environment env;
 
 	// asio backend components
 
@@ -44,7 +50,15 @@ public class AsioConfiguration {
 	public ResultRepository resultRepository() throws IOException {
 		final Path resultsDirectory = Files
 				.createTempDirectory("asio-results-");
-		return new FileResultRepository(resultsDirectory);
+		final String type = env.getProperty("asio.transport.repository");
+		if ("STREAM".equalsIgnoreCase(type)) {
+			return new StreamedResultRepository(resultsDirectory);
+		} else if ("FILE".equalsIgnoreCase(type)) {
+			return new FileResultRepository(resultsDirectory);
+		} else {
+			throw new IllegalArgumentException("unknown repository type '"
+					+ type + "'. check 'asio.transport.repository' !");
+		}
 	}
 
 	// JAX-RS service endpoints
