@@ -13,7 +13,6 @@ import javax.ws.rs.core.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import at.ac.univie.isc.asio.DatasetOperation.Action;
 import at.ac.univie.isc.asio.frontend.OperationFactory.OperationBuilder;
 
 /**
@@ -29,9 +28,9 @@ public class UpdateEndpoint extends AbstractEndpoint {
 
 	private static final String PARAM_UPDATE = "update";
 
-	public UpdateEndpoint(final FrontendEngineAdapter engine,
+	public UpdateEndpoint(final EngineAdapter engine,
 			final AsyncProcessor processor, final OperationFactory create) {
-		super(engine, processor, create, Action.UPDATE);
+		super(engine, processor, create);
 	}
 
 	/**

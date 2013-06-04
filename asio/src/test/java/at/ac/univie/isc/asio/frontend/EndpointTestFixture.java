@@ -1,7 +1,5 @@
 package at.ac.univie.isc.asio.frontend;
 
-import static org.mockito.Mockito.when;
-
 import java.net.URI;
 
 import javax.ws.rs.ext.RuntimeDelegate;
@@ -13,12 +11,8 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.mockito.Mockito;
 
 import at.ac.univie.isc.asio.DatasetEngine;
-import at.ac.univie.isc.asio.MockFormat;
-
-import com.google.common.collect.ImmutableSet;
 
 /**
  * Sets up a standalone servlet container that hosts an
@@ -59,20 +53,17 @@ public class EndpointTestFixture {
 	// test infrastructure
 
 	protected WebClient client;
-	protected DatasetEngine engine;
+	protected EngineAdapter engine;
 
 	@Before
 	public void prepareClient() {
 		client = WebClient.create(SERVER_URI);
 		engine = application.getMockEngine();
-		when(engine.supportedFormats()).thenReturn(
-				ImmutableSet.of(MockFormat.ALWAYS_APPLICABLE,
-						MockFormat.NEVER_APPLICABLE));
 	}
 
 	@After
 	public void resetClientAndMock() {
 		client.reset();
-		Mockito.reset(engine);
+		application.resetMocks();
 	}
 }

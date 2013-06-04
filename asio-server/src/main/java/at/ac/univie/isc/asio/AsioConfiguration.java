@@ -1,7 +1,8 @@
 package at.ac.univie.isc.asio;
 
+import static java.nio.file.Files.createTempDirectory;
+
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -17,7 +18,8 @@ import org.springframework.core.env.Environment;
 import at.ac.univie.isc.asio.common.RandomIdGenerator;
 import at.ac.univie.isc.asio.frontend.AsyncProcessor;
 import at.ac.univie.isc.asio.frontend.DatasetExceptionMapper;
-import at.ac.univie.isc.asio.frontend.FrontendEngineAdapter;
+import at.ac.univie.isc.asio.frontend.EngineAdapter;
+import at.ac.univie.isc.asio.frontend.FormatSelector;
 import at.ac.univie.isc.asio.frontend.LogContextFilter;
 import at.ac.univie.isc.asio.frontend.OperationFactory;
 import at.ac.univie.isc.asio.frontend.QueryEndpoint;
@@ -40,16 +42,21 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 @PropertySource(value = { "classpath:/asio.properties" })
 public class AsioConfiguration {
 
-	@Autowired Environment env;
+	@Autowired private Environment env;
 
 	// asio backend components
 
-	@Autowired DatasetEngine engine;
+	@Autowired private DatasetEngine engine;
 
 	@Bean(destroyMethod = "dispose")
-	public ResultRepository resultRepository() throws IOException {
-		final Path resultsDirectory = Files
-				.createTempDirectory("asio-results-");
+	public ResultRepository resultRepository() {
+		Path resultsDirectory;
+		try {
+			resultsDirectory = createTempDirectory("asio-results-");
+		} catch (final IOException e) {
+			throw new IllegalStateException(
+					"failed to create result root directory", e);
+		}
 		final String type = env.getProperty("asio.transport.repository");
 		if ("STREAM".equalsIgnoreCase(type)) {
 			return new StreamedResultRepository(resultsDirectory);
@@ -101,8 +108,10 @@ public class AsioConfiguration {
 	}
 
 	@Bean
-	public FrontendEngineAdapter engineAdapter() {
-		return new FrontendEngineAdapter(engine, converter());
+	public EngineAdapter engineAdapter() {
+		final FormatSelector selector = new FormatSelector(
+				engine.supportedFormats(), converter());
+		return new EngineAdapter(engine, resultRepository(), selector);
 	}
 
 	@Bean

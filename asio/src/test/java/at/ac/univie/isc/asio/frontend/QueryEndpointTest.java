@@ -149,11 +149,11 @@ public class QueryEndpointTest extends EndpointTestFixture {
 
 	// ERROR PROPAGATION
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void usage_error_generates_bad_request_response() throws Exception {
-		when(engine.submit(any(DatasetOperation.class))).thenThrow(
-				DatasetUsageException.class);
+		final DatasetUsageException cause = new DatasetUsageException(
+				"test-message");
+		when(engine.submit(any(DatasetOperation.class))).thenThrow(cause);
 		response = client.query("query", "test-query").get();
 		assertEquals(Status.BAD_REQUEST, fromStatusCode(response.getStatus()));
 	}
