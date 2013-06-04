@@ -15,7 +15,6 @@ import javax.ws.rs.core.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import at.ac.univie.isc.asio.DatasetOperation.Action;
 import at.ac.univie.isc.asio.frontend.OperationFactory.OperationBuilder;
 
 /**
@@ -31,9 +30,9 @@ public final class QueryEndpoint extends AbstractEndpoint {
 
 	private static final String PARAM_QUERY = "query";
 
-	public QueryEndpoint(final FrontendEngineAdapter engine,
+	public QueryEndpoint(final EngineAdapter engine,
 			final AsyncProcessor processor, final OperationFactory create) {
-		super(engine, processor, create, Action.QUERY);
+		super(engine, processor, create);
 	}
 
 	/**

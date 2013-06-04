@@ -10,8 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import at.ac.univie.isc.asio.DatasetOperation;
-import at.ac.univie.isc.asio.DatasetOperation.Action;
-import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
 import at.ac.univie.isc.asio.Result;
 import at.ac.univie.isc.asio.common.LogContext;
 import at.ac.univie.isc.asio.frontend.OperationFactory.OperationBuilder;
@@ -32,11 +30,9 @@ public class AbstractEndpoint {
 	private static final long TIMEOUT = 10L; // SECONDS
 
 	// dependencies
-	private final FrontendEngineAdapter engine;
+	private final EngineAdapter engine;
 	private final AsyncProcessor processor;
 	protected final OperationFactory create;
-	// utils
-	private final Action type;
 
 	/**
 	 * subclass constructor
@@ -50,14 +46,12 @@ public class AbstractEndpoint {
 	 * @param type
 	 *            of concrete endpoint
 	 */
-	protected AbstractEndpoint(final FrontendEngineAdapter engine,
-			final AsyncProcessor processor, final OperationFactory create,
-			final Action type) {
+	protected AbstractEndpoint(final EngineAdapter engine,
+			final AsyncProcessor processor, final OperationFactory create) {
 		super();
 		this.engine = engine;
 		this.processor = processor;
 		this.create = create;
-		this.type = type;
 	}
 
 	/**
@@ -73,10 +67,8 @@ public class AbstractEndpoint {
 	protected final void complete(final OperationBuilder partial,
 			final Request request, final AsyncResponse response) {
 		try {
-			final SerializationFormat selected = engine.selectFormat(request,
-					type);
-			log.debug("-- selected format {}", selected);
-			final DatasetOperation operation = partial.renderAs(selected);
+			final DatasetOperation operation = engine
+					.completeWithMatchingFormat(request, partial);
 			MDC.put(LogContext.KEY_OP, operation.toString());
 			log.info(">> executing operation");
 			final ListenableFuture<Result> future = engine.submit(operation);

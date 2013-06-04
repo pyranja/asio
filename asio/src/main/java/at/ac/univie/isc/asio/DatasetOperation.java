@@ -40,6 +40,19 @@ public class DatasetOperation {
 		 *         action
 		 */
 		boolean applicableOn(Action action);
+
+		/** indicates that no valid format is set on the operation */
+		public static final SerializationFormat NONE = new SerializationFormat() {
+			@Override
+			public MediaType asMediaType() {
+				throw new AssertionError("NONE format accessed");
+			}
+
+			@Override
+			public boolean applicableOn(final Action action) {
+				throw new AssertionError("NONE format accessed");
+			}
+		};
 	}
 
 	private final String id;

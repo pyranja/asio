@@ -10,7 +10,6 @@ import javax.ws.rs.core.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import at.ac.univie.isc.asio.DatasetOperation.Action;
 import at.ac.univie.isc.asio.frontend.OperationFactory.OperationBuilder;
 
 /**
@@ -24,9 +23,9 @@ public final class SchemaEndpoint extends AbstractEndpoint {
 	/* slf4j-logger */
 	final static Logger log = LoggerFactory.getLogger(SchemaEndpoint.class);
 
-	public SchemaEndpoint(final FrontendEngineAdapter engine,
+	public SchemaEndpoint(final EngineAdapter engine,
 			final AsyncProcessor processor, final OperationFactory create) {
-		super(engine, processor, create, Action.SCHEMA);
+		super(engine, processor, create);
 	}
 
 	/**

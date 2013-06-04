@@ -17,7 +17,8 @@ import org.springframework.core.env.Environment;
 import at.ac.univie.isc.asio.common.RandomIdGenerator;
 import at.ac.univie.isc.asio.frontend.AsyncProcessor;
 import at.ac.univie.isc.asio.frontend.DatasetExceptionMapper;
-import at.ac.univie.isc.asio.frontend.FrontendEngineAdapter;
+import at.ac.univie.isc.asio.frontend.EngineAdapter;
+import at.ac.univie.isc.asio.frontend.FormatSelector;
 import at.ac.univie.isc.asio.frontend.LogContextFilter;
 import at.ac.univie.isc.asio.frontend.OperationFactory;
 import at.ac.univie.isc.asio.frontend.QueryEndpoint;
@@ -101,8 +102,10 @@ public class AsioConfiguration {
 	}
 
 	@Bean
-	public FrontendEngineAdapter engineAdapter() {
-		return new FrontendEngineAdapter(engine, converter());
+	public EngineAdapter engineAdapter() {
+		final FormatSelector selector = new FormatSelector(
+				engine.supportedFormats(), converter());
+		return new EngineAdapter(engine, selector);
 	}
 
 	@Bean

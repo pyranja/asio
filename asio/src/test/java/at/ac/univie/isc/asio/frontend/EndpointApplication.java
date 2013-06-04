@@ -27,25 +27,25 @@ import com.google.common.util.concurrent.MoreExecutors;
 public class EndpointApplication extends Application {
 
 	private final Set<AbstractEndpoint> endpoints;
-
 	private final DatasetEngine mockEngine;
-	private final OperationFactory factory;
-	private final FrontendEngineAdapter adapter;
 
 	EndpointApplication() {
 		super();
-		final VariantConverter converter = new VariantConverter();
 		mockEngine = Mockito.mock(DatasetEngine.class);
 		when(mockEngine.supportedFormats()).thenReturn(
 				ImmutableSet.of(MockFormat.ALWAYS_APPLICABLE,
 						MockFormat.NEVER_APPLICABLE));
-		adapter = new FrontendEngineAdapter(mockEngine, converter);
-		factory = new OperationFactory(
-				RandomIdGenerator.withPrefix("integration"));
+		endpoints = createEndpoints();
+	}
+
+	private Set<AbstractEndpoint> createEndpoints() {
+		final EngineAdapter adapter = EngineAdapter.adapt(mockEngine);
 		final AsyncProcessor processor = new AsyncProcessor(
-				MoreExecutors.sameThreadExecutor(), converter);
-		endpoints = ImmutableSet.of(new QueryEndpoint(adapter, processor,
-				factory), new SchemaEndpoint(adapter, processor, factory),
+				MoreExecutors.sameThreadExecutor(), new VariantConverter());
+		final OperationFactory factory = new OperationFactory(
+				RandomIdGenerator.withPrefix("integration"));
+		return ImmutableSet.of(new QueryEndpoint(adapter, processor, factory),
+				new SchemaEndpoint(adapter, processor, factory),
 				new UpdateEndpoint(adapter, processor, factory));
 	}
 

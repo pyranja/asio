@@ -7,73 +7,47 @@ import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Variant;
 
-import at.ac.univie.isc.asio.DatasetEngine;
-import at.ac.univie.isc.asio.DatasetException;
-import at.ac.univie.isc.asio.DatasetFailureException;
 import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.Action;
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
-import at.ac.univie.isc.asio.Result;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Iterables;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
 
 /**
- * Enhances a {@link DatasetEngine} with JAXRS-aware functionality.
+ * Maintain a mapping of {@link DatasetOperation.Action actions} to
+ * {@link Variant variant}->{@link SerializationFormat format} pairs derived
+ * from the set of supported formats given on creation.
  * 
  * @author Chris Borckholder
  */
-public class FrontendEngineAdapter {
+public class FormatSelector {
 
 	private static final String UNSUPPORTED_MESSAGE = "%s not supported";
 
-	private final DatasetEngine delegate;
 	private final VariantConverter converter;
-	private Map<Action, Map<Variant, SerializationFormat>> mappingsByAction;
+	private final Map<Action, Map<Variant, SerializationFormat>> mappingsByAction;
 
-	public FrontendEngineAdapter(final DatasetEngine delegate,
+	public FormatSelector(final Set<SerializationFormat> supported,
 			final VariantConverter converter) {
 		super();
-		this.delegate = delegate;
 		this.converter = converter;
-		mappingsByAction = initializeMappings();
-	}
-
-	public ListenableFuture<Result> submit(final DatasetOperation operation) {
-		try {
-			return delegate.submit(operation);
-		} catch (final DatasetException e) {
-			e.setFailedOperation(operation);
-			return Futures.immediateFailedFuture(e);
-		} catch (final Exception e) {
-			final DatasetFailureException wrapper = new DatasetFailureException(
-					e);
-			wrapper.setFailedOperation(operation);
-			return Futures.immediateFailedFuture(wrapper);
-		}
-	}
-
-	@VisibleForTesting
-	void repopulateMappings() {
-		mappingsByAction = initializeMappings();
+		mappingsByAction = initializeMappings(supported);
 	}
 
 	/**
-	 * Attempts to find a {@link SerializationFormat} that is supported by the
-	 * backing engine for the given {@link Action} and is compatible to the
-	 * content types accepted by the given request.
+	 * Attempt to match an accepted {@link Variant} from the given request to a
+	 * {@link SerializationFormat format} supported for the given action.
 	 * 
 	 * @param request
 	 *            holding acceptable variants
@@ -108,36 +82,49 @@ public class FrontendEngineAdapter {
 	}
 
 	/**
+	 * @param supported
+	 *            given formats
 	 * @return {@link Variant}->{@link SerializationFormat} mappings for each
 	 *         {@link Action}.
 	 */
-	private Map<Action, Map<Variant, SerializationFormat>> initializeMappings() {
-		final Builder<Action, Map<Variant, SerializationFormat>> partial = ImmutableMap
+	private Map<Action, Map<Variant, SerializationFormat>> initializeMappings(
+			final Set<SerializationFormat> supported) {
+		final Builder<Action, Map<Variant, SerializationFormat>> mappings = ImmutableMap
 				.builder();
 		for (final Action action : Action.values()) {
-			final Builder<Variant, SerializationFormat> variant2Format = ImmutableMap
-					.builder();
-			for (final SerializationFormat each : filterFormats(action)) {
-				variant2Format.put(converter.asVariant(each.asMediaType()),
-						each);
-			}
-			partial.put(action, variant2Format.build());
+			mappings.put(action, mappingsFrom(filteredBy(action, supported)));
 		}
-		return partial.build();
+		return mappings.build();
+	}
+
+	/**
+	 * @param iterable
+	 * @return Variant->format map
+	 */
+	private Map<Variant, SerializationFormat> mappingsFrom(
+			final Iterable<SerializationFormat> iterable) {
+		final Builder<Variant, SerializationFormat> variant2Format = ImmutableMap
+				.builder();
+		for (final SerializationFormat each : iterable) {
+			variant2Format.put(converter.asVariant(each.asMediaType()), each);
+		}
+		return variant2Format.build();
 	}
 
 	/**
 	 * @param by
-	 *            action to be supported
-	 * @return formats that are applicable to given action
+	 *            action that must be supported by filtered formats
+	 * @param formats
+	 *            to be filtered
+	 * @return iterable with filtered formats
 	 */
-	private Iterable<SerializationFormat> filterFormats(final Action by) {
-		return Iterables.filter(delegate.supportedFormats(),
-				new Predicate<SerializationFormat>() {
-					@Override
-					public boolean apply(final SerializationFormat input) {
-						return input.applicableOn(by);
-					}
-				});
+	private Iterable<SerializationFormat> filteredBy(
+			final Action by, final Set<SerializationFormat> formats) {
+		return Iterables.filter(formats, new Predicate<SerializationFormat>() {
+			@Override
+			public boolean apply(final SerializationFormat input) {
+				return input.applicableOn(by);
+			}
+		});
 	}
 }

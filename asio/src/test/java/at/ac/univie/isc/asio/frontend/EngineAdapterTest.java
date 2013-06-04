@@ -1,20 +1,20 @@
 package at.ac.univie.isc.asio.frontend;
 
+import static at.ac.univie.isc.asio.DatasetOperation.SerializationFormat.NONE;
 import static at.ac.univie.isc.asio.MockFormat.ALWAYS_APPLICABLE;
-import static at.ac.univie.isc.asio.MockFormat.NEVER_APPLICABLE;
-import static java.util.Collections.singleton;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.concurrent.ExecutionException;
 
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Request;
-import javax.ws.rs.core.Variant;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -27,55 +27,61 @@ import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.Action;
 import at.ac.univie.isc.asio.DatasetUsageException;
+import at.ac.univie.isc.asio.MockFormat;
 import at.ac.univie.isc.asio.MockOperations;
 import at.ac.univie.isc.asio.Result;
+import at.ac.univie.isc.asio.frontend.OperationFactory.OperationBuilder;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
 @RunWith(MockitoJUnitRunner.class)
-public class FrontentEngineAdapterTest {
+public class EngineAdapterTest {
 
-	private FrontendEngineAdapter subject;
+	private EngineAdapter subject;
+	private DatasetOperation op;
 	@Mock private DatasetEngine engine;
+	@Mock private FormatSelector selector;
 	@Mock private Request request;
-	private final VariantConverter converter = new VariantConverter();
 
 	@Before
 	public void setUp() {
-		when(engine.supportedFormats())
-				.thenReturn(singleton(ALWAYS_APPLICABLE));
-		subject = new FrontendEngineAdapter(engine, converter);
+		subject = new EngineAdapter(engine, selector);
+		op = MockOperations.schema(MockFormat.ALWAYS_APPLICABLE);
 	}
 
 	@Test
-	public void forwards_operation_to_engine() throws Exception {
-		final DatasetOperation op = MockOperations.query("test",
-				ALWAYS_APPLICABLE);
+	public void completes_op_builder_with_selected_format() throws Exception {
+		final OperationBuilder partial = new OperationBuilder("test-id",
+				Action.BATCH, "test-command");
+		when(selector.selectFormat(same(request), any(Action.class)))
+				.thenReturn(ALWAYS_APPLICABLE);
+		final DatasetOperation created = subject.completeWithMatchingFormat(request, partial);
+		assertThat(created.format(), is(ALWAYS_APPLICABLE));
+		assertThat(created.id(), is("test-id"));
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void sets_context_on_selection_error() throws Exception {
+		final OperationBuilder partial = new OperationBuilder("test-id",
+				Action.BATCH, "test-command");
+		when(selector.selectFormat(same(request), any(Action.class)))
+				.thenThrow(DatasetUsageException.class);
+		try {
+			subject.completeWithMatchingFormat(request, partial);
+			fail("usage exception not rethrown");
+		} catch (final DatasetUsageException e) {
+			assertThat(e.failedOperation().isPresent(), is(true));
+			op = e.failedOperation().get();
+			assertThat(op.format(), is(NONE));
+			assertThat(op.id(), is("test-id"));
+		}
+	}
+
+	@Test
+	public void submits_op_to_engine() throws Exception {
 		subject.submit(op);
 		verify(engine).submit(op);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Test
-	public void passes_applicable_format_variants_to_request_selector()
-			throws Exception {
-		when(request.selectVariant(anyList())).thenReturn(
-				new Variant(null, "en", null));
-		subject.selectFormat(request, Action.QUERY);
-		verify(request).selectVariant(anyList());
-	}
-
-	@Test(expected = WebApplicationException.class)
-	public void fails_if_no_format_applicable() throws Exception {
-		when(engine.supportedFormats()).thenReturn(singleton(NEVER_APPLICABLE));
-		subject.selectFormat(request, Action.QUERY);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Test(expected = WebApplicationException.class)
-	public void fails_if_request_selector_returns_null() throws Exception {
-		when(request.selectVariant(anyList())).thenReturn(null);
-		subject.selectFormat(request, Action.QUERY);
 	}
 
 	@Test(timeout = 100)
