@@ -9,6 +9,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.same;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -30,6 +31,8 @@ import at.ac.univie.isc.asio.DatasetUsageException;
 import at.ac.univie.isc.asio.MockFormat;
 import at.ac.univie.isc.asio.MockOperations;
 import at.ac.univie.isc.asio.Result;
+import at.ac.univie.isc.asio.ResultHandler;
+import at.ac.univie.isc.asio.ResultRepository;
 import at.ac.univie.isc.asio.frontend.OperationFactory.OperationBuilder;
 
 import com.google.common.util.concurrent.ListenableFuture;
@@ -40,12 +43,13 @@ public class EngineAdapterTest {
 	private EngineAdapter subject;
 	private DatasetOperation op;
 	@Mock private DatasetEngine engine;
+	@Mock private ResultRepository results;
 	@Mock private FormatSelector selector;
 	@Mock private Request request;
 
 	@Before
 	public void setUp() {
-		subject = new EngineAdapter(engine, selector);
+		subject = new EngineAdapter(engine, results, selector);
 		op = MockOperations.schema(MockFormat.ALWAYS_APPLICABLE);
 	}
 
@@ -55,7 +59,8 @@ public class EngineAdapterTest {
 				Action.BATCH, "test-command");
 		when(selector.selectFormat(same(request), any(Action.class)))
 				.thenReturn(ALWAYS_APPLICABLE);
-		final DatasetOperation created = subject.completeWithMatchingFormat(request, partial);
+		final DatasetOperation created = subject.completeWithMatchingFormat(
+				request, partial);
 		assertThat(created.format(), is(ALWAYS_APPLICABLE));
 		assertThat(created.id(), is("test-id"));
 	}
@@ -81,7 +86,13 @@ public class EngineAdapterTest {
 	@Test
 	public void submits_op_to_engine() throws Exception {
 		subject.submit(op);
-		verify(engine).submit(op);
+		verify(engine).submit(same(op), any(ResultHandler.class));
+	}
+
+	@Test
+	public void creates_handler_for_op() throws Exception {
+		subject.submit(op);
+		verify(results).newHandlerFor(op);
 	}
 
 	@Test(timeout = 100)
@@ -90,7 +101,8 @@ public class EngineAdapterTest {
 		final DatasetOperation op = MockOperations.query("test",
 				ALWAYS_APPLICABLE);
 		final Exception error = new IllegalStateException("test");
-		when(engine.submit(any(DatasetOperation.class))).thenThrow(error);
+		doThrow(error).when(engine).submit(any(DatasetOperation.class),
+				any(ResultHandler.class));
 		final ListenableFuture<Result> future = subject.submit(op);
 		try {
 			future.get();
@@ -105,7 +117,8 @@ public class EngineAdapterTest {
 		final DatasetOperation op = MockOperations.query("test",
 				ALWAYS_APPLICABLE);
 		final DatasetException error = new DatasetUsageException("test");
-		when(engine.submit(any(DatasetOperation.class))).thenThrow(error);
+		doThrow(error).when(engine).submit(any(DatasetOperation.class),
+				any(ResultHandler.class));
 		final ListenableFuture<Result> future = subject.submit(op);
 		try {
 			future.get();

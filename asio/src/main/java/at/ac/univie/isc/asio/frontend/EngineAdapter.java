@@ -7,8 +7,11 @@ import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.DatasetFailureException;
 import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
+import at.ac.univie.isc.asio.DatasetTransportException;
 import at.ac.univie.isc.asio.DatasetUsageException;
 import at.ac.univie.isc.asio.Result;
+import at.ac.univie.isc.asio.ResultHandler;
+import at.ac.univie.isc.asio.ResultRepository;
 import at.ac.univie.isc.asio.frontend.OperationFactory.OperationBuilder;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -30,16 +33,37 @@ public class EngineAdapter {
 	static EngineAdapter adapt(final DatasetEngine engine) {
 		final FormatSelector selector = new FormatSelector(
 				engine.supportedFormats(), new VariantConverter());
-		return new EngineAdapter(engine, selector);
+		// TODO hacked for tests
+		final ResultRepository repo = new ResultRepository() {
+			@Override
+			public ResultHandler newHandlerFor(final DatasetOperation operation)
+					throws DatasetTransportException {
+				return null;
+			}
+
+			@Override
+			public ListenableFuture<Result> find(final String opId)
+					throws DatasetTransportException, DatasetUsageException {
+				return null;
+			}
+
+			@Override
+			public boolean delete(final String opId) {
+				return false;
+			}
+		};
+		return new EngineAdapter(engine, repo, selector);
 	}
 
 	private final DatasetEngine delegate;
 	private final FormatSelector selector;
+	private final ResultRepository results;
 
 	public EngineAdapter(final DatasetEngine delegate,
-			final FormatSelector selector) {
+			final ResultRepository results, final FormatSelector selector) {
 		super();
 		this.delegate = delegate;
+		this.results = results;
 		this.selector = selector;
 	}
 
@@ -84,7 +108,9 @@ public class EngineAdapter {
 	 */
 	public ListenableFuture<Result> submit(final DatasetOperation operation) {
 		try {
-			return delegate.submit(operation);
+			final ResultHandler handler = results.newHandlerFor(operation);
+			delegate.submit(operation, handler);
+			return handler.asFutureResult();
 		} catch (final DatasetException e) {
 			e.setFailedOperation(operation);
 			return Futures.immediateFailedFuture(e);
