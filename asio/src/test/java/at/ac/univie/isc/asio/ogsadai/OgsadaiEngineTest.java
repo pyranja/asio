@@ -24,6 +24,7 @@ import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
 import at.ac.univie.isc.asio.MockOperations;
 import at.ac.univie.isc.asio.ResultHandler;
+import at.ac.univie.isc.asio.security.NullPrincipal;
 
 import com.google.common.io.OutputSupplier;
 
@@ -67,19 +68,19 @@ public class OgsadaiEngineTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void passes_operation_to_composer() throws Exception {
-		subject.submit(operation, handler);
+		subject.submit(operation, handler, NullPrincipal.INSTANCE);
 		verify(composer).createFrom(same(operation), any(OutputSupplier.class));
 	}
 
 	@Test
 	public void passes_result_handler_to_composer() throws Exception {
-		subject.submit(operation, handler);
+		subject.submit(operation, handler, NullPrincipal.INSTANCE);
 		verify(composer).createFrom(any(DatasetOperation.class), same(handler));
 	}
 
 	@Test
 	public void invokes_ogsadai_with_composed_workflow() throws Exception {
-		subject.submit(operation, handler);
+		subject.submit(operation, handler, NullPrincipal.INSTANCE);
 		verify(ogsadai).invoke(anyString(), same(dummyWorkflow),
 				any(CompletionCallback.class));
 	}

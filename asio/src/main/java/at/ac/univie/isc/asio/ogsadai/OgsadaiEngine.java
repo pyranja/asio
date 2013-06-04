@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.ogsadai;
 
+import java.security.Principal;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -58,7 +59,7 @@ public final class OgsadaiEngine implements DatasetEngine {
 	 */
 	@Override
 	public void submit(final DatasetOperation operation,
-			final ResultHandler handler) {
+			final ResultHandler handler, final Principal ignored) {
 		final Workflow workflow = composer.createFrom(operation, handler);
 		log.trace("-- using workflow :\n{}", workflow);
 		final CompletionCallback callback = delegateTo(handler, operation);

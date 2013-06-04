@@ -13,6 +13,7 @@ import at.ac.univie.isc.asio.Result;
 import at.ac.univie.isc.asio.ResultHandler;
 import at.ac.univie.isc.asio.ResultRepository;
 import at.ac.univie.isc.asio.frontend.OperationFactory.OperationBuilder;
+import at.ac.univie.isc.asio.security.NullPrincipal;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.Futures;
@@ -109,7 +110,7 @@ public class EngineAdapter {
 	public ListenableFuture<Result> submit(final DatasetOperation operation) {
 		try {
 			final ResultHandler handler = results.newHandlerFor(operation);
-			delegate.submit(operation, handler);
+			delegate.submit(operation, handler, NullPrincipal.INSTANCE);
 			return handler.asFutureResult();
 		} catch (final DatasetException e) {
 			e.setFailedOperation(operation);

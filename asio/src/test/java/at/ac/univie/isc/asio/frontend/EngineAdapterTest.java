@@ -13,6 +13,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.security.Principal;
 import java.util.concurrent.ExecutionException;
 
 import javax.ws.rs.core.Request;
@@ -86,7 +87,8 @@ public class EngineAdapterTest {
 	@Test
 	public void submits_op_to_engine() throws Exception {
 		subject.submit(op);
-		verify(engine).submit(same(op), any(ResultHandler.class));
+		verify(engine).submit(same(op), any(ResultHandler.class),
+				any(Principal.class));
 	}
 
 	@Test
@@ -102,7 +104,7 @@ public class EngineAdapterTest {
 				ALWAYS_APPLICABLE);
 		final Exception error = new IllegalStateException("test");
 		doThrow(error).when(engine).submit(any(DatasetOperation.class),
-				any(ResultHandler.class));
+				any(ResultHandler.class), any(Principal.class));
 		final ListenableFuture<Result> future = subject.submit(op);
 		try {
 			future.get();
@@ -118,7 +120,7 @@ public class EngineAdapterTest {
 				ALWAYS_APPLICABLE);
 		final DatasetException error = new DatasetUsageException("test");
 		doThrow(error).when(engine).submit(any(DatasetOperation.class),
-				any(ResultHandler.class));
+				any(ResultHandler.class), any(Principal.class));
 		final ListenableFuture<Result> future = subject.submit(op);
 		try {
 			future.get();

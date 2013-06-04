@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio;
 
+import java.security.Principal;
 import java.util.Set;
 
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
@@ -27,8 +28,13 @@ public interface DatasetEngine {
 	 *            to be executed
 	 * @param handler
 	 *            callback for result progress, state and delivery
+	 * @param principal
+	 *            optional authentication and/or authorization informations
+	 *            about the subject that executes the operation (e.g. a logged
+	 *            in user)
 	 */
-	void submit(DatasetOperation operation, ResultHandler handler);
+	void submit(DatasetOperation operation, ResultHandler handler,
+			Principal principal);
 
 	/**
 	 * @return all {@link SerializationFormat result formats} supported by this
