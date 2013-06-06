@@ -3,14 +3,14 @@
 
 	<parent>
 		<groupId>at.ac.univie.isc</groupId>
-		<artifactId>vqs</artifactId>
+		<artifactId>asio</artifactId>
 		<version>0.2.1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>asio</artifactId>
+	<artifactId>asio-core</artifactId>
 	<packaging>jar</packaging>
 
-	<name>asio</name>
+	<name>ASIO core</name>
 	<description>HTTP endpoint for querying dataset services</description>
 
 	<dependencies>

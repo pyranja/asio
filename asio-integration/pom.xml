@@ -4,21 +4,21 @@
 
 	<parent>
 		<groupId>at.ac.univie.isc</groupId>
-		<artifactId>vqs</artifactId>
+		<artifactId>asio</artifactId>
 		<version>0.2.1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>asio-server</artifactId>
+	<artifactId>asio-integration</artifactId>
 	<packaging>war</packaging>
 
-	<name>asio-server</name>
-	<description>standalone asio + ogsadai server</description>
+	<name>ASIO integration</name>
+	<description>Reference server configuration and integration tests</description>
 
 	<dependencies>
 		<!-- modules -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>asio</artifactId>
+			<artifactId>asio-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<!-- ogsadai -->
