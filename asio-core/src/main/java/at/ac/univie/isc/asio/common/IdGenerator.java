@@ -7,8 +7,8 @@ package at.ac.univie.isc.asio.common;
  */
 public interface IdGenerator {
 
-	/**
-	 * @return a new identifier
-	 */
-	String next();
+  /**
+   * @return a new identifier
+   */
+  String next();
 }

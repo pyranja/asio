@@ -16,16 +16,15 @@ import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.DatasetUsageException;
 
 /**
- * Convert {@link DatasetException}s to responses with appropriate status and
- * attempt to add a detail message describing the cause if available.
+ * Convert {@link DatasetException}s to responses with appropriate status and attempt to add a
+ * detail message describing the cause if available.
  * 
  * @author Chris Borckholder
  */
 @Provider
-public class DatasetExceptionMapper implements
-		ExceptionMapper<DatasetException> {
+public class DatasetExceptionMapper implements ExceptionMapper<DatasetException> {
 
-	// @formatter:off
+  // @formatter:off
 	private static final String ERROR_MESSAGE = 
 			"[ERROR] %s\n" 	+ 	// top level message
 			"[OP] %s\n" 	+	// failed operation
@@ -33,18 +32,18 @@ public class DatasetExceptionMapper implements
 			"[TRACE] %s"	;	// stack trace
 	// @formatter:on
 
-	@Override
-	public Response toResponse(final DatasetException error) {
-		ResponseBuilder response;
-		if (error instanceof DatasetUsageException) {
-			response = Response.status(BAD_REQUEST);
-		} else {
-			response = Response.serverError();
-		}
-		final String message = format(ENGLISH, ERROR_MESSAGE,
-				error.getLocalizedMessage(), error.failedOperation().orNull(),
-				getRootCause(error), getStackTraceAsString(error));
-		return response.entity(message).type(TEXT_PLAIN_TYPE).build();
+  @Override
+  public Response toResponse(final DatasetException error) {
+    ResponseBuilder response;
+    if (error instanceof DatasetUsageException) {
+      response = Response.status(BAD_REQUEST);
+    } else {
+      response = Response.serverError();
+    }
+    final String message =
+        format(ENGLISH, ERROR_MESSAGE, error.getLocalizedMessage(), error.failedOperation()
+            .orNull(), getRootCause(error), getStackTraceAsString(error));
+    return response.entity(message).type(TEXT_PLAIN_TYPE).build();
 
-	}
+  }
 }

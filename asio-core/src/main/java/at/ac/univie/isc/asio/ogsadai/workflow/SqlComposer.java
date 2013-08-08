@@ -30,77 +30,71 @@ import com.google.common.io.OutputSupplier;
  */
 public class SqlComposer implements WorkflowComposer {
 
-	private final ResourceID resource;
+  private final ResourceID resource;
 
-	public SqlComposer(final ResourceID resource) {
-		this.resource = resource;
-	}
+  public SqlComposer(final ResourceID resource) {
+    this.resource = resource;
+  }
 
-	@Override
-	public ActivityPipelineWorkflow createFrom(
-			final DatasetOperation operation,
-			final OutputSupplier<OutputStream> supplier) {
-		final Action action = operation.action();
-		PipeBuilder pipe;
-		switch (action) {
-			case QUERY:
-				pipe = makeQuery(operation.format(), operation.commandOrFail());
-				break;
-			case SCHEMA:
-				assert !operation.command().isPresent() : "command present in "
-						+ operation;
-				pipe = makeSchema(operation.format());
-				break;
-			case UPDATE:
-				pipe = makeUpdate(operation.format(), operation.commandOrFail());
-				break;
-			default:
-				throw new UnsupportedOperationException("not implemented "
-						+ action);
-		}
-		return pipe.finish(deliverToStream(supplier));
-	}
+  @Override
+  public ActivityPipelineWorkflow createFrom(final DatasetOperation operation,
+      final OutputSupplier<OutputStream> supplier) {
+    final Action action = operation.action();
+    PipeBuilder pipe;
+    switch (action) {
+      case QUERY:
+        pipe = makeQuery(operation.format(), operation.commandOrFail());
+        break;
+      case SCHEMA:
+        assert !operation.command().isPresent() : "command present in " + operation;
+        pipe = makeSchema(operation.format());
+        break;
+      case UPDATE:
+        pipe = makeUpdate(operation.format(), operation.commandOrFail());
+        break;
+      default:
+        throw new UnsupportedOperationException("not implemented " + action);
+    }
+    return pipe.finish(deliverToStream(supplier));
+  }
 
-	private PipeBuilder makeUpdate(final SerializationFormat format,
-			final String update) {
-		final PipeBuilder pipe = pipe(sqlUpdate(resource, update));
-		BlockTransformer converter = null;
-		if (format == OgsadaiFormats.XML) {
-			converter = new XmlUpdateCountTransformer(update);
-		} else if (format == OgsadaiFormats.PLAIN) {
-			converter = new PlainUpdateCountTransformer(update);
-		} else {
-			throw unexpected(format);
-		}
-		pipe.into(dynamicSerializer(converter));
-		return pipe;
-	}
+  private PipeBuilder makeUpdate(final SerializationFormat format, final String update) {
+    final PipeBuilder pipe = pipe(sqlUpdate(resource, update));
+    BlockTransformer converter = null;
+    if (format == OgsadaiFormats.XML) {
+      converter = new XmlUpdateCountTransformer(update);
+    } else if (format == OgsadaiFormats.PLAIN) {
+      converter = new PlainUpdateCountTransformer(update);
+    } else {
+      throw unexpected(format);
+    }
+    pipe.into(dynamicSerializer(converter));
+    return pipe;
+  }
 
-	private PipeBuilder makeSchema(final SerializationFormat format) {
-		final PipeBuilder pipe = pipe(extractSchema(resource));
-		if (format == OgsadaiFormats.XML) {
-			pipe.into(metadataToXml());
-		} else {
-			throw unexpected(format);
-		}
-		return pipe;
-	}
+  private PipeBuilder makeSchema(final SerializationFormat format) {
+    final PipeBuilder pipe = pipe(extractSchema(resource));
+    if (format == OgsadaiFormats.XML) {
+      pipe.into(metadataToXml());
+    } else {
+      throw unexpected(format);
+    }
+    return pipe;
+  }
 
-	private PipeBuilder makeQuery(final SerializationFormat format,
-			final String query) {
-		final PipeBuilder pipe = pipe(sqlQuery(resource, query));
-		if (format == OgsadaiFormats.XML) {
-			pipe.into(tupleToWebRowSetCharArrays());
-		} else if (format == OgsadaiFormats.CSV) {
-			pipe.into(tupleToCsv());
-		} else {
-			throw unexpected(format);
-		}
-		return pipe;
-	}
+  private PipeBuilder makeQuery(final SerializationFormat format, final String query) {
+    final PipeBuilder pipe = pipe(sqlQuery(resource, query));
+    if (format == OgsadaiFormats.XML) {
+      pipe.into(tupleToWebRowSetCharArrays());
+    } else if (format == OgsadaiFormats.CSV) {
+      pipe.into(tupleToCsv());
+    } else {
+      throw unexpected(format);
+    }
+    return pipe;
+  }
 
-	private AssertionError unexpected(final SerializationFormat illegal) {
-		return new AssertionError("unsupported format " + illegal
-				+ " for SQL workflows");
-	}
+  private AssertionError unexpected(final SerializationFormat illegal) {
+    return new AssertionError("unsupported format " + illegal + " for SQL workflows");
+  }
 }

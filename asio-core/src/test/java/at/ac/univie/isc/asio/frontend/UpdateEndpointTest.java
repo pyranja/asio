@@ -33,90 +33,85 @@ import com.google.common.io.ByteStreams;
 @RunWith(MockitoJUnitRunner.class)
 public class UpdateEndpointTest extends EndpointTestFixture {
 
-	private Response response;
-	@Captor private ArgumentCaptor<DatasetOperation> submitted;
+  private Response response;
+  @Captor
+  private ArgumentCaptor<DatasetOperation> submitted;
 
-	@Before
-	public void setUp() {
-		client.path("update").accept(MockFormat.APPLICABLE_CONTENT_TYPE);
-	}
+  @Before
+  public void setUp() {
+    client.path("update").accept(MockFormat.APPLICABLE_CONTENT_TYPE);
+  }
 
-	@After
-	public void tearDown() {
-		response.close();
-	}
+  @After
+  public void tearDown() {
+    response.close();
+  }
 
-	// HAPPY PATH
+  // HAPPY PATH
 
-	@Test
-	public void success_response_has_ok_status() throws Exception {
-		when(engine.submit(any(DatasetOperation.class))).thenReturn(
-				MockResult.successFuture());
-		response = client.type("application/sql-update").post("test-update");
-		assertEquals(Status.OK, fromStatusCode(response.getStatus()));
-	}
+  @Test
+  public void success_response_has_ok_status() throws Exception {
+    when(engine.submit(any(DatasetOperation.class))).thenReturn(MockResult.successFuture());
+    response = client.type("application/sql-update").post("test-update");
+    assertEquals(Status.OK, fromStatusCode(response.getStatus()));
+  }
 
-	@Test
-	public void success_response_has_requested_content_type() throws Exception {
-		when(engine.submit(any(DatasetOperation.class))).thenReturn(
-				MockResult.successFuture());
-		response = client.type("application/sql-update").post("test-update");
-		assertEquals(MockFormat.APPLICABLE_CONTENT_TYPE,
-				response.getMediaType());
-	}
+  @Test
+  public void success_response_has_requested_content_type() throws Exception {
+    when(engine.submit(any(DatasetOperation.class))).thenReturn(MockResult.successFuture());
+    response = client.type("application/sql-update").post("test-update");
+    assertEquals(MockFormat.APPLICABLE_CONTENT_TYPE, response.getMediaType());
+  }
 
-	@Test
-	public void success_response_contains_result_data() throws Exception {
-		when(engine.submit(any(DatasetOperation.class))).thenReturn(
-				MockResult.successFuture());
-		response = client.type("application/sql-update").post("test-update");
-		final byte[] received = ByteStreams.toByteArray((InputStream) response
-				.getEntity());
-		assertArrayEquals(MockResult.PAYLOAD, received);
-	}
+  @Test
+  public void success_response_contains_result_data() throws Exception {
+    when(engine.submit(any(DatasetOperation.class))).thenReturn(MockResult.successFuture());
+    response = client.type("application/sql-update").post("test-update");
+    final byte[] received = ByteStreams.toByteArray((InputStream) response.getEntity());
+    assertArrayEquals(MockResult.PAYLOAD, received);
+  }
 
-	// INVOCATION PATHS
+  // INVOCATION PATHS
 
-	@Test
-	public void accepts_form_encoded_post() throws Exception {
-		final Form values = new Form();
-		values.set("update", "test-update");
-		response = client.form(values);
-		verifyInvocation();
-	}
+  @Test
+  public void accepts_form_encoded_post() throws Exception {
+    final Form values = new Form();
+    values.set("update", "test-update");
+    response = client.form(values);
+    verifyInvocation();
+  }
 
-	@Test
-	public void accepts_plain_update_as_body() throws Exception {
-		response = client.type("application/sql-update").post("test-update");
-		verifyInvocation();
-	}
+  @Test
+  public void accepts_plain_update_as_body() throws Exception {
+    response = client.type("application/sql-update").post("test-update");
+    verifyInvocation();
+  }
 
-	private void verifyInvocation() {
-		verify(engine).submit(submitted.capture());
-		final DatasetOperation op = submitted.getValue();
-		assertEquals(Action.UPDATE, op.action());
-		assertEquals("test-update", op.command().orNull());
-		assertEquals(MockFormat.ALWAYS_APPLICABLE, op.format());
-	}
+  private void verifyInvocation() {
+    verify(engine).submit(submitted.capture());
+    final DatasetOperation op = submitted.getValue();
+    assertEquals(Action.UPDATE, op.action());
+    assertEquals("test-update", op.command().orNull());
+    assertEquals(MockFormat.ALWAYS_APPLICABLE, op.format());
+  }
 
-	// REJECTIONS
+  // REJECTIONS
 
-	@Test
-	public void rejects_missing_form_param() throws Exception {
-		final Form values = new Form();
-		values.set("invalid", "anything");
-		response = client.form(values);
-		assertEquals(Status.BAD_REQUEST, fromStatusCode(response.getStatus()));
-		verify(engine, never()).submit(any(DatasetOperation.class));
-	}
+  @Test
+  public void rejects_missing_form_param() throws Exception {
+    final Form values = new Form();
+    values.set("invalid", "anything");
+    response = client.form(values);
+    assertEquals(Status.BAD_REQUEST, fromStatusCode(response.getStatus()));
+    verify(engine, never()).submit(any(DatasetOperation.class));
+  }
 
-	@Test
-	public void rejects_non_query_content_body() throws Exception {
-		client.type(MediaType.TEXT_HTML_TYPE);
-		response = client.post("update");
-		assertEquals(Status.UNSUPPORTED_MEDIA_TYPE,
-				fromStatusCode(response.getStatus()));
-		verify(engine, never()).submit(any(DatasetOperation.class));
-	}
+  @Test
+  public void rejects_non_query_content_body() throws Exception {
+    client.type(MediaType.TEXT_HTML_TYPE);
+    response = client.post("update");
+    assertEquals(Status.UNSUPPORTED_MEDIA_TYPE, fromStatusCode(response.getStatus()));
+    verify(engine, never()).submit(any(DatasetOperation.class));
+  }
 
 }

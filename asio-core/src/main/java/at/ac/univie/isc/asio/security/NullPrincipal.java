@@ -9,17 +9,17 @@ import java.security.Principal;
  */
 public final class NullPrincipal implements Principal {
 
-	public static final Principal INSTANCE = new NullPrincipal();
+  public static final Principal INSTANCE = new NullPrincipal();
 
-	private NullPrincipal() {}
+  private NullPrincipal() {}
 
-	@Override
-	public String getName() {
-		return "null";
-	}
+  @Override
+  public String getName() {
+    return "null";
+  }
 
-	@Override
-	public String toString() {
-		return "[NullPrincipal]";
-	}
+  @Override
+  public String toString() {
+    return "[NullPrincipal]";
+  }
 }

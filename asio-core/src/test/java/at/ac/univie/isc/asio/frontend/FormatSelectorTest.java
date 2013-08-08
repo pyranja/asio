@@ -32,50 +32,46 @@ import com.google.common.collect.ImmutableSet;
 @RunWith(MockitoJUnitRunner.class)
 public class FormatSelectorTest {
 
-	private FormatSelector subject;
-	@Mock private Request request;
-	private Set<SerializationFormat> formats;
-	private final VariantConverter converter = new VariantConverter();
+  private FormatSelector subject;
+  @Mock
+  private Request request;
+  private Set<SerializationFormat> formats;
+  private final VariantConverter converter = new VariantConverter();
 
-	@Before
-	public void setUp() {
-		formats = ImmutableSet.of(ALWAYS_APPLICABLE, NEVER_APPLICABLE);
-		subject = new FormatSelector(formats, converter);
-	}
+  @Before
+  public void setUp() {
+    formats = ImmutableSet.of(ALWAYS_APPLICABLE, NEVER_APPLICABLE);
+    subject = new FormatSelector(formats, converter);
+  }
 
-	@SuppressWarnings("unchecked")
-	@Test
-	public void passes_applicable_format_variants_to_request_selector()
-			throws Exception {
-		when(request.selectVariant(anyList())).thenReturn(
-				new Variant(null, "en", null));
-		subject.selectFormat(request, Action.QUERY);
-		verify(request).selectVariant(anyList());
-	}
+  @SuppressWarnings("unchecked")
+  @Test
+  public void passes_applicable_format_variants_to_request_selector() throws Exception {
+    when(request.selectVariant(anyList())).thenReturn(new Variant(null, "en", null));
+    subject.selectFormat(request, Action.QUERY);
+    verify(request).selectVariant(anyList());
+  }
 
-	@SuppressWarnings("unchecked")
-	@Test
-	public void selects_the_applicable_format() throws Exception {
-		final Variant valid = converter.asVariant(ALWAYS_APPLICABLE
-				.asMediaType());
-		when(request.selectVariant((List<Variant>) argThat(hasItem(valid))))
-				.thenReturn(valid);
-		final SerializationFormat selected = subject.selectFormat(request,
-				Action.QUERY);
-		assertThat(selected, is(ALWAYS_APPLICABLE));
-	}
+  @SuppressWarnings("unchecked")
+  @Test
+  public void selects_the_applicable_format() throws Exception {
+    final Variant valid = converter.asVariant(ALWAYS_APPLICABLE.asMediaType());
+    when(request.selectVariant((List<Variant>) argThat(hasItem(valid)))).thenReturn(valid);
+    final SerializationFormat selected = subject.selectFormat(request, Action.QUERY);
+    assertThat(selected, is(ALWAYS_APPLICABLE));
+  }
 
-	@Test(expected = WebApplicationException.class)
-	public void fails_if_no_format_applicable() throws Exception {
-		formats = singleton(NEVER_APPLICABLE);
-		subject = new FormatSelector(formats, converter);
-		subject.selectFormat(request, Action.QUERY);
-	}
+  @Test(expected = WebApplicationException.class)
+  public void fails_if_no_format_applicable() throws Exception {
+    formats = singleton(NEVER_APPLICABLE);
+    subject = new FormatSelector(formats, converter);
+    subject.selectFormat(request, Action.QUERY);
+  }
 
-	@SuppressWarnings("unchecked")
-	@Test(expected = WebApplicationException.class)
-	public void fails_if_request_selector_returns_null() throws Exception {
-		when(request.selectVariant(anyList())).thenReturn(null);
-		subject.selectFormat(request, Action.QUERY);
-	}
+  @SuppressWarnings("unchecked")
+  @Test(expected = WebApplicationException.class)
+  public void fails_if_request_selector_returns_null() throws Exception {
+    when(request.selectVariant(anyList())).thenReturn(null);
+    subject.selectFormat(request, Action.QUERY);
+  }
 }

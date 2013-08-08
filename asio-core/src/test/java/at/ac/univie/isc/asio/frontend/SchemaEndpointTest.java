@@ -34,66 +34,60 @@ import com.google.common.io.ByteStreams;
 @RunWith(MockitoJUnitRunner.class)
 public class SchemaEndpointTest extends EndpointTestFixture {
 
-	private Response response;
-	@Captor private ArgumentCaptor<DatasetOperation> submittedOperation;
+  private Response response;
+  @Captor
+  private ArgumentCaptor<DatasetOperation> submittedOperation;
 
-	@Before
-	public void setUp() {
-		client.path("schema").accept(MockFormat.APPLICABLE_CONTENT_TYPE);
-	}
+  @Before
+  public void setUp() {
+    client.path("schema").accept(MockFormat.APPLICABLE_CONTENT_TYPE);
+  }
 
-	@After
-	public void tearDown() {
-		response.close();
-	}
+  @After
+  public void tearDown() {
+    response.close();
+  }
 
-	// HAPPY PATH
+  // HAPPY PATH
 
-	@Test
-	public void success_response_has_ok_status() throws Exception {
-		when(engine.submit(any(DatasetOperation.class))).thenReturn(
-				MockResult.successFuture());
-		response = client.get();
-		assertEquals(Status.OK, fromStatusCode(response.getStatus()));
-	}
+  @Test
+  public void success_response_has_ok_status() throws Exception {
+    when(engine.submit(any(DatasetOperation.class))).thenReturn(MockResult.successFuture());
+    response = client.get();
+    assertEquals(Status.OK, fromStatusCode(response.getStatus()));
+  }
 
-	@Test
-	public void success_response_has_requested_content_type() throws Exception {
-		when(engine.submit(any(DatasetOperation.class))).thenReturn(
-				MockResult.successFuture());
-		response = client.get();
-		assertEquals(MockFormat.APPLICABLE_CONTENT_TYPE,
-				response.getMediaType());
-	}
+  @Test
+  public void success_response_has_requested_content_type() throws Exception {
+    when(engine.submit(any(DatasetOperation.class))).thenReturn(MockResult.successFuture());
+    response = client.get();
+    assertEquals(MockFormat.APPLICABLE_CONTENT_TYPE, response.getMediaType());
+  }
 
-	@Test
-	public void success_response_contains_result_data() throws Exception {
-		when(engine.submit(any(DatasetOperation.class))).thenReturn(
-				MockResult.successFuture());
-		response = client.get();
-		final byte[] received = ByteStreams.toByteArray((InputStream) response
-				.getEntity());
-		assertArrayEquals(MockResult.PAYLOAD, received);
-	}
+  @Test
+  public void success_response_contains_result_data() throws Exception {
+    when(engine.submit(any(DatasetOperation.class))).thenReturn(MockResult.successFuture());
+    response = client.get();
+    final byte[] received = ByteStreams.toByteArray((InputStream) response.getEntity());
+    assertArrayEquals(MockResult.PAYLOAD, received);
+  }
 
-	@Test
-	public void submits_correct_operation() throws Exception {
-		response = client.get();
-		Mockito.verify(engine).submit(submittedOperation.capture());
-		final DatasetOperation op = submittedOperation.getValue();
-		assertEquals(Action.SCHEMA, op.action());
-		assertFalse(op.command().isPresent());
-		assertEquals(MockFormat.ALWAYS_APPLICABLE, op.format());
-	}
+  @Test
+  public void submits_correct_operation() throws Exception {
+    response = client.get();
+    Mockito.verify(engine).submit(submittedOperation.capture());
+    final DatasetOperation op = submittedOperation.getValue();
+    assertEquals(Action.SCHEMA, op.action());
+    assertFalse(op.command().isPresent());
+    assertEquals(MockFormat.ALWAYS_APPLICABLE, op.format());
+  }
 
-	// REJECTIONS
+  // REJECTIONS
 
-	@Test
-	public void reject_unsupported_accept_header() throws Exception {
-		response = client.reset().path("schema")
-				.accept(MediaType.TEXT_HTML_TYPE).get();
-		assertEquals(Status.NOT_ACCEPTABLE,
-				fromStatusCode(response.getStatus()));
-		verify(engine, never()).submit(any(DatasetOperation.class));
-	}
+  @Test
+  public void reject_unsupported_accept_header() throws Exception {
+    response = client.reset().path("schema").accept(MediaType.TEXT_HTML_TYPE).get();
+    assertEquals(Status.NOT_ACCEPTABLE, fromStatusCode(response.getStatus()));
+    verify(engine, never()).submit(any(DatasetOperation.class));
+  }
 }

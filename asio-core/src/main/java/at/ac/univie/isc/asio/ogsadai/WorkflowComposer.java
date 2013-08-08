@@ -14,15 +14,12 @@ import com.google.common.io.OutputSupplier;
  */
 public interface WorkflowComposer {
 
-	/**
-	 * Create a matching workflow for the given operation.
-	 * 
-	 * @param operation
-	 *            to be executed
-	 * @param sinkSupplier
-	 *            provider of output streams for result delivery
-	 * @return a matching workflow
-	 */
-	Workflow createFrom(DatasetOperation operation,
-			OutputSupplier<OutputStream> sinkSupplier);
+  /**
+   * Create a matching workflow for the given operation.
+   * 
+   * @param operation to be executed
+   * @param sinkSupplier provider of output streams for result delivery
+   * @return a matching workflow
+   */
+  Workflow createFrom(DatasetOperation operation, OutputSupplier<OutputStream> sinkSupplier);
 }

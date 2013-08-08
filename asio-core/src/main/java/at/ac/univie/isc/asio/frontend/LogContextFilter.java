@@ -16,31 +16,28 @@ import org.slf4j.MDC;
 import at.ac.univie.isc.asio.common.LogContext;
 
 /**
- * Injects request attributes into the {@link org.slf4j.MDC Message Diagnostics
- * Context} of slf4j.
+ * Injects request attributes into the {@link org.slf4j.MDC Message Diagnostics Context} of slf4j.
  * 
  * @author Chris Borckholder
  */
 @Provider
-public class LogContextFilter implements ContainerRequestFilter,
-		ContainerResponseFilter {
+public class LogContextFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
-	@Override
-	public void filter(final ContainerRequestContext requestContext)
-			throws IOException {
-		// String.valueOf() is null safe
-		MDC.put(LogContext.KEY_METHOD, valueOf(requestContext.getMethod()));
-		final UriInfo uriInfo = requestContext.getUriInfo();
-		MDC.put(LogContext.KEY_URI, valueOf(uriInfo.getRequestUri()));
-		MDC.put(LogContext.KEY_PATH, valueOf(uriInfo.getPath()));
-		MDC.put(LogContext.KEY_PARAMS, valueOf(uriInfo.getQueryParameters()));
-		// null operation value
-		MDC.put(LogContext.KEY_OP, LogContext.NULL_OPERATION);
-	}
+  @Override
+  public void filter(final ContainerRequestContext requestContext) throws IOException {
+    // String.valueOf() is null safe
+    MDC.put(LogContext.KEY_METHOD, valueOf(requestContext.getMethod()));
+    final UriInfo uriInfo = requestContext.getUriInfo();
+    MDC.put(LogContext.KEY_URI, valueOf(uriInfo.getRequestUri()));
+    MDC.put(LogContext.KEY_PATH, valueOf(uriInfo.getPath()));
+    MDC.put(LogContext.KEY_PARAMS, valueOf(uriInfo.getQueryParameters()));
+    // null operation value
+    MDC.put(LogContext.KEY_OP, LogContext.NULL_OPERATION);
+  }
 
-	@Override
-	public void filter(final ContainerRequestContext requestContext,
-			final ContainerResponseContext responseContext) throws IOException {
-		MDC.clear();
-	}
+  @Override
+  public void filter(final ContainerRequestContext requestContext,
+      final ContainerResponseContext responseContext) throws IOException {
+    MDC.clear();
+  }
 }

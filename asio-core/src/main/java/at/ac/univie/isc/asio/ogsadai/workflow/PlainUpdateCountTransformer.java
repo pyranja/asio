@@ -19,23 +19,21 @@ import com.google.common.base.Charsets;
  */
 public class PlainUpdateCountTransformer implements BlockTransformer {
 
-	private static final String TEMPLATE = "'%s' : %s rows updated";
+  private static final String TEMPLATE = "'%s' : %s rows updated";
 
-	private final String query;
+  private final String query;
 
-	PlainUpdateCountTransformer(final String query) {
-		super();
-		this.query = query;
-	}
+  PlainUpdateCountTransformer(final String query) {
+    super();
+    this.query = query;
+  }
 
-	@Override
-	public void writeObject(final OutputStream sink, final Object block)
-			throws IOException {
-		checkNotNull(block, "invalid update count");
-		checkArgument(block instanceof Integer,
-				"update count (%s) not an integer", block);
-		final Integer updateCount = (Integer) block;
-		final String text = format(Locale.ENGLISH, TEMPLATE, query, updateCount);
-		sink.write(text.getBytes(Charsets.UTF_8));
-	}
+  @Override
+  public void writeObject(final OutputStream sink, final Object block) throws IOException {
+    checkNotNull(block, "invalid update count");
+    checkArgument(block instanceof Integer, "update count (%s) not an integer", block);
+    final Integer updateCount = (Integer) block;
+    final String text = format(Locale.ENGLISH, TEMPLATE, query, updateCount);
+    sink.write(text.getBytes(Charsets.UTF_8));
+  }
 }

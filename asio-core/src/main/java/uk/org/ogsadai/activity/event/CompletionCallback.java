@@ -7,16 +7,15 @@ package uk.org.ogsadai.activity.event;
  */
 public interface CompletionCallback {
 
-	/**
-	 * request completed successfully.
-	 */
-	void complete();
+  /**
+   * request completed successfully.
+   */
+  void complete();
 
-	/**
-	 * request failed due to the given cause.
-	 * 
-	 * @param cause
-	 *            of failure
-	 */
-	void fail(Exception cause);
+  /**
+   * request failed due to the given cause.
+   * 
+   * @param cause of failure
+   */
+  void fail(Exception cause);
 }

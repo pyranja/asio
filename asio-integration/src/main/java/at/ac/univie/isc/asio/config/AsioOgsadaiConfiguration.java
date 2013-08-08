@@ -32,50 +32,47 @@ import com.google.common.collect.Iterables;
 @Configuration
 public class AsioOgsadaiConfiguration {
 
-	@Autowired private Environment env;
+  @Autowired
+  private Environment env;
 
-	private static final ID ROUTER_ID = new ID(
-			"uk.org.ogsadai.MONITORING_FRAMEWORK");
+  private static final ID ROUTER_ID = new ID("uk.org.ogsadai.MONITORING_FRAMEWORK");
 
-	@Bean
-	public DatasetEngine ogsadaiEngine() {
-		return new OgsadaiEngine(adapter(), composer(), translator());
-	}
+  @Bean
+  public DatasetEngine ogsadaiEngine() {
+    return new OgsadaiEngine(adapter(), composer(), translator());
+  }
 
-	@Bean
-	public DaiExceptionTranslator translator() {
-		return new DaiExceptionTranslator();
-	}
+  @Bean
+  public DaiExceptionTranslator translator() {
+    return new DaiExceptionTranslator();
+  }
 
-	@Bean
-	public WorkflowComposer composer() {
-		final String resourceName = env
-				.getRequiredProperty("asio.ogsadai.resource");
-		final ResourceID resource = new ResourceID(resourceName, "");
-		return new SqlComposer(resource);
-	}
+  @Bean
+  public WorkflowComposer composer() {
+    final String resourceName = env.getRequiredProperty("asio.ogsadai.resource");
+    final ResourceID resource = new ResourceID(resourceName, "");
+    return new SqlComposer(resource);
+  }
 
-	@Bean
-	public OgsadaiAdapter adapter() {
-		final OGSADAIContext context = OGSADAIContext.getInstance();
-		final RequestEventRouter router = (RequestEventRouter) context
-				.get(ROUTER_ID);
-		final DRER drer = findDRER(context);
-		return new OgsadaiAdapter(drer, router);
-	}
+  @Bean
+  public OgsadaiAdapter adapter() {
+    final OGSADAIContext context = OGSADAIContext.getInstance();
+    final RequestEventRouter router = (RequestEventRouter) context.get(ROUTER_ID);
+    final DRER drer = findDRER(context);
+    return new OgsadaiAdapter(drer, router);
+  }
 
-	private DRER findDRER(final OGSADAIContext context) {
-		final ResourceManager resourceManager = context.getResourceManager();
-		@SuppressWarnings("unchecked")
-		final List<ResourceID> drers = resourceManager
-				.listResources(ResourceType.DATA_REQUEST_EXECUTION_RESOURCE);
-		// XXX uses first if available - how to determine correct one ?
-		final ResourceID drerId = Iterables.getOnlyElement(drers);
-		try {
-			return (DRER) resourceManager.getResource(drerId);
-		} catch (final ResourceUnknownException e) {
-			throw new IllegalStateException("drer with id [" + drerId
-					+ "] is unknown");
-		}
-	}
+  private DRER findDRER(final OGSADAIContext context) {
+    final ResourceManager resourceManager = context.getResourceManager();
+    @SuppressWarnings("unchecked")
+    final List<ResourceID> drers =
+        resourceManager.listResources(ResourceType.DATA_REQUEST_EXECUTION_RESOURCE);
+    // XXX uses first if available - how to determine correct one ?
+    final ResourceID drerId = Iterables.getOnlyElement(drers);
+    try {
+      return (DRER) resourceManager.getResource(drerId);
+    } catch (final ResourceUnknownException e) {
+      throw new IllegalStateException("drer with id [" + drerId + "] is unknown");
+    }
+  }
 }

@@ -13,16 +13,15 @@ import com.google.common.net.MediaType;
  */
 public interface Result extends InputSupplier<InputStream> {
 
-	/**
-	 * @return InputStream containing the result data
-	 * @throws IOException
-	 *             if retrieving the stream fails
-	 */
-	@Override
-	InputStream getInput() throws IOException;
+  /**
+   * @return InputStream containing the result data
+   * @throws IOException if retrieving the stream fails
+   */
+  @Override
+  InputStream getInput() throws IOException;
 
-	/**
-	 * @return the format of the result data
-	 */
-	MediaType mediaType();
+  /**
+   * @return the format of the result data
+   */
+  MediaType mediaType();
 }

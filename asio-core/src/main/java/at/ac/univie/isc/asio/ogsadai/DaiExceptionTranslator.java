@@ -15,16 +15,16 @@ import com.google.common.base.Throwables;
  */
 public class DaiExceptionTranslator {
 
-	public DatasetException translate(final Exception error) {
-		if (error instanceof DatasetException) {
-			return (DatasetException) error;
-		}
-		final Throwable root = Throwables.getRootCause(error);
-		if (error instanceof UserExceptionMarker) {
-			return new DatasetUsageException(root.getMessage(), error);
-		} else {
-			return new DatasetFailureException(root.getMessage(), error);
-		}
-	}
+  public DatasetException translate(final Exception error) {
+    if (error instanceof DatasetException) {
+      return (DatasetException) error;
+    }
+    final Throwable root = Throwables.getRootCause(error);
+    if (error instanceof UserExceptionMarker) {
+      return new DatasetUsageException(root.getMessage(), error);
+    } else {
+      return new DatasetFailureException(root.getMessage(), error);
+    }
+  }
 
 }

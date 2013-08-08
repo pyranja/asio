@@ -15,14 +15,14 @@ import org.junit.Test;
  */
 public class OgsadaiFormatsTest {
 
-	@Test
-	public void query_formats() throws Exception {
-		assertTrue(XML.applicableOn(QUERY));
-		assertTrue(CSV.applicableOn(QUERY));
-	}
+  @Test
+  public void query_formats() throws Exception {
+    assertTrue(XML.applicableOn(QUERY));
+    assertTrue(CSV.applicableOn(QUERY));
+  }
 
-	@Test
-	public void schema_formats() throws Exception {
-		assertTrue(XML.applicableOn(SCHEMA));
-	}
+  @Test
+  public void schema_formats() throws Exception {
+    assertTrue(XML.applicableOn(SCHEMA));
+  }
 }
