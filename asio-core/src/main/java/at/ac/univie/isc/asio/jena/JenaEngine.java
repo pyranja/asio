@@ -37,7 +37,7 @@ public class JenaEngine implements DatasetEngine {
 
   private final String modelPrefixes;
 
-  private JenaEngine(final ListeningExecutorService exec, final Model model) {
+  JenaEngine(final ListeningExecutorService exec, final Model model) {
     super();
     this.exec = exec;
     this.model = model;

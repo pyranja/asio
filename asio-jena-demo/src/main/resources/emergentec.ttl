@@ -1,0 +1,361 @@
+@prefix map: <#> .
+@prefix db: <> .
+@prefix vocab: <vocab/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#> .
+@prefix jdbc: <http://d2rq.org/terms/jdbc/> .
+
+map:database a d2rq:Database;
+	d2rq:jdbcDriver "com.mysql.jdbc.Driver";
+	d2rq:jdbcDSN "jdbc:mysql://localhost:3306/emergentec";
+	d2rq:username "root";
+	d2rq:password "emergentec";
+	jdbc:autoReconnect "true";
+	jdbc:zeroDateTimeBehavior "convertToNull";
+	.
+
+# Table category
+map:category a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "category/@@category.category_id@@";
+	d2rq:class vocab:category;
+	d2rq:classDefinitionLabel "category";
+	.
+map:category__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:category;
+	d2rq:property rdfs:label;
+	d2rq:pattern "category #@@category.category_id@@";
+	.
+map:category_category_id a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:category;
+	d2rq:property vocab:category_category_id;
+	d2rq:propertyDefinitionLabel "category category_id";
+	d2rq:column "category.category_id";
+	d2rq:datatype xsd:integer;
+	.
+map:category_category a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:category;
+	d2rq:property vocab:category_category;
+	d2rq:propertyDefinitionLabel "category category";
+	d2rq:column "category.category";
+	.
+
+# Table drug
+map:drug a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "drug/@@drug.drug_id@@";
+	d2rq:class vocab:drug;
+	d2rq:classDefinitionLabel "drug";
+	.
+map:drug__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug;
+	d2rq:property rdfs:label;
+	d2rq:pattern "drug #@@drug.drug_id@@";
+	.
+map:drug_drug_id a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug;
+	d2rq:property vocab:drug_drug_id;
+	d2rq:propertyDefinitionLabel "drug drug_id";
+	d2rq:column "drug.drug_id";
+	d2rq:datatype xsd:integer;
+	.
+map:drug_name a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug;
+	d2rq:property vocab:drug_name;
+	d2rq:propertyDefinitionLabel "drug name";
+	d2rq:column "drug.name";
+	.
+map:drug_description a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug;
+	d2rq:property vocab:drug_description;
+	d2rq:propertyDefinitionLabel "drug description";
+	d2rq:column "drug.description";
+	.
+map:drug_indication a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug;
+	d2rq:property vocab:drug_indication;
+	d2rq:propertyDefinitionLabel "drug indication";
+	d2rq:column "drug.indication";
+	.
+map:drug_type_fid__ref a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug;
+	d2rq:property vocab:drug_type_fid;
+	d2rq:refersToClassMap map:type;
+	d2rq:join "drug.type_fid => type.type_id";
+	.
+
+# Table drug_brand
+map:drug_brand a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "drug_brand/@@drug_brand.brand|urlify@@/@@drug_brand.drug_fid@@";
+	d2rq:class vocab:drug_brand;
+	d2rq:classDefinitionLabel "drug_brand";
+	.
+map:drug_brand__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug_brand;
+	d2rq:property rdfs:label;
+	d2rq:pattern "drug_brand #@@drug_brand.brand@@/@@drug_brand.drug_fid@@";
+	.
+map:drug_brand_brand a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug_brand;
+	d2rq:property vocab:drug_brand_brand;
+	d2rq:propertyDefinitionLabel "drug_brand brand";
+	d2rq:column "drug_brand.brand";
+	.
+map:drug_brand_drug_fid__ref a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug_brand;
+	d2rq:property vocab:drug_brand_drug_fid;
+	d2rq:refersToClassMap map:drug;
+	d2rq:join "drug_brand.drug_fid => drug.drug_id";
+	.
+
+# Table drug_category (n:m)
+map:drug_category__link a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:category;
+	d2rq:property vocab:drug_category;
+	d2rq:refersToClassMap map:drug;
+	d2rq:join "drug_category.category_fid => category.category_id";
+	d2rq:join "drug_category.drug_fid => drug.drug_id";
+	.
+
+# Table drug_drugbank_accession
+map:drug_drugbank_accession a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "drug_drugbank_accession/@@drug_drugbank_accession.drug_fid@@";
+	d2rq:class vocab:drug_drugbank_accession;
+	d2rq:classDefinitionLabel "drug_drugbank_accession";
+	.
+map:drug_drugbank_accession__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug_drugbank_accession;
+	d2rq:property rdfs:label;
+	d2rq:pattern "drug_drugbank_accession #@@drug_drugbank_accession.drug_fid@@";
+	.
+map:drug_drugbank_accession_accession a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug_drugbank_accession;
+	d2rq:property vocab:drug_drugbank_accession_accession;
+	d2rq:propertyDefinitionLabel "drug_drugbank_accession accession";
+	d2rq:column "drug_drugbank_accession.accession";
+	.
+map:drug_drugbank_accession_drug_fid__ref a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug_drugbank_accession;
+	d2rq:property vocab:drug_drugbank_accession_drug_fid;
+	d2rq:refersToClassMap map:drug;
+	d2rq:join "drug_drugbank_accession.drug_fid => drug.drug_id";
+	.
+
+# Table drug_group (n:m)
+map:drug_group__link a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:group;
+	d2rq:property vocab:drug_group;
+	d2rq:refersToClassMap map:drug;
+	d2rq:join "drug_group.group_fid => group.group_id";
+	d2rq:join "drug_group.drug_fid => drug.drug_id";
+	.
+
+# Table drug_mixture
+map:drug_mixture a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "drug_mixture/@@drug_mixture.drug_mixture_id@@";
+	d2rq:class vocab:drug_mixture;
+	d2rq:classDefinitionLabel "drug_mixture";
+	.
+map:drug_mixture__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug_mixture;
+	d2rq:property rdfs:label;
+	d2rq:pattern "drug_mixture #@@drug_mixture.drug_mixture_id@@";
+	.
+map:drug_mixture_drug_mixture_id a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug_mixture;
+	d2rq:property vocab:drug_mixture_drug_mixture_id;
+	d2rq:propertyDefinitionLabel "drug_mixture drug_mixture_id";
+	d2rq:column "drug_mixture.drug_mixture_id";
+	d2rq:datatype xsd:integer;
+	.
+map:drug_mixture_name a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug_mixture;
+	d2rq:property vocab:drug_mixture_name;
+	d2rq:propertyDefinitionLabel "drug_mixture name";
+	d2rq:column "drug_mixture.name";
+	.
+map:drug_mixture_ingredients a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug_mixture;
+	d2rq:property vocab:drug_mixture_ingredients;
+	d2rq:propertyDefinitionLabel "drug_mixture ingredients";
+	d2rq:column "drug_mixture.ingredients";
+	.
+map:drug_mixture_drug_fid__ref a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug_mixture;
+	d2rq:property vocab:drug_mixture_drug_fid;
+	d2rq:refersToClassMap map:drug;
+	d2rq:join "drug_mixture.drug_fid => drug.drug_id";
+	.
+
+# Table drug_synonym
+map:drug_synonym a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "drug_synonym/@@drug_synonym.drug_fid@@/@@drug_synonym.synonym|urlify@@";
+	d2rq:class vocab:drug_synonym;
+	d2rq:classDefinitionLabel "drug_synonym";
+	.
+map:drug_synonym__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug_synonym;
+	d2rq:property rdfs:label;
+	d2rq:pattern "drug_synonym #@@drug_synonym.drug_fid@@/@@drug_synonym.synonym@@";
+	.
+map:drug_synonym_synonym a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug_synonym;
+	d2rq:property vocab:drug_synonym_synonym;
+	d2rq:propertyDefinitionLabel "drug_synonym synonym";
+	d2rq:column "drug_synonym.synonym";
+	.
+map:drug_synonym_drug_fid__ref a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug_synonym;
+	d2rq:property vocab:drug_synonym_drug_fid;
+	d2rq:refersToClassMap map:drug;
+	d2rq:join "drug_synonym.drug_fid => drug.drug_id";
+	.
+
+# Table drug_target
+map:drug_target a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "drug_target/@@drug_target.drug_fid@@/@@drug_target.gene_fid@@";
+	d2rq:class vocab:drug_target;
+	d2rq:classDefinitionLabel "drug_target";
+	.
+map:drug_target__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug_target;
+	d2rq:property rdfs:label;
+	d2rq:pattern "drug_target #@@drug_target.drug_fid@@/@@drug_target.gene_fid@@";
+	.
+map:drug_target_pharmacological_action a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug_target;
+	d2rq:property vocab:drug_target_pharmacological_action;
+	d2rq:propertyDefinitionLabel "drug_target pharmacological_action";
+	d2rq:column "drug_target.pharmacological_action";
+	.
+map:drug_target_drug_fid__ref a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug_target;
+	d2rq:property vocab:drug_target_drug_fid;
+	d2rq:refersToClassMap map:drug;
+	d2rq:join "drug_target.drug_fid => drug.drug_id";
+	.
+map:drug_target_gene_fid__ref a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug_target;
+	d2rq:property vocab:drug_target_gene_fid;
+	d2rq:refersToClassMap map:gene;
+	d2rq:join "drug_target.gene_fid => gene.gene_id";
+	.
+
+# Table drug_target_action
+map:drug_target_action a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "drug_target_action/@@drug_target_action.action|urlify@@/@@drug_target_action.drug_fid@@/@@drug_target_action.gene_fid@@";
+	d2rq:class vocab:drug_target_action;
+	d2rq:classDefinitionLabel "drug_target_action";
+	.
+map:drug_target_action__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug_target_action;
+	d2rq:property rdfs:label;
+	d2rq:pattern "drug_target_action #@@drug_target_action.action@@/@@drug_target_action.drug_fid@@/@@drug_target_action.gene_fid@@";
+	.
+map:drug_target_action_action a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug_target_action;
+	d2rq:property vocab:drug_target_action_action;
+	d2rq:propertyDefinitionLabel "drug_target_action action";
+	d2rq:column "drug_target_action.action";
+	.
+map:drug_target_action_drug_fid_gene_fid__ref a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug_target_action;
+	d2rq:property vocab:drug_target_action_drug_fid_gene_fid;
+	d2rq:refersToClassMap map:drug_target;
+	d2rq:join "drug_target_action.drug_fid => drug_target.drug_fid";
+	d2rq:join "drug_target_action.gene_fid => drug_target.gene_fid";
+	.
+
+# Table gene
+map:gene a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "gene/@@gene.gene_id@@";
+	d2rq:class vocab:gene;
+	d2rq:classDefinitionLabel "gene";
+	.
+map:gene__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:gene;
+	d2rq:property rdfs:label;
+	d2rq:pattern "gene #@@gene.gene_id@@";
+	.
+map:gene_gene_id a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:gene;
+	d2rq:property vocab:gene_gene_id;
+	d2rq:propertyDefinitionLabel "gene gene_id";
+	d2rq:column "gene.gene_id";
+	d2rq:datatype xsd:integer;
+	.
+map:gene_symbol a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:gene;
+	d2rq:property vocab:gene_symbol;
+	d2rq:propertyDefinitionLabel "gene symbol";
+	d2rq:column "gene.symbol";
+	.
+map:gene_taxon_id a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:gene;
+	d2rq:property vocab:gene_taxon_id;
+	d2rq:propertyDefinitionLabel "gene taxon_id";
+	d2rq:column "gene.taxon_id";
+	d2rq:datatype xsd:integer;
+	.
+
+# Table group
+map:group a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "group/@@group.group_id@@";
+	d2rq:class vocab:group;
+	d2rq:classDefinitionLabel "group";
+	.
+map:group__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:group;
+	d2rq:property rdfs:label;
+	d2rq:pattern "group #@@group.group_id@@";
+	.
+map:group_group_id a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:group;
+	d2rq:property vocab:group_group_id;
+	d2rq:propertyDefinitionLabel "group group_id";
+	d2rq:column "group.group_id";
+	d2rq:datatype xsd:integer;
+	.
+map:group_group a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:group;
+	d2rq:property vocab:group_group;
+	d2rq:propertyDefinitionLabel "group group";
+	d2rq:column "group.group";
+	.
+
+# Table type
+map:type a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "type/@@type.type_id@@";
+	d2rq:class vocab:type;
+	d2rq:classDefinitionLabel "type";
+	.
+map:type__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:type;
+	d2rq:property rdfs:label;
+	d2rq:pattern "type #@@type.type_id@@";
+	.
+map:type_type_id a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:type;
+	d2rq:property vocab:type_type_id;
+	d2rq:propertyDefinitionLabel "type type_id";
+	d2rq:column "type.type_id";
+	d2rq:datatype xsd:integer;
+	.
+map:type_type a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:type;
+	d2rq:property vocab:type_type;
+	d2rq:propertyDefinitionLabel "type type";
+	d2rq:column "type.type";
+	.
+

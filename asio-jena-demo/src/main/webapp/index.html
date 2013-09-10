@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Asio Jena Demo query form -->
+
+<head>
+  <title>Asio Jena Demo</title>
+  <script src="http://code.jquery.com/jquery-2.0.3.min.js">/* no op */</script>
+</head>
+
+<body>
+
+  <form id="query_form" action="demo/v1/asio/query" method="post">
+	  <p><textarea id="query" name="query" rows="10" cols="80">SELECT DISTINCT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 10</textarea></p>
+	  <select id="format">
+	   <option value="application/xml">XML</option>
+	   <option value="text/csv">CSV</option>
+	  </select>
+	  <input type="submit" value="Execute" />
+  </form>
+  <div>
+    <p><strong>Result:</strong><span id="result_status">None</span></p>
+    <textarea id="result_response" rows="30" cols="80" readonly="readonly">Nothing</textarea>
+  </div>
+  
+  <script type="text/javascript">
+  var form = $("#query_form");
+  form.submit(function(event) {
+	   event.preventDefault();
+      $.ajax({
+        type: form.attr('method'),
+        url: form.attr('action'),
+        data: form.serialize(),
+        headers: {
+          "Accept" : $('#format').val(),
+          "Accept-Language" : "en",
+          "Accept-Charset" : "UTF-8"
+        },
+        cache: false,
+        complete: function(response, status) {
+          $('#result_status').text(status);
+          $('#result_response').val(response.responseText);
+        } 
+      });
+      return false;
+  });
+  </script>
+  
+</body>
+
+</html>

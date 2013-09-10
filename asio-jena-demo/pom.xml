@@ -1,0 +1,108 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>at.ac.univie.isc</groupId>
+		<artifactId>asio</artifactId>
+		<version>0.2.1-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>asio-jena-demo</artifactId>
+	<packaging>war</packaging>
+
+	<name>Asio Jena Engine Demo</name>
+	<description>Prototype implementation of Jena Engine for Asio</description>
+
+	<repositories>
+		<!-- local copy of d2rq dependency -->
+		<repository>
+			<id>d2rq-local</id>
+			<url>file://${basedir}/d2r</url>
+		</repository>
+	</repositories>
+
+	<dependencies>
+		<!-- asio module -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>asio-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<!-- local d2r jars -->
+		<dependency>
+			<groupId>de.fuberlin.wiwiss</groupId>
+			<artifactId>d2rq</artifactId>
+			<version>0.8.1</version>
+		</dependency>
+		<!-- mysql -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.26</version>
+			<scope>runtime</scope>
+		</dependency>
+		<!-- cxf jax-rs impl -->
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-frontend-jaxrs</artifactId>
+			<version>${version.cxf}</version>
+		</dependency>
+		<!-- spring components required by cxf -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>${version.spring}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${version.spring}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+			<version>${version.spring}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>${version.spring}</version>
+		</dependency>
+		<!-- provided servlet api -->
+		<dependency>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>6.0.36</version>
+			<scope>provided</scope>
+		</dependency>
+		<!-- enable asio logging over log4j -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.5</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<!-- embedded jetty -->
+			<plugin>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-maven-plugin</artifactId>
+				<version>9.0.0.M5</version>
+				<configuration>
+					<stopKey>jetty</stopKey>
+					<stopPort>19080</stopPort>
+					<reload>manual</reload>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
