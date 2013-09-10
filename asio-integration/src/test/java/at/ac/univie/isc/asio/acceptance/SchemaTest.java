@@ -40,64 +40,62 @@ import com.google.common.base.Charsets;
 @Category(FunctionalTest.class)
 public class SchemaTest {
 
-	private static final URI SERVER_URL = URI
-			.create("http://localhost:8080/v1/asio/schema");
+  private static final URI SERVER_URL = URI.create("http://localhost:8080/v1/asio/schema");
 
-	private static final MediaType XML_TYPE = MediaType.APPLICATION_XML_TYPE
-			.withCharset(Charsets.UTF_8.name());
+  private static final MediaType XML_TYPE = MediaType.APPLICATION_XML_TYPE
+      .withCharset(Charsets.UTF_8.name());
 
-	private WebClient client;
-	private Response response;
+  private WebClient client;
+  private Response response;
 
-	@Rule public JaxrsClientProvider provider = new JaxrsClientProvider(
-			SERVER_URL);
+  @Rule
+  public JaxrsClientProvider provider = new JaxrsClientProvider(SERVER_URL);
 
-	@Before
-	public void setUp() {
-		client = provider.getClient();
-	}
+  @Before
+  public void setUp() {
+    client = provider.getClient();
+  }
 
-	@Test
-	public void delivers_schema_as_xml() throws Exception {
-		response = client.accept(XML_TYPE).get();
-		assertEquals(SUCCESSFUL, familyOf(response.getStatus()));
-		assertTrue(APPLICATION_XML_TYPE.isCompatible(response.getMediaType()));
-		final DatabaseSchemaMetaData schema = parse(response);
-		verifySchema(schema);
-	}
+  @Test
+  public void delivers_schema_as_xml() throws Exception {
+    response = client.accept(XML_TYPE).get();
+    assertEquals(SUCCESSFUL, familyOf(response.getStatus()));
+    assertTrue(APPLICATION_XML_TYPE.isCompatible(response.getMediaType()));
+    final DatabaseSchemaMetaData schema = parse(response);
+    verifySchema(schema);
+  }
 
-	private DatabaseSchemaMetaData parse(final Response response) {
-		try (Reader text = new InputStreamReader(
-				(InputStream) response.getEntity(), Charsets.UTF_8)) {
-			final InputSource xmlSource = new InputSource(text);
-			final Document schema = XML.toDocument(xmlSource);
-			return XMLSchemaConverter.convert(schema.getDocumentElement());
-		} catch (final IOException | RelationalSchemaParseException e) {
-			throw new AssertionError("parsing schema failed", e);
-		}
-	}
+  private DatabaseSchemaMetaData parse(final Response response) {
+    try (Reader text = new InputStreamReader((InputStream) response.getEntity(), Charsets.UTF_8)) {
+      final InputSource xmlSource = new InputSource(text);
+      final Document schema = XML.toDocument(xmlSource);
+      return XMLSchemaConverter.convert(schema.getDocumentElement());
+    } catch (final IOException | RelationalSchemaParseException e) {
+      throw new AssertionError("parsing schema failed", e);
+    }
+  }
 
-	private void verifySchema(final DatabaseSchemaMetaData schema) {
-		@SuppressWarnings("unchecked")
-		final Map<String, TableMetaData> tables = schema.getTables();
-		assertEquals(2, tables.size()); // change this if schema changes
-		final TableMetaData table = tables.get("PERSON");
-		assertEqualsIgnoreCase("TEST", table.getCatalogName());
-		assertEquals(5, table.getColumnCount());
-		ColumnMetaData column = table.getColumn(1);
-		assertEqualsIgnoreCase("id", column.getName());
-		assertEquals(Types.INTEGER, column.getDataType());
-		column = table.getColumn(2);
-		assertEqualsIgnoreCase("firstname", column.getName());
-		assertEquals(Types.VARCHAR, column.getDataType());
-		column = table.getColumn(3);
-		assertEqualsIgnoreCase("lastname", column.getName());
-		assertEquals(Types.VARCHAR, column.getDataType());
-		column = table.getColumn(4);
-		assertEqualsIgnoreCase("age", column.getName());
-		assertEquals(Types.VARCHAR, column.getDataType());
-		column = table.getColumn(5);
-		assertEqualsIgnoreCase("postalcode", column.getName());
-		assertEquals(Types.VARCHAR, column.getDataType());
-	}
+  private void verifySchema(final DatabaseSchemaMetaData schema) {
+    @SuppressWarnings("unchecked")
+    final Map<String, TableMetaData> tables = schema.getTables();
+    assertEquals(2, tables.size()); // change this if schema changes
+    final TableMetaData table = tables.get("PERSON");
+    assertEqualsIgnoreCase("TEST", table.getCatalogName());
+    assertEquals(5, table.getColumnCount());
+    ColumnMetaData column = table.getColumn(1);
+    assertEqualsIgnoreCase("id", column.getName());
+    assertEquals(Types.INTEGER, column.getDataType());
+    column = table.getColumn(2);
+    assertEqualsIgnoreCase("firstname", column.getName());
+    assertEquals(Types.VARCHAR, column.getDataType());
+    column = table.getColumn(3);
+    assertEqualsIgnoreCase("lastname", column.getName());
+    assertEquals(Types.VARCHAR, column.getDataType());
+    column = table.getColumn(4);
+    assertEqualsIgnoreCase("age", column.getName());
+    assertEquals(Types.VARCHAR, column.getDataType());
+    column = table.getColumn(5);
+    assertEqualsIgnoreCase("postalcode", column.getName());
+    assertEquals(Types.VARCHAR, column.getDataType());
+  }
 }
