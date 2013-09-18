@@ -178,10 +178,11 @@
 			<plugin>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-maven-plugin</artifactId>
-				<version>9.0.0.M5</version>
+				<version>${version.jetty}</version>
 				<configuration>
 					<stopKey>jetty</stopKey>
 					<stopPort>19080</stopPort>
+					<stopWait>20</stopWait>
 					<reload>manual</reload>
 				</configuration>
 				<executions>
@@ -190,7 +191,7 @@
 						<phase>pre-integration-test</phase>
 						<goals>
 							<goal>stop</goal> <!-- close running instance -->
-							<goal>run</goal>
+							<goal>start</goal>
 						</goals>
 						<configuration>
 							<scanIntervalSeconds>0</scanIntervalSeconds>

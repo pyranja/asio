@@ -23,6 +23,7 @@
 		<version.cxf>2.7.5</version.cxf>
 		<version.spring>3.2.2.RELEASE</version.spring>
 		<version.ogsadai>4.1.0</version.ogsadai>
+		<version.jetty>9.0.5.v20130815</version.jetty>
 	</properties>
 
 	<scm>
