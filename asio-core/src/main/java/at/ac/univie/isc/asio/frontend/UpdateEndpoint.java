@@ -13,6 +13,7 @@ import javax.ws.rs.core.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import at.ac.univie.isc.asio.coordination.EngineSpec.Type;
 import at.ac.univie.isc.asio.frontend.OperationFactory.OperationBuilder;
 
 /**
@@ -23,53 +24,49 @@ import at.ac.univie.isc.asio.frontend.OperationFactory.OperationBuilder;
 @Path("/update/")
 public class UpdateEndpoint extends AbstractEndpoint {
 
-	/* slf4j-logger */
-	final static Logger log = LoggerFactory.getLogger(UpdateEndpoint.class);
+  /* slf4j-logger */
+  final static Logger log = LoggerFactory.getLogger(UpdateEndpoint.class);
 
-	private static final String PARAM_UPDATE = "update";
+  private static final String PARAM_UPDATE = "update";
 
-	public UpdateEndpoint(final EngineAdapter engine,
-			final AsyncProcessor processor, final OperationFactory create) {
-		super(engine, processor, create);
-	}
+  public UpdateEndpoint(final EngineSelector registry, final AsyncProcessor processor,
+      final OperationFactory create, final Type type) {
+    super(registry, processor, create, type);
+    // TODO Auto-generated constructor stub
+  }
 
-	/**
-	 * Accept updates submitted as url encoded form parameter.
-	 * 
-	 * @param update
-	 *            to be executed
-	 * @return update results
-	 */
-	@POST
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	public void acceptFormUpdate(@FormParam(PARAM_UPDATE) final String update,
-			@Context final Request request,
-			@Suspended final AsyncResponse response) {
-		process(update, request, response);
-	}
+  /**
+   * Accept updates submitted as url encoded form parameter.
+   * 
+   * @param update to be executed
+   * @return update results
+   */
+  @POST
+  @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+  public void acceptFormUpdate(@FormParam(PARAM_UPDATE) final String update,
+      @Context final Request request, @Suspended final AsyncResponse response) {
+    process(update, request, response);
+  }
 
-	/**
-	 * Accept updates submitted as unencoded request entity
-	 * 
-	 * @param update
-	 *            to be executed
-	 * @return update results
-	 */
-	@POST
-	@Consumes("application/sql-update")
-	public void acceptUpdate(final String update,
-			@Context final Request request,
-			@Suspended final AsyncResponse response) {
-		process(update, request, response);
-	}
+  /**
+   * Accept updates submitted as unencoded request entity
+   * 
+   * @param update to be executed
+   * @return update results
+   */
+  @POST
+  @Consumes("application/sql-update")
+  public void acceptUpdate(final String update, @Context final Request request,
+      @Suspended final AsyncResponse response) {
+    process(update, request, response);
+  }
 
-	/**
-	 * Invoke processing.
-	 */
-	private void process(final String update, final Request request,
-			final AsyncResponse response) {
-		log.debug("-- processing \"{}\"", update);
-		final OperationBuilder partial = create.update(update);
-		complete(partial, request, response);
-	}
+  /**
+   * Invoke processing.
+   */
+  private void process(final String update, final Request request, final AsyncResponse response) {
+    log.debug("-- processing \"{}\"", update);
+    final OperationBuilder partial = create.update(update);
+    complete(partial, request, response);
+  }
 }

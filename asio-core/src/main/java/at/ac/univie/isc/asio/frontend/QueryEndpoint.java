@@ -15,6 +15,7 @@ import javax.ws.rs.core.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import at.ac.univie.isc.asio.coordination.EngineSpec.Type;
 import at.ac.univie.isc.asio.frontend.OperationFactory.OperationBuilder;
 
 /**
@@ -25,66 +26,60 @@ import at.ac.univie.isc.asio.frontend.OperationFactory.OperationBuilder;
 @Path("/query/")
 public final class QueryEndpoint extends AbstractEndpoint {
 
-	/* slf4j-logger */
-	final static Logger log = LoggerFactory.getLogger(QueryEndpoint.class);
+  /* slf4j-logger */
+  final static Logger log = LoggerFactory.getLogger(QueryEndpoint.class);
 
-	private static final String PARAM_QUERY = "query";
+  private static final String PARAM_QUERY = "query";
 
-	public QueryEndpoint(final EngineAdapter engine,
-			final AsyncProcessor processor, final OperationFactory create) {
-		super(engine, processor, create);
-	}
+  public QueryEndpoint(final EngineSelector registry, final AsyncProcessor processor,
+      final OperationFactory create, final Type type) {
+    super(registry, processor, create, type);
+  }
 
-	/**
-	 * Accept queries from the request URL's query string.
-	 * 
-	 * @param query
-	 *            to be executed
-	 * @return query results
-	 */
-	@GET
-	public void acceptUriQuery(@QueryParam(PARAM_QUERY) final String query,
-			@Context final Request request,
-			@Suspended final AsyncResponse response) {
-		process(query, request, response);
-	}
+  /**
+   * Accept queries from the request URL's query string.
+   * 
+   * @param query to be executed
+   * @return query results
+   */
+  @GET
+  public void acceptUriQuery(@QueryParam(PARAM_QUERY) final String query,
+      @Context final Request request, @Suspended final AsyncResponse response) {
+    process(query, request, response);
+  }
 
-	/**
-	 * Accept queries submitted as url encoded form parameters.
-	 * 
-	 * @param query
-	 *            to be executed
-	 * @return query results
-	 */
-	@POST
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	public void acceptFormQuery(@FormParam(PARAM_QUERY) final String query,
-			@Context final Request request,
-			@Suspended final AsyncResponse response) {
-		process(query, request, response);
-	}
+  /**
+   * Accept queries submitted as url encoded form parameters.
+   * 
+   * @param query to be executed
+   * @return query results
+   */
+  @POST
+  @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+  public void acceptFormQuery(@FormParam(PARAM_QUERY) final String query,
+      @Context final Request request, @Suspended final AsyncResponse response) {
+    process(query, request, response);
+  }
 
-	/**
-	 * Accept queries submitted as unencoded request entity
-	 * 
-	 * @param query
-	 *            to be executed
-	 * @return query results
-	 */
-	@POST
-	@Consumes("application/sql-query")
-	public void acceptQuery(final String query, @Context final Request request,
-			@Suspended final AsyncResponse response) {
-		process(query, request, response);
-	}
+  /**
+   * Accept queries submitted as unencoded request entity
+   * 
+   * @param query to be executed
+   * @return query results
+   */
+  @POST
+  @Consumes("application/sql-query")
+  public void acceptQuery(final String query, @Context final Request request,
+      @Suspended final AsyncResponse response) {
+    process(query, request, response);
+  }
 
-	/**
-	 * Invoke processing.
-	 */
-	private void process(final String query, final Request request,
-			final AsyncResponse response) {
-		log.debug("-- processing \"{}\"", query);
-		final OperationBuilder partial = create.query(query);
-		complete(partial, request, response);
-	}
+  /**
+   * Invoke processing.
+   */
+  private void process(final String query, final Request request, final AsyncResponse response) {
+    log.debug("-- processing \"{}\"", query);
+    final OperationBuilder partial = create.query(query);
+    complete(partial, request, response);
+  }
 }

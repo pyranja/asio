@@ -10,7 +10,7 @@
 
 <body>
 
-  <form id="query_form" action="demo/v1/asio/query" method="post">
+  <form id="query_form" action="v1/asio/query" method="post">
 	  <p><textarea id="query" name="query" rows="10" cols="80">SELECT DISTINCT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 10</textarea></p>
 	  <select id="format">
 	   <option value="application/xml">XML</option>
@@ -25,6 +25,11 @@
   
   <script type="text/javascript">
   var form = $("#query_form");
+  // set post target dynamically - assumes query form is deployed to root of web app!
+  $(document).ready(function() {
+	  form.attr('action', document.location.href + "v1/asio/query");
+  });
+  // override form submission with ajax call
   form.submit(function(event) {
 	   event.preventDefault();
       $.ajax({
@@ -42,7 +47,7 @@
           $('#result_response').val(response.responseText);
         } 
       });
-      return false;
+      return false; // prevent default
   });
   </script>
   

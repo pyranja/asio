@@ -23,65 +23,63 @@ import uk.org.ogsadai.activity.workflow.Workflow;
 import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
 import at.ac.univie.isc.asio.MockOperations;
-import at.ac.univie.isc.asio.ResultHandler;
-import at.ac.univie.isc.asio.security.NullPrincipal;
+import at.ac.univie.isc.asio.coordination.OperatorCallback;
+import at.ac.univie.isc.asio.transport.Transfer;
 
 import com.google.common.io.OutputSupplier;
 
 @RunWith(MockitoJUnitRunner.class)
 public class OgsadaiEngineTest {
 
-	private static final SerializationFormat MOCK_FORMAT = OgsadaiFormats.XML;
-	private static final String MOCK_QUERY = "test-query";
+  private static final SerializationFormat MOCK_FORMAT = OgsadaiFormats.XML;
+  private static final String MOCK_QUERY = "test-query";
 
-	private OgsadaiEngine subject;
-	@Mock private OgsadaiAdapter ogsadai;
-	@Mock private ResultHandler handler;
-	@Mock private WorkflowComposer composer;
-	@Mock private Workflow dummyWorkflow;
-	@Mock private DaiExceptionTranslator translator;
-	private DatasetOperation operation;
+  private OgsadaiEngine subject;
+  @Mock
+  private OgsadaiAdapter ogsadai;
+  @Mock
+  private Transfer exchange;
+  @Mock
+  private WorkflowComposer composer;
+  @Mock
+  private Workflow dummyWorkflow;
+  @Mock
+  private DaiExceptionTranslator translator;
+  @Mock
+  private OperatorCallback callback;
+  private DatasetOperation operation;
 
-	@SuppressWarnings("unchecked")
-	@Before
-	public void setUp() throws IOException {
-		operation = MockOperations.query(MOCK_QUERY, MOCK_FORMAT);
-		when(
-				composer.createFrom(any(DatasetOperation.class),
-						any(OutputSupplier.class))).thenReturn(dummyWorkflow);
-		subject = new OgsadaiEngine(ogsadai, composer, translator);
-	}
+  @SuppressWarnings("unchecked")
+  @Before
+  public void setUp() throws IOException {
+    operation = MockOperations.query(MOCK_QUERY, MOCK_FORMAT);
+    when(composer.createFrom(any(DatasetOperation.class), any(OutputSupplier.class))).thenReturn(
+        dummyWorkflow);
+    subject = new OgsadaiEngine(ogsadai, composer, translator);
+  }
 
-	// invariances
+  // invariances
 
-	@Test
-	public void supports_ogsadai_formats() throws Exception {
-		final Set<SerializationFormat> supported = subject.supportedFormats();
-		final List<OgsadaiFormats> ogsadaiFormats = Arrays
-				.asList(OgsadaiFormats.values());
-		assertTrue(supported.containsAll(ogsadaiFormats));
-		assertTrue(ogsadaiFormats.containsAll(supported));
-	}
+  @Test
+  public void supports_ogsadai_formats() throws Exception {
+    final Set<SerializationFormat> supported = subject.supports();
+    final List<OgsadaiFormats> ogsadaiFormats = Arrays.asList(OgsadaiFormats.values());
+    assertTrue(supported.containsAll(ogsadaiFormats));
+    assertTrue(ogsadaiFormats.containsAll(supported));
+  }
 
-	// behavior
+  // behavior
 
-	@SuppressWarnings("unchecked")
-	@Test
-	public void passes_operation_to_composer() throws Exception {
-		subject.submit(operation, handler, NullPrincipal.INSTANCE);
-		verify(composer).createFrom(same(operation), any(OutputSupplier.class));
-	}
+  @SuppressWarnings("unchecked")
+  @Test
+  public void passes_operation_to_composer() throws Exception {
+    subject.invoke(operation, exchange, callback);
+    verify(composer).createFrom(same(operation), any(OutputSupplier.class));
+  }
 
-	@Test
-	public void passes_result_handler_to_composer() throws Exception {
-		subject.submit(operation, handler, NullPrincipal.INSTANCE);
-		verify(composer).createFrom(any(DatasetOperation.class), same(handler));
-	}
-
-	@Test
-	public void invokes_ogsadai_with_composed_workflow() throws Exception {
-		subject.submit(operation, handler, NullPrincipal.INSTANCE);
-		verify(ogsadai).invoke(anyString(), same(dummyWorkflow),
-				any(CompletionCallback.class));
-	}
+  @Test
+  public void invokes_ogsadai_with_composed_workflow() throws Exception {
+    subject.invoke(operation, exchange, callback);
+    verify(ogsadai).invoke(anyString(), same(dummyWorkflow), any(CompletionCallback.class));
+  }
 }

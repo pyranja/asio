@@ -1,6 +1,9 @@
 package at.ac.univie.isc.asio.jena;
 
-import java.security.Principal;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -12,8 +15,13 @@ import at.ac.univie.isc.asio.DatasetEngine;
 import at.ac.univie.isc.asio.DatasetFailureException;
 import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
-import at.ac.univie.isc.asio.ResultHandler;
+import at.ac.univie.isc.asio.coordination.EngineSpec;
+import at.ac.univie.isc.asio.coordination.Operator;
+import at.ac.univie.isc.asio.coordination.OperatorCallback;
+import at.ac.univie.isc.asio.coordination.OperatorCallback.Phase;
+import at.ac.univie.isc.asio.transport.Transfer;
 
+import com.google.common.io.OutputSupplier;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -27,7 +35,7 @@ import com.hp.hpl.jena.rdf.model.Model;
  * 
  * @author Chris Borckholder
  */
-public class JenaEngine implements DatasetEngine {
+public class JenaEngine implements DatasetEngine, Operator {
 
   /* slf4j-logger */
   private final static Logger log = LoggerFactory.getLogger(JenaEngine.class);
@@ -37,7 +45,7 @@ public class JenaEngine implements DatasetEngine {
 
   private final String modelPrefixes;
 
-  JenaEngine(final ListeningExecutorService exec, final Model model) {
+  public JenaEngine(final ListeningExecutorService exec, final Model model) {
     super();
     this.exec = exec;
     this.model = model;
@@ -57,23 +65,40 @@ public class JenaEngine implements DatasetEngine {
    * return all {@link JenaFormats formats} supported by Jena
    */
   @Override
-  public Set<SerializationFormat> supportedFormats() {
+  public Set<SerializationFormat> supports() {
     return JenaFormats.asSet();
   }
 
   @Override
-  public void submit(final DatasetOperation operation, final ResultHandler handler,
-      final Principal ignored) {
+  public Type type() {
+    return EngineSpec.Type.SPARQL;
+  }
+
+  @Override
+  public void invoke(final DatasetOperation operation, final Transfer exchange,
+      final OperatorCallback callback) {
     // assert parameters and parse query
     final JenaFormats format = failIfInvalidFormat(operation.format());
     final Query query = QueryFactory.create(attachPrefixes(operation.commandOrFail()));
     log.trace("-- parsed ARQ query :\n{}", query);
     // parameterize and invoke the query worker
-    final Callable<Void> task = new QueryTask(handler, format, query, model);
+    final Callable<Void> task =
+        new QueryTask(wrapAsSupplier(exchange.sink(), callback), format, query, model);
     log.debug(">> invoking ARQ query");
     final ListenableFuture<Void> future = exec.submit(task);
-    Futures.addCallback(future, callbackFor(operation, handler));
+    Futures.addCallback(future, callbackFor(operation, callback));
     log.debug("<< ARQ query invoked");
+  }
+
+  private OutputSupplier<OutputStream> wrapAsSupplier(final WritableByteChannel channel,
+      final OperatorCallback callback) {
+    return new OutputSupplier<OutputStream>() {
+      @Override
+      public OutputStream getOutput() throws IOException {
+        callback.completed(Phase.EXECUTION);
+        return Channels.newOutputStream(channel);
+      }
+    };
   }
 
   private String attachPrefixes(final String query) {
@@ -81,11 +106,11 @@ public class JenaEngine implements DatasetEngine {
   }
 
   private FutureCallback<Void> callbackFor(final DatasetOperation operation,
-      final ResultHandler handler) {
+      final OperatorCallback handler) {
     return new FutureCallback<Void>() {
       @Override
       public void onSuccess(final Void result) {
-        handler.complete();
+        handler.completed(Phase.SERIALIZATION);
       }
 
       @Override
