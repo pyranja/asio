@@ -10,7 +10,7 @@
 
 <body>
 
-  <form id="query_form" action="sparql" method="post">
+  <form id="query_form" action="v1/asio/query" method="post">
 	  <p><textarea id="query" name="query" rows="10" cols="80">SELECT DISTINCT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 10</textarea></p>
 	  <select id="format">
 	   <option value="application/xml">XML</option>
@@ -27,7 +27,9 @@
   var form = $("#query_form");
   // set post target dynamically - assumes query form is deployed to root of web app!
   $(document).ready(function() {
-	  form.attr('action', document.location.href + "sparql");
+	  // strip file name and/or trailing slash from url
+	  var base = $(location).attr('href').replace(/index.html$/,'').replace(/\/$/, '');
+	  form.attr('action', base + "/v1/sparql/query");  // replace with concrete sparql endpoint
   });
   // override form submission with ajax call
   form.submit(function(event) {

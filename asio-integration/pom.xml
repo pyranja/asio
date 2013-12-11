@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -13,6 +14,14 @@
 
 	<name>ASIO integration</name>
 	<description>Reference server configuration and integration tests</description>
+
+	<repositories>
+		<!-- local copy of d2rq dependency -->
+		<repository>
+			<id>d2rq-local</id>
+			<url>file://${basedir}/d2r</url>
+		</repository>
+	</repositories>
 
 	<dependencies>
 		<!-- modules -->
@@ -34,6 +43,19 @@
 			<version>${version.ogsadai}</version>
 			<type>pom</type>
 		</dependency>
+		<!-- local d2r jars -->
+    <dependency>
+      <groupId>de.fuberlin.wiwiss</groupId>
+      <artifactId>d2rq</artifactId>
+      <version>0.8.1</version>
+    </dependency>
+    <!-- mysql -->
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>5.1.26</version>
+      <scope>runtime</scope>
+    </dependency>
 		<!-- converter for functional tests -->
 		<dependency>
 			<groupId>net.sf.opencsv</groupId>

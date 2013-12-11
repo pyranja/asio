@@ -40,7 +40,7 @@ import com.google.common.base.Charsets;
 @Category(FunctionalTest.class)
 public class SchemaTest {
 
-  private static final URI SERVER_URL = URI.create("http://localhost:8080/v1/asio/schema");
+  private static final URI SERVER_URL = URI.create("http://localhost:8080/v1/sql/schema");
 
   private static final MediaType XML_TYPE = MediaType.APPLICATION_XML_TYPE
       .withCharset(Charsets.UTF_8.name());

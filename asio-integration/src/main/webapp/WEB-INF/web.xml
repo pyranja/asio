@@ -18,7 +18,7 @@
   </context-param>
   <context-param>
     <param-name>contextConfigLocation</param-name>
-    <param-value>at.ac.univie.isc.asio.AsioConfiguration at.ac.univie.isc.asio.ogsadai.AsioOgsadaiConfiguration</param-value>
+    <param-value>at.ac.univie.isc.asio.AsioConfiguration at.ac.univie.isc.asio.ogsadai.AsioOgsadaiConfiguration at.ac.univie.isc.asio.AsioJenaConfiguration</param-value>
   </context-param>
   
   <!-- 
@@ -53,6 +53,15 @@
     <servlet-class>
       org.apache.cxf.transport.servlet.CXFServlet
     </servlet-class>
+    <!-- serve a simple query interface statically -->
+    <init-param>
+      <param-name>static-welcome-file</param-name>
+      <param-value>/index.html</param-value>
+    </init-param>
+    <init-param>
+      <param-name>static-resources-list</param-name>
+      <param-value>/index.html</param-value>
+    </init-param>
     <load-on-startup>1</load-on-startup>
     <async-supported>true</async-supported>
   </servlet>

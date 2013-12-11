@@ -1,4 +1,4 @@
-package at.ac.univie.isc.asio.jena;
+package at.ac.univie.isc.asio;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
-import at.ac.univie.isc.asio.DatasetEngine;
+import at.ac.univie.isc.asio.jena.JenaEngine;
 
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
