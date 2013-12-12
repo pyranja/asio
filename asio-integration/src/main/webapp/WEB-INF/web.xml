@@ -8,17 +8,17 @@
       http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
       version="3.0">
       
-  <display-name>asio-ogsadai</display-name>
-  <description>OGSADAI container with asio frontend</description>     
+  <display-name>asio</display-name>
+  <description>HTTP frontend for a relational database</description>     
       
-  <!-- spring configuration setup - using annotation config -->
+  <!-- spring configuration setup - scans given pacakge for @Configuration classes -->
   <context-param>
     <param-name>contextClass</param-name>
     <param-value>org.springframework.web.context.support.AnnotationConfigWebApplicationContext</param-value>
   </context-param>
   <context-param>
     <param-name>contextConfigLocation</param-name>
-    <param-value>at.ac.univie.isc.asio.AsioConfiguration at.ac.univie.isc.asio.ogsadai.AsioOgsadaiConfiguration at.ac.univie.isc.asio.AsioJenaConfiguration</param-value>
+    <param-value>at.ac.univie.isc.asio.config</param-value>
   </context-param>
   
   <!-- 
@@ -56,11 +56,11 @@
     <!-- serve a simple query interface statically -->
     <init-param>
       <param-name>static-welcome-file</param-name>
-      <param-value>/index.html</param-value>
+      <param-value>/static/index.html</param-value>
     </init-param>
     <init-param>
       <param-name>static-resources-list</param-name>
-      <param-value>/index.html</param-value>
+      <param-value>/static/.*</param-value>
     </init-param>
     <load-on-startup>1</load-on-startup>
     <async-supported>true</async-supported>

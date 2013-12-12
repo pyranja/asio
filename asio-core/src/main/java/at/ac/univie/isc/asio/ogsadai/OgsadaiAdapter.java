@@ -20,14 +20,11 @@ import uk.org.ogsadai.resource.request.RequestExecutionStatus;
 import uk.org.ogsadai.resource.request.SimpleCandidateRequestDescriptor;
 import at.ac.univie.isc.asio.DatasetException;
 
-import com.google.common.annotations.VisibleForTesting;
-
 /**
- * Interact with an in-process OGSADAI instance to execute workflows
- * asynchronously.
+ * Interact with an in-process OGSADAI instance to execute workflows asynchronously.
  * <p>
- * Use an OGSADAI {@link DRER} to invoke requests. Through an installed
- * {@link RequestEventRouter} the status of submitted requests is tracked.
+ * Use an OGSADAI {@link DRER} to invoke requests. Through an installed {@link RequestEventRouter}
+ * the status of submitted requests is tracked.
  * </p>
  * 
  * @author Chris Borckholder
@@ -35,71 +32,58 @@ import com.google.common.annotations.VisibleForTesting;
 @ThreadSafe
 public class OgsadaiAdapter {
 
-	private final DRER drer;
-	private final RequestEventRouter router;
+  private final DRER drer;
+  private final RequestEventRouter router;
 
-	@VisibleForTesting
-	OgsadaiAdapter(final DRER drer, final RequestEventRouter router) {
-		this.drer = drer;
-		this.router = router;
-	}
+  public OgsadaiAdapter(final DRER drer, final RequestEventRouter router) {
+    this.drer = drer;
+    this.router = router;
+  }
 
-	/**
-	 * Create and submit an asynchronous OGSADAI request to execute the given
-	 * workflow. Setup request listening to notify the given
-	 * {@link CompletionCallback}.
-	 * 
-	 * @param id
-	 *            of the request
-	 * @param workflow
-	 *            to be executed
-	 * @param tracker
-	 *            callback for request termination
-	 * @return id of the submitted request
-	 * @throws DatasetException
-	 *             if an error occurs while communicating with OGSADAI
-	 */
-	public void invoke(final String id, final Workflow workflow,
-			final CompletionCallback tracker) throws DatasetException {
-		final ResourceID requestId = new ResourceID(id, "");
-		router.track(requestId, tracker);
-		final CandidateRequestDescriptor request = new SimpleCandidateRequestDescriptor(
-				requestId, // randomized with qualifier
-				null, // no session
-				false, // no session
-				false, // asynchronous
-				false, // no private resources
-				workflow);
-		try {
-			final ExecutionResult result = drer.execute(request);
-			verifyExecutionResponse(result, requestId);
-		} catch (final RequestException | RequestRejectedException
-				| RequestUserException e) {
-			router.stopTracking(requestId);
-			tracker.fail(e);
-		}
-	}
+  /**
+   * Create and submit an asynchronous OGSADAI request to execute the given workflow. Setup request
+   * listening to notify the given {@link CompletionCallback}.
+   * 
+   * @param id of the request
+   * @param workflow to be executed
+   * @param tracker callback for request termination
+   * @return id of the submitted request
+   * @throws DatasetException if an error occurs while communicating with OGSADAI
+   */
+  public void invoke(final String id, final Workflow workflow, final CompletionCallback tracker)
+      throws DatasetException {
+    final ResourceID requestId = new ResourceID(id, "");
+    router.track(requestId, tracker);
+    final CandidateRequestDescriptor request = new SimpleCandidateRequestDescriptor(requestId, // randomized
+                                                                                               // with
+                                                                                               // qualifier
+        null, // no session
+        false, // no session
+        false, // asynchronous
+        false, // no private resources
+        workflow);
+    try {
+      final ExecutionResult result = drer.execute(request);
+      verifyExecutionResponse(result, requestId);
+    } catch (final RequestException | RequestRejectedException | RequestUserException e) {
+      router.stopTracking(requestId);
+      tracker.fail(e);
+    }
+  }
 
-	/**
-	 * Test whether the OGSADAI ExecutionResult satisfies the expectations.
-	 * 
-	 * @param response
-	 *            from OGSADAI
-	 * @param expectedId
-	 *            submitted request id
-	 * @throws AssertionError
-	 *             if assertions are enabled and the response is malformed
-	 */
-	private void verifyExecutionResponse(final ExecutionResult response,
-			final ResourceID expectedId) {
-		// assert response invariances
-		final RequestExecutionStatus state = response.getRequestStatus()
-				.getExecutionStatus();
-		assert state == UNSTARTED : format(ENGLISH,
-				"unexpected execution status %s", state);
-		final ResourceID createdRequestId = response.getRequestID();
-		assert expectedId.equals(createdRequestId) : format(ENGLISH,
-				"id mismatch : submitted [%s] <> created [%s]", expectedId,
-				createdRequestId);
-	}
+  /**
+   * Test whether the OGSADAI ExecutionResult satisfies the expectations.
+   * 
+   * @param response from OGSADAI
+   * @param expectedId submitted request id
+   * @throws AssertionError if assertions are enabled and the response is malformed
+   */
+  private void verifyExecutionResponse(final ExecutionResult response, final ResourceID expectedId) {
+    // assert response invariances
+    final RequestExecutionStatus state = response.getRequestStatus().getExecutionStatus();
+    assert state == UNSTARTED : format(ENGLISH, "unexpected execution status %s", state);
+    final ResourceID createdRequestId = response.getRequestID();
+    assert expectedId.equals(createdRequestId) : format(ENGLISH,
+        "id mismatch : submitted [%s] <> created [%s]", expectedId, createdRequestId);
+  }
 }

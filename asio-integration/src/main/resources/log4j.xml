@@ -13,7 +13,7 @@
   </appender>
   
   <!-- includes asio MDC informations -->
-  <appender name="asio-console" class="org.apache.log4j.ConsoleAppender">
+  <appender name="asio-log" class="org.apache.log4j.ConsoleAppender">
     <param name="Threshold" value="error" /> <!--  for tests -->
     <layout class="org.apache.log4j.PatternLayout">
       <param name="ConversionPattern" value="%d{ISO8601} %-5p [%t] %c{1}: %m | [%X{asio.request.method}|%X{asio.request.uri}] %X{asio.request.operation}%n" />
@@ -22,32 +22,11 @@
 
   <logger name="at.ac.univie.isc.asio">
     <level value="info" />
-    <appender-ref ref="asio-console" />
+    <appender-ref ref="asio-log" />
   </logger>
   
   <logger name="uk.org.ogsadai">
     <level value="warn" /> 
-  </logger>
-  
-  <!-- log4jdbc debugging | not yet used -->
-  <!-- disable base sql logging -->
-  <logger name="jdbc">
-    <level value="fatal" />
-  </logger>
-  
-  <!-- log SQL (pre-execution) plus exceptions caused by SQL -->
-  <logger name="jdbc.sqlonly">
-    <level value="info"/>
-  </logger>
-
-  <!-- log connection open/close events and dump of all open connection numbers -->
-  <logger name="jdbc.connection">
-    <level value="info"/>
-  </logger>
-  
-  <!-- debug logging for log4jdbc itself -->
-  <logger name="log4jdbc.debug">
-    <level value="fatal"/>
   </logger>
   
   <!-- by default, log everything to the console with a level of WARN or higher -->

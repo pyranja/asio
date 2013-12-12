@@ -1,4 +1,4 @@
-package at.ac.univie.isc.asio.ogsadai;
+package at.ac.univie.isc.asio.config;
 
 import java.util.List;
 
@@ -16,6 +16,10 @@ import uk.org.ogsadai.resource.ResourceType;
 import uk.org.ogsadai.resource.ResourceUnknownException;
 import uk.org.ogsadai.resource.drer.DRER;
 import at.ac.univie.isc.asio.DatasetEngine;
+import at.ac.univie.isc.asio.ogsadai.DaiExceptionTranslator;
+import at.ac.univie.isc.asio.ogsadai.OgsadaiAdapter;
+import at.ac.univie.isc.asio.ogsadai.OgsadaiEngine;
+import at.ac.univie.isc.asio.ogsadai.WorkflowComposer;
 import at.ac.univie.isc.asio.ogsadai.workflow.SqlComposer;
 
 import com.google.common.collect.Iterables;

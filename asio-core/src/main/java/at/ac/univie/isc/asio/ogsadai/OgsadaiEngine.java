@@ -37,7 +37,7 @@ public final class OgsadaiEngine implements DatasetEngine, Operator {
   private final WorkflowComposer composer;
   private final DaiExceptionTranslator translator;
 
-  OgsadaiEngine(final OgsadaiAdapter ogsadai, final WorkflowComposer composer,
+  public OgsadaiEngine(final OgsadaiAdapter ogsadai, final WorkflowComposer composer,
       final DaiExceptionTranslator translator) {
     super();
     this.ogsadai = ogsadai;
