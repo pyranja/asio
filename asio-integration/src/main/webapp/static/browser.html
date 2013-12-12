@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>asio sql viewer example</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+	<script src="js/ICanHaz.min.js"></script>
+	<script src="js/asio.js"></script>
+	<script src="js/browser.app.js"></script>
+	<!-- mustache templates -->
+	<script id="template_result" type="text/html">
+    <table border=1>
+      <thead>
+        <tr>
+          {{#columns}}
+          <td>{{.}}</td>
+          {{/columns}}
+        </tr>
+      </thead>
+      <tbody>
+        {{#rows}}
+        <tr>
+          {{#row}}
+          <td>{{.}}</td>
+          {{/row}}
+        </tr>
+        {{/rows}}
+      </tbody>
+    <table>
+  </script>
+  <script id="template_explorer" type="text/html">
+    <ul>
+      {{#tables}}
+      <li onclick="onSelectTable(event, '{{.}}')">{{.}}</li>
+      {{/tables}}
+    </ul>
+  </script>
+</head>
+
+<body>
+  <div id="sql-explorer">
+    <p>No tables</p>
+  </div>
+  <div id="sql-commander">
+    <form id="sql-command-form" action="/sql/query" method="post" target="_blank">
+      <textarea id="sql-command" rows="2" cols="80" placeholder="SQL query..."></textarea>
+      <input type="submit" value="Execute" />
+      <input type="reset" value="Clear" />
+    </form>
+  </div>
+	<div id="sql-result">
+	  <p>No data</p>
+	</div>
+</body>
+
+</html>
