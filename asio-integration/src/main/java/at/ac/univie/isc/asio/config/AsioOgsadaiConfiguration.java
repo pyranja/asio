@@ -2,6 +2,8 @@ package at.ac.univie.isc.asio.config;
 
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +21,7 @@ import at.ac.univie.isc.asio.DatasetEngine;
 import at.ac.univie.isc.asio.ogsadai.DaiExceptionTranslator;
 import at.ac.univie.isc.asio.ogsadai.OgsadaiAdapter;
 import at.ac.univie.isc.asio.ogsadai.OgsadaiEngine;
+import at.ac.univie.isc.asio.ogsadai.OgsadaiJdbcDeployer;
 import at.ac.univie.isc.asio.ogsadai.WorkflowComposer;
 import at.ac.univie.isc.asio.ogsadai.workflow.SqlComposer;
 
@@ -35,7 +38,23 @@ public class AsioOgsadaiConfiguration {
   @Autowired
   private Environment env;
 
+  @Autowired
+  private DatasourceSpec datasource;
+
   private static final ID ROUTER_ID = new ID("uk.org.ogsadai.MONITORING_FRAMEWORK");
+  private static final String DEFAULT_JDBC_TEMPLATE = "uk.org.ogsadai.JDBC_RESOURCE_TEMPLATE";
+
+  @PostConstruct
+  public void setupJdbcResource() {
+    final String resourceName = env.getRequiredProperty("asio.ogsadai.resource");
+    final ResourceID resource = new ResourceID(resourceName, "");
+    deployer().deploy(resource, datasource);
+  }
+
+  @Bean
+  public OGSADAIContext ogsadaiContext() {
+    return OGSADAIContext.getInstance();
+  }
 
   @Bean
   public DatasetEngine ogsadaiEngine() {
@@ -56,11 +75,20 @@ public class AsioOgsadaiConfiguration {
 
   @Bean
   public OgsadaiAdapter adapter() {
-    final OGSADAIContext context = OGSADAIContext.getInstance();
-    final RequestEventRouter router = (RequestEventRouter) context.get(ROUTER_ID);
-    final DRER drer = findDRER(context);
+    final RequestEventRouter router = (RequestEventRouter) ogsadaiContext().get(ROUTER_ID);
+    final DRER drer = findDRER(ogsadaiContext());
     return new OgsadaiAdapter(drer, router);
   }
+
+  @Bean
+  public OgsadaiJdbcDeployer deployer() {
+    final ResourceManager manager = ogsadaiContext().getResourceManager();
+    final String templateName = env.getProperty("asio.ogsadai.template", DEFAULT_JDBC_TEMPLATE);
+    final ResourceID template = new ResourceID(templateName, "");
+    return new OgsadaiJdbcDeployer(manager, template);
+  }
+
+  // HELPER
 
   private DRER findDRER(final OGSADAIContext context) {
     final ResourceManager resourceManager = context.getResourceManager();

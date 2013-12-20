@@ -13,12 +13,14 @@ import org.springframework.core.env.Environment;
 import at.ac.univie.isc.asio.DatasetEngine;
 import at.ac.univie.isc.asio.jena.JenaEngine;
 
+import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.hp.hpl.jena.rdf.model.Model;
 
 import de.fuberlin.wiwiss.d2rq.SystemLoader;
+import de.fuberlin.wiwiss.d2rq.map.Database;
 import de.fuberlin.wiwiss.d2rq.server.ConfigLoader;
 
 @Configuration
@@ -34,12 +36,25 @@ public class AsioJenaConfiguration {
     return new JenaEngine(queryWorkerPool(), d2rModel());
   }
 
+  @Bean
+  public DatasourceSpec datasource() {
+    // XXX will not work if multiple database bindings are defined in d2r mapping .ttl
+    final Database d2rDb = Iterables.getOnlyElement(d2rLoader().getMapping().databases());
+    return DatasourceSpec.connectTo(d2rDb.getJDBCDSN(), d2rDb.getJDBCDriver()).authenticateAs(
+        d2rDb.getUsername(), d2rDb.getPassword());
+  }
+
   @Bean(destroyMethod = "close")
   public Model d2rModel() {
+    return d2rLoader().getModelD2RQ();
+  }
+
+  @Bean
+  public SystemLoader d2rLoader() {
     final String mapping = env.getProperty("asio.d2r.mapping", "config.ttl");
     final SystemLoader loader = new SystemLoader();
     loader.setMappingURL(resolve(mapping));
-    return loader.getModelD2RQ();
+    return loader;
   }
 
   @Bean(destroyMethod = "shutdownNow")

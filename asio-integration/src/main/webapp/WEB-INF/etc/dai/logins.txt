@@ -1,5 +1,4 @@
-END
-id=mock_data
+id=asio_resource
 userID=*
 username=root
 password=change

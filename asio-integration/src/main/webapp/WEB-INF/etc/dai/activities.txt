@@ -11,9 +11,10 @@ CONFIG
 END
 # endof ASIO delivery
 # H2 sql activities
-id=uk.org.ogsadai.ExtractH2TableSchema
+# TODO test this on MySQL
+id=uk.org.ogsadai.ExtractPublicTableSchema
 class=uk.org.ogsadai.activity.sql.ExtractTableSchemaActivity
-description=hides H2 system tables
+description=should hide system tables (tested on H2)
 CONFIG
 dai.table.types=TABLE,VIEW
 END

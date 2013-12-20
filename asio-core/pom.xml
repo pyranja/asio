@@ -40,6 +40,12 @@
 			<version>${version.ogsadai}</version>
 			<type>pom</type>
 		</dependency>
+		<dependency>
+		  <groupId>uk.org.ogsadai</groupId>
+		  <artifactId>ogsadai-relational</artifactId>
+		  <version>${version.ogsadai}</version>
+		  <type>pom</type>
+		</dependency>
 		<!-- jena -->
 		<dependency>
       <groupId>org.apache.jena</groupId>
