@@ -30,9 +30,22 @@
     <param-value>spring/ogsadai-context.xml</param-value>
   </context-param>
   
+  <!-- leak preventor options -->
+  <context-param> <!-- XXX increase for production -->
+    <param-name>ClassLoaderLeakPreventor.threadWaitMs</param-name>
+    <param-value>1000</param-value>
+  </context-param>
+  
   <session-config>
     <session-timeout>10</session-timeout> <!-- minutes -->
   </session-config>
+
+  <!-- clean up listener wraps all others -->
+  <listener>
+    <listener-class>
+      se.jiderhamn.classloader.leak.prevention.ClassLoaderLeakPreventor
+    </listener-class>
+  </listener>
 
   <!-- ogsadai must be initialized before asio -->
   <listener>

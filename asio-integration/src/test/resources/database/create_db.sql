@@ -1,5 +1,7 @@
 -- test database schema
 
+DROP TABLE IF EXISTS person, patient, datetimes;
+
 CREATE TABLE person (
   id INT NOT NULL,
   firstname varchar(255) default NULL,
@@ -12,5 +14,11 @@ CREATE TABLE person (
 CREATE TABLE patient (
   id INT NOT NULL,
   name varchar(255) default NULL,
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE datetimes (
+  id INT NOT NULL,
+  moment TIMESTAMP,
   PRIMARY KEY (id)
 );

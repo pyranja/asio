@@ -32,7 +32,7 @@ import com.google.common.collect.ImmutableSet;
 @RunWith(MockitoJUnitRunner.class)
 public class FormatSelectorTest {
 
-  private FormatSelector subject;
+  private ContentNegotiator subject;
   @Mock
   private Request request;
   private Set<SerializationFormat> formats;
@@ -48,7 +48,7 @@ public class FormatSelectorTest {
   @Test
   public void passes_applicable_format_variants_to_request_selector() throws Exception {
     when(request.selectVariant(anyList())).thenReturn(new Variant(null, "en", null));
-    subject.selectFormat(request, Action.QUERY);
+    subject.negotiate(request, Action.QUERY);
     verify(request).selectVariant(anyList());
   }
 
@@ -57,7 +57,7 @@ public class FormatSelectorTest {
   public void selects_the_applicable_format() throws Exception {
     final Variant valid = converter.asVariant(ALWAYS_APPLICABLE.asMediaType());
     when(request.selectVariant((List<Variant>) argThat(hasItem(valid)))).thenReturn(valid);
-    final SerializationFormat selected = subject.selectFormat(request, Action.QUERY);
+    final SerializationFormat selected = subject.negotiate(request, Action.QUERY);
     assertThat(selected, is(ALWAYS_APPLICABLE));
   }
 
@@ -65,13 +65,13 @@ public class FormatSelectorTest {
   public void fails_if_no_format_applicable() throws Exception {
     formats = singleton(NEVER_APPLICABLE);
     subject = new FormatSelector(formats, converter);
-    subject.selectFormat(request, Action.QUERY);
+    subject.negotiate(request, Action.QUERY);
   }
 
   @SuppressWarnings("unchecked")
   @Test(expected = WebApplicationException.class)
   public void fails_if_request_selector_returns_null() throws Exception {
     when(request.selectVariant(anyList())).thenReturn(null);
-    subject.selectFormat(request, Action.QUERY);
+    subject.negotiate(request, Action.QUERY);
   }
 }

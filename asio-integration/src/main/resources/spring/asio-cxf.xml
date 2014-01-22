@@ -17,11 +17,9 @@ http://cxf.apache.org/schemas/jaxrs.xsd">
   <import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
 
   <!-- asio http endpoint -->
-  <jaxrs:server id="asio-sql" address="/v1/sql">
+  <jaxrs:server id="asio-sql" address="/asio">
     <jaxrs:serviceBeans>
-      <ref bean="asio_query" />
-      <ref bean="asio_schema" />
-      <ref bean="asio_update" />
+      <ref bean="asio_entry" />
     </jaxrs:serviceBeans>
     <jaxrs:providers>
       <ref bean="asio_log_filter" />
@@ -31,19 +29,4 @@ http://cxf.apache.org/schemas/jaxrs.xsd">
       <cxf:logging />
     </jaxrs:features>
   </jaxrs:server>
-  
-    <!-- asio http endpoint -->
-  <jaxrs:server id="asio-sparql" address="/v1/sparql">
-    <jaxrs:serviceBeans>
-      <ref bean="sparql_query" />
-    </jaxrs:serviceBeans>
-    <jaxrs:providers>
-      <ref bean="asio_log_filter" />
-      <ref bean="asio_error_mapper" />
-    </jaxrs:providers>
-    <jaxrs:features>
-      <cxf:logging />
-    </jaxrs:features>
-  </jaxrs:server>
-
 </beans>

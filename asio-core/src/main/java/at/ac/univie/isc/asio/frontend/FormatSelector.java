@@ -34,7 +34,7 @@ import com.google.common.collect.Iterables;
  * 
  * @author Chris Borckholder
  */
-public class FormatSelector {
+public class FormatSelector implements ContentNegotiator {
 
   /* slf4j-logger */
   private final static Logger log = LoggerFactory.getLogger(FormatSelector.class);
@@ -48,35 +48,6 @@ public class FormatSelector {
     super();
     this.converter = converter;
     mappingsByAction = initializeMappings(supported);
-  }
-
-  /**
-   * Attempt to match an accepted {@link Variant} from the given request to a
-   * {@link SerializationFormat format} supported for the given action.
-   * 
-   * @param request holding acceptable variants
-   * @param action of operation
-   * @return selected variant
-   * @throws WebApplicationException with status 406 (Not Acceptable) if no variant matches or
-   *         status 405 (Method Not Allowed) if the given action is not supported
-   */
-  public SerializationFormat selectFormat(final Request request, final Action action) {
-    final Map<Variant, SerializationFormat> mapping = mappingsByAction.get(action);
-    if (mapping.isEmpty()) {
-      // TODO throw custom DatasetUsageException
-      throw new WebApplicationException(Response.status(METHOD_NOT_ALLOWED)
-          .allow(Collections.<String>emptySet())
-          .entity(format(ENGLISH, UNSUPPORTED_MESSAGE, action)).build());
-    }
-    final List<Variant> candidates = ImmutableList.copyOf(mapping.keySet());
-    final Variant selected = request.selectVariant(candidates);
-    if (selected == null) {
-      log.debug("!! no acceptable variant in {}", candidates); // XXX remove when handled in
-                                                               // exception
-      // TODO throw custom DatsetUsageException
-      throw new WebApplicationException(Response.notAcceptable(candidates).build());
-    }
-    return mapping.get(selected);
   }
 
   /**
@@ -118,5 +89,25 @@ public class FormatSelector {
         return input.applicableOn(by);
       }
     });
+  }
+
+  @Override
+  public SerializationFormat negotiate(final Request request, final Action action) {
+    final Map<Variant, SerializationFormat> mapping = mappingsByAction.get(action);
+    if (mapping.isEmpty()) {
+      // TODO throw custom DatasetUsageException
+      throw new WebApplicationException(Response.status(METHOD_NOT_ALLOWED)
+          .allow(Collections.<String>emptySet())
+          .entity(format(ENGLISH, UNSUPPORTED_MESSAGE, action)).build());
+    }
+    final List<Variant> candidates = ImmutableList.copyOf(mapping.keySet());
+    final Variant selected = request.selectVariant(candidates);
+    if (selected == null) {
+      log.debug("!! no acceptable variant in {}", candidates); // XXX remove when handled in
+                                                               // exception
+      // TODO throw custom DatsetUsageException
+      throw new WebApplicationException(Response.notAcceptable(candidates).build());
+    }
+    return mapping.get(selected);
   }
 }

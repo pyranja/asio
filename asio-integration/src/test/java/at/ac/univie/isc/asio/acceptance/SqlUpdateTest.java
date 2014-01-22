@@ -1,6 +1,5 @@
 package at.ac.univie.isc.asio.acceptance;
 
-import static javax.ws.rs.core.MediaType.APPLICATION_XML_TYPE;
 import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static javax.ws.rs.core.Response.Status.Family.familyOf;
@@ -19,45 +18,36 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXB;
 
-import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.jaxrs.ext.form.Form;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import at.ac.univie.isc.asio.FunctionalTest;
-import at.ac.univie.isc.asio.JaxrsClientProvider;
 import at.ac.univie.isc.asio.sql.H2Provider;
 import at.ac.univie.isc.asio.sql.KeyedRow;
+import at.ac.univie.isc.asio.tool.FunctionalTest;
 import at.ac.univie.isc.asio.transfer.UpdateResult;
 
 import com.google.common.collect.ImmutableMap;
 
 @Category(FunctionalTest.class)
-public class SqlUpdateTest {
+public class SqlUpdateTest extends AcceptanceHarness {
 
-  private static final URI SERVER_URL = URI.create("http://localhost:8080/v1/sql/update");
-
-  // asio
-  private static final String PARAM_UPDATE = "update";
   private static final String APPLICATION_SQL_UPDATE = "application/sql-update";
 
   // sql
   private static final String MOD_TABLE = "PATIENT";
   private static final String INSERT = "INSERT INTO " + MOD_TABLE + " VALUES(42, 'test-name')";
 
-  private WebClient client;
-  private Response response;
-
-  @Rule
-  public JaxrsClientProvider provider = new JaxrsClientProvider(SERVER_URL);
+  @Override
+  protected URI getTargetUrl() {
+    return AcceptanceHarness.SERVER_ADDRESS.resolve("sql");
+  }
 
   @Before
   public void setUp() throws SQLException {
     clear();
-    client = provider.getClient();
   }
 
   @After
@@ -69,14 +59,14 @@ public class SqlUpdateTest {
   public void insert_as_form_param() throws Exception {
     final Form values = new Form();
     values.set(PARAM_UPDATE, INSERT);
-    response = client.accept(APPLICATION_XML_TYPE).form(values);
+    response = client.accept(XML).form(values);
     verify(response);
     wasInserted();
   }
 
   @Test
   public void insert_as_payload() throws Exception {
-    response = client.accept(APPLICATION_XML_TYPE).type(APPLICATION_SQL_UPDATE).post(INSERT);
+    response = client.accept(XML).type(APPLICATION_SQL_UPDATE).post(INSERT);
     verify(response);
     wasInserted();
   }
@@ -85,7 +75,7 @@ public class SqlUpdateTest {
   public void bad_query_parameter() throws Exception {
     final Form values = new Form();
     values.set(PARAM_UPDATE, "");
-    response = client.accept(APPLICATION_XML_TYPE).post(values);
+    response = client.accept(XML).post(values);
     assertEquals(CLIENT_ERROR, familyOf(response.getStatus()));
   }
 
@@ -99,7 +89,7 @@ public class SqlUpdateTest {
 
   private void verify(final Response response2) {
     assertEquals(SUCCESSFUL, familyOf(response.getStatus()));
-    assertTrue(APPLICATION_XML_TYPE.isCompatible(response.getMediaType()));
+    assertTrue(XML.isCompatible(response.getMediaType()));
     final UpdateResult result =
         JAXB.unmarshal((InputStream) response.getEntity(), UpdateResult.class);
     assertEquals(INSERT, result.getCommand());
@@ -115,7 +105,7 @@ public class SqlUpdateTest {
   }
 
   // clear the update test integration table
-  private void clear() throws SQLException {
+  void clear() throws SQLException {
     try (Connection conn = H2Provider.connect()) {
       final Statement stmt = conn.createStatement();
       stmt.execute("DELETE FROM " + MOD_TABLE);

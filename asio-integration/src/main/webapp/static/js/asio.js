@@ -16,20 +16,21 @@ var asio = (function() {
 
   //relative path from site location to asio sql endpoint
   // change this to adapt to deployment location
-  var ENDPOINT_PATH = "/v1/sql";
+  var ENDPOINT_PATH = "/asio/sql";
   //service suffixes
   var SERVICE_SCHEMA = "/schema";
-  var SERVICE_QUERY = "/query";
+  var SERVICE_QUERY = "/";
   
 //==============================================================>
 //UTILS
   
   // guess sql endpoint url from current location
-  // -> strip file name and/or trailing slash from url
+  // -> strip /static path from URL
+  // -> strip file name and/or trailing slash from URL
   // -> append endpoint suffix
   function endpoint() {
-   var base = $(location).attr('href').replace(/([^\/]*).html$/, '').replace(
-       /\/$/, '');
+   var base = $(location).attr('href').replace(/\/static/, '').replace(/([^\/]*).html$/, '')
+     .replace(/\/$/, '');
    return base + ENDPOINT_PATH;
   };
   

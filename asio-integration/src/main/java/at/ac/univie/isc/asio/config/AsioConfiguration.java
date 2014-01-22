@@ -14,18 +14,21 @@ import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.PropertySource;
 
 import at.ac.univie.isc.asio.DatasetEngine;
+import at.ac.univie.isc.asio.common.IdGenerator;
 import at.ac.univie.isc.asio.common.RandomIdGenerator;
-import at.ac.univie.isc.asio.coordination.EngineSpec.Type;
 import at.ac.univie.isc.asio.frontend.AsyncProcessor;
 import at.ac.univie.isc.asio.frontend.DatasetExceptionMapper;
-import at.ac.univie.isc.asio.frontend.EngineSelector;
 import at.ac.univie.isc.asio.frontend.LogContextFilter;
 import at.ac.univie.isc.asio.frontend.OperationFactory;
-import at.ac.univie.isc.asio.frontend.QueryEndpoint;
-import at.ac.univie.isc.asio.frontend.SchemaEndpoint;
-import at.ac.univie.isc.asio.frontend.UpdateEndpoint;
 import at.ac.univie.isc.asio.frontend.VariantConverter;
+import at.ac.univie.isc.asio.protocol.EndpointSupplier;
+import at.ac.univie.isc.asio.protocol.EntryPoint;
+import at.ac.univie.isc.asio.protocol.OperationParser;
+import at.ac.univie.isc.asio.protocol.PrototypeEngineProvider;
+import at.ac.univie.isc.asio.transport.JdkPipeTransferFactory;
+import at.ac.univie.isc.asio.transport.Transfer;
 
+import com.google.common.base.Supplier;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
@@ -49,24 +52,9 @@ public class AsioConfiguration {
 
   // JAX-RS service endpoints
 
-  @Bean(name = "asio_query")
-  public QueryEndpoint queryService() {
-    return new QueryEndpoint(registry(), processor(), operationFactory(), Type.SQL);
-  }
-
-  @Bean(name = "asio_schema")
-  public SchemaEndpoint schemaService() {
-    return new SchemaEndpoint(registry(), processor(), operationFactory(), Type.SQL);
-  }
-
-  @Bean(name = "asio_update")
-  public UpdateEndpoint updateService() {
-    return new UpdateEndpoint(registry(), processor(), operationFactory(), Type.SQL);
-  }
-
-  @Bean(name = "sparql_query")
-  public QueryEndpoint sparqlQuery() {
-    return new QueryEndpoint(registry(), processor(), operationFactory(), Type.SPARQL);
+  @Bean(name = "asio_entry")
+  public EntryPoint entryPoint() {
+    return new EntryPoint(endpointSupplier());
   }
 
   // JAX-RS provider
@@ -84,20 +72,16 @@ public class AsioConfiguration {
   // asio frontend components
 
   @Bean
-  public OperationFactory operationFactory() {
-    return new OperationFactory(RandomIdGenerator.withPrefix("asio"));
+  public EndpointSupplier endpointSupplier() {
+    log.info("[BOOT] using engines {}", engines);
+    return new PrototypeEngineProvider(engines, parser(), processor(), transferFactory());
   }
 
-  // @Bean
-  // public EngineAdapter engineAdapter() {
-  // final FormatSelector selector = new FormatSelector(engines.supports(), converter());
-  // return new EngineAdapter(engines, selector);
-  // }
-
   @Bean
-  public EngineSelector registry() {
-    log.info("[BOOT] using engines {}", engines);
-    return new EngineSelector(engines);
+  public OperationParser parser() {
+    final IdGenerator ids = RandomIdGenerator.withPrefix("asio");
+    final OperationFactory factory = new OperationFactory(ids);
+    return new OperationParser(factory);
   }
 
   @Bean
@@ -115,5 +99,10 @@ public class AsioConfiguration {
   @Bean
   public VariantConverter converter() {
     return new VariantConverter();
+  }
+
+  @Bean
+  public Supplier<Transfer> transferFactory() {
+    return new JdkPipeTransferFactory();
   }
 }
