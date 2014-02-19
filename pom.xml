@@ -12,7 +12,6 @@
 	<modules>
 		<module>asio-core</module>
 		<module>asio-integration</module>
-		<module>asio-jena-demo</module>
 	</modules>
 
 	<properties>
