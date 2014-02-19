@@ -31,6 +31,32 @@ public class OperationFactory {
   }
 
   /**
+   * Create a dataset operation builder for the given action. Ignore the given command if it is not
+   * required.
+   * 
+   * @param action of operation
+   * @param command of operation
+   * @return initialized OperationBuilder
+   */
+  public OperationBuilder fromAction(final Action action, final String command) {
+    OperationBuilder op = null;
+    switch (action) {
+      case QUERY:
+        op = query(command);
+        break;
+      case UPDATE:
+        op = update(command);
+        break;
+      case SCHEMA:
+        op = schema();
+        break;
+      default:
+        throw new AssertionError("unexpected action " + action);
+    }
+    return op;
+  }
+
+  /**
    * Create a QUERY dataset operation builder
    * 
    * @param query to be executed
@@ -84,6 +110,13 @@ public class OperationFactory {
      */
     public Action getAction() {
       return action;
+    }
+
+    /**
+     * @return the set command of this partial operation. Maybe null.
+     */
+    public String getCommand() {
+      return command;
     }
 
     /**

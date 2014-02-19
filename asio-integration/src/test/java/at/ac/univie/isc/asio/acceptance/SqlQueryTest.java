@@ -1,6 +1,5 @@
 package at.ac.univie.isc.asio.acceptance;
 
-import static javax.ws.rs.core.MediaType.APPLICATION_XML_TYPE;
 import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static javax.ws.rs.core.Response.Status.Family.familyOf;
@@ -14,65 +13,46 @@ import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.jaxrs.ext.form.Form;
-import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import at.ac.univie.isc.asio.FunctionalTest;
-import at.ac.univie.isc.asio.JaxrsClientProvider;
 import at.ac.univie.isc.asio.converter.CsvToMap;
 import at.ac.univie.isc.asio.converter.ResultSetToMap;
 import at.ac.univie.isc.asio.sql.KeyedRow;
+import at.ac.univie.isc.asio.tool.FunctionalTest;
 
-import com.google.common.base.Charsets;
 
 @Category(FunctionalTest.class)
-public class SqlQueryTest {
+public class SqlQueryTest extends AcceptanceHarness {
 
-  private static final URI SERVER_URL = URI.create("http://localhost:8080/v1/sql/query");
-
-  private static final String PARAM_QUERY = "query";
   private static final String COUNT_QUERY = "SELECT COUNT(*) FROM person";
   private static final String SCAN_QUERY = "SELECT * FROM person";
   private static final String SCAN_PK_LABEL = "ID";
 
-  private static final MediaType CSV = MediaType.valueOf("text/csv").withCharset(
-      Charsets.UTF_8.name());
-  private static final MediaType XML = MediaType.APPLICATION_XML_TYPE.withCharset(Charsets.UTF_8
-      .name());
-
   private static ReferenceQuery EXPECTED;
 
-  private WebClient client;
-  private Response response;
-
-  @Rule
-  public JaxrsClientProvider provider = new JaxrsClientProvider(SERVER_URL);
+  @Override
+  protected URI getTargetUrl() {
+    return AcceptanceHarness.SERVER_ADDRESS.resolve("sql");
+  }
 
   @BeforeClass
   public static void fetchReferenceData() {
     EXPECTED = ReferenceQuery.forQuery(SCAN_QUERY, SCAN_PK_LABEL);
   }
 
-  @Before
-  public void setUp() {
-    client = provider.getClient();
-  }
-
   @Test
   public void valid_query_as_uri_param() throws Exception {
-    client.accept(APPLICATION_XML_TYPE).query(PARAM_QUERY, COUNT_QUERY);
+    client.accept(XML).query(PARAM_QUERY, COUNT_QUERY);
     response = client.get();
     verify(response);
   }
 
   @Test
   public void valid_query_as_form_param() throws Exception {
-    client.accept(APPLICATION_XML_TYPE);
+    client.accept(XML);
     final Form values = new Form();
     values.set(PARAM_QUERY, COUNT_QUERY);
     response = client.form(values);
@@ -81,7 +61,7 @@ public class SqlQueryTest {
 
   @Test
   public void valid_query_as_payload() throws Exception {
-    client.accept(APPLICATION_XML_TYPE).type("application/sql-query");
+    client.accept(XML).type("application/sql-query");
     response = client.post(COUNT_QUERY);
     verify(response);
   }
@@ -112,7 +92,7 @@ public class SqlQueryTest {
 
   @Test
   public void bad_query_parameter() throws Exception {
-    client.accept(APPLICATION_XML_TYPE).query(PARAM_QUERY, "");
+    client.accept(XML).query(PARAM_QUERY, "");
     response = client.get();
     assertEquals(CLIENT_ERROR, familyOf(response.getStatus()));
   }
@@ -126,6 +106,6 @@ public class SqlQueryTest {
 
   private void verify(final Response response) {
     assertEquals(SUCCESSFUL, familyOf(response.getStatus()));
-    assertTrue(APPLICATION_XML_TYPE.isCompatible(response.getMediaType()));
+    assertTrue(XML.isCompatible(response.getMediaType()));
   }
 }

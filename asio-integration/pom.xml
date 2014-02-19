@@ -44,24 +44,17 @@
 			<type>pom</type>
 		</dependency>
 		<!-- local d2r jars -->
-    <dependency>
-      <groupId>de.fuberlin.wiwiss</groupId>
-      <artifactId>d2rq</artifactId>
-      <version>0.8.1</version>
-    </dependency>
-    <!-- mysql -->
-    <dependency>
-      <groupId>mysql</groupId>
-      <artifactId>mysql-connector-java</artifactId>
-      <version>5.1.26</version>
-      <scope>runtime</scope>
-    </dependency>
-		<!-- converter for functional tests -->
 		<dependency>
-			<groupId>net.sf.opencsv</groupId>
-			<artifactId>opencsv</artifactId>
-			<version>2.0</version>
-			<scope>test</scope>
+			<groupId>de.fuberlin.wiwiss</groupId>
+			<artifactId>d2rq</artifactId>
+			<version>0.8.1</version>
+		</dependency>
+		<!-- mysql -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.26</version>
+			<scope>runtime</scope>
 		</dependency>
 		<!-- H2 jdbc driver -->
 		<dependency>
@@ -97,6 +90,12 @@
 			<artifactId>spring-web</artifactId>
 			<version>${version.spring}</version>
 		</dependency>
+		<!-- memory leak prevention -->
+		<dependency>
+			<groupId>se.jiderhamn</groupId>
+			<artifactId>classloader-leak-prevention</artifactId>
+			<version>1.9.1</version>
+		</dependency>
 		<!-- provided servlet api -->
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
@@ -116,6 +115,21 @@
 			<artifactId>log4j</artifactId>
 			<version>1.2.17</version>
 		</dependency>
+		<!-- converter for functional tests -->
+		<dependency>
+			<groupId>net.sf.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+			<version>2.0</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- test tools from core -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>asio-core</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -130,7 +144,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
-					<excludedGroups>at.ac.univie.isc.asio.FunctionalTest</excludedGroups>
+					<excludedGroups>at.ac.univie.isc.asio.tool.FunctionalTest</excludedGroups>
 				</configuration>
 			</plugin>
 			<!-- integration test configuration -->
@@ -143,7 +157,7 @@
 					<includes>
 						<include>**/*.java</include>
 					</includes>
-					<groups>at.ac.univie.isc.asio.FunctionalTest</groups>
+					<groups>at.ac.univie.isc.asio.tool.FunctionalTest</groups>
 				</configuration>
 				<executions>
 					<execution>
@@ -158,7 +172,7 @@
 			<plugin>
 				<groupId>com.btmatthews.maven.plugins.inmemdb</groupId>
 				<artifactId>inmemdb-maven-plugin</artifactId>
-				<version>1.2.0</version>
+				<version>1.3.0</version>
 				<configuration>
 					<monitorKey>inmemdb</monitorKey>
 					<monitorPort>11527</monitorPort>
@@ -171,9 +185,12 @@
 						<script>
 							<sourceFile>${basedir}/src/test/resources/database/create_db.sql</sourceFile>
 						</script>
-						<dataSet>
+						<script>
 							<sourceFile>${basedir}/src/test/resources/database/fill_person.sql</sourceFile>
-						</dataSet>
+						</script>
+						<script>
+							<sourceFile>${basedir}/src/test/resources/database/fill_datetimes.sql</sourceFile>
+						</script>
 					</sources>
 				</configuration>
 				<executions>

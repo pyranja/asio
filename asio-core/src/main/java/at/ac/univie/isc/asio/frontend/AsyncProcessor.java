@@ -1,9 +1,12 @@
 package at.ac.univie.isc.asio.frontend;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Nonnull;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -30,6 +33,9 @@ public class AsyncProcessor {
   /* slf4j-logger */
   final static Logger log = LoggerFactory.getLogger(AsyncProcessor.class);
 
+  // XXX make configurable
+  private static final long DEFAULT_TIMEOUT = TimeUnit.NANOSECONDS.convert(20, TimeUnit.SECONDS);
+
   private final ExecutorService exec;
   private final VariantConverter converter;
 
@@ -53,7 +59,8 @@ public class AsyncProcessor {
      * captured here to allow the thread which executes the callback to continue using it. A
      * response filter will clear it from the resumed response.
      */
-    final Map<?, ?> logContext = MDC.getCopyOfContextMap();
+    response.setTimeout(DEFAULT_TIMEOUT, TimeUnit.NANOSECONDS);
+    final Map<?, ?> logContext = fetchMDC();
     final FutureCallback<Result> callback = new FutureCallback<Result>() {
       @Override
       public void onSuccess(final Result result) {
@@ -78,13 +85,35 @@ public class AsyncProcessor {
     Futures.addCallback(future, callback, exec);
   }
 
-  /* Create 200 OK Response with result's data as entity */
+  /**
+   * @return the MDC of the current thread or an empty map. Never null.
+   */
+  @Nonnull
+  private Map<?, ?> fetchMDC() {
+    Map<?, ?> maybeContext = MDC.getCopyOfContextMap();
+    if (maybeContext == null) {
+      maybeContext = Collections.emptyMap();
+    }
+    final Map<?, ?> logContext = maybeContext;
+    return logContext;
+  }
+
+  /**
+   * @param result query results as stream
+   * @return HTTPResponse with Status 200, appropriate content-type and result stream as body
+   * @throws IOException if the result stream is corrupt
+   */
+  @Nonnull
   private Response successResponse(final Result result) throws IOException {
     final MediaType contentType = converter.asContentType(result.mediaType());
     return Response.ok(result.getInput(), contentType).build();
   }
 
-  /* wrap t as DatasetException if necessary */
+  /**
+   * @param t any throwable
+   * @return DatasetException wrapping t or t itself if it is a DatasetException.
+   */
+  @Nonnull
   private DatasetException wrapFailure(final Throwable t) {
     if (t instanceof DatasetException) {
       return (DatasetException) t;

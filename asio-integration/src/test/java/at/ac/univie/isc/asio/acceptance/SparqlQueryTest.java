@@ -12,38 +12,21 @@ import java.net.URI;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.jaxrs.ext.form.Form;
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import at.ac.univie.isc.asio.FunctionalTest;
-import at.ac.univie.isc.asio.JaxrsClientProvider;
+import at.ac.univie.isc.asio.tool.FunctionalTest;
 
-import com.google.common.base.Charsets;
 
 @Category(FunctionalTest.class)
-public class SparqlQueryTest {
+public class SparqlQueryTest extends AcceptanceHarness {
 
-  private static final URI SERVER_URL = URI.create("http://localhost:8080/v1/sparql/query");
-
-  private static final String PARAM_QUERY = "query";
   private static final String TEST_QUERY = "SELECT DISTINCT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 10";
 
-  private static final MediaType CSV = MediaType.valueOf("text/csv").withCharset(
-      Charsets.UTF_8.name());
-
-  private WebClient client;
-  private Response response;
-
-  @Rule
-  public JaxrsClientProvider provider = new JaxrsClientProvider(SERVER_URL);
-
-  @Before
-  public void setUp() {
-    client = provider.getClient();
+  @Override
+  protected URI getTargetUrl() {
+    return AcceptanceHarness.SERVER_ADDRESS.resolve("sparql");
   }
 
   @Test
