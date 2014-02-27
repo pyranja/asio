@@ -1,13 +1,9 @@
 package at.ac.univie.isc.asio.jena;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.channels.Channels;
-import java.nio.channels.WritableByteChannel;
 import java.util.Locale;
 import java.util.Set;
-import java.util.concurrent.Callable;
 
+import org.openjena.riot.Lang;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,20 +11,24 @@ import at.ac.univie.isc.asio.DatasetEngine;
 import at.ac.univie.isc.asio.DatasetFailureException;
 import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
+import at.ac.univie.isc.asio.DatasetUsageException;
 import at.ac.univie.isc.asio.coordination.EngineSpec;
 import at.ac.univie.isc.asio.coordination.Operator;
 import at.ac.univie.isc.asio.coordination.OperatorCallback;
-import at.ac.univie.isc.asio.coordination.OperatorCallback.Phase;
 import at.ac.univie.isc.asio.transport.Transfer;
 
-import com.google.common.io.OutputSupplier;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.query.QueryExecution;
+import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.QueryFactory;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.sparql.resultset.CSVOutput;
+import com.hp.hpl.jena.sparql.resultset.OutputFormatter;
+import com.hp.hpl.jena.sparql.resultset.XMLOutput;
 
 /**
  * Execute SPARQL queries through jena's ARQ.
@@ -82,23 +82,50 @@ public class JenaEngine implements DatasetEngine, Operator {
     final Query query = QueryFactory.create(attachPrefixes(operation.commandOrFail()));
     log.trace("-- parsed ARQ query :\n{}", query);
     // parameterize and invoke the query worker
-    final Callable<Void> task =
-        new QueryTask(wrapAsSupplier(exchange.sink(), callback), format, query, model);
+    final QueryModeHandler<?> handler = forQuery(query, format);
+    final SparqlRunner<?> task = SparqlRunner.create(exchange, callback, handler);
+    // prepare execution
+    final QueryExecution invocation = QueryExecutionFactory.create(query, model);
     log.debug(">> invoking ARQ query");
-    final ListenableFuture<Void> future = exec.submit(task);
+    final ListenableFuture<Void> future = exec.submit(task.use(invocation));
     Futures.addCallback(future, callbackFor(operation, callback));
     log.debug("<< ARQ query invoked");
   }
 
-  private OutputSupplier<OutputStream> wrapAsSupplier(final WritableByteChannel channel,
-      final OperatorCallback callback) {
-    return new OutputSupplier<OutputStream>() {
-      @Override
-      public OutputStream getOutput() throws IOException {
-        callback.completed(Phase.EXECUTION);
-        return Channels.newOutputStream(channel);
-      }
-    };
+  private QueryModeHandler<?> forQuery(final Query query, final JenaFormats format) {
+    switch (query.getQueryType()) {
+      case Query.QueryTypeSelect:
+        return new SelectHandler(formatterFor(format));
+      case Query.QueryTypeAsk:
+        return new AskHandler(formatterFor(format));
+      case Query.QueryTypeConstruct:
+        return new ConstructHandler(languageFor(format));
+      case Query.QueryTypeDescribe:
+        return new DescribeHandler(languageFor(format));
+      default:
+        throw new AssertionError("unsupported query type");
+    }
+  }
+
+  private Lang languageFor(final JenaFormats format) {
+    switch (format) {
+      case XML:
+        return Lang.RDFXML;
+      default:
+        throw new DatasetUsageException(format + " not supported for this query");
+    }
+  }
+
+  private OutputFormatter formatterFor(final JenaFormats format) {
+    switch (format) {
+      case SPARQL_XML:
+      case XML:
+        return new XMLOutput();
+      case CSV:
+        return new CSVOutput();
+      default:
+        throw new DatasetUsageException(format + " not supported for this query");
+    }
   }
 
   private String attachPrefixes(final String query) {
@@ -110,7 +137,7 @@ public class JenaEngine implements DatasetEngine, Operator {
     return new FutureCallback<Void>() {
       @Override
       public void onSuccess(final Void result) {
-        handler.completed(Phase.SERIALIZATION);
+        // *no-op*
       }
 
       @Override
