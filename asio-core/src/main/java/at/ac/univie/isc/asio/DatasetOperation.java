@@ -1,6 +1,10 @@
 package at.ac.univie.isc.asio;
 
+import java.security.Principal;
+
 import javax.annotation.Nullable;
+
+import at.ac.univie.isc.asio.security.Anonymous;
 
 import com.google.common.base.Optional;
 import com.google.common.net.MediaType;
@@ -57,6 +61,7 @@ public class DatasetOperation {
   private final Action action;
   private final Optional<String> command;
   private final SerializationFormat format;
+  private final Principal owner;
 
   public DatasetOperation(final String id, final Action action, @Nullable final String command,
       final SerializationFormat format) {
@@ -65,6 +70,20 @@ public class DatasetOperation {
     this.action = action;
     this.command = Optional.fromNullable(command);
     this.format = format;
+    owner = Anonymous.INSTANCE;
+  }
+
+  private DatasetOperation(final DatasetOperation prototype, final Principal owner) {
+    super();
+    id = prototype.id;
+    action = prototype.action;
+    command = Optional.fromNullable(prototype.command.orNull());
+    format = prototype.format;
+    this.owner = owner;
+  }
+
+  public DatasetOperation withOwner(final Principal owner) {
+    return new DatasetOperation(this, owner);
   }
 
   /**
@@ -114,6 +133,15 @@ public class DatasetOperation {
    */
   public SerializationFormat format() {
     return format;
+  }
+
+  /**
+   * The subject, that requested this operation.
+   * 
+   * @return
+   */
+  public Principal owner() {
+    return owner;
   }
 
   @Override

@@ -1,5 +1,7 @@
 package at.ac.univie.isc.asio.protocol;
 
+import java.security.Principal;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -34,7 +36,9 @@ import at.ac.univie.isc.asio.coordination.OperationAcceptor;
 import at.ac.univie.isc.asio.frontend.AsyncProcessor;
 import at.ac.univie.isc.asio.frontend.ContentNegotiator;
 import at.ac.univie.isc.asio.frontend.OperationFactory.OperationBuilder;
+import at.ac.univie.isc.asio.security.Anonymous;
 
+import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ListenableFuture;
 
 @Path("")
@@ -56,6 +60,9 @@ public class Endpoint {
   private Request request;
   @Context
   private HttpHeaders headers;
+  // sec
+  private Principal owner = Anonymous.INSTANCE;
+  private Set<Action> permissions = Collections.emptySet();
 
   public Endpoint(final OperationParser parser, final ContentNegotiator negotiator,
       final OperationAcceptor acceptor, final AsyncProcessor processor) {
@@ -69,6 +76,12 @@ public class Endpoint {
   Endpoint inject(final Request request, final HttpHeaders headers) {
     this.request = request;
     this.headers = headers;
+    return this;
+  }
+
+  Endpoint authorize(final Principal owner, final Set<Action> permissions) {
+    this.owner = owner;
+    this.permissions = permissions;
     return this;
   }
 
@@ -135,9 +148,10 @@ public class Endpoint {
   private void process(final AsyncResponse response,
       final MultivaluedMap<String, String> parameters, final Set<Action> allowed) {
     log.debug("processing request with parameters {} expecting one of {}", parameters, allowed);
-    final OperationBuilder op = parse.operationFromParameters(parameters, allowed);
+    final Set<Action> authorized = Sets.intersection(allowed, permissions);
+    final OperationBuilder op = parse.operationFromParameters(parameters, authorized);
     final SerializationFormat format = content.negotiate(request, op.getAction());
-    final DatasetOperation operation = op.renderAs(format);
+    final DatasetOperation operation = op.renderAs(format).withOwner(owner);
     final ListenableFuture<Result> result = backend.accept(operation);
     next.handle(result, response);
   }
