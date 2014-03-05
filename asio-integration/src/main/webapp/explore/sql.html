@@ -2,16 +2,17 @@
 <html lang="en">
 
 <head>
-	<title>asio sql viewer example</title>
+	<title>VPH-Share SQL Dataset Browser</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
 	<script src="js/ICanHaz.min.js"></script>
 	<script src="js/asio.js"></script>
 	<script src="js/browser.app.js"></script>
-	<!-- mustache templates -->
+	<link rel="stylesheet" type="text/css" href="./sql-style.css">
+	
 	<script id="template_result" type="text/html">
-    <table border=1>
+    <table id="zebra-table" summary="Query Results">	
       <thead>
         <tr>
           {{#columns}}
@@ -31,28 +32,130 @@
     <table>
   </script>
   <script id="template_explorer" type="text/html">
-    <ul>
+	<img src="img/db.png" alt="Database" height="15" width="15">  &nbsp; {{datasourceName}} :
+	
+    <ul id="dblist">
       {{#tables}}
-      <li onclick="onSelectTable(event, '{{.}}')">{{.}}</li>
+      <li onclick="onSelectTable(event, '{{name}}', $('#limitselect').val())" xasiotablename={{name}}><img src="img/table.png" alt="Table" height="15" width="15"> &nbsp; <span>{{name}}</span>
+	  {{#columns}}
+	  <ul>
+		<li onclick="onSelectField(event, '{{.}}', $('#limitselect').val())"><img src="img/column.png" alt="Table" height="15" width="15"> &nbsp; {{.}}</li>
+	  </ul>
+	  {{/columns}}
+	  </li>
       {{/tables}}
     </ul>
   </script>
 </head>
 
+<!-- ************************************************* -->
+
 <body>
-  <div id="sql-explorer">
-    <p>No tables</p>
-  </div>
-  <div id="sql-commander">
-    <form id="sql-command-form" action="/sql/query" method="post" target="_blank">
-      <textarea id="sql-command" rows="2" cols="80" placeholder="SQL query..."></textarea>
-      <input type="submit" value="Execute" />
-      <input type="reset" value="Clear" />
-    </form>
-  </div>
-	<div id="sql-result">
-	  <p>No data</p>
+
+<div id="page-title-wrapper" class="dev-page-title-wrapper">
+
+    <a href="https://portal.vph-share.eu/">
+        <div id="logo-left"></div>
+    </a>
+    <div id="page-title">
+        <span id="page-title-links"></span>
+    </div>
+
+</div>
+
+
+	<div id="wrapper" class="box clearfix">
+	  <div id="datasource"> 
+		<fieldset>
+			<legend>Dataset source</legend>
+			<div class="block" id="sql-explorer">
+				
+			</div>
+		  </fieldset>
+		</div>
+			
+		<div id="metadata">
+			<fieldset>
+			<legend>Metadata</legend>
+			<div>
+			 Metadata?
+			</div>
+			</fieldset>
+		</div>
 	</div>
+	
+	<div id="wrapper" class="box clearfix">
+		<div id="query">
+			<fieldset>
+				<legend>SQL Query</legend>
+				<div class="block">
+					<form id="sql-command-form" action="/sql/query" method="post" target="_blank">	
+					<textarea id="sql-command" rows="2" cols="50" placeholder="SQL query..."></textarea>
+					<br class="clearfix" />
+					
+						Select number of results: 
+						<select id="limitselect" onchange="onSelectLimit()">
+						  <option value="1">1</option>
+						  <option value="5">5</option>
+						  <option value="10">10</option>
+						  <option value="20" selected="selected">20</option>
+						  <option value="50">50</option>
+						  <option value="100">100</option>
+						  <option value="200">200</option>
+						  <option value="500">500</option>
+						  <option value="1000">1000</option>
+						</select> 
+						<br />
+					<input type="submit" value="Execute" class="borderBoxSizing" />
+					<input type="reset" value="Clear" />
+					</form>
+				</div>
+			
+			</fieldset>
+		</div>
+		
+		<div id="download">
+			<fieldset>
+				<legend>Download Table</legend>
+				<form id="sql-download-form" action="/gaga" method="get" target="_blank">	
+				
+					<select id="downloadselect" name="x-asio-accept">
+					  <option value="application/xml" selected="selected">XML</option>
+					  <option value="text/csv">CSV</option>
+					</select> 
+					
+					<input type="hidden" name="query" value="" id="sql-download-command">
+					<input type="submit" value="Download" class="borderBoxSizing" onclick="downloadTable();"/>
+				</form>
+			</fieldset>
+		</div>
+	</div>
+
+	<div id="wrapper" class="box clearfix">
+		<div id="results">
+			<fieldset>
+				<legend>Results</legend>
+				<div id="sql-result">
+					No results
+				</div>
+			</fieldset>
+		</div>
+	</div>
+	
+	<footer>
+	<p class="muted">
+		<a href="https://portal.vph-share.eu/">Terms of use</a>
+		<span class="divider">|</span>
+		<a href="https://portal.vph-share.eu/privacy-policy">Privacy policy</a>
+		<span class="divider">|</span>
+		<a href="https://portal.vph-share.eu/privacy-policy#cookies">Cookie policy</a>
+		<span class="divider">|</span>
+		<a href="https://portal.vph-share.eu/">Security</a>
+		<span class="divider">|</span>
+		<span>&copy;Copyright 2014 VPH-Share All rights reserved</span>
+	</p>
+	</footer>
+	
 </body>
 
 </html>
