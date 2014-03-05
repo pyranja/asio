@@ -36,11 +36,12 @@ public class SchemaTest extends AcceptanceHarness {
 
   @Override
   protected URI getTargetUrl() {
-    return AcceptanceHarness.SERVER_ADDRESS.resolve("sql/schema");
+    return AcceptanceHarness.READ_ACCESS.resolve("sql/schema");
   }
 
   @Test
   public void delivers_schema_as_xml() throws Exception {
+    System.out.println(getTargetUrl());
     response = client.accept(XML).get();
     assertThat(familyOf(response.getStatus()), is(SUCCESSFUL));
     assertThat(XML.isCompatible(response.getMediaType()), is(true));

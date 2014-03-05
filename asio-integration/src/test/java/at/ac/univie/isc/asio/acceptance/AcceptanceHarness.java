@@ -20,6 +20,14 @@ import com.google.common.base.Charsets;
 public abstract class AcceptanceHarness {
 
   public static final URI SERVER_ADDRESS = URI.create("http://localhost:8080/asio/");
+  public static final URI READ_ACCESS = SERVER_ADDRESS.resolve("read/");
+  public static final URI FULL_ACCESS = SERVER_ADDRESS.resolve("full/");
+
+  static {
+    System.out.println(SERVER_ADDRESS);
+    System.out.println(READ_ACCESS);
+    System.out.println(FULL_ACCESS);
+  }
 
   protected static final MediaType CSV = MediaType.valueOf("text/csv").withCharset(
       Charsets.UTF_8.name());
