@@ -64,6 +64,10 @@ var asio = (function() {
   
 //==============================================================>
 //FUNCTIONS
+  // FIXME hacked
+  exports.endpoint = function() {
+    return endpoint();
+  }
   
   //parse a xml webrowset into a SqlResult object
   exports.parseWebrowset = function(xml) {
@@ -84,10 +88,29 @@ var asio = (function() {
   
   //parse an OGSADAI xml database schema into a list of table names
   exports.parseDatabaseSchema = function (xml) {
-   var tables = $(xml).find('table').map(function () {
-     return $(this).attr('name');
+   var datasource = $(xml).find('table').map(function () {
+	  var dsName = $(this).attr('schema');
+	  if(dsName == 'null'){ dsName = $(this).attr('catalog'); }
+	  return { datasourceName : dsName }
    }).get();
-   return { tables : tables }
+   
+   var tables = $(xml).find('table').map(function () {
+     var tableName = $(this).attr('name');
+	 //var rowCount = " ( rows: " + Controller.fetchRowCount(tableName) +" )"
+	 //alert(fetchRowCount(tableName));
+	 
+	 
+	 var columns = $(this).find('column').map(function() {
+		var datatype = $(this).find('sqlTypeName').map(function() {
+		  return $(this).text();
+		}).get();
+	   return $(this).attr('name') + " (" + datatype + ")";
+	 }).get(); 
+	 
+     return { name : tableName, columns : columns};
+   }).get();
+   
+   return { datasourceName : $(datasource[0]).attr('datasourceName'), tables : tables };
   };
   
   // fetch the sql schema from the asio endpoint 

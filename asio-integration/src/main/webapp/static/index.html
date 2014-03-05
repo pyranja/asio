@@ -1,29 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<!-- Asio Jena Demo query form -->
-
 <head>
-  <title>Asio Jena Demo</title>
+  <title>VPH-Share Dataset Browser</title>
   <script src="http://code.jquery.com/jquery-2.0.3.min.js">/* no op */</script>
+  <script src="js/jquery.autosize.min.js">/* no op */</script>
+  
+  <link rel="stylesheet" type="text/css" href="./style.css">
+  <link rel="stylesheet" type="text/css" href="./vce.css">
 </head>
 
 <body>
+  <table border="0" width="100%">
+ 
+  <tr><td colspan ="2" id="header" class="header">
+	<a  title="VPH-Share Project Homepage"
+        href="http://www.vph-share.eu/"
+        class="float_left">
+        <img id="logo_vph" src="img/logo_vph.jpg" alt="VPH-Share Project" />
+    </a>
+    <h1>VPH-Share Dataset Browser</h1>
+	<h3>
+		WP 3: Data Infrastructure - Data Management Platform<br />
+	</h3>  
+  </td></tr>
+  
+  <tr><td width="50%">
+  <h2>SPARQL Query Interface</h2>
+  <p><strong>Query status:</strong><span id="result_status">&nbsp;None</span></p>
 
   <form id="query_form" action="v1/asio/query" method="post">
-	  <p><textarea id="query" name="query" rows="10" cols="80">SELECT DISTINCT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 10</textarea></p>
+	  <strong>Query:</strong><br />
+	  <textarea id="query" name="query" rows="2" cols="70">SELECT DISTINCT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 10</textarea>
 	  <select id="format">
 	   <option value="application/xml">XML</option>
 	   <option value="text/csv">CSV</option>
 	  </select>
-	  <input type="submit" value="Execute" />
+	  <input type="submit" value="View query results" />
+	  <input type="submit" value="Download query results" />
   </form>
   <div>
-    <p><strong>Result:</strong><span id="result_status">None</span></p>
-    <textarea id="result_response" rows="30" cols="80" readonly="readonly">Nothing</textarea>
+    
+    <textarea id="result_response" rows="30" cols="75" readonly="readonly">Execute a query...</textarea>
   </div>
   
   <script type="text/javascript">
+  // auto resize based on content
+    $('#query').autosize({append: "\n"});
+  
+  
   var form = $("#query_form");
   // set post target dynamically - assumes query form is deployed to root of web app!
   $(document).ready(function() {
@@ -52,6 +77,38 @@
       return false; // prevent default
   });
   </script>
+
+  </td>
+	
+  <td width="50%">
+	<h2>Dataset Metadata</h2>
+  </td></tr>
+  
+  <tr><td colspan="2" id="footer" class="footer">
+  
+    <a  title="European Commision"
+        href="http://ec.europa.eu/index_en.htm">
+        <img id="logo_eu" src="img/logo_eu.jpg" alt="European Commission" />
+    </a>
+    <a  title="Framework 7 Programme"
+        href="http://cordis.europa.eu/fp7/home_en.html">
+        <img id="logo_fw7" src="img/logo_fw7.jpg" alt="Framework 7 Programme" />
+    </a>
+    <p class="float_right"> 
+      <a href="http://www.par.univie.ac.at/" class="link_bright"> Research Group Scientific Computing</a>,
+      <a href="http://www.cs.univie.ac.at/" class="link_bright"> Faculty of Computer Science</a>,
+      <a href="http://www.univie.ac.at/" class="link_bright"> University Vienna</a>, Austria
+      <br />
+      Member of 
+      <a 
+        href="https://www.biomedtown.org/biomed_town/vphshare/reception/website/index_html" class="link_bright">
+        VPH-Share Project
+      </a> 
+    </p>
+    <span class="clearfix"></span>
+	
+	</td></tr>
+	</table>
   
 </body>
 
