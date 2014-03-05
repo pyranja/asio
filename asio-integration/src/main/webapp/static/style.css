@@ -1,0 +1,381 @@
+.inline {
+	display: inline;
+}
+
+.block {
+	display: block;
+}
+
+
+.clearfix {
+	clear: both;
+}
+
+.float_left {
+	float: left;
+}
+
+.float_right {
+	float: right;
+}
+
+.inv{ display:none; }
+
+.alignleft{
+    float: left;
+    margin: 5px 10px 5px 0px;
+}
+
+body {
+    line-height: 1;
+    font-size:  100%;
+    margin: 0 0 1px;
+    height: 100%;
+    min-height: 768px;
+
+}
+
+fieldset { 
+	border: 2px solid #C5D8E1; 
+    border-radius: 6px; 
+    background: white;
+    overflow: auto;
+    padding: 16px 20px;
+}
+
+legend {
+	font-family: Verdana, Geneva, sans-serif;
+	font-size: 18px;
+	font-style: normal;
+	text-decoration: none;
+	padding: 5px;
+	margin: 5px;
+}
+
+#metadata {
+	overflow: hidden;
+	padding-left: 20px;
+	padding-right: 20px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+	width: 46%;
+}
+
+#datasource {
+	float:left;
+	padding-left: 20px;
+	padding-right: 20px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+	width: 46%;
+}
+
+#query {
+	overflow: hidden;
+	padding-left: 20px;
+	padding-right: 20px;
+	padding-top: 0px;
+	padding-bottom: 20px;
+	width: 46%;
+}
+
+#download {
+	float: left;
+	padding-left: 20px;
+	padding-right: 20px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+	width: 46%;
+}
+
+#wrap {
+    height: auto !important;
+    margin: 0 auto -60px;
+    min-height: 100%;
+}
+
+#content a{
+    color: #37b2d1;
+}
+
+#content p{
+    margin-bottom: 20px;
+}
+
+header{
+    z-index: 10;
+    width: 100%;
+    margin-left: -30px;
+}
+
+header #headline{
+    width: 906px;
+    font-size: 26px;
+    line-height: 1.5em;
+    color: #ebe7e7;
+    text-align: center;
+    padding-top: 25px;
+}
+
+
+#headline a{
+    text-decoration: none;
+    color: #0072af;
+}
+
+#breadcrumbs-wrapper{
+    height: 25px;
+    margin: 0px auto 10px auto;
+}
+
+.breadcrumb li a {
+    color: darkgrey;
+    text-decoration: none;
+}
+
+.breadcrumb li.active a {
+    color: #2fa4e7;
+    text-decoration: none;
+}
+
+header #login {
+    position: relative;
+    bottom: 30px;
+    float:right;
+    color: #0072af;
+    font-size: 12px;
+    margin-right: 40px;
+}
+
+header #login a{
+    margin-left:5px;
+    color:#d3d3d3;
+    font-weight: bold;
+    text-decoration: none;
+    cursor:pointer;
+    position:relative;
+    top:10px;
+}
+
+header #login a img{
+    padding-top:5px;
+}
+
+#logo-left{
+    float: left;
+    background-image: url("/static/img/logo-web.png");
+    width: 443px;
+    height: 90px;
+}
+#logo-right{
+    position: absolute;
+    top: 0px;
+    right: 0px;
+}
+
+/* TITLE --------------------------------------------------------*/
+
+#page-title-wrapper{
+
+    background: url('/static/img/square.png') repeat top right, -ms-linear-gradient(left, #c5deea 0%,#8abbd7 31%,#066dab 100%); /* IE10+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#c5deea', endColorstr='#066dab',GradientType=1 ); /* IE6-9 */
+    background: url('/static/img/square.png') repeat top right, -moz-linear-gradient(right, #c5deea,#066dab); /* Mozilla */
+    background: url('/static/img/square.png') repeat top right, -webkit-gradient(linear, 0 0, 0 100%, from(#c5deea), to(#066dab)); /* Webkit */
+    background: url('/static/img/square.png') repeat top right, -webkit-linear-gradient(top, #c5deea, #066dab); /* Webkit */
+    background: url('/static/img/square.png') repeat top right, linear-gradient(to right, #c5deea 0%,#8abbd7 31%,#066dab 100%); /* W3C */
+    height: 90px;
+}
+#page-title{
+    background: transparent;
+    text-align: right;
+    position:relative;
+}
+
+#page-title .title{
+    display: block;
+    float: left;
+    font-size: 30px;
+    line-height: 80px;
+    margin-left: 100px;
+    text-shadow: 0 1px rgba(255, 255, 255, 1);
+    color:white;
+}
+
+#page-title .subtitle{
+    display: block;
+    float: left;
+    margin-left: 30px;
+    line-height: 90px;
+    color: #929191;
+    font-style: italic;
+    color: white;
+}
+
+
+#page-title-links {
+    display: block;
+    float: right;
+    margin-right: 30px;
+    padding-top: 39px;
+    font-size: 20px;
+    color: white;
+}
+
+#page-title-links a {
+    color: white;
+    text-decoration: none;
+}
+#page-title-links a:hover {
+    color: white;
+}
+
+#page-title-links button {
+    margin-left: 30px;
+}
+
+#push{
+    height: 60px;
+}
+
+/**** TABLE ****/
+
+#wrapper {
+	width:100%;
+	padding: 10px 0 5px 0;
+	overflow:hidden;
+}
+
+.box {
+	overflow: hidden;
+	margin: 0 0 1em 0;
+	
+	float: left;
+	padding: 10px;
+	width: 50%;
+	background: #EAEEF2 url(/static/img/img05.jpg) top left repeat-x;
+	border-radius: 5px;
+	border: solid 1px #FFFFFF;
+}
+
+.button {
+  display: block;
+  width: 115px;
+  height: 25px;
+  background: #4E9CAF;
+  padding: 10px;
+  text-align: center;
+  border-radius: 5px;
+  color: white;
+  font-weight: bold;
+}
+
+#results {
+	clear: both;
+	overflow: hidden;
+	padding: 20px;
+	width: 100%
+}
+
+#sql-result{
+	max-height:300px;
+	overflow: auto;
+	width: 100%;
+	-moz-box-sizing: border-box;
+}
+
+#zebra-table
+{
+	font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+	font-size: 12px;
+	margin: 10px;
+	width: auto;
+	text-align: left;
+	border-collapse: collapse;
+	width: 100%;
+}
+#zebra-table th
+{
+	font-size: 14px;
+	font-weight: normal;
+	color: #039;
+	padding: 10px 8px;
+	border-bottom: 2px solid #6678b1;
+	font-weight: bold;
+}
+#zebra-table td
+{
+	padding: 8px;
+	color: #669;
+}
+#zebra-table .odd
+{
+	background: #e8edff; 
+}
+
+#zebra-table .even
+{
+	
+}
+
+/****DB LIST****/
+ 
+#dblist ul, li {
+    list-style: none;
+    margin:0;
+    padding:0;
+    cursor: pointer;
+}
+#dblist p {
+    margin:0;
+    display:block;
+}
+#dblist p:hover {
+    background-color:#121212;
+}
+#dblist li {
+    line-height:140%;
+    text-indent:0px;
+    background-position: 1px 8px;
+    padding-left: 20px;
+    background-repeat: no-repeat;
+}
+ 
+/* Collapsed state for list element */
+#dblist .collapsed {
+    background-image: url(/static/img/collapsed.png);
+}
+/* Expanded state for list element
+/* NOTE: This class must be located UNDER the collapsed one */
+#dblist .expanded {
+    background-image: url(/static/img/expanded.png);
+}
+
+/****FOOTER****/
+
+footer{
+    width: 100%;
+    font-size: 12px;
+    line-height: 45px;
+    text-align: center;
+    color: #868686;
+    background-color: rgba(250, 250, 250, 0.18);
+    margin-top: 10px;
+}
+
+footer a{
+    color: #0072af;
+    text-decoration: none;
+}
+
+footer #to-top{
+    position: absolute;
+    right: 30px;
+    top: 26px;
+    width: 33px;
+    cursor: pointer;
+}
+
+footer p span.divider {
+    margin-left: 10px;
+    margin-right: 10px;
+}
