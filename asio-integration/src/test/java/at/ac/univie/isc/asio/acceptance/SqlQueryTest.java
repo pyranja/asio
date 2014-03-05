@@ -35,7 +35,7 @@ public class SqlQueryTest extends AcceptanceHarness {
 
   @Override
   protected URI getTargetUrl() {
-    return AcceptanceHarness.SERVER_ADDRESS.resolve("sql");
+    return AcceptanceHarness.READ_ACCESS.resolve("sql");
   }
 
   @BeforeClass

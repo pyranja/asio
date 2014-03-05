@@ -42,7 +42,7 @@ public class EntryPointTest {
 
   public static final EntryPointApplication application = new EntryPointApplication();
   @ClassRule
-  public static EmbeddedJaxrsServer server = new EmbeddedJaxrsServer(application);
+  public static EmbeddedJaxrsServer server = new EmbeddedJaxrsServer(application).enableLogging();
   public JaxrsClientProvider provider = new JaxrsClientProvider(server.getBaseUri());
   @Rule
   public TestRule chain = RuleChain.outerRule(provider).around(new ResponseMonitor(provider));
@@ -56,14 +56,22 @@ public class EntryPointTest {
 
   @Test
   public void should_request_endpoint_for_language_in_uri() throws Exception {
-    client.path("/sql");
+    client.path("/read/sql");
     client.get();
     Mockito.verify(application.supplier).get(Language.SQL);
   }
 
   @Test
+  public void should_reject_unknown_permission() throws Exception {
+    client.path("/unknown/sql");
+    final Response response = client.get();
+    assertThat(response.getStatusInfo().getFamily(), is(Family.CLIENT_ERROR));
+    Mockito.verifyZeroInteractions(application.supplier);
+  }
+
+  @Test
   public void should_reject_unknown_language() throws Exception {
-    client.path("/unknown");
+    client.path("/read/unknown");
     final Response response = client.get();
     assertThat(response.getStatusInfo().getFamily(), is(Family.CLIENT_ERROR));
     Mockito.verifyZeroInteractions(application.supplier);

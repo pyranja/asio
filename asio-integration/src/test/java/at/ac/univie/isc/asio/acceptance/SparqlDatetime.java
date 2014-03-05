@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Map;
 
-
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
@@ -20,7 +19,7 @@ public class SparqlDatetime extends AcceptanceHarness {
 
   @Override
   protected URI getTargetUrl() {
-    return SERVER_ADDRESS.resolve("sparql");
+    return AcceptanceHarness.READ_ACCESS.resolve("sparql");
   }
 
   @Test

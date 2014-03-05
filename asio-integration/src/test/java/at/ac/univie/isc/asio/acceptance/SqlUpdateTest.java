@@ -42,7 +42,7 @@ public class SqlUpdateTest extends AcceptanceHarness {
 
   @Override
   protected URI getTargetUrl() {
-    return AcceptanceHarness.SERVER_ADDRESS.resolve("sql");
+    return AcceptanceHarness.FULL_ACCESS.resolve("sql");
   }
 
   @Before

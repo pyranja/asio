@@ -31,7 +31,7 @@ public class SparqlFederationTest extends AcceptanceHarness {
 
   @Override
   protected URI getTargetUrl() {
-    return AcceptanceHarness.SERVER_ADDRESS.resolve("sparql");
+    return AcceptanceHarness.READ_ACCESS.resolve("sparql");
   }
 
   private HttpServer server;
