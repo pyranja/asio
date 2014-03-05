@@ -21,16 +21,26 @@ public enum JenaFormats implements SerializationFormat {
   SPARQL_XML(MediaType.create("application", "sparql-results+xml").withCharset(Charsets.UTF_8),
       ResultsFormat.lookup("xml"), QUERY),
   /**
+   * official sparql protocol json format mime
+   */
+  SPARQL_JSON(MediaType.create("application", "sparql-results+json").withCharset(Charsets.UTF_8),
+      ResultsFormat.lookup("json"), QUERY),
+  /**
    * sparql protocol xml alias
    */
   XML(MediaType.create("application", "xml").withCharset(Charsets.UTF_8), ResultsFormat
       .lookup("xml"), QUERY),
   /**
+   * sparql protocol json alias
+   */
+  JSON(MediaType.create("application", "json").withCharset(Charsets.UTF_8), ResultsFormat
+      .lookup("json"), QUERY),
+  /**
    * plain table representation
    */
   CSV(MediaType.create("text", "csv").withCharset(Charsets.UTF_8), ResultsFormat.lookup("csv"),
       QUERY)
-  // XXX add JSON and TSV
+  // XXX add TSV
   ;
 
   private static final Set<SerializationFormat> valueSet = ImmutableSet
