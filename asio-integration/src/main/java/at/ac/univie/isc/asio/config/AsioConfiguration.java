@@ -16,6 +16,7 @@ import org.springframework.context.annotation.PropertySource;
 import at.ac.univie.isc.asio.DatasetEngine;
 import at.ac.univie.isc.asio.common.IdGenerator;
 import at.ac.univie.isc.asio.common.RandomIdGenerator;
+import at.ac.univie.isc.asio.frontend.AcceptTunnelFilter;
 import at.ac.univie.isc.asio.frontend.AsyncProcessor;
 import at.ac.univie.isc.asio.frontend.DatasetExceptionMapper;
 import at.ac.univie.isc.asio.frontend.LogContextFilter;
@@ -67,6 +68,11 @@ public class AsioConfiguration {
   @Bean(name = "asio_log_filter")
   public LogContextFilter logFilter() {
     return new LogContextFilter();
+  }
+
+  @Bean(name = "asio_accept_tunnel")
+  public AcceptTunnelFilter tunnelFilter() {
+    return new AcceptTunnelFilter();
   }
 
   // asio frontend components
