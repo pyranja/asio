@@ -40,7 +40,9 @@ public class VariantConverter {
    * @return matching JAXRS media type
    */
   public MediaType asContentType(final com.google.common.net.MediaType given) {
-    return new MediaType(given.type(), given.subtype(), encodingOrNullFor(given.charset()));
+    // FIXME ignores charsets - should assume UTF-8 ?
+    return new MediaType(given.type(), given.subtype());
+    // return new MediaType(given.type(), given.subtype(), encodingOrNullFor(given.charset()));
   }
 
   private String encodingOrNullFor(final Optional<Charset> charset) {

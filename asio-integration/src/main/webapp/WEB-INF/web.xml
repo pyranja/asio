@@ -73,7 +73,7 @@
     </init-param>
     <init-param>
       <param-name>static-resources-list</param-name>
-      <param-value>/static/.*</param-value>
+      <param-value>/explore/.*</param-value>
     </init-param>
     <load-on-startup>1</load-on-startup>
     <async-supported>true</async-supported>

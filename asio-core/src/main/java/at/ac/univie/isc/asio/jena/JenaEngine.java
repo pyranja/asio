@@ -28,6 +28,7 @@ import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.QueryFactory;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.sparql.resultset.CSVOutput;
+import com.hp.hpl.jena.sparql.resultset.JSONOutput;
 import com.hp.hpl.jena.sparql.resultset.OutputFormatter;
 import com.hp.hpl.jena.sparql.resultset.XMLOutput;
 import com.hp.hpl.jena.sparql.util.Symbol;
@@ -131,6 +132,8 @@ public class JenaEngine implements DatasetEngine, Operator {
     switch (format) {
       case XML:
         return Lang.RDFXML;
+      case JSON:
+        return Lang.RDFJSON;
       default:
         throw new DatasetUsageException(format + " not supported for this query");
     }
@@ -141,6 +144,9 @@ public class JenaEngine implements DatasetEngine, Operator {
       case SPARQL_XML:
       case XML:
         return new XMLOutput();
+      case SPARQL_JSON:
+      case JSON:
+        return new JSONOutput();
       case CSV:
         return new CSVOutput();
       default:
