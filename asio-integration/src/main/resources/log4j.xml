@@ -29,6 +29,11 @@
     <level value="warn" /> 
   </logger>
   
+  <!-- jaxrs framework -->
+  <logger name="org.apache.cxf">
+    <level value="off" />
+  </logger>
+  
   <!-- by default, log everything to the console with a level of WARN or higher -->
   <root>
     <level value="warn"/>
