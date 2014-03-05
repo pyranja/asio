@@ -23,12 +23,6 @@ public abstract class AcceptanceHarness {
   public static final URI READ_ACCESS = SERVER_ADDRESS.resolve("read/");
   public static final URI FULL_ACCESS = SERVER_ADDRESS.resolve("full/");
 
-  static {
-    System.out.println(SERVER_ADDRESS);
-    System.out.println(READ_ACCESS);
-    System.out.println(FULL_ACCESS);
-  }
-
   protected static final MediaType CSV = MediaType.valueOf("text/csv").withCharset(
       Charsets.UTF_8.name());
   protected static final MediaType XML = MediaType.APPLICATION_XML_TYPE.withCharset(Charsets.UTF_8

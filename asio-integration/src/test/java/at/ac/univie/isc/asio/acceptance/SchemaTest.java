@@ -41,7 +41,6 @@ public class SchemaTest extends AcceptanceHarness {
 
   @Test
   public void delivers_schema_as_xml() throws Exception {
-    System.out.println(getTargetUrl());
     response = client.accept(XML).get();
     assertThat(familyOf(response.getStatus()), is(SUCCESSFUL));
     assertThat(XML.isCompatible(response.getMediaType()), is(true));
