@@ -15,6 +15,7 @@ import at.ac.univie.isc.asio.DatasetUsageException;
 import at.ac.univie.isc.asio.coordination.EngineSpec;
 import at.ac.univie.isc.asio.coordination.Operator;
 import at.ac.univie.isc.asio.coordination.OperatorCallback;
+import at.ac.univie.isc.asio.security.VphToken;
 import at.ac.univie.isc.asio.transport.Transfer;
 
 import com.google.common.util.concurrent.FutureCallback;
@@ -29,6 +30,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.sparql.resultset.CSVOutput;
 import com.hp.hpl.jena.sparql.resultset.OutputFormatter;
 import com.hp.hpl.jena.sparql.resultset.XMLOutput;
+import com.hp.hpl.jena.sparql.util.Symbol;
 
 /**
  * Execute SPARQL queries through jena's ARQ.
@@ -86,10 +88,28 @@ public class JenaEngine implements DatasetEngine, Operator {
     final SparqlRunner<?> task = SparqlRunner.create(exchange, callback, handler);
     // prepare execution
     final QueryExecution invocation = QueryExecutionFactory.create(query, model);
+    delegateCredentials(operation, invocation);
     log.debug(">> invoking ARQ query");
     final ListenableFuture<Void> future = exec.submit(task.use(invocation));
     Futures.addCallback(future, callbackFor(operation, callback));
     log.debug("<< ARQ query invoked");
+  }
+
+  private static final Symbol KEY_AUTH_USERNAME = Symbol
+      .create("http://jena.hpl.hp.com/Service#queryAuthUser");
+  private static final Symbol KEY_AUTH_PASSWORD = Symbol
+      .create("http://jena.hpl.hp.com/Service#queryAuthPwd");
+
+  private void delegateCredentials(final DatasetOperation operation, final QueryExecution invocation) {
+    if (operation.owner() instanceof VphToken) {
+      final VphToken token = (VphToken) operation.owner();
+      log.debug("found vph token - delegating credentials from {}", token);
+      invocation.getContext().set(KEY_AUTH_USERNAME, "");
+      invocation.getContext().set(KEY_AUTH_PASSWORD, String.valueOf(token.getToken()));
+      token.destroy();
+    } else {
+      log.debug("no vph token found - skipping credentials delegation");
+    }
   }
 
   private QueryModeHandler<?> forQuery(final Query query, final JenaFormats format) {

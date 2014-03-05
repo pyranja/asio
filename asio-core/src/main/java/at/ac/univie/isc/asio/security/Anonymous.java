@@ -7,11 +7,11 @@ import java.security.Principal;
  * 
  * @author Chris Borckholder
  */
-public final class NullPrincipal implements Principal {
+public final class Anonymous implements Principal {
 
-  public static final Principal INSTANCE = new NullPrincipal();
+  public static final Principal INSTANCE = new Anonymous();
 
-  private NullPrincipal() {}
+  private Anonymous() {}
 
   @Override
   public String getName() {
@@ -20,6 +20,6 @@ public final class NullPrincipal implements Principal {
 
   @Override
   public String toString() {
-    return "[NullPrincipal]";
+    return "[Anonymous]";
   }
 }
