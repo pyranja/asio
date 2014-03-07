@@ -1,9 +1,17 @@
 package at.ac.univie.isc.asio.acceptance;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.Matchers.startsWith;
-import static org.junit.Assert.assertThat;
+import com.google.common.base.Strings;
+import com.google.common.io.BaseEncoding;
+import com.google.common.util.concurrent.MoreExecutors;
+
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -12,22 +20,21 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import javax.ws.rs.core.HttpHeaders;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import at.ac.univie.isc.asio.tool.FunctionalTest;
 
-import com.google.common.io.BaseEncoding;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.assertThat;
 
 @SuppressWarnings("restriction")
 @Category(FunctionalTest.class)
 public class SparqlFederationTest extends AcceptanceHarness {
+
+  public static final
+  String
+      MOCK_SERVER_FEDERATED_QUERY =
+      "SELECT * WHERE { SERVICE <http://localhost:1337/sparql> { ?s ?p ?o }}";
 
   @Override
   protected URI getTargetUrl() {
@@ -65,16 +72,14 @@ public class SparqlFederationTest extends AcceptanceHarness {
 
   @Test
   public void should_execute_remote_request_on_federated_sparql_query() throws Exception {
-    final String query = "SELECT * WHERE { SERVICE <http://localhost:1337/sparql> { ?s ?p ?o }}";
-    client.accept(CSV).query(PARAM_QUERY, query);
+    client.accept(CSV).query(PARAM_QUERY, MOCK_SERVER_FEDERATED_QUERY);
     client.get(); // do not care for response
     assertThat(handler.received.get(), is(notNullValue()));
   }
 
   @Test
   public void should_delegate_credentials_to_remote_request_in_federation() throws Exception {
-    final String query = "SELECT * WHERE { SERVICE <http://localhost:1337/sparql> { ?s ?p ?o }}";
-    client.accept(CSV).query(PARAM_QUERY, query);
+    client.accept(CSV).query(PARAM_QUERY, MOCK_SERVER_FEDERATED_QUERY);
     // a mock vph token
     final String credentials = BaseEncoding.base64().encode(":test-password".getBytes());
     client.header(HttpHeaders.AUTHORIZATION, "Basic " + credentials);
@@ -84,5 +89,20 @@ public class SparqlFederationTest extends AcceptanceHarness {
     assertThat(delegated, startsWith("Basic "));
     final String decoded = new String(BaseEncoding.base64().decode(delegated.substring(6)));
     assertThat(decoded, is(":test-password"));
+  }
+
+  @Test
+  public void should_handle_delegation_of_large_credentials_payload() throws Exception {
+    client.accept(CSV).query(PARAM_QUERY, MOCK_SERVER_FEDERATED_QUERY);
+    // a long vph token - XXX is the token sufficiently long ?
+    final String token = ":" + Strings.repeat("test", 1000);
+    final String credentials = BaseEncoding.base64().encode(token.getBytes());
+    client.header(HttpHeaders.AUTHORIZATION, "Basic "+ credentials);
+    client.get();
+    final String delegated =
+        handler.received.get().getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+    assertThat(delegated, startsWith("Basic "));
+    final String decoded = new String(BaseEncoding.base64().decode(delegated.substring(6)));
+    assertThat(decoded, is(token));
   }
 }
