@@ -5,6 +5,8 @@ import java.util.concurrent.ThreadFactory;
 
 import javax.servlet.ServletContext;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,6 +28,9 @@ import de.fuberlin.wiwiss.d2rq.server.ConfigLoader;
 @Configuration
 public class AsioJenaConfiguration {
 
+  /* slf4j-logger */
+  private final static Logger log = LoggerFactory.getLogger(AsioJenaConfiguration.class);
+
   @Autowired
   Environment env;
   @Autowired
@@ -40,6 +45,9 @@ public class AsioJenaConfiguration {
   public DatasourceSpec datasource() {
     // XXX will not work if multiple database bindings are defined in d2r mapping .ttl
     final Database d2rDb = Iterables.getOnlyElement(d2rLoader().getMapping().databases());
+    if (d2rDb.getPassword() == null) {
+      log.warn("[BOOT] no password set for JDBC connection {}", d2rDb.getJDBCDSN());
+    }
     return DatasourceSpec.connectTo(d2rDb.getJDBCDSN(), d2rDb.getJDBCDriver()).authenticateAs(
         d2rDb.getUsername(), d2rDb.getPassword());
   }
