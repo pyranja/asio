@@ -66,11 +66,6 @@
     <servlet-class>
       org.apache.cxf.transport.servlet.CXFServlet
     </servlet-class>
-    <!-- serve a simple query interface statically -->
-    <init-param>
-      <param-name>static-welcome-file</param-name>
-      <param-value>/static/index.html</param-value>
-    </init-param>
     <init-param>
       <param-name>static-resources-list</param-name>
       <param-value>/explore/.*</param-value>

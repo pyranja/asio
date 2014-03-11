@@ -69,7 +69,7 @@ public class AsioJenaConfiguration {
   private String resolve(String mappingLocation) {
     if (!mappingLocation.matches("[a-zA-Z0-9]+:.*")) {
       // relative file names are resolved against the web app internal folder
-      mappingLocation = webContext.getRealPath("WEB-INF/" + mappingLocation);
+      mappingLocation = webContext.getRealPath(mappingLocation);
     }
     return ConfigLoader.toAbsoluteURI(mappingLocation);
   }
