@@ -17,7 +17,7 @@ http://cxf.apache.org/schemas/jaxrs.xsd">
   <import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
 
   <!-- asio http endpoint -->
-  <jaxrs:server id="asio-sql" address="/asio">
+  <jaxrs:server id="asio-sql" address="/">
     <jaxrs:serviceBeans>
       <ref bean="asio_entry" />
     </jaxrs:serviceBeans>

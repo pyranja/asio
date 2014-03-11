@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>at.ac.univie.isc</groupId>
 		<artifactId>asio</artifactId>
-		<version>0.3.0</version>
+		<version>0.3.1</version>
 	</parent>
 
 	<artifactId>asio-integration</artifactId>
@@ -133,42 +133,42 @@
 	</dependencies>
 
 	<build>
-        <finalName>asio-${project.version}</finalName>
+		<finalName>asio-${project.version}</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
 				<version>2.3</version>
-                <executions>
-                    <execution>
-                        <id>war-exploded</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>exploded</goal>
-                        </goals>
-                    </execution>
-                </executions>
+				<executions>
+					<execution>
+						<id>war-exploded</id>
+						<phase>package</phase>
+						<goals>
+							<goal>exploded</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
-            <!-- create release zip -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.4</version>
-                <configuration>
-                    <descriptors>
-                        <descriptor>${project.basedir}/src/main/assembly/release.xml</descriptor>
-                    </descriptors>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+			<!-- create release zip -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<descriptors>
+						<descriptor>${project.basedir}/src/main/assembly/release.xml</descriptor>
+					</descriptors>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<!-- disable unit tests -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -252,9 +252,12 @@
 					<stopKey>jetty</stopKey>
 					<stopPort>19080</stopPort>
 					<stopWait>20</stopWait>
-                    <scanIntervalSeconds>0</scanIntervalSeconds>
+					<scanIntervalSeconds>0</scanIntervalSeconds>
 					<reload>manual</reload>
-                    <useTestScope>true</useTestScope>
+					<useTestScope>true</useTestScope>
+					<webApp>
+						<contextPath>/asio</contextPath>
+					</webApp>
 				</configuration>
 				<executions>
 					<execution>
@@ -264,9 +267,9 @@
 							<goal>stop</goal> <!-- close running instance -->
 							<goal>start</goal>
 						</goals>
-                        <configuration>
-                            <daemon>true</daemon>
-                        </configuration>
+						<configuration>
+							<daemon>true</daemon>
+						</configuration>
 					</execution>
 					<execution>
 						<id>stop-jetty</id>

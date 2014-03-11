@@ -2,6 +2,7 @@ package at.ac.univie.isc.asio.config;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.emptyToNull;
+import static com.google.common.base.Strings.nullToEmpty;
 
 /**
  * Record connection informations for a DB backing asio.
@@ -27,7 +28,7 @@ public class DatasourceSpec {
     this.jdbcUrl = checkNotNull(emptyToNull(jdbcUrl), "no JDBC connection URL given");
     this.jdbcDriver = checkNotNull(emptyToNull(jdbcDriver), "missing driver class for %s", jdbcUrl);
     this.username = checkNotNull(emptyToNull(username), "missing username for %s", jdbcUrl);
-    this.password = checkNotNull(emptyToNull(password), "missing password for %s", jdbcUrl);
+    this.password = nullToEmpty(password);
   }
 
   public String getJdbcDriver() {

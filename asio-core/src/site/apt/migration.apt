@@ -1,0 +1,62 @@
+
+    -----------------
+    Asio - Migration
+    -----------------
+    Chris Borckholder
+    -----------------
+    2014-03-11
+
+requirements
+
+* getting the current release
+
++---
+/user/share/asio-0.3.0 @ vphsharedatatest.shef.ac.uk
++---
+
+  (download link will follow)
+
+* jvm version
+
+  asio requires at least java 7
+  
+deploying an instance
+
+  [NAME] dataset name
+  
+  [DIST] asio release directory
+
+  [[1]] mkdir NAME
+  
+  [[2]] mkdir NAME/WEB-INF
+  
+  [[3]] ln -s DIST/WEB-INF/classes/ NAME/WEB-INF/
+  
+  [[4]] ln -s DIST/WEB-INF/lib/ NAME/WEB-INF/
+  
+  [[5]] cp -r DIST/WEB-INF/etc NAME/WEB-INF/
+  
+  [[6]] write d2r mapping to NAME/WEB-INF/config.ttl
+  
+  [[7]] cp DIST/WEB-INF/web.xml NAME/WEB-INF/web.xml
+ 
+* verify installation
+
++---
+wget -O response.xml HOST/NAME/read/sparql?query=SELECT%20DISTINCT%20%3Fs%20%3Fp%20%3Fo%20WHERE%20%7B%20%3Fs%20%3Fp%20%3Fo%20%7D%20LIMIT%2010
++---
+
+proxy paths
+
+  asio requires at least these URL patterns to be exposed:
+  
++---
+HOST/NAME/read/*
+HOST/NAME/full/*
++---
+ 
+  optionally :
+  
++---
+HOST/NAME/explore/*
++---
