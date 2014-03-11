@@ -2,8 +2,16 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>at.ac.univie.isc</groupId>
+<<<<<<< HEAD
+	<artifactId>vqs</artifactId>
+	<version>0.2.0-RELEASE</version>
+||||||| merged common ancestors
+	<artifactId>vqs</artifactId>
+	<version>0.1.1-SNAPSHOT</version>
+=======
 	<artifactId>asio</artifactId>
 	<version>0.3.0</version>
+>>>>>>> dev
 	<packaging>pom</packaging>
 
 	<name>ASIO</name>

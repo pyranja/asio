@@ -1,0 +1,56 @@
+<databaseSchema xmlns="http://ogsadai.org.uk/namespaces/2005/10/properties">
+	<logicalSchema>
+		<table name="PATIENT" schema="null" catalog="TEST">
+			<column name="ID" fullName="PATIENT_ID" length="10" nullable="false"
+				default="null" position="1">
+				<sqlTypeName>INTEGER</sqlTypeName>
+				<sqlJavaTypeID>4</sqlJavaTypeID>
+				<tupleTypeID>4</tupleTypeID>
+			</column>
+			<column name="NAME" fullName="PATIENT_NAME" length="255"
+				nullable="true" default="NULL" position="2">
+				<sqlTypeName>VARCHAR</sqlTypeName>
+				<sqlJavaTypeID>12</sqlJavaTypeID>
+				<tupleTypeID>6</tupleTypeID>
+			</column>
+			<primaryKey>
+				<columnName>ID</columnName>
+			</primaryKey>
+		</table>
+		<table name="PERSON" schema="null" catalog="TEST">
+			<column name="ID" fullName="PERSON_ID" length="10" nullable="false"
+				default="null" position="1">
+				<sqlTypeName>INTEGER</sqlTypeName>
+				<sqlJavaTypeID>4</sqlJavaTypeID>
+				<tupleTypeID>4</tupleTypeID>
+			</column>
+			<column name="FIRSTNAME" fullName="PERSON_FIRSTNAME" length="255"
+				nullable="true" default="NULL" position="2">
+				<sqlTypeName>VARCHAR</sqlTypeName>
+				<sqlJavaTypeID>12</sqlJavaTypeID>
+				<tupleTypeID>6</tupleTypeID>
+			</column>
+			<column name="LASTNAME" fullName="PERSON_LASTNAME" length="255"
+				nullable="true" default="NULL" position="3">
+				<sqlTypeName>VARCHAR</sqlTypeName>
+				<sqlJavaTypeID>12</sqlJavaTypeID>
+				<tupleTypeID>6</tupleTypeID>
+			</column>
+			<column name="AGE" fullName="PERSON_AGE" length="50" nullable="true"
+				default="NULL" position="4">
+				<sqlTypeName>VARCHAR</sqlTypeName>
+				<sqlJavaTypeID>12</sqlJavaTypeID>
+				<tupleTypeID>6</tupleTypeID>
+			</column>
+			<column name="POSTALCODE" fullName="PERSON_POSTALCODE" length="10"
+				nullable="true" default="NULL" position="5">
+				<sqlTypeName>VARCHAR</sqlTypeName>
+				<sqlJavaTypeID>12</sqlJavaTypeID>
+				<tupleTypeID>6</tupleTypeID>
+			</column>
+			<primaryKey>
+				<columnName>ID</columnName>
+			</primaryKey>
+		</table>
+	</logicalSchema>
+</databaseSchema>

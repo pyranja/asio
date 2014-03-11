@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<!-- asio + headless ogsadai log4j configuration -->
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="true">
+
+    <!-- internal log without request informations -->
+    <appender name="stdout" class="org.apache.log4j.ConsoleAppender">
+        <param name="Threshold" value="error" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{ISO8601} %-5p [%t] %c{1}: %m%n"/>
+        </layout>
+    </appender>
+
+    <!-- asio log -->
+    <appender name="asio-log" class="org.apache.log4j.RollingFileAppender">
+        <param name="file" value="${catalina.base}/logs/asio.log" />
+        <param name="append" value="true" />
+        <param name="encoding" value="UTF-8" />
+        <rollingPolicy class="org.apache.log4j.rolling.TimeBasedRollingPolicy">
+            <param name="FileNamePattern" value="${cataline.base}/logs/asio-%d.log" />
+        </rollingPolicy>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern"
+                   value="%d{ISO8601} %-5p [%t] %c{1}: %m | [%X{asio.request.method}|%X{asio.request.uri}] %X{asio.request.operation}%n"/>
+        </layout>
+    </appender>
+
+    <!-- full log -->
+    <appender name="full-log" class="org.apache.log4j.RollingFileAppender">
+        <param name="file" value="${catalina.base}/logs/asio-full.log" />
+        <param name="append" value="true" />
+        <param name="encoding" value="UTF-8" />
+        <rollingPolicy class="org.apache.log4j.rolling.TimeBasedRollingPolicy">
+            <param name="FileNamePattern" value="${cataline.base}/logs/asio-full-%d.log" />
+        </rollingPolicy>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern"
+                   value="%d{ISO8601} %-5p [%t] %c{1}: %m%n"/>
+        </layout>
+    </appender>
+
+    <logger name="at.ac.univie.isc.asio">
+        <level value="info"/>
+        <appender-ref ref="asio-log"/>
+    </logger>
+
+    <logger name="uk.org.ogsadai">
+        <level value="warn"/>
+    </logger>
+
+    <!-- jaxrs framework -->
+    <logger name="org.apache.cxf">
+        <level value="off"/>
+    </logger>
+
+    <root>
+        <level value="warn"/>
+        <appender-ref ref="stdout"/>
+        <appender-ref ref="full-log" />
+    </root>
+
+</log4j:configuration>
+

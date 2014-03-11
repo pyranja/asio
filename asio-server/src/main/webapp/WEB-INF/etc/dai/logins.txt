@@ -1,7 +1,0 @@
-END
-id=mock_data
-userID=*
-username=root
-password=change
-LOGIN-END
-END

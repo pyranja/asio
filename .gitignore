@@ -5,3 +5,7 @@
 
 # mvn #
 target/
+
+# intellij #
+.idea/
+*.iml
