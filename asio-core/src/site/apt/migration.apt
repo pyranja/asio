@@ -30,11 +30,11 @@ deploying an instance
   
   [[2]] mkdir NAME/WEB-INF
   
-  [[3]] ln -s DIST/WEB-INF/classes/ NAME/WEB-INF
+  [[3]] ln -s DIST/WEB-INF/classes/ NAME/WEB-INF/
   
-  [[4]] ln -s DIST/WEB-INF/lib/ NAME/WEB-INF
+  [[4]] ln -s DIST/WEB-INF/lib/ NAME/WEB-INF/
   
-  [[5]] cp -r DIST/WEB-INF/etc NAME/WEB-INF
+  [[5]] cp -r DIST/WEB-INF/etc NAME/WEB-INF/
   
   [[6]] write d2r mapping to NAME/WEB-INF/config.ttl
   
