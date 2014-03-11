@@ -133,12 +133,21 @@
 	</dependencies>
 
 	<build>
+        <finalName>asio-${project.version}</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
 				<version>2.3</version>
-                <!--  -->
+                <executions>
+                    <execution>
+                        <id>war-exploded</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exploded</goal>
+                        </goals>
+                    </execution>
+                </executions>
 			</plugin>
 			<!-- disable unit tests -->
 			<plugin>
