@@ -3,7 +3,7 @@
 
 	<groupId>at.ac.univie.isc</groupId>
 	<artifactId>asio</artifactId>
-	<version>0.3.1</version>
+	<version>0.3.2</version>
 	<packaging>pom</packaging>
 
 	<name>ASIO</name>
