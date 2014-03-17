@@ -95,7 +95,6 @@ var asio = (function() {
 	 //var rowCount = " ( rows: " + Controller.fetchRowCount(tableName) +" )"
 	 //alert(fetchRowCount(tableName));
 	 
-	 
 	 var columns = $(this).find('column').map(function() {
 		var datatype = $(this).find('sqlTypeName').map(function() {
 		  return $(this).text();
