@@ -11,18 +11,18 @@
  */
 
 .collapsibleList li{
-	list-style-image:url('/static/img/button.png');
+	list-style-image:url('../img/button.png');
 	list-style-position:inside;
 	cursor:auto;
 }
 
 li.collapsibleListOpen{
-	list-style-image:url('/static/img/button-open.png');
+	list-style-image:url('../img/button-open.png');
 	cursor:pointer;
 }
 
 li.collapsibleListClosed{
-	list-style-image:url('/static/img/button-closed.png');
+	list-style-image:url('../img/button-closed.png');
 	cursor:pointer;
 }
 
@@ -44,7 +44,7 @@ li.collapsibleListClosed ul{
 }
 
 .treeView ul ul{
-	background:url('/static/img/list-item-contents.png') repeat-y left;
+	background:url('../img/list-item-contents.png') repeat-y left;
 }
 
 .treeView li.lastChild > ul{
@@ -59,22 +59,22 @@ li.collapsibleListClosed ul{
 }
 
 .treeView li li{
-	background-image:url('/static/img/list-item.png');
+	background-image:url('../img/list-item.png');
 	padding-left:1.5em;
 }
 
 .treeView li.lastChild{
-	background-image:url('/static/img/list-item-last.png');
+	background-image:url('../img/list-item-last.png');
 }
 
 .treeView li.collapsibleListOpen{
-	background-image:url('/static/img/list-item-open.png');
+	background-image:url('../img/list-item-open.png');
 }
 
 .treeView li.collapsibleListOpen.lastChild{
-	background-image:url('/static/img/list-item-last-open.png');
+	background-image:url('../img/list-item-last-open.png');
 }
 
 .treeView > li.collapsibleListOpen {
-	background:url('/static/img/list-item-root.png') no-repeat top left;
+	background:url('../img/list-item-root.png') no-repeat top left;
 }

@@ -58,13 +58,13 @@
   </script>
   <script id="template_explorer" type="text/html">
 	<ul class="collapsibleList treeView">
-		<li><span class="pointer_cursor"><img src="/static/img/db.png" alt="Database" height="15" width="15">  &nbsp; {{datasourceName}}</span>
+		<li><span class="pointer_cursor"><img src="img/db.png" alt="Database" height="15" width="15">  &nbsp; {{datasourceName}}</span>
 			<ul>
 			  {{#tables}}
-			  <li xasiotablename={{name}}><img class="pointer_cursor" src="/static/img/table.png" alt="Table" height="15" width="15"> &nbsp; <span class="hand_cursor" onclick="onSelectTable(event, '{{name}}', $('#limitselect').val())">{{name}}</span>
+			  <li xasiotablename={{name}}><img class="pointer_cursor" src="img/table.png" alt="Table" height="15" width="15"> &nbsp; <span class="hand_cursor" onclick="onSelectTable(event, '{{name}}', $('#limitselect').val())">{{name}}</span>
 			  {{#columns}}
 			  <ul>
-				<li><img class="pointer_cursor" src="/static/img/column.png" alt="Table" height="15" width="15"> &nbsp; <span class="hand_cursor" onclick="onSelectField(event, '{{.}}', $('#limitselect').val())">{{.}}</span></li>
+				<li><img class="pointer_cursor" src="img/column.png" alt="Table" height="15" width="15"> &nbsp; <span class="hand_cursor" onclick="onSelectField(event, '{{.}}', $('#limitselect').val())">{{.}}</span></li>
 			  </ul>
 			  {{/columns}}
 			  </li>

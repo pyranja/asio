@@ -187,7 +187,7 @@ header #login a img{
 
 #logo-left{
     float: left;
-    background-image: url("/static/img/logo-web.png");
+    background-image: url("../img/logo-web.png");
     width: 443px;
     height: 90px;
 }
@@ -201,12 +201,12 @@ header #login a img{
 
 #page-title-wrapper{
 
-    background: url('/static/img/square.png') repeat top right, -ms-linear-gradient(left, #c5deea 0%,#8abbd7 31%,#066dab 100%); /* IE10+ */
+    background: url('../img/square.png') repeat top right, -ms-linear-gradient(left, #c5deea 0%,#8abbd7 31%,#066dab 100%); /* IE10+ */
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#c5deea', endColorstr='#066dab',GradientType=1 ); /* IE6-9 */
-    background: url('/static/img/square.png') repeat top right, -moz-linear-gradient(right, #c5deea,#066dab); /* Mozilla */
-    background: url('/static/img/square.png') repeat top right, -webkit-gradient(linear, 0 0, 0 100%, from(#c5deea), to(#066dab)); /* Webkit */
-    background: url('/static/img/square.png') repeat top right, -webkit-linear-gradient(top, #c5deea, #066dab); /* Webkit */
-    background: url('/static/img/square.png') repeat top right, linear-gradient(to right, #c5deea 0%,#8abbd7 31%,#066dab 100%); /* W3C */
+    background: url('../img/square.png') repeat top right, -moz-linear-gradient(right, #c5deea,#066dab); /* Mozilla */
+    background: url('../img/square.png') repeat top right, -webkit-gradient(linear, 0 0, 0 100%, from(#c5deea), to(#066dab)); /* Webkit */
+    background: url('../img/square.png') repeat top right, -webkit-linear-gradient(top, #c5deea, #066dab); /* Webkit */
+    background: url('../img/square.png') repeat top right, linear-gradient(to right, #c5deea 0%,#8abbd7 31%,#066dab 100%); /* W3C */
     height: 90px;
 }
 #page-title{
@@ -275,7 +275,7 @@ header #login a img{
 	float: left;
 	padding: 10px;
 	width: 50%;
-	/*background: #EAEEF2 url(/static/img/img05.jpg) top left repeat-x;*/
+	/*background: #EAEEF2 url(../img/img05.jpg) top left repeat-x;*/
 	border-radius: 5px;
 	border: solid 1px #FFFFFF;
 }
@@ -369,12 +369,12 @@ header #login a img{
  
 /* Collapsed state for list element */
 #dblist .collapsed {
-    background-image: url(/static/img/collapsed.png);
+    background-image: url(../img/collapsed.png);
 }
 /* Expanded state for list element
 /* NOTE: This class must be located UNDER the collapsed one */
 #dblist .expanded {
-    background-image: url(/static/img/expanded.png);
+    background-image: url(../img/expanded.png);
 }
 
 /* HEADERS --------------------------------------------------------*/
