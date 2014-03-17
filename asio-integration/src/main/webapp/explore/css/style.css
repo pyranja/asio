@@ -15,6 +15,7 @@
 	float: left;
 }
 
+
 .float_right {
 	float: right;
 }
@@ -26,13 +27,31 @@
     margin: 5px 10px 5px 0px;
 }
 
+.hand_cursor {
+	cursor: hand;
+	cursor: pointer; 
+}
+
+.pointer_cursor {
+	cursor: default; 
+}
+
+html, body {
+    height: 100%;
+}
+
+html {
+    display: table;
+    margin: auto;
+}
+
 body {
     line-height: 1;
     font-size:  100%;
     margin: 0 0 1px;
     height: 100%;
     min-height: 768px;
-
+	font-family: 'Ubuntu','sans-serif';
 }
 
 fieldset { 
@@ -44,12 +63,17 @@ fieldset {
 }
 
 legend {
-	font-family: Verdana, Geneva, sans-serif;
-	font-size: 18px;
 	font-style: normal;
 	text-decoration: none;
 	padding: 5px;
 	margin: 5px;
+	border: none!important;
+	width:auto;
+}
+
+select{
+	padding:5px;
+	margin:5px;
 }
 
 #metadata {
@@ -58,7 +82,7 @@ legend {
 	padding-right: 20px;
 	padding-top: 0px;
 	padding-bottom: 0px;
-	width: 46%;
+	width: 450px;
 }
 
 #datasource {
@@ -67,7 +91,7 @@ legend {
 	padding-right: 20px;
 	padding-top: 0px;
 	padding-bottom: 0px;
-	width: 46%;
+	width: 450px;
 }
 
 #query {
@@ -76,7 +100,7 @@ legend {
 	padding-right: 20px;
 	padding-top: 0px;
 	padding-bottom: 20px;
-	width: 46%;
+	width: 1000px;
 }
 
 #download {
@@ -85,7 +109,7 @@ legend {
 	padding-right: 20px;
 	padding-top: 0px;
 	padding-bottom: 0px;
-	width: 46%;
+	width: 450px;
 }
 
 #wrap {
@@ -163,7 +187,7 @@ header #login a img{
 
 #logo-left{
     float: left;
-    background-image: url("img/logo-web.png");
+    background-image: url("/static/img/logo-web.png");
     width: 443px;
     height: 90px;
 }
@@ -177,12 +201,12 @@ header #login a img{
 
 #page-title-wrapper{
 
-    background: url('img/square.png') repeat top right, -ms-linear-gradient(left, #c5deea 0%,#8abbd7 31%,#066dab 100%); /* IE10+ */
+    background: url('/static/img/square.png') repeat top right, -ms-linear-gradient(left, #c5deea 0%,#8abbd7 31%,#066dab 100%); /* IE10+ */
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#c5deea', endColorstr='#066dab',GradientType=1 ); /* IE6-9 */
-    background: url('img/square.png') repeat top right, -moz-linear-gradient(right, #c5deea,#066dab); /* Mozilla */
-    background: url('img/square.png') repeat top right, -webkit-gradient(linear, 0 0, 0 100%, from(#c5deea), to(#066dab)); /* Webkit */
-    background: url('img/square.png') repeat top right, -webkit-linear-gradient(top, #c5deea, #066dab); /* Webkit */
-    background: url('img/square.png') repeat top right, linear-gradient(to right, #c5deea 0%,#8abbd7 31%,#066dab 100%); /* W3C */
+    background: url('/static/img/square.png') repeat top right, -moz-linear-gradient(right, #c5deea,#066dab); /* Mozilla */
+    background: url('/static/img/square.png') repeat top right, -webkit-gradient(linear, 0 0, 0 100%, from(#c5deea), to(#066dab)); /* Webkit */
+    background: url('/static/img/square.png') repeat top right, -webkit-linear-gradient(top, #c5deea, #066dab); /* Webkit */
+    background: url('/static/img/square.png') repeat top right, linear-gradient(to right, #c5deea 0%,#8abbd7 31%,#066dab 100%); /* W3C */
     height: 90px;
 }
 #page-title{
@@ -248,11 +272,10 @@ header #login a img{
 .box {
 	overflow: hidden;
 	margin: 0 0 1em 0;
-	
 	float: left;
 	padding: 10px;
 	width: 50%;
-	background: #EAEEF2 url(img/img05.jpg) top left repeat-x;
+	/*background: #EAEEF2 url(/static/img/img05.jpg) top left repeat-x;*/
 	border-radius: 5px;
 	border: solid 1px #FFFFFF;
 }
@@ -270,30 +293,34 @@ header #login a img{
 }
 
 #results {
-	clear: both;
-	overflow: hidden;
-	padding: 20px;
-	width: 100%
-}
-
-#sql-result{
-	max-height:300px;
 	overflow: auto;
+	padding: 20px;
 	width: 100%;
 	-moz-box-sizing: border-box;
 }
 
+#sql-result{
+	overflow: hidden;
+	width: auto;
+	-moz-box-sizing: border-box;
+}
+
+#sql-command{
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+	width:100%;
+}
+
 #zebra-table
 {
-	font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
-	font-size: 12px;
-	margin: 10px;
 	width: auto;
 	text-align: left;
 	border-collapse: collapse;
-	width: 100%;
+	overflow:hidden;
+	
 }
-#zebra-table th
+#zebra-table thead
 {
 	font-size: 14px;
 	font-weight: normal;
@@ -342,13 +369,32 @@ header #login a img{
  
 /* Collapsed state for list element */
 #dblist .collapsed {
-    background-image: url(img/collapsed.png);
+    background-image: url(/static/img/collapsed.png);
 }
 /* Expanded state for list element
 /* NOTE: This class must be located UNDER the collapsed one */
 #dblist .expanded {
-    background-image: url(img/expanded.png);
+    background-image: url(/static/img/expanded.png);
 }
+
+/* HEADERS --------------------------------------------------------*/
+
+h1,h2,h3,h4,h5,h6{
+    line-height: 1.4em;
+    font-weight: lighter;
+}
+
+h1{ font-size: 30px; }
+
+h2{ font-size: 28px; }
+
+h3{ font-size: 26px; }
+
+h4{ font-size: 24px; }
+
+h5{ font-size: 22px; }
+
+h6{ font-size: 17px; }
 
 /****FOOTER****/
 

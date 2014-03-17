@@ -16,6 +16,7 @@ var ExplorerView = new function () {
   this.update = function (model) {
     var content = ich.template_explorer(model.schema);
     $('#sql-explorer').empty().append(content);
+	$(".collapsibleList").collapsibleList();
   };
 };
 
@@ -23,6 +24,7 @@ var ResultView = new function () {
   this.update = function (model) {
     var content = ich.template_result(model.result);
     $('#sql-result').empty().append(content);
+	$('#zebra-table').dataTable();
   };
 };
 
@@ -54,13 +56,15 @@ var Controller = new function () {
   };  
   
   this.fetchTable = function (table, limit) {
-    this.executeQuery("SELECT * FROM `" + table +"` LIMIT "+limit);
+    //this.executeQuery("SELECT * FROM `" + table +"` LIMIT "+limit);
+	this.executeQuery("SELECT * FROM `" + table +"`");
   };
   
   this.fetchTableField = function (table, field, limit) {
 	//-1 due to space
 	field = field.substring(0, field.lastIndexOf("(")-1); 
-	this.executeQuery("SELECT DISTINCT COUNT(`" + field + "`) AS occurence, `" + field +"` FROM `" + table +"` GROUP BY `"+ field +"` ORDER BY occurence DESC LIMIT "+limit);
+	//this.executeQuery("SELECT DISTINCT COUNT(`" + field + "`) AS occurence, `" + field +"` FROM `" + table +"` GROUP BY `"+ field +"` ORDER BY occurence DESC LIMIT "+limit);
+	this.executeQuery("SELECT DISTINCT COUNT(`" + field + "`) AS occurence, `" + field +"` FROM `" + table +"` GROUP BY `"+ field +"` ORDER BY occurence DESC");
   };
   
   this.executeQuery = function (query) {
@@ -70,7 +74,9 @@ var Controller = new function () {
       if (xml) {
         var result = asio.parseWebrowset(xml);
         $self.state.result = result;
-        $self._publish();
+		$self.views.commander.update($self.state);
+		$self.views.result.update($self.state);
+        //$self._publish();
       } else {
         alert(error);
       }
@@ -105,18 +111,18 @@ function onSelectTable(event, tableName, limit) {
   Controller.fetchTable(tableName, limit);
 };
 
-function onSelectLimit(){ // set limit according to select box
+/*function onSelectLimit(){ // set limit according to select box 'limitselect'
 	var query = $('#sql-command').val();
 	//edit query to set limit
 	//+6 due to the key word limit and the following space
 	query = query.substring(0,query.toUpperCase().lastIndexOf("LIMIT")+6) + $("#limitselect").val();
     Controller.executeQuery(query);
-};
+};*/
 
 function onSelectField(event, fieldName, limit) {
   event.preventDefault();
   event.stopPropagation();
-  Controller.fetchTableField($(event.target).parent().parent().attr("xasiotablename"), fieldName, limit);
+  Controller.fetchTableField($(event.target).parent().parent().parent().attr("xasiotablename"), fieldName, limit);
 };
 
 function overrideForm() {
@@ -131,45 +137,16 @@ function overrideForm() {
 
 function downloadTable() {
 	$('#sql-download-form').submit(function(event){ //listen for submit event
-	  var target = asio.endpoint();
-	  $('#sql-download-form').attr('action', target);
-		$('#sql-download-command').val($('#sql-command').val());
+		$('#sql-download-command').val($('#sql-command').val())
 		return true;
     });
 }; 
-
-//makes sql-explorer list collapsable
-function prepareDBList() {
-	$('#dblist').find('li:has(ul)').unbind('click').click(function(event) {
-		if(this == event.target) {
-			$(this).toggleClass('expanded');
-			$(this).children('ul').toggle('medium');
-		}
-		return false;
-	}).addClass('collapsed').removeClass('expanded').children('ul').hide();
- 
-	//Hack to add links inside the cv
-	$('#dblist a').unbind('click').click(function() {
-		window.open($(this).attr('href'));
-		return false;
-	});
-	//Create the button functionality
-	/*$('#expandList').unbind('click').click(function() {
-		$('.collapsed').addClass('expanded');
-		$('.collapsed').children().show('medium');
-	})
-	$('#collapseList').unbind('click').click(function() {
-		$('.collapsed').removeClass('expanded');
-		$('.collapsed').children().hide('medium');
-	})*/
-}
 
 //==============================================================>
 // BOOTSTRAPPING
 function main() {
   Controller.sync();
   overrideForm();
-  prepareDBList();
 };
 
 $(document).ready(main);
