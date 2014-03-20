@@ -41,13 +41,23 @@ public class ResponseMonitor extends TestWatcher {
     if (response.isPresent()) {
       responseText = stringify(response.get());
     }
+    String requestText = describeRequest();
     if (e instanceof AssertionError) {
-      log.error("{} failed expectation {} \nreceived response :\n{}", description,
-                e.getMessage(), responseText);
+      log.error("{} failed expectation {} \non {}\nreceived response :\n{}", description,
+                e.getMessage(), requestText, responseText);
     } else {
-      log.error("{} failed with internal error {} \nreceived response :\n{}", description,
-                e.getMessage(), responseText, e);
+      log.error("{} failed with internal error {}\non {}\nreceived response :\n{}", description,
+                e.getMessage(), requestText, responseText, e);
     }
+  }
+
+  private String describeRequest() {
+    WebClient client = provider.get();
+    if (client == null) {
+      return "no request information captured";
+    }
+    return String.format(Locale.ENGLISH, "request to %s -> %s",
+                                       client.getCurrentURI(), client.getHeaders());
   }
 
   private Optional<Response> fetchResponse() {
@@ -77,7 +87,7 @@ public class ResponseMonitor extends TestWatcher {
    * is consumed and copied to the builder.
    *
    * @param entity to print
-   * @param to builder to hold text data
+   * @param to     builder to hold text data
    * @return the given builder
    */
   private StringBuilder appendEntity(final Object entity, final StringBuilder to) {
