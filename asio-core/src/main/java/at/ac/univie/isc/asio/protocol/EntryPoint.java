@@ -1,23 +1,28 @@
 package at.ac.univie.isc.asio.protocol;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.security.Principal;
 import java.util.EnumSet;
 import java.util.Set;
 
+import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import at.ac.univie.isc.asio.DatasetOperation.Action;
 import at.ac.univie.isc.asio.Language;
+import at.ac.univie.isc.asio.metadata.DatasetMetadata;
+import at.ac.univie.isc.asio.metadata.MockMetadata;
 import at.ac.univie.isc.asio.security.VphTokenExtractor;
 
 @Path("/{permission: (read|full) }")
@@ -39,6 +44,13 @@ public class EntryPoint {
   public EntryPoint(final EndpointSupplier endpoints) {
     super();
     this.endpoints = endpoints;
+  }
+
+  @GET
+  @Path("/meta")
+  @Produces( { MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON } )
+  public DatasetMetadata serveMetadata() {
+    return MockMetadata.INSTANCE;
   }
 
   @Path("/{language: (sql|sparql) }")

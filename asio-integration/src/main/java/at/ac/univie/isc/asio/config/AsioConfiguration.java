@@ -1,10 +1,11 @@
 package at.ac.univie.isc.asio.config;
 
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
+import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import org.apache.cxf.jaxrs.provider.json.JSONProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.PropertySource;
+
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import at.ac.univie.isc.asio.DatasetEngine;
 import at.ac.univie.isc.asio.common.IdGenerator;
@@ -29,13 +35,9 @@ import at.ac.univie.isc.asio.protocol.PrototypeEngineProvider;
 import at.ac.univie.isc.asio.transport.JdkPipeTransferFactory;
 import at.ac.univie.isc.asio.transport.Transfer;
 
-import com.google.common.base.Supplier;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
 /**
  * Setup the asio endpoint infrastructure.
- * 
+ *
  * @author Chris Borckholder
  */
 @Configuration
@@ -73,6 +75,14 @@ public class AsioConfiguration {
   @Bean(name = "asio_accept_tunnel")
   public AcceptTunnelFilter tunnelFilter() {
     return new AcceptTunnelFilter();
+  }
+
+  @Bean(name = "json_serializer")
+  public JSONProvider jsonSerializer() {
+    JSONProvider provider = new JSONProvider();
+    provider.setNamespaceMap(
+        ImmutableMap.of("http://isc.univie.ac.at/2014/asio/metadata", "asio"));
+    return provider;
   }
 
   // asio frontend components

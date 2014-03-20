@@ -1,20 +1,22 @@
 package at.ac.univie.isc.asio.acceptance;
 
-import java.net.URI;
-
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableMap;
 
 import org.apache.cxf.jaxrs.client.WebClient;
+import org.apache.cxf.jaxrs.provider.json.JSONProvider;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
+import java.net.URI;
+
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import at.ac.univie.isc.asio.tool.JaxrsClientProvider;
 import at.ac.univie.isc.asio.tool.ResponseMonitor;
-
-import com.google.common.base.Charsets;
 
 
 public abstract class AcceptanceHarness {
@@ -38,7 +40,10 @@ public abstract class AcceptanceHarness {
 
   @Rule
   public TestRule clientProvider() {
-    provider = new JaxrsClientProvider(getTargetUrl());
+    JSONProvider jsonSerializer = new JSONProvider();
+    jsonSerializer.setNamespaceMap(
+        ImmutableMap.of("http://isc.univie.ac.at/2014/asio/metadata", "asio"));
+    provider = new JaxrsClientProvider(getTargetUrl()).with(jsonSerializer);
     final ResponseMonitor monitor = new ResponseMonitor(provider);
     return RuleChain.outerRule(provider).around(monitor);
   }

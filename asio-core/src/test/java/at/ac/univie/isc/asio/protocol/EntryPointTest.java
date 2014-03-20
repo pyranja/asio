@@ -1,14 +1,6 @@
 package at.ac.univie.isc.asio.protocol;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.util.Set;
-
-import javax.ws.rs.ApplicationPath;
-import javax.ws.rs.core.Application;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status.Family;
+import com.google.common.collect.ImmutableSet;
 
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.Before;
@@ -19,13 +11,24 @@ import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.mockito.Mockito;
 
+import java.util.Set;
+
+import javax.ws.rs.ApplicationPath;
+import javax.ws.rs.core.Application;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status.Family;
+
 import at.ac.univie.isc.asio.Language;
 import at.ac.univie.isc.asio.frontend.DatasetExceptionMapper;
+import at.ac.univie.isc.asio.metadata.DatasetMetadata;
+import at.ac.univie.isc.asio.metadata.MockMetadata;
 import at.ac.univie.isc.asio.tool.EmbeddedJaxrsServer;
 import at.ac.univie.isc.asio.tool.JaxrsClientProvider;
 import at.ac.univie.isc.asio.tool.ResponseMonitor;
 
-import com.google.common.collect.ImmutableSet;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 public class EntryPointTest {
 
@@ -75,5 +78,20 @@ public class EntryPointTest {
     final Response response = client.get();
     assertThat(response.getStatusInfo().getFamily(), is(Family.CLIENT_ERROR));
     Mockito.verifyZeroInteractions(application.supplier);
+  }
+  
+  // meta data
+  @Test
+  public void should_serve_metadata_document() throws Exception {
+    client.path("/read/meta");
+    final Response response = client.get();
+    assertThat(response.getStatusInfo().getFamily(), is(Family.SUCCESSFUL));
+  }
+
+  @Test
+  public void should_provide_mock_metadata() throws Exception {
+    client.path("/read/meta");
+    final DatasetMetadata metadata = client.get(DatasetMetadata.class);
+    assertThat(metadata, is(equalTo(MockMetadata.INSTANCE)));
   }
 }

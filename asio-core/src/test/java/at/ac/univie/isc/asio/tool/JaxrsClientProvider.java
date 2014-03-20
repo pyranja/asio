@@ -1,11 +1,14 @@
 package at.ac.univie.isc.asio.tool;
 
-import java.net.URI;
+import com.google.common.base.Supplier;
 
+import org.apache.cxf.jaxrs.client.JAXRSClientFactoryBean;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.rules.ExternalResource;
 
-import com.google.common.base.Supplier;
+import java.net.URI;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Sets up a cxf WebClient before each test and disposes it after the test. If a test fails, the
@@ -16,11 +19,13 @@ import com.google.common.base.Supplier;
 public final class JaxrsClientProvider extends ExternalResource implements Supplier<WebClient> {
 
   private final URI baseAddress;
+  private final List<Object> providers;
   private WebClient client;
 
   public JaxrsClientProvider(final URI baseAddress) {
     super();
     this.baseAddress = baseAddress;
+    this.providers = new CopyOnWriteArrayList<>();
   }
 
   @Override
@@ -29,9 +34,17 @@ public final class JaxrsClientProvider extends ExternalResource implements Suppl
     return client;
   }
 
+  public JaxrsClientProvider with(Object provider) {
+    providers.add(provider);
+    return this;
+  }
+
   @Override
   protected void before() throws Throwable {
-    client = WebClient.create(baseAddress);
+    JAXRSClientFactoryBean factory = new JAXRSClientFactoryBean();
+    factory.setAddress(baseAddress.toString());
+    factory.setProviders(providers);
+    client = factory.createWebClient();
   }
 
   @Override

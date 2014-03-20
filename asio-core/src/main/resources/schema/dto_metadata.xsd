@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="http://isc.univie.ac.at/2014/asio/metadata"
+            xmlns="http://isc.univie.ac.at/2014/asio/metadata"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:asio="http://isc.univie.ac.at/2014/asio/metadata"
+            xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="2.1"
+            elementFormDefault="qualified" attributeFormDefault="qualified"
+            >
+
+    <xsd:annotation>
+        <xsd:documentation>
+            Dataset metadata fragment, commpatible to metadata representation @
+            http://vphshare.atosresearch.eu/metadata-extended
+        </xsd:documentation>
+        <xsd:appinfo>
+            <jxb:schemaBindings>
+                <jxb:package name="at.ac.univie.isc.asio.metadata"/>
+                <jxb:nameXmlTransform>
+                    <jxb:elementName suffix="Metadata"/>
+                </jxb:nameXmlTransform>
+            </jxb:schemaBindings>
+        </xsd:appinfo>
+    </xsd:annotation>
+
+    <!-- response DTO holding dataset metadata -->
+    <xsd:element name="dataset">
+        <xsd:complexType>
+            <xsd:all>
+                <xsd:element name="globalID" type="xsd:string" nillable="true" minOccurs="0"/>
+                <xsd:element name="localID" type="xsd:string"/>
+                <xsd:element name="sparqlEndPoint" type="xsd:anyURI"/>
+                <xsd:element name="name" type="xsd:string"/>
+                <xsd:element name="type" type="ResourceType"/>
+                <xsd:element name="description" type="xsd:string" nillable="true" minOccurs="0"/>
+                <xsd:element name="tags" type="xsd:string" nillable="true" minOccurs="0"/>
+                <xsd:element name="metadataCreationDate" type="xsd:date" nillable="true" minOccurs="0"/>
+                <xsd:element name="metadataUpdateDate" type="xsd:date" nillable="true" minOccurs="0"/>
+                <xsd:element name="creationDate" type="xsd:date" nillable="true" minOccurs="0"/>
+                <xsd:element name="updateDate" type="xsd:date" nillable="true" minOccurs="0"/>
+                <xsd:element name="author" type="xsd:string" nillable="true" minOccurs="0"/>
+                <xsd:element name="category" type="Category" nillable="true" minOccurs="0"/>
+                <xsd:element name="status" type="MetadataStatus"/>
+                <xsd:element name="semanticAnnotations" type="SemanticConceptList" nillable="true" minOccurs="0"/>
+                <xsd:element name="licence" type="LicenceType" nillable="true" minOccurs="0"/>
+                <xsd:element name="rating" type="xsd:float" nillable="true" minOccurs="0"/>
+                <xsd:element name="views" type="xsd:int" nillable="true" minOccurs="0"/>
+                <xsd:element name="resourceURL" type="xsd:anyURI" nillable="true" minOccurs="0"/>
+                <xsd:element name="relatedResources" type="RelatedResourceList" nillable="true" minOccurs="0"/>
+                <xsd:element name="linkedTo" type="LinkedToList" nillable="true" minOccurs="0"/>
+                <xsd:element name="provenance" type="xsd:string" nillable="true" minOccurs="0"/>
+                <xsd:element name="icon" type="xsd:anyURI" nillable="true" minOccurs="0"/>
+            </xsd:all>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:simpleType name="ResourceType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="Dataset"/>
+            <xsd:enumeration value="File"/>
+            <xsd:enumeration value="SemanticWebService"/>
+            <xsd:enumeration value="Workflow"/>
+            <xsd:enumeration value="AtomicService"/>
+            <xsd:enumeration value="Workspace"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="Category">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="Cardiovascular"/>
+            <xsd:enumeration value="Respiratory"/>
+            <xsd:enumeration value="Genetics"/>
+            <xsd:enumeration value="Infection &amp; Immunology"/>
+            <xsd:enumeration value="Musculoskeletal"/>
+            <xsd:enumeration value="Gastroenerology"/>
+            <xsd:enumeration value="Neurology"/>
+            <xsd:enumeration value="Oncology"/>
+            <xsd:enumeration value="Multidisciplinary"/>
+            <xsd:enumeration value="Information Technology"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="MetadataStatus">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="Active"/>
+            <xsd:enumeration value="Non Active"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="SemanticConceptList">
+        <xsd:sequence>
+            <xsd:element name="semanticConcept" type="SemanticConcept" maxOccurs="unbounded" nillable="true" form="qualified"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="SemanticConcept">
+        <xsd:sequence>
+            <xsd:element name="conceptURI" type="xsd:anyURI"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:simpleType name="LicenceType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="GPL"/>
+            <xsd:enumeration value="LGPL"/>
+            <xsd:enumeration value="EULA"/>
+            <xsd:enumeration value="OLP"/>
+            <xsd:enumeration value="TLP"/>
+            <xsd:enumeration value="VLP"/>
+            <xsd:enumeration value="EDU"/>
+            <xsd:enumeration value="GOV"/>
+            <xsd:enumeration value="BSD"/>
+            <xsd:enumeration value="MIT"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="RelatedResourceList">
+        <xsd:sequence maxOccurs="unbounded">
+            <xsd:element name="relatedResource" type="xsd:string" maxOccurs="unbounded" form="qualified"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="LinkedToList">
+        <xsd:sequence maxOccurs="unbounded">
+            <xsd:element name="link" type="LinkedTo" maxOccurs="unbounded" nillable="true" form="qualified"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="LinkedTo">
+        <xsd:all>
+            <xsd:element name="linkURI" type="xsd:anyURI"/>
+            <xsd:element name="linkType" type="LinkType"/>
+        </xsd:all>
+    </xsd:complexType>
+
+    <xsd:simpleType name="LinkType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="documentation"/>
+            <xsd:enumeration value="externalLink"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+</xsd:schema>
