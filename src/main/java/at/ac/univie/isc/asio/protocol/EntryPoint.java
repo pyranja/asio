@@ -1,8 +1,5 @@
 package at.ac.univie.isc.asio.protocol;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.security.Principal;
 import java.util.EnumSet;
 import java.util.Set;
@@ -19,11 +16,15 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import at.ac.univie.isc.asio.DatasetOperation.Action;
 import at.ac.univie.isc.asio.Language;
 import at.ac.univie.isc.asio.metadata.DatasetMetadata;
-import at.ac.univie.isc.asio.metadata.MockMetadata;
 import at.ac.univie.isc.asio.security.VphTokenExtractor;
+
+import com.google.common.base.Supplier;
 
 @Path("/{permission: (read|full) }")
 public class EntryPoint {
@@ -40,17 +41,19 @@ public class EntryPoint {
   private HttpHeaders headers;
 
   private final EndpointSupplier endpoints;
+  private final Supplier<DatasetMetadata> metadata;
 
-  public EntryPoint(final EndpointSupplier endpoints) {
+  public EntryPoint(final EndpointSupplier endpoints, final Supplier<DatasetMetadata> metadata) {
     super();
     this.endpoints = endpoints;
+    this.metadata = metadata;
   }
 
   @GET
   @Path("/meta")
-  @Produces( { MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON } )
+  @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public DatasetMetadata serveMetadata() {
-    return MockMetadata.INSTANCE;
+    return metadata.get();
   }
 
   @Path("/{language: (sql|sparql) }")

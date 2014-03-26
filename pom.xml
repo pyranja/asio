@@ -1,24 +1,23 @@
 <?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-  <groupId>at.ac.univie.isc</groupId>
-  <artifactId>asio</artifactId>
-  <version>0.3.2</version>
-  <packaging>war</packaging>
+	<groupId>at.ac.univie.isc</groupId>
+	<artifactId>asio</artifactId>
+	<version>0.3.2</version>
+	<packaging>war</packaging>
 
-  <name>ASIO</name>
-  <description>HTTP endpoint for querying dataset services</description>
+	<name>ASIO</name>
+	<description>HTTP endpoint for querying dataset services</description>
 
-  <repositories>
-    <!-- local copy of d2rq dependency -->
-    <repository>
-      <id>d2rq-local</id>
-      <url>file://${basedir}/d2r</url>
-    </repository>
-  </repositories>
+	<repositories>
+		<!-- local copy of d2rq dependency -->
+		<repository>
+			<id>d2rq-local</id>
+			<url>file://${basedir}/d2r</url>
+		</repository>
+	</repositories>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -31,10 +30,10 @@
     <version.jetty>9.1.3.v20140225</version.jetty>
   </properties>
 
-  <scm>
-    <developerConnection>scm:git|git@gitorious.cs.univie.ac.at:vce/vqs.git</developerConnection>
-    <tag>release-0.2.0</tag>
-  </scm>
+	<scm>
+		<developerConnection>scm:git|git@gitorious.cs.univie.ac.at:vce/vqs.git</developerConnection>
+		<tag>release-0.2.0</tag>
+	</scm>
 
 	<!-- shared dependencies -->
 	<dependencies>
@@ -468,18 +467,18 @@
     </plugins>
   </build>
 
-  <reporting>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>2.6</version>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.9</version>
-      </plugin>
-    </plugins>
-  </reporting>
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>2.6</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.9</version>
+			</plugin>
+		</plugins>
+	</reporting>
 </project>

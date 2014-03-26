@@ -1,10 +1,24 @@
 package at.ac.univie.isc.asio.config;
 
+import at.ac.univie.isc.asio.DatasetEngine;
+import at.ac.univie.isc.asio.common.IdGenerator;
+import at.ac.univie.isc.asio.common.RandomIdGenerator;
+import at.ac.univie.isc.asio.frontend.*;
+import at.ac.univie.isc.asio.metadata.DatasetMetadata;
+import at.ac.univie.isc.asio.metadata.RemoteMetadata;
+import at.ac.univie.isc.asio.metadata.AtosMetadataService;
+import at.ac.univie.isc.asio.metadata.StaticMetadata;
+import at.ac.univie.isc.asio.protocol.EndpointSupplier;
+import at.ac.univie.isc.asio.protocol.EntryPoint;
+import at.ac.univie.isc.asio.protocol.OperationParser;
+import at.ac.univie.isc.asio.protocol.PrototypeEngineProvider;
+import at.ac.univie.isc.asio.transport.JdkPipeTransferFactory;
+import at.ac.univie.isc.asio.transport.Transfer;
 import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
 import org.apache.cxf.jaxrs.provider.json.JSONProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,27 +27,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 
+import java.net.URI;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-
-import at.ac.univie.isc.asio.DatasetEngine;
-import at.ac.univie.isc.asio.common.IdGenerator;
-import at.ac.univie.isc.asio.common.RandomIdGenerator;
-import at.ac.univie.isc.asio.frontend.AcceptTunnelFilter;
-import at.ac.univie.isc.asio.frontend.AsyncProcessor;
-import at.ac.univie.isc.asio.frontend.DatasetExceptionMapper;
-import at.ac.univie.isc.asio.frontend.LogContextFilter;
-import at.ac.univie.isc.asio.frontend.OperationFactory;
-import at.ac.univie.isc.asio.frontend.VariantConverter;
-import at.ac.univie.isc.asio.protocol.EndpointSupplier;
-import at.ac.univie.isc.asio.protocol.EntryPoint;
-import at.ac.univie.isc.asio.protocol.OperationParser;
-import at.ac.univie.isc.asio.protocol.PrototypeEngineProvider;
-import at.ac.univie.isc.asio.transport.JdkPipeTransferFactory;
-import at.ac.univie.isc.asio.transport.Transfer;
 
 /**
  * Setup the asio endpoint infrastructure.
@@ -48,6 +48,9 @@ public class AsioConfiguration {
   /* slf4j-logger */
   private final static Logger log = LoggerFactory.getLogger(AsioConfiguration.class);
 
+  @Autowired
+  private Environment env;
+
   // asio backend components
 
   @Autowired
@@ -57,7 +60,7 @@ public class AsioConfiguration {
 
   @Bean(name = "asio_entry")
   public EntryPoint entryPoint() {
-    return new EntryPoint(endpointSupplier());
+    return new EntryPoint(endpointSupplier(), metadataSupplier());
   }
 
   // JAX-RS provider
@@ -79,9 +82,8 @@ public class AsioConfiguration {
 
   @Bean(name = "json_serializer")
   public JSONProvider jsonSerializer() {
-    JSONProvider provider = new JSONProvider();
-    provider.setNamespaceMap(
-        ImmutableMap.of("http://isc.univie.ac.at/2014/asio/metadata", "asio"));
+    final JSONProvider provider = new JSONProvider();
+    provider.setNamespaceMap(ImmutableMap.of("http://isc.univie.ac.at/2014/asio/metadata", "asio"));
     return provider;
   }
 
@@ -91,6 +93,21 @@ public class AsioConfiguration {
   public EndpointSupplier endpointSupplier() {
     log.info("[BOOT] using engines {}", engines);
     return new PrototypeEngineProvider(engines, parser(), processor(), transferFactory());
+  }
+
+  @Bean
+  public Supplier<DatasetMetadata> metadataSupplier() {
+    final boolean contactRemote = env.getProperty("asio.meta.enable", Boolean.class, Boolean.FALSE);
+    if (contactRemote) {
+      final String id = env.getRequiredProperty("asio.meta.id");
+      final URI repository = URI.create(env.getRequiredProperty("asio.meta.repository"));
+      AtosMetadataService proxy = new AtosMetadataService(repository);
+      log.info("[BOOT] using metadata service {}", proxy);
+      return new RemoteMetadata(proxy, id);
+    } else {
+      log.info("[BOOT] metadata resolution disabled");
+      return Suppliers.ofInstance(StaticMetadata.NOT_AVAILABLE);
+    }
   }
 
   @Bean
