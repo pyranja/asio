@@ -1,7 +1,17 @@
 package at.ac.univie.isc.asio.protocol;
 
-import com.google.common.collect.ImmutableSet;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
+import java.util.Set;
+
+import javax.ws.rs.ApplicationPath;
+import javax.ws.rs.core.Application;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status.Family;
+
+import com.google.common.base.Suppliers;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -11,24 +21,15 @@ import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.mockito.Mockito;
 
-import java.util.Set;
-
-import javax.ws.rs.ApplicationPath;
-import javax.ws.rs.core.Application;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status.Family;
-
 import at.ac.univie.isc.asio.Language;
 import at.ac.univie.isc.asio.frontend.DatasetExceptionMapper;
 import at.ac.univie.isc.asio.metadata.DatasetMetadata;
-import at.ac.univie.isc.asio.metadata.MockMetadata;
+import at.ac.univie.isc.asio.metadata.StaticMetadata;
 import at.ac.univie.isc.asio.tool.EmbeddedJaxrsServer;
 import at.ac.univie.isc.asio.tool.JaxrsClientProvider;
 import at.ac.univie.isc.asio.tool.ResponseMonitor;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import com.google.common.collect.ImmutableSet;
 
 public class EntryPointTest {
 
@@ -39,7 +40,8 @@ public class EntryPointTest {
 
     @Override
     public Set<Object> getSingletons() {
-      return ImmutableSet.of(new EntryPoint(supplier), new DatasetExceptionMapper());
+      return ImmutableSet.of(new EntryPoint(supplier, Suppliers.ofInstance(StaticMetadata.MOCK_METADATA)),
+          new DatasetExceptionMapper());
     }
   }
 
@@ -79,7 +81,7 @@ public class EntryPointTest {
     assertThat(response.getStatusInfo().getFamily(), is(Family.CLIENT_ERROR));
     Mockito.verifyZeroInteractions(application.supplier);
   }
-  
+
   // meta data
   @Test
   public void should_serve_metadata_document() throws Exception {
@@ -92,6 +94,6 @@ public class EntryPointTest {
   public void should_provide_mock_metadata() throws Exception {
     client.path("/read/meta");
     final DatasetMetadata metadata = client.get(DatasetMetadata.class);
-    assertThat(metadata, is(equalTo(MockMetadata.INSTANCE)));
+    assertThat(metadata, is(equalTo(StaticMetadata.MOCK_METADATA)));
   }
 }
