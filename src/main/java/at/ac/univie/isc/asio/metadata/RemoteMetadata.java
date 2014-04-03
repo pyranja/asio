@@ -4,6 +4,8 @@ import com.google.common.base.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * Fetch metadata from remote repository, serve dummy if not available.
  * Created by pyranja on 29/03/2014.
@@ -16,8 +18,8 @@ public class RemoteMetadata implements Supplier<DatasetMetadata> {
   private final String id;
 
   public RemoteMetadata(final AtosMetadataService proxy, final String id) {
-    this.proxy = proxy;
-    this.id = id;
+    this.proxy = checkNotNull(proxy);
+    this.id = checkNotNull(id);
   }
 
   @Override

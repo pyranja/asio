@@ -1,5 +1,14 @@
 package at.ac.univie.isc.asio.security;
 
+import at.ac.univie.isc.asio.DatasetUsageException;
+import com.google.common.base.Charsets;
+import com.google.common.base.Optional;
+import com.google.common.collect.Iterables;
+import com.google.common.io.BaseEncoding;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.core.HttpHeaders;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.security.Principal;
@@ -7,18 +16,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.ws.rs.core.HttpHeaders;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import at.ac.univie.isc.asio.DatasetUsageException;
-
-import com.google.common.base.Charsets;
-import com.google.common.base.Optional;
-import com.google.common.collect.Iterables;
-import com.google.common.io.BaseEncoding;
 
 public class VphTokenExtractor {
 
@@ -62,10 +59,10 @@ public class VphTokenExtractor {
 
   private Optional<String> findAuthentication(final HttpHeaders headers) {
     final List<String> authHeader = headers.getRequestHeader(HttpHeaders.AUTHORIZATION);
-    if (authHeader.size() == 1) {
-      return Optional.of(Iterables.getOnlyElement(authHeader));
-    } else if (authHeader.isEmpty()) {
+    if (authHeader == null || authHeader.isEmpty()) {
       return Optional.absent();
+    } else if (authHeader.size() == 1) {
+      return Optional.of(Iterables.getOnlyElement(authHeader));
     } else {
       log.warn("illegal authentication header {}", authHeader);
       throw new DatasetUsageException("illegal access credentials");
