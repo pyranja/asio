@@ -9,3 +9,7 @@ target/
 # intellij #
 .idea/
 *.iml
+
+# vagrant exec
+.vagrant
+vm/shared/
