@@ -27,7 +27,7 @@ public class DatasourceSpec {
     super();
     this.jdbcUrl = checkNotNull(emptyToNull(jdbcUrl), "no JDBC connection URL given");
     this.jdbcDriver = checkNotNull(emptyToNull(jdbcDriver), "missing driver class for %s", jdbcUrl);
-    this.username = checkNotNull(emptyToNull(username), "missing username for %s", jdbcUrl);
+    this.username = nullToEmpty(username);
     this.password = nullToEmpty(password);
   }
 

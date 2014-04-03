@@ -4,8 +4,6 @@ import at.ac.univie.isc.asio.common.Resources;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import org.apache.cxf.jaxrs.client.WebClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.ws.rs.client.ClientException;
@@ -49,6 +47,7 @@ public class AtosMetadataService {
   }
 
   public DatasetMetadata fetchMetadataForId(final String id) {
+    checkNotNull(id, "illegal dataset id");
     final WebClient client = prepareClient(repository, id);
     Response response = null;
     try {
