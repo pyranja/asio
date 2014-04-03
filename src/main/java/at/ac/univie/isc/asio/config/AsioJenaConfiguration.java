@@ -1,29 +1,34 @@
 package at.ac.univie.isc.asio.config;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-
-import javax.servlet.ServletContext;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
-
-import at.ac.univie.isc.asio.DatasetEngine;
-import at.ac.univie.isc.asio.jena.JenaEngine;
-
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import com.hp.hpl.jena.rdf.model.Model;
 
 import de.fuberlin.wiwiss.d2rq.SystemLoader;
 import de.fuberlin.wiwiss.d2rq.map.Database;
 import de.fuberlin.wiwiss.d2rq.server.ConfigLoader;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.core.env.Environment;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+
+import javax.servlet.ServletContext;
+
+import at.ac.univie.isc.asio.DatasetEngine;
+import at.ac.univie.isc.asio.jena.JenaEngine;
 
 @Configuration
 public class AsioJenaConfiguration {
@@ -63,6 +68,13 @@ public class AsioJenaConfiguration {
     final SystemLoader loader = new SystemLoader();
     loader.setMappingURL(resolve(mapping));
     return loader;
+  }
+
+  @Bean
+  @Qualifier("asio.meta.id")
+  @Primary
+  public Supplier<String> mappingDatasetIdResolver() {
+    return Suppliers.ofInstance(d2rLoader().getServerConfig().baseURI());
   }
 
   @Bean(destroyMethod = "shutdownNow")

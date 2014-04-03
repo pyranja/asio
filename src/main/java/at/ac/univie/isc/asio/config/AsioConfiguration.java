@@ -1,28 +1,16 @@
 package at.ac.univie.isc.asio.config;
 
-import at.ac.univie.isc.asio.DatasetEngine;
-import at.ac.univie.isc.asio.common.IdGenerator;
-import at.ac.univie.isc.asio.common.RandomIdGenerator;
-import at.ac.univie.isc.asio.frontend.*;
-import at.ac.univie.isc.asio.metadata.DatasetMetadata;
-import at.ac.univie.isc.asio.metadata.RemoteMetadata;
-import at.ac.univie.isc.asio.metadata.AtosMetadataService;
-import at.ac.univie.isc.asio.metadata.StaticMetadata;
-import at.ac.univie.isc.asio.protocol.EndpointSupplier;
-import at.ac.univie.isc.asio.protocol.EntryPoint;
-import at.ac.univie.isc.asio.protocol.OperationParser;
-import at.ac.univie.isc.asio.protocol.PrototypeEngineProvider;
-import at.ac.univie.isc.asio.transport.JdkPipeTransferFactory;
-import at.ac.univie.isc.asio.transport.Transfer;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import org.apache.cxf.jaxrs.provider.json.JSONProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
@@ -34,6 +22,26 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+
+import at.ac.univie.isc.asio.DatasetEngine;
+import at.ac.univie.isc.asio.common.IdGenerator;
+import at.ac.univie.isc.asio.common.RandomIdGenerator;
+import at.ac.univie.isc.asio.frontend.AcceptTunnelFilter;
+import at.ac.univie.isc.asio.frontend.AsyncProcessor;
+import at.ac.univie.isc.asio.frontend.DatasetExceptionMapper;
+import at.ac.univie.isc.asio.frontend.LogContextFilter;
+import at.ac.univie.isc.asio.frontend.OperationFactory;
+import at.ac.univie.isc.asio.frontend.VariantConverter;
+import at.ac.univie.isc.asio.metadata.AtosMetadataService;
+import at.ac.univie.isc.asio.metadata.DatasetMetadata;
+import at.ac.univie.isc.asio.metadata.RemoteMetadata;
+import at.ac.univie.isc.asio.metadata.StaticMetadata;
+import at.ac.univie.isc.asio.protocol.EndpointSupplier;
+import at.ac.univie.isc.asio.protocol.EntryPoint;
+import at.ac.univie.isc.asio.protocol.OperationParser;
+import at.ac.univie.isc.asio.protocol.PrototypeEngineProvider;
+import at.ac.univie.isc.asio.transport.JdkPipeTransferFactory;
+import at.ac.univie.isc.asio.transport.Transfer;
 
 /**
  * Setup the asio endpoint infrastructure.
@@ -50,6 +58,9 @@ public class AsioConfiguration {
 
   @Autowired
   private Environment env;
+  @Autowired
+  @Qualifier("asio.meta.id")
+  private Supplier<String> datasetIdResolver;
 
   // asio backend components
 
@@ -95,15 +106,27 @@ public class AsioConfiguration {
     return new PrototypeEngineProvider(engines, parser(), processor(), transferFactory());
   }
 
+  // default resolver
+  @Bean
+  @Qualifier("asio.meta.id")
+  public Supplier<String> environmentDatasetIdResolver() {
+    return new Supplier<String>() {
+      @Override
+      public String get() {
+        return env.getRequiredProperty("asio.meta.id");
+      }
+    };
+  }
+
   @Bean
   public Supplier<DatasetMetadata> metadataSupplier() {
     final boolean contactRemote = env.getProperty("asio.meta.enable", Boolean.class, Boolean.FALSE);
     if (contactRemote) {
-      final String id = env.getRequiredProperty("asio.meta.id");
       final URI repository = URI.create(env.getRequiredProperty("asio.meta.repository"));
       AtosMetadataService proxy = new AtosMetadataService(repository);
-      log.info("[BOOT] using metadata service {}", proxy);
-      return new RemoteMetadata(proxy, id);
+      final String datasetId = datasetIdResolver.get();
+      log.info("[BOOT] using metadata service {} with id {}", proxy, datasetId);
+      return new RemoteMetadata(proxy, datasetId);
     } else {
       log.info("[BOOT] metadata resolution disabled");
       return Suppliers.ofInstance(StaticMetadata.NOT_AVAILABLE);

@@ -1,9 +1,16 @@
 package at.ac.univie.isc.asio.acceptance;
 
-import static at.ac.univie.isc.asio.tool.IsIsomorphic.isomorphicWith;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.equalToIgnoringWhiteSpace;
-import static org.junit.Assert.assertThat;
+import com.google.common.base.Charsets;
+import com.google.common.collect.Table;
+import com.google.common.io.ByteStreams;
+
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.sparql.vocabulary.FOAF;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.openjena.riot.Lang;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,19 +19,13 @@ import java.net.URI;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.openjena.riot.Lang;
-
 import at.ac.univie.isc.asio.tool.CsvToTable;
 import at.ac.univie.isc.asio.tool.FunctionalTest;
 
-import com.google.common.base.Charsets;
-import com.google.common.collect.Table;
-import com.google.common.io.ByteStreams;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.sparql.vocabulary.FOAF;
+import static at.ac.univie.isc.asio.tool.IsIsomorphic.isomorphicWith;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.equalToIgnoringWhiteSpace;
+import static org.junit.Assert.assertThat;
 
 @Category(FunctionalTest.class)
 public class SparqlModesTest extends AcceptanceHarness {
@@ -37,7 +38,8 @@ public class SparqlModesTest extends AcceptanceHarness {
   @Test
   public void should_execute_sparql_select() throws Exception {
     final String query =
-        "SELECT ?id WHERE { <http://localhost:2020/PUBLIC/PERSON/1> <http://localhost:2020/vocab/PUBLIC_PERSON_ID> ?id }";
+        "SELECT ?id WHERE { <http://test.com/integration/PUBLIC/PERSON/1> "
+        + "<http://test.com/integration/vocab/PUBLIC_PERSON_ID> ?id }";
     client.accept(CSV).query(PARAM_QUERY, query);
     response = client.get();
     final Table<Integer, String, String> result =
