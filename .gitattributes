@@ -1,2 +1,9 @@
-# force LF line endings everywhere
-* text eol=lf
+# enable git auto handling
+* text=auto
+
+# force LF endings for source files
+*.java  eol=lf
+*.sh    eol=lf
+*.ps1   eol=lf
+*.xml   eol=lf
+*.js    eol=lf

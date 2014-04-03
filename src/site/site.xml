@@ -2,12 +2,22 @@
 <project xmlns="http://maven.apache.org/DECORATION/1.4.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/DECORATION/1.4.0 http://maven.apache.org/xsd/decoration-1.4.0.xsd">
+  <bannerLeft>
+    <name>University of Vienna</name>
+    <src>img/logo_univie.gif</src>
+    <href>http://www.par.univie.ac.at</href>
+  </bannerLeft>
+  <bannerRight>
+    <name>VPH-Share</name>
+    <src>img/logo_vph.png</src>
+    <href>http://vph-share.eu</href>
+  </bannerRight>
   <body>
     <menu name="Overview">
-      <item name="Protocol" href="protocol.html" />
-      <item name="Migration" href="migration.html" />
+      <item name="Protocol" href="protocol.html"/>
+      <item name="Migration" href="migration.html"/>
     </menu>
-    <menu ref="reports" />
+    <menu ref="reports"/>
   </body>
   <skin>
     <groupId>org.apache.maven.skins</groupId>
