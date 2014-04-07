@@ -5,6 +5,7 @@
   <baseDirectory>asio</baseDirectory>
   <formats>
     <format>zip</format>
+    <format>tar.gz</format>
   </formats>
 
   <fileSets>
