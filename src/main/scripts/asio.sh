@@ -16,11 +16,15 @@ echo "resolved home dir as ${resolved_path}"
 # resolve env variables
 : ${CATALINA_HOME:="/usr/share/tomcat"}
 : ${ASIO_HOME:="${resolved_path}"}
+# used by the migrate command to store converted web applications
+MIGRATION_BACKUP="${ASIO_HOME}/backups"
 
 function usage () {
   echo ""
-  echo "Usage : asio.sh command dataset_name path/to/config.ttl"
+  echo "Usage : asio.sh command [dataset_name] [path/to/config.ttl]"
   echo "  deploy    create a new dataset instance using the given name and d2r mapping"
+  echo "  undeploy  remove a dataset intance with the given name by deleting the webapp folder"
+  echo "  migrate   attempt to convert all local webapps into asio instances"
 }
 
 # print an error message and exit with return code 1
@@ -74,6 +78,8 @@ function deploy () {
   cp -r "${source_asio}/WEB-INF/etc" "${target_webapp}/WEB-INF/"
   cp "${mapping_file}" "${target_webapp}/WEB-INF/config.ttl"
   cp "${source_asio}/WEB-INF/web.xml" "${target_webapp}/WEB-INF/web.xml"
+  # marks this web application as an asio instance for migration
+  touch "${target_webapp}/.asio"
   echo "${dataset_name} deployed at ${target_webapp}"
 }
 
@@ -90,9 +96,78 @@ function undeploy () {
   # sanity checks
   local target_webapp="${CATALINA_HOME}/webapps/${dataset_name}"
   verify_directory "${target_webapp}"
+  if [[ ! -f "${target_webapp}/.asio" ]]; then
+    fail "this seems to be no asio instance - .asio not found"
+  fi
   # danger !
   rm -rf "${target_webapp}"
   echo "${dataset_name} undeployed from ${target_webapp}"
+}
+
+# migration sanity checks
+# args :
+#   dataset_name
+# return : 0 if valid candidate, 1 else
+function verify_migration_candidate () {
+  local candidate="$1"
+  local target="${CATALINA_HOME}/webapps/${candidate}"
+  if [[ ! -d "${target}" ]]; then
+    echo "missing d2r webapp for ${candidate}"
+    return 1
+  fi
+  if [[ ! -d "${target}Service" ]]; then
+    echo "missing vce webapp for ${candidate}"
+    return 1
+  fi
+  if [[ ! -r "${target}/WEB-INF/config.ttl" ]]; then
+    echo "missing d2r mapping for ${candidate}"
+    return 1
+  fi
+  if [[ -f "${target}/.asio" ]]; then
+    echo "'.asio' found ${candidate} seems to be an asio instance already"
+    return 1
+  fi
+  return 0
+}
+
+# convert a dataset instance by saving the old d2r and vce webapp to backup folder, then deploying
+# an asio instance with the same name using the d2r mapping from the backed up d2r webapp
+# args :
+#   dataset_name
+# return : void
+function convert () {
+  local name="$1"
+  local webapps="${CATALINA_HOME}/webapps"
+
+  echo "saving ${name} to ${MIGRATION_BACKUP}"
+  mv "${webapps}/${name}/" "${MIGRATION_BACKUP}" || fail "backing up ${name}:d2r failed"
+  mv "${webapps}/${name}Service/" "${MIGRATION_BACKUP}" || fail "backing up ${name}:vce failed"
+
+  local mapping="${MIGRATION_BACKUP}/${name}/WEB-INF/config.ttl"
+  echo "deploying ${name} with ${mapping}"
+  deploy "${name}" "${mapping}" || fail "${name}:deployment failed"
+  return 0
+}
+
+# replace all dataset - datasetService webapp pairs in the local tomcat with a single asio instance
+# args :
+#   none
+# return : void
+function migrate () {
+  verify_directory "${CATALINA_HOME}/webapps"
+  mkdir -p "${MIGRATION_BACKUP}"
+  verify_directory "${MIGRATION_BACKUP}"
+  local candidates=("${CATALINA_HOME}"/webapps/*Service/)
+  for each in "${candidates[@]}"; do
+    dataset=$(basename "${each%Service/}")
+    echo "migrating ${dataset}"
+    if verify_migration_candidate "${dataset}"; then
+      # isolate execution in case of errors
+      (convert "${dataset}") || echo "migrating ${dataset} failed"
+    else
+      echo "skipping ${dataset}"
+    fi
+  done
 }
 
 function main () {
@@ -100,6 +175,7 @@ function main () {
   case "$1" in
     deploy)   deploy $2 $3 ;;
     undeploy) undeploy $2 ;;
+    migrate)  migrate ;;
     help)     usage ;;
     *)        fail "unknown command $1" ; usage ;;
   esac

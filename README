@@ -8,21 +8,23 @@ Recommendation : Unzip asio folder to /usr/share
 
   /path/to/asio/bin/asio.sh deploy <name> </path/to/config.ttl>
 
-This command will create the <name> webapp directory, create appropriate soft links of library files and 
-copies configuration files, the web.xml and the given config.ttl . Some sanity checks are included, for now
-asio.sh will refuse to overwrite an existing webapp.
-##############################################################################################################
-IMPORTANT : asio.sh expects $CATALINA_HOME to be set to the base directory of the target tomcat installation.
-If $CATALINA_HOME is not set, it will default to /usr/share/tomcat .
-##############################################################################################################
+This command will create the <name> webapp directory, create appropriate soft links of library files
+and copies configuration files, the web.xml and the given config.ttl . Some sanity checks are
+included, for now asio.sh will refuse to overwrite an existing webapp.
+####################################################################################################
+IMPORTANT : asio.sh expects $CATALINA_HOME to be set to the base directory of the target tomcat
+installation. If $CATALINA_HOME is not set, it will default to /usr/share/tomcat .
+####################################################################################################
 
 # undeployment
 
   /path/to/asio/bin/asio.sh undeploy <name>
 
-This will _DELETE_ the <name> folder in $CATALINA_HOME/webapps . 
+This will _DELETE_ the <name> folder in $CATALINA_HOME/webapps . asio.sh will refuse to delete
+web application folders without a .asio marker file.
 
 # Notes
 
-asio.sh attempts to discover its installation directory, even if it is invoked through a symlink. If home
-directory resolution fails, the $ASIO_HOME variable may be set manually, pointing to the asio folder.
+asio.sh attempts to discover its installation directory, even if it is invoked through a symlink. If
+home directory resolution fails, the $ASIO_HOME variable may be set manually, pointing to the
+asio folder.
