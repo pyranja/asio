@@ -80,6 +80,8 @@ function deploy () {
   cp "${source_asio}/WEB-INF/web.xml" "${target_webapp}/WEB-INF/web.xml"
   # marks this web application as an asio instance for migration
   touch "${target_webapp}/.asio"
+  # allow rw for all -> asio executed by root, but tomcat may run as other user
+  chmod -R a+rwX "${target_webapp}/WEB-INF/etc"
   echo "${dataset_name} deployed at ${target_webapp}"
 }
 
