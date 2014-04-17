@@ -42,7 +42,7 @@ var Controller = new function () {
         result : null,
       };
 	  
-	  /*********************/
+	  /*******TODO**************/
   this.fetchRowCount = function (table) {
     var query = "SELECT COUNT(*) FROM `" + table +"`";
 	asio.executeQuery(query, function (error, xml) {
@@ -137,16 +137,61 @@ function overrideForm() {
 
 function downloadTable() {
 	$('#sql-download-form').submit(function(event){ //listen for submit event
-		$('#sql-download-command').val($('#sql-command').val())
+		$('#sql-download-command').val($('#sql-command').val());
+		$('#sql-download-form').attr('action', asio.endpoint());
 		return true;
     });
 }; 
+
+function printMetadata()
+{
+	asio.fetchMetadata(callback_Metadata);
+	function callback_Metadata(error, data)
+	{
+		if (error != 0)
+		{
+			var daten = document.getElementById("daten");
+			var table = document.createElement("table");
+			var tr = new Array();
+			var j = 0;
+			$.each(data.dataset, function(key, value){
+				tr[j] = document.createElement("tr");
+				tr[j].style.align="justify";
+				var td = document.createElement("td");
+				td.style.width = '50%';
+				td.style.display="left";
+				if (j % 2 == 0)
+					td.style.background = "#E3E7FF";
+				var td2 = document.createElement("td");
+				td2.style.width = '100%';
+				td2.style.display="inline-block";
+				if (j % 2 == 0)
+					td2.style.background = "#E3E7FF";
+				var text = document.createTextNode(key);
+				var text2 = document.createTextNode(value);
+				td.appendChild(text);
+				td2.appendChild(text2);
+				tr[j].appendChild(td);
+				tr[j].appendChild(td2);
+				table.appendChild(tr[j]); 
+				daten.appendChild(table);
+				j++;
+			
+			});
+		}
+		else
+		{
+			console.log("Error printMetadata!!");
+		}
+	}
+}
 
 //==============================================================>
 // BOOTSTRAPPING
 function main() {
   Controller.sync();
   overrideForm();
+  
 };
 
 $(document).ready(main);

@@ -14,8 +14,10 @@
   </bannerRight>
   <body>
     <menu name="Overview">
+      <item name="Configuration" href="configuration.html"/>
       <item name="Protocol" href="protocol.html"/>
       <item name="Migration" href="migration.html"/>
+      <item name="Releases" href="http://homepage.univie.ac.at/chris.borckholder/asio/archive" />
     </menu>
     <menu ref="reports"/>
   </body>

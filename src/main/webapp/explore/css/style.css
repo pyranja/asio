@@ -263,18 +263,12 @@ header #login a img{
 
 /**** TABLE ****/
 
-#wrapper {
-	width:100%;
-	padding: 10px 0 5px 0;
-	overflow:hidden;
-}
-
 .box {
 	overflow: hidden;
 	margin: 0 0 1em 0;
 	float: left;
-	padding: 10px;
-	width: 50%;
+	padding: 10px 0 5px 0;
+	width:100%;
 	/*background: #EAEEF2 url(../img/img05.jpg) top left repeat-x;*/
 	border-radius: 5px;
 	border: solid 1px #FFFFFF;

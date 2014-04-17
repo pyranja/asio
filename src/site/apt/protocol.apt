@@ -29,7 +29,7 @@ http://host:port/path/to/endpoint/{language}/
 *---------*-------------------------*-----------------------------------*------------------------*
 | POST    | none                    | application/x-www-form-urlencoded | URL-encoded parameters |
 *---------*-------------------------*-----------------------------------*------------------------*
-| POST    | none                    | application/{language}-query      | unencoded command      |
+| POST    | none                    | application/language-query        | unencoded command      |
 *---------*-------------------------*-----------------------------------*------------------------*
 
 * UPDATE
@@ -51,7 +51,7 @@ http://host:port/path/to/endpoint/{language}/
 *---------*---------------*-----------------------------------*------------------------*
 | POST    | none          | application/x-www-form-urlencoded | URL-encoded parameters | 
 *---------*---------------*-----------------------------------*------------------------*
-| POST    | none          | application/{language}-query      | unencoded command      |
+| POST    | none          | application/language-query        | unencoded command      |
 *---------*---------------*-----------------------------------*------------------------*
 
 * SCHEMA
