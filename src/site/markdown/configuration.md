@@ -23,12 +23,12 @@ Following commands are supported:
 
 ####`deploy <name> <path/to/config.ttl>`
 
-  Create an asio instance by creating the web application folder with the given *<name>* in the
-  local tomcat installation. The given *<config.ttl>* is copied to the dataset instance.
+  Create an asio instance by creating the web application folder with the given `<name>` in the
+  local tomcat installation. The given `<config.ttl>` is copied to the dataset instance.
 
 #### `undeploy <name>`
 
-  Delete the web application folder with the given *<name>*, if it exists.
+  Delete the web application folder with the given `<name>`, if it exists.
 
 #### `migrate`
 
