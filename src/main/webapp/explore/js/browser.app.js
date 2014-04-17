@@ -137,7 +137,8 @@ function overrideForm() {
 
 function downloadTable() {
 	$('#sql-download-form').submit(function(event){ //listen for submit event
-		$('#sql-download-command').val($('#sql-command').val())
+		$('#sql-download-command').val($('#sql-command').val());
+		$('#sql-download-form').attr('action', asio.endpoint());
 		return true;
     });
 }; 

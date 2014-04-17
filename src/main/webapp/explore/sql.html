@@ -54,7 +54,7 @@
         </tr>
         {{/rows}}
       </tbody>
-    <table>
+    </table>
   </script>
   <script id="template_explorer" type="text/html">
 	<ul class="collapsibleList treeView">
@@ -91,7 +91,7 @@
 </div>
 
 
-	<div id="wrapper" class="box clearfix">
+	<div class="box clearfix">
 	  <table border="0">
 	  <tr><td valign="top">
 	  <div id="datasource"> 
@@ -119,7 +119,7 @@
 		<div id="download">
 			<fieldset>
 				<legend>Download Table</legend>
-				<form id="sql-download-form" action="/asio/sql" method="post" target="_blank">	
+				<form id="sql-download-form" action="/asio/sql" method="get" target="_blank">
 					
 					<select id="downloadselect" name="x-asio-accept">
 					  <option value="application/xml" selected="selected">XML</option>
@@ -152,7 +152,7 @@
 		</table>
 	</div>
 
-	<div id="wrapper" class="box clearfix">
+	<div class="box clearfix">
 		<div id="results">
 			<fieldset>
 				<legend>Results</legend>
@@ -165,7 +165,7 @@
 	
 	
 
-	<div id="wrapper" class="box clearfix">
+	<div class="box clearfix">
 		<div id="query">
 			<fieldset>
 				<legend>SQL Query</legend>
