@@ -18,5 +18,13 @@
       <outputDirectory>/bin</outputDirectory>
     </fileSet>
   </fileSets>
+  <files>
+    <file>
+      <source>${project.basedir}/README</source>
+      <outputDirectory>/</outputDirectory>
+      <lineEnding>unix</lineEnding>
+      <filtered>true</filtered>
+    </file>
+  </files>
 
 </assembly>
