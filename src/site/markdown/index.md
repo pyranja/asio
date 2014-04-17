@@ -27,9 +27,13 @@ datasets in the [VPH-Share](http://vph-share.eu/) cloud. asio provides
 
 ## Release notes
 
-### v0.4
+### v0.4.1
 
-#### Features
+ * Releases are now also packaged as .tar.gz
+ * `migrate` command added to `asio.sh` - converts legacy vce/d2r installations
+ * Dataset metadata from the VPH-Share repository is displayed in the SQL explorer
+
+### v0.4
 
  * `asio/bin/asio.sh` shell script to deploy asio instances from the command line.
  * `/meta` resource provides metadata from the VPH repository.
