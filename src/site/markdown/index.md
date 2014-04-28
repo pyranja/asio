@@ -27,6 +27,10 @@ datasets in the [VPH-Share](http://vph-share.eu/) cloud. asio provides
 
 ## Release notes
 
+### v0.4.2
+
+ * SQL and SPARQL explorer pages are now included when deploying an asio instance
+
 ### v0.4.1
 
  * Releases are now also packaged as .tar.gz
