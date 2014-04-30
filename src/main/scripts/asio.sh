@@ -75,7 +75,7 @@ function deploy () {
   mkdir "${target_webapp}/WEB-INF"
   ln -s "${source_asio}/WEB-INF/classes/" "${target_webapp}/WEB-INF/"
   ln -s "${source_asio}/WEB-INF/lib/" "${target_webapp}/WEB-INF/"
-  ln -s "${source_asio}/explore/" "${target_webapp}/explore/"
+  ln -s "${source_asio}/explore/" "${target_webapp}/"
   cp -r "${source_asio}/WEB-INF/etc" "${target_webapp}/WEB-INF/"
   cp "${mapping_file}" "${target_webapp}/WEB-INF/config.ttl"
   cp "${source_asio}/WEB-INF/web.xml" "${target_webapp}/WEB-INF/web.xml"
