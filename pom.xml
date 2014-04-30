@@ -314,6 +314,19 @@
               <goal>single</goal>
             </goals>
           </execution>
+          <execution>
+            <id>make-federator</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <appendAssemblyId>true</appendAssemblyId>
+              <descriptors>
+                <descriptor>${project.basedir}/src/main/assembly/federator.xml</descriptor>
+              </descriptors>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
       <!-- disable unit tests -->

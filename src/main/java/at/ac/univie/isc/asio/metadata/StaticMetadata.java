@@ -38,6 +38,13 @@ public class StaticMetadata {
       .withLicence(CREATOR.createDatasetMetadataLicence(LicenceType.MIT))
       .withViews(CREATOR.createDatasetMetadataViews(2));
 
+  public static final DatasetMetadata FEDERATION_NODE = CREATOR.createDatasetMetadata()
+      .withName("asio federation node").withLocalID("none")
+      .withGlobalID(CREATOR.createDatasetMetadataGlobalID("asio-federation-node"))
+      .withSparqlEndPoint("read/sparql").withStatus(MetadataStatus.ACTIVE)
+      .withType(ResourceType.DATASET)
+      .withDescription(CREATOR.createDatasetMetadataDescription("Federated SPARQL processor"));
+
   public static final DatasetMetadata NOT_AVAILABLE = CREATOR.createDatasetMetadata()
       .withName("unknown").withGlobalID(CREATOR.createDatasetMetadataGlobalID("unknown"))
       .withLocalID("unknown").withSparqlEndPoint("unknown").withStatus(MetadataStatus.NON_ACTIVE)
