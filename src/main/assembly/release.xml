@@ -16,6 +16,7 @@
     <fileSet>
       <directory>${project.basedir}/src/main/scripts</directory>
       <outputDirectory>/bin</outputDirectory>
+      <fileMode>755</fileMode>
     </fileSet>
   </fileSets>
   <files>
