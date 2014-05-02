@@ -441,8 +441,6 @@
             </goals>
             <configuration>
               <daemon>true</daemon>
-              <stopKey>jetty-integration</stopKey>
-              <stopPort>15080</stopPort>
             </configuration>
           </execution>
           <execution>
