@@ -25,6 +25,7 @@ http://cxf.apache.org/schemas/jaxrs.xsd">
       <ref bean="asio_log_filter" />
       <ref bean="asio_error_mapper" />
       <ref bean="asio_accept_tunnel" />
+      <ref bean="asio_accept_defaults" />
       <ref bean="json_serializer" />
     </jaxrs:providers>
     <jaxrs:features>
