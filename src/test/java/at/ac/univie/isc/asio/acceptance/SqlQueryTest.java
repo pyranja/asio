@@ -1,27 +1,24 @@
 package at.ac.univie.isc.asio.acceptance;
 
-import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
-import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
-import static javax.ws.rs.core.Response.Status.Family.familyOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.io.InputStream;
-import java.net.URI;
-import java.util.Map;
-
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
+import at.ac.univie.isc.asio.converter.CsvToMap;
+import at.ac.univie.isc.asio.converter.ResultSetToMap;
+import at.ac.univie.isc.asio.sql.KeyedRow;
+import at.ac.univie.isc.asio.tool.FunctionalTest;
 import org.apache.cxf.jaxrs.ext.form.Form;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import at.ac.univie.isc.asio.converter.CsvToMap;
-import at.ac.univie.isc.asio.converter.ResultSetToMap;
-import at.ac.univie.isc.asio.sql.KeyedRow;
-import at.ac.univie.isc.asio.tool.FunctionalTest;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.Map;
+
+import static at.ac.univie.isc.asio.tool.CompatibleTo.compatibleTo;
+import static javax.ws.rs.core.Response.Status.Family.*;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.*;
 
 
 @Category(FunctionalTest.class)
@@ -102,6 +99,22 @@ public class SqlQueryTest extends AcceptanceHarness {
     client.accept(MediaType.valueOf("test/notexisting")).query(PARAM_QUERY, COUNT_QUERY);
     response = client.get();
     assertEquals(CLIENT_ERROR, familyOf(response.getStatus()));
+  }
+
+  @Test
+  public void delivers_xml_if_no_accepted_type_given() throws Exception {
+    client.query(PARAM_QUERY, COUNT_QUERY);
+    response = client.get();
+    assertThat(familyOf(response.getStatus()), is(SUCCESSFUL));
+    assertThat(response.getMediaType(), is(compatibleTo(XML)));
+  }
+
+  @Test
+  public void delivers_xml_if_wildcard_accept_header_given() throws Exception {
+    client.accept(MediaType.WILDCARD).query(PARAM_QUERY, COUNT_QUERY);
+    response = client.get();
+    assertThat(familyOf(response.getStatus()), is(SUCCESSFUL));
+    assertThat(response.getMediaType(), is(compatibleTo(XML)));
   }
 
   private void verify(final Response response) {

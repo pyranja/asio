@@ -92,6 +92,10 @@ public class AsioConfiguration {
     return new AcceptTunnelFilter();
   }
 
+  @Bean(name = "asio_accept_defaults")
+  public ContentNegotiationDefaultsFilter defaultsFilter() {
+    return new ContentNegotiationDefaultsFilter(); }
+
   @Bean(name = "json_serializer")
   public JSONProvider jsonSerializer() {
     final JSONProvider provider = new JSONProvider();
