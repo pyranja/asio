@@ -36,6 +36,41 @@
 	cursor: default; 
 }
 
+/*textcrop unfortunately needed for EVERY SINGLE GODDAM line. Thanks IE!*/
+
+.textcrop_ds {
+	width:300px;
+	height:18px;
+	line-height:15px;
+	overflow:hidden;
+	display: inline-block;
+	vertical-align: middle;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.textcrop_tables {
+	width:180px;
+	height:12px;
+	line-height:11px;
+	overflow:hidden;
+	display: inline-block;
+	vertical-align: middle;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.textcrop_rows {
+	width:230px;
+	height:12px;
+	line-height:11px;
+	overflow:hidden;
+	display: inline-block;
+	vertical-align: middle;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
 html, body {
     height: 100%;
 }
@@ -82,7 +117,7 @@ select{
 	padding-right: 20px;
 	padding-top: 0px;
 	padding-bottom: 0px;
-	width: 450px;
+	width: 480px;
 }
 
 #datasource {
@@ -91,7 +126,7 @@ select{
 	padding-right: 20px;
 	padding-top: 0px;
 	padding-bottom: 0px;
-	width: 450px;
+	width: 480px;
 }
 
 #query {
@@ -109,7 +144,7 @@ select{
 	padding-right: 20px;
 	padding-top: 0px;
 	padding-bottom: 0px;
-	width: 450px;
+	width: 480px;
 }
 
 #wrap {
@@ -289,7 +324,7 @@ header #login a img{
 #results {
 	overflow: auto;
 	padding: 20px;
-	width: 100%;
+	width: auto;
 	-moz-box-sizing: border-box;
 }
 
