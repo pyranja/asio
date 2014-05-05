@@ -309,9 +309,7 @@
         <version>2.4</version>
         <configuration>
           <appendAssemblyId>false</appendAssemblyId>
-          <descriptors>
-            <descriptor>${project.basedir}/src/main/assembly/release.xml</descriptor>
-          </descriptors>
+          <escapeString>!</escapeString>
         </configuration>
         <executions>
           <execution>
@@ -320,6 +318,11 @@
             <goals>
               <goal>single</goal>
             </goals>
+            <configuration>
+              <descriptors>
+                <descriptor>${project.basedir}/src/main/assembly/release.xml</descriptor>
+              </descriptors>
+            </configuration>
           </execution>
           <execution>
             <id>make-federator</id>
