@@ -27,6 +27,13 @@ datasets in the [VPH-Share](http://vph-share.eu/) cloud. asio provides
 
 ## Release notes
 
+### v0.4.3
+
+ * SQL explorer pages are now SSL ready
+ * application/xml is now the default response content type
+ * Updating mappings of deployed asio instances is now supported
+ * MySQL compatibility options are now set by default
+
 ### v0.4.2
 
  * SQL and SPARQL explorer pages are now included when deploying an asio instance
