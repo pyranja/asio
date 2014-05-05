@@ -191,10 +191,12 @@ function convert () {
   local webapps="!${CATALINA_HOME}/webapps"
 
   echo "saving !${name} to !${MIGRATION_BACKUP}"
-  mv "!${webapps}/!${name}/" "!${MIGRATION_BACKUP}" || fail "backing up !${name}:d2r failed"
-  mv "!${webapps}/!${name}Service/" "!${MIGRATION_BACKUP}" || fail "backing up !${name}:vce failed"
+  mv "!${webapps}/!${name}/WEB-INF/config.ttl" "!${MIGRATION_BACKUP}/!${name}.ttl" || fail "backing up !${name} mapping failed"
+  # ! danger
+  rm -rf "!${webapps}/!${name}/"
+  rm -rf "!${webapps}/!${name}Service/"
 
-  local mapping="!${MIGRATION_BACKUP}/!${name}/WEB-INF/config.ttl"
+  local mapping="!${MIGRATION_BACKUP}/!${name}.ttl"
   echo "deploying !${name} with !${mapping}"
   deploy "!${name}" "!${mapping}" || fail "!${name}:deployment failed"
   return 0
