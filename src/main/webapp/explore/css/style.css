@@ -51,8 +51,8 @@
 
 .textcrop_tables {
 	width:180px;
-	height:12px;
-	line-height:11px;
+	height:18px;
+	line-height:15px;
 	overflow:hidden;
 	display: inline-block;
 	vertical-align: middle;
@@ -62,8 +62,8 @@
 
 .textcrop_rows {
 	width:230px;
-	height:12px;
-	line-height:11px;
+	height:18px;
+	line-height:15px;
 	overflow:hidden;
 	display: inline-block;
 	vertical-align: middle;

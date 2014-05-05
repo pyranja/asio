@@ -56,14 +56,10 @@ var Controller = new function () {
   };  
   
   this.fetchTable = function (table, limit) {
-    //this.executeQuery("SELECT * FROM `" + table +"` LIMIT "+limit);
 	this.executeQuery("SELECT * FROM `" + table +"`");
   };
   
   this.fetchTableField = function (table, field, limit) {
-	//-1 due to space
-	field = field.substring(0, field.lastIndexOf("(")-1); 
-	//this.executeQuery("SELECT DISTINCT COUNT(`" + field + "`) AS occurence, `" + field +"` FROM `" + table +"` GROUP BY `"+ field +"` ORDER BY occurence DESC LIMIT "+limit);
 	this.executeQuery("SELECT DISTINCT COUNT(`" + field + "`) AS occurence, `" + field +"` FROM `" + table +"` GROUP BY `"+ field +"` ORDER BY occurence DESC");
   };
   
