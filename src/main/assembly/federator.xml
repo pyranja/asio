@@ -1,7 +1,8 @@
 <assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
-  <id>release</id>
+  <!-- ad-hoc customized bundle for SPARQL federation nodes -->
+  <id>federator</id>
   <baseDirectory>asio</baseDirectory>
   <formats>
     <format>zip</format>
@@ -12,6 +13,9 @@
     <fileSet>
       <directory>${project.build.directory}/asio-${project.version}</directory>
       <outputDirectory>/webapp</outputDirectory>
+      <excludes>
+        <exclude>**/web.xml</exclude>
+      </excludes>
     </fileSet>
     <fileSet>
       <directory>${project.basedir}/src/main/scripts</directory>
@@ -26,6 +30,12 @@
       <outputDirectory>/</outputDirectory>
       <lineEnding>unix</lineEnding>
       <filtered>true</filtered>
+    </file>
+    <file>
+      <source>${project.basedir}/src/main/federator/web.xml</source>
+      <outputDirectory>/webapp/WEB-INF</outputDirectory>
+      <lineEnding>unix</lineEnding>
+      <filtered>false</filtered>
     </file>
   </files>
 

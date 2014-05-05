@@ -114,15 +114,19 @@ var asio = (function() {
 
     var tables = $(xml).find('table').map(function() {
       var tableName = $(this).attr('name');
+	  var datatype;
       var columns = $(this).find('column').map(function() {
-        var datatype = $(this).find('sqlTypeName').map(function() {
+        datatype = $(this).find('sqlTypeName').map(function() {
           return $(this).text();
         }).get();
-        return $(this).attr('name') + " (" + datatype + ")";
+		return $(this).attr('name');
       }).get();
+	  
+	  console.log(datatype);
 
       return {
         name : tableName,
+		datatype : datatype,
         columns : columns
       };
     }).get();

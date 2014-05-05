@@ -4,8 +4,8 @@ There are two main domains in asio's configuration, deployment and runtime confi
 
 ## Deployment
 
-Dataset instances can be deployed through the `bin/asio.sh` script. It recognizes two environment
-variables.
+Dataset instances can be deployed through the `bin/asio.sh` script. Following environment variables
+are recognized by it.
 
 ### Environment
 
@@ -17,6 +17,10 @@ variables.
 
   Base directory of the local tomcat installation, defaults to `/usr/share/tomcat`
 
+#### `ASIO_OWNER`
+
+  The user that will own created asio instances, defaults to the user executing the script.
+
 ### Commands
 
 Following commands are supported:
@@ -25,6 +29,8 @@ Following commands are supported:
 
   Create an asio instance by creating the web application folder with the given `<name>` in the
   local tomcat installation. The given `<config.ttl>` is copied to the dataset instance.
+  If that web application already exists and is an asio instance, its `<config.ttl>` will be saved
+  to `$ASIO_HOME/backups/dataset_name.ttl` and then overwritten.
 
 #### `undeploy <name>`
 

@@ -1,21 +1,19 @@
 package at.ac.univie.isc.asio.security;
 
+import at.ac.univie.isc.asio.DatasetUsageException;
 import com.google.common.collect.ImmutableList;
-import com.google.common.io.BaseEncoding;
-
-import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import javax.ws.rs.core.HttpHeaders;
 import java.security.Principal;
 
-import javax.ws.rs.core.HttpHeaders;
-
-import at.ac.univie.isc.asio.DatasetUsageException;
+import static com.google.common.io.BaseEncoding.base64;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 @RunWith(MockitoJUnitRunner.class)
 public class VphTokenExtractorTest {
@@ -28,7 +26,7 @@ public class VphTokenExtractorTest {
   public void should_return_anonymous_if_no_auth_given() throws Exception {
     setAuthHeader();
     final Principal user = subject.authenticate(headers);
-    Assert.assertThat(user, CoreMatchers.is(Anonymous.INSTANCE));
+    assertThat(user, is(Anonymous.INSTANCE));
   }
 
   @Test(expected = DatasetUsageException.class)
@@ -57,34 +55,50 @@ public class VphTokenExtractorTest {
 
   @Test(expected = DatasetUsageException.class)
   public void should_fail_on_malformed_credentials() throws Exception {
-    final String malformed = BaseEncoding.base64().encode("no_colon".getBytes());
+    final String malformed = base64().encode("no_colon".getBytes());
     setAuthHeader("Basic " + malformed);
     subject.authenticate(headers);
   }
 
   @Test
   public void should_auth_with_empty_token_if_password_is_empty() throws Exception {
-    final String credentials = BaseEncoding.base64().encode(":".getBytes());
+    final String credentials = base64().encode(":".getBytes());
     setAuthHeader("Basic " + credentials);
     final VphToken user = (VphToken) subject.authenticate(headers);
-    Assert.assertThat(user.getToken(), CoreMatchers.is(new char[]{}));
+    assertThat(user.getToken(), is("".toCharArray()));
   }
 
   @Test
   public void should_auth_with_given_password_as_token() throws Exception {
-    final String credentials = BaseEncoding.base64().encode(":test-password".getBytes());
+    final String credentials = base64().encode(":test-password".getBytes());
     setAuthHeader("Basic " + credentials);
     final VphToken user = (VphToken) subject.authenticate(headers);
-    Assert.assertThat(user.getToken(),
-                      CoreMatchers.is(new char[]{'t', 'e', 's', 't', '-', 'p', 'a', 's', 's', 'w',
-                                                 'o', 'r', 'd'}));
+    assertThat(user.getToken(), is("test-password".toCharArray()));
   }
 
-  @Test(expected = DatasetUsageException.class)
-  public void should_fail_if_username_and_password_given() throws Exception {
-    final String credentials = BaseEncoding.base64().encode("test-user:test-password".getBytes());
+  @Test
+  public void should_accept_username_and_password() throws Exception {
+    final String credentials = base64().encode("test-user:test-password".getBytes());
     setAuthHeader("Basic " + credentials);
-    subject.authenticate(headers);
+    final VphToken principal = (VphToken) subject.authenticate(headers);
+    assertThat(principal.getName(), is("test-user"));
+    assertThat(principal.getToken(), is("test-password".toCharArray()));
+  }
+
+  @Test
+  public void should_set_username_on_token_if_given() throws Exception {
+    final String credentials = base64().encode("test-user:".getBytes());
+    setAuthHeader("Basic " + credentials);
+    final Principal principal = subject.authenticate(headers);
+    assertThat(principal.getName(), is("test-user"));
+  }
+
+  @Test
+  public void should_set_dummy_if_username_not_given() throws Exception {
+    final String credentials = base64().encode(":test-password".getBytes());
+    setAuthHeader("Basic "+ credentials);
+    final Principal principal = subject.authenticate(headers);
+    assertThat(principal.getName(), is(VphToken.UNKNOWN_PRINCIPAL));
   }
 
   private void setAuthHeader(final String... values) {

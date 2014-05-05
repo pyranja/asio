@@ -18,6 +18,7 @@
       <item name="Protocol" href="protocol.html"/>
       <item name="Migration" href="migration.html"/>
       <item name="Releases" href="http://homepage.univie.ac.at/chris.borckholder/asio/archive" />
+      <item name="Issue Tracker" href="https://docs.google.com/spreadsheet/ccc?key=0An8_mhXy15zNdFFuUlZTMl9yY0xxWFllbUI1R1dUNHc&amp;usp=drive_web#gid=0" />
     </menu>
     <menu ref="reports"/>
   </body>

@@ -5,10 +5,13 @@
 	<title>VPH-Share SQL Dataset Browser</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+	<script src="//code.jquery.com/jquery-2.0.3.min.js"></script>
 	
-	<link href='https://fonts.googleapis.com/css?family=Inder' rel='stylesheet' type='text/css'/>
-    <link href='https://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700,300italic,400italic,500italic,700italic' rel='stylesheet' type='text/css'/>
+	
+	<link rel="shortcut icon" href="http://www.vph-share.eu/sites/default/files/favicon_share.png" type="image/png" />
+	
+	<link href='//fonts.googleapis.com/css?family=Inder' rel='stylesheet' type='text/css'/>
+    <link href='//fonts.googleapis.com/css?family=Ubuntu:300,400,500,700,300italic,400italic,500italic,700italic' rel='stylesheet' type='text/css'/>
 	
 	<!-- JQuery Plugins  -->
 	
@@ -58,13 +61,13 @@
   </script>
   <script id="template_explorer" type="text/html">
 	<ul class="collapsibleList treeView">
-		<li><span class="pointer_cursor"><img src="img/db.png" alt="Database" height="15" width="15">  &nbsp; {{datasourceName}}</span>
+		<li><span class="textcrop_ds pointer_cursor" title='Dataset: "{{datasourceName}}". Click on tables or rows to see the data.'><img src="img/db.png" alt="Database" height="15" width="15">  &nbsp; {{datasourceName}}</span>
 			<ul>
 			  {{#tables}}
-			  <li xasiotablename={{name}}><img class="pointer_cursor" src="img/table.png" alt="Table" height="15" width="15"> &nbsp; <span class="hand_cursor" onclick="onSelectTable(event, '{{name}}', $('#limitselect').val())">{{name}}</span>
+			  <li xasiotablename={{name}}><img class="pointer_cursor" src="img/table.png" alt="Table" height="15" width="15" title="{{name}}"> &nbsp; <span class="textcrop_tables hand_cursor" title="{{name}}" onclick="onSelectTable(event, '{{name}}', $('#limitselect').val())">{{name}}</span> ({{datatype}})
 			  {{#columns}}
 			  <ul>
-				<li><img class="pointer_cursor" src="img/column.png" alt="Table" height="15" width="15"> &nbsp; <span class="hand_cursor" onclick="onSelectField(event, '{{.}}', $('#limitselect').val())">{{.}}</span></li>
+				<li><img class="pointer_cursor"  title="{{.}}" src="img/column.png" alt="Table" height="15" width="15"> &nbsp; <span class="textcrop_rows hand_cursor" title="{{.}}" onclick="onSelectField(event, '{{.}}', $('#limitselect').val())">{{.}}</span></li>
 			  </ul>
 			  {{/columns}}
 			  </li>
@@ -106,7 +109,7 @@
 	  </td><td valign="top">
 		<div id="metadata">
 			<fieldset>
-			<legend>Dataset description</legend>
+			<legend>Dataset metadata</legend>
 			<div>
 			<script type="text/javascript">
 				printMetadata();

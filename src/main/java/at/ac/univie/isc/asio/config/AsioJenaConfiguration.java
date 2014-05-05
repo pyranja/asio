@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 
 import javax.servlet.ServletContext;
@@ -28,6 +29,7 @@ import java.util.concurrent.ThreadFactory;
 import static com.google.common.base.Strings.emptyToNull;
 
 @Configuration
+@Profile("dataset")
 public class AsioJenaConfiguration {
 
   /* slf4j-logger */
@@ -50,8 +52,10 @@ public class AsioJenaConfiguration {
     if (d2rDb.getPassword() == null) {
       log.warn("[BOOT] no password set for JDBC connection {}", d2rDb.getJDBCDSN());
     }
-    return DatasourceSpec.connectTo(d2rDb.getJDBCDSN(), d2rDb.getJDBCDriver()).authenticateAs(
-        d2rDb.getUsername(), d2rDb.getPassword());
+    return DatasourceSpec
+        .connectTo(d2rDb.getJDBCDSN())
+        .with(d2rDb.getJDBCDriver())
+        .authenticateAs(d2rDb.getUsername(), d2rDb.getPassword());
   }
 
   @Bean(destroyMethod = "close")

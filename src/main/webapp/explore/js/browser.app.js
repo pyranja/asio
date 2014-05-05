@@ -152,6 +152,7 @@ function printMetadata()
 		{
 			var daten = document.getElementById("daten");
 			var table = document.createElement("table");
+			table.style.width = '100%';
 			var tr = new Array();
 			var j = 0;
 			$.each(data.dataset, function(key, value){
@@ -160,6 +161,7 @@ function printMetadata()
 				var td = document.createElement("td");
 				td.style.width = '50%';
 				td.style.display="left";
+				td.style.fontWeight="500";
 				if (j % 2 == 0)
 					td.style.background = "#E3E7FF";
 				var td2 = document.createElement("td");
@@ -191,7 +193,6 @@ function printMetadata()
 function main() {
   Controller.sync();
   overrideForm();
-  
 };
 
 $(document).ready(main);

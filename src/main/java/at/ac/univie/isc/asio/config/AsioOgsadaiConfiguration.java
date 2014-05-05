@@ -1,14 +1,14 @@
 package at.ac.univie.isc.asio.config;
 
-import java.util.List;
-
-import javax.annotation.PostConstruct;
-
+import at.ac.univie.isc.asio.DatasetEngine;
+import at.ac.univie.isc.asio.ogsadai.*;
+import at.ac.univie.isc.asio.ogsadai.workflow.SqlComposer;
+import com.google.common.collect.Iterables;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
-
 import uk.org.ogsadai.activity.event.RequestEventRouter;
 import uk.org.ogsadai.common.ID;
 import uk.org.ogsadai.context.OGSADAIContext;
@@ -17,15 +17,9 @@ import uk.org.ogsadai.resource.ResourceManager;
 import uk.org.ogsadai.resource.ResourceType;
 import uk.org.ogsadai.resource.ResourceUnknownException;
 import uk.org.ogsadai.resource.drer.DRER;
-import at.ac.univie.isc.asio.DatasetEngine;
-import at.ac.univie.isc.asio.ogsadai.DaiExceptionTranslator;
-import at.ac.univie.isc.asio.ogsadai.OgsadaiAdapter;
-import at.ac.univie.isc.asio.ogsadai.OgsadaiEngine;
-import at.ac.univie.isc.asio.ogsadai.OgsadaiJdbcDeployer;
-import at.ac.univie.isc.asio.ogsadai.WorkflowComposer;
-import at.ac.univie.isc.asio.ogsadai.workflow.SqlComposer;
 
-import com.google.common.collect.Iterables;
+import javax.annotation.PostConstruct;
+import java.util.List;
 
 /**
  * Setup asio connected to an in-process OGSADAI instance.
@@ -33,6 +27,7 @@ import com.google.common.collect.Iterables;
  * @author Chris Borckholder
  */
 @Configuration
+@Profile("dataset")
 public class AsioOgsadaiConfiguration {
 
   @Autowired

@@ -1,37 +1,9 @@
 package at.ac.univie.isc.asio.config;
 
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
-import org.apache.cxf.jaxrs.provider.json.JSONProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ImportResource;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.core.env.Environment;
-
-import java.net.URI;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-
 import at.ac.univie.isc.asio.DatasetEngine;
 import at.ac.univie.isc.asio.common.IdGenerator;
 import at.ac.univie.isc.asio.common.RandomIdGenerator;
-import at.ac.univie.isc.asio.frontend.AcceptTunnelFilter;
-import at.ac.univie.isc.asio.frontend.AsyncProcessor;
-import at.ac.univie.isc.asio.frontend.DatasetExceptionMapper;
-import at.ac.univie.isc.asio.frontend.LogContextFilter;
-import at.ac.univie.isc.asio.frontend.OperationFactory;
-import at.ac.univie.isc.asio.frontend.VariantConverter;
+import at.ac.univie.isc.asio.frontend.*;
 import at.ac.univie.isc.asio.metadata.AtosMetadataService;
 import at.ac.univie.isc.asio.metadata.DatasetMetadata;
 import at.ac.univie.isc.asio.metadata.RemoteMetadata;
@@ -42,6 +14,26 @@ import at.ac.univie.isc.asio.protocol.OperationParser;
 import at.ac.univie.isc.asio.protocol.PrototypeEngineProvider;
 import at.ac.univie.isc.asio.transport.JdkPipeTransferFactory;
 import at.ac.univie.isc.asio.transport.Transfer;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.cxf.jaxrs.provider.json.JSONProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.*;
+import org.springframework.core.env.Environment;
+
+import javax.annotation.PostConstruct;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * Setup the asio endpoint infrastructure.
@@ -67,6 +59,15 @@ public class AsioConfiguration {
   @Autowired
   private Set<DatasetEngine> engines;
 
+  @PostConstruct
+  public void reportProfile() {
+    final String[] profiles =
+        env.getActiveProfiles().length == 0
+          ? env.getDefaultProfiles()
+          : env.getActiveProfiles();
+    log.info("[BOOT] active profiles : {}", Arrays.toString(profiles));
+  }
+
   // JAX-RS service endpoints
 
   @Bean(name = "asio_entry")
@@ -90,6 +91,10 @@ public class AsioConfiguration {
   public AcceptTunnelFilter tunnelFilter() {
     return new AcceptTunnelFilter();
   }
+
+  @Bean(name = "asio_accept_defaults")
+  public ContentNegotiationDefaultsFilter defaultsFilter() {
+    return new ContentNegotiationDefaultsFilter(); }
 
   @Bean(name = "json_serializer")
   public JSONProvider jsonSerializer() {
@@ -118,10 +123,14 @@ public class AsioConfiguration {
     };
   }
 
+  // TODO let engine configurations create the metadata supplier
   @Bean
   public Supplier<DatasetMetadata> metadataSupplier() {
     final boolean contactRemote = env.getProperty("asio.meta.enable", Boolean.class, Boolean.FALSE);
-    if (contactRemote) {
+    if (env.acceptsProfiles("federation")) {  // FIXME ignore setting if federation node
+      log.info("[BOOT] using federation node metadata");
+      return Suppliers.ofInstance(StaticMetadata.FEDERATION_NODE);
+    } else if (contactRemote) {
       final URI repository = URI.create(env.getRequiredProperty("asio.meta.repository"));
       AtosMetadataService proxy = new AtosMetadataService(repository);
       final String datasetId = datasetIdResolver.get();
