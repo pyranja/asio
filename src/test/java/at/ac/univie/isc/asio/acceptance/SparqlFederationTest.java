@@ -1,27 +1,23 @@
 package at.ac.univie.isc.asio.acceptance;
 
+import at.ac.univie.isc.asio.tool.FunctionalTest;
 import com.google.common.base.Strings;
-import com.google.common.io.BaseEncoding;
 import com.google.common.util.concurrent.MoreExecutors;
-
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import javax.ws.rs.core.HttpHeaders;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.ws.rs.core.HttpHeaders;
-
-import at.ac.univie.isc.asio.tool.FunctionalTest;
-
+import static com.google.common.io.BaseEncoding.base64;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.startsWith;
@@ -81,14 +77,19 @@ public class SparqlFederationTest extends AcceptanceHarness {
   public void should_delegate_credentials_to_remote_request_in_federation() throws Exception {
     client.accept(CSV).query(PARAM_QUERY, MOCK_SERVER_FEDERATED_QUERY);
     // a mock vph token
-    final String credentials = BaseEncoding.base64().encode(":test-password".getBytes());
+    final String credentials = base64().encode(":test-password".getBytes());
     client.header(HttpHeaders.AUTHORIZATION, "Basic " + credentials);
     client.get(); // do not care for response
-    final String delegated =
-        handler.received.get().getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-    assertThat(delegated, startsWith("Basic "));
-    final String decoded = new String(BaseEncoding.base64().decode(delegated.substring(6)));
-    assertThat(decoded, is(":test-password"));
+    verifyDelegatedCredentials(":test-password");
+  }
+
+  @Test
+  public void should_drop_username_on_delegation() throws Exception {
+    client.accept(CSV).query(PARAM_QUERY, MOCK_SERVER_FEDERATED_QUERY);
+    final String credentials = base64().encode("test-user:test-password".getBytes());
+    client.header(HttpHeaders.AUTHORIZATION, "Basic "+ credentials);
+    client.get();
+    verifyDelegatedCredentials(":test-password");
   }
 
   @Test
@@ -96,13 +97,17 @@ public class SparqlFederationTest extends AcceptanceHarness {
     client.accept(CSV).query(PARAM_QUERY, MOCK_SERVER_FEDERATED_QUERY);
     // a long vph token - XXX is the token sufficiently long ?
     final String token = ":" + Strings.repeat("test", 1000);
-    final String credentials = BaseEncoding.base64().encode(token.getBytes());
+    final String credentials = base64().encode(token.getBytes());
     client.header(HttpHeaders.AUTHORIZATION, "Basic "+ credentials);
     client.get();
+    verifyDelegatedCredentials(token);
+  }
+
+  private void verifyDelegatedCredentials(final String expected) {
     final String delegated =
         handler.received.get().getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION);
     assertThat(delegated, startsWith("Basic "));
-    final String decoded = new String(BaseEncoding.base64().decode(delegated.substring(6)));
-    assertThat(decoded, is(token));
+    final String decoded = new String(base64().decode(delegated.substring(6)));
+    assertThat(decoded, is(expected));
   }
 }

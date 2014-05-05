@@ -15,7 +15,7 @@ public final class Anonymous implements Principal {
 
   @Override
   public String getName() {
-    return "null";
+    return "anonymous";
   }
 
   @Override
