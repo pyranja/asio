@@ -1,26 +1,40 @@
 package at.ac.univie.isc.asio.security;
 
-import static com.google.common.base.Preconditions.checkState;
-
-import java.security.Principal;
+import com.google.common.base.Objects;
 
 import javax.security.auth.Destroyable;
+import java.security.Principal;
+
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Strings.nullToEmpty;
+import static java.util.Objects.requireNonNull;
 
 public class VphToken implements Principal, Destroyable {
 
+  public static final String UNKNOWN_PRINCIPAL = "anonymous";
+
+  public static VphToken from(final String username, final char[] password) {
+    if (nullToEmpty(username).isEmpty()) {
+      return new VphToken(UNKNOWN_PRINCIPAL, password);
+    } else {
+      return new VphToken(username, password);
+    }
+  }
+
   private final char[] token;
+  private final String name;
 
   private volatile boolean valid = true;
 
-  public VphToken(final char[] password) {
+  private VphToken(final String name, final char[] password) {
     super();
-    token = password;
+    token = requireNonNull(password);
+    this.name = requireNonNull(name);
   }
 
-  // TODO extract from token ?
   @Override
   public String getName() {
-    return "<unknown>";
+    return name;
   }
 
   public char[] getToken() {
@@ -43,6 +57,9 @@ public class VphToken implements Principal, Destroyable {
 
   @Override
   public String toString() {
-    return String.format("VphToken [valid=%s]", valid);
+    return Objects.toStringHelper(this)
+        .add("name", name)
+        .add("valid", valid)
+        .toString();
   }
 }
