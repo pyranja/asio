@@ -52,8 +52,10 @@ public class AsioJenaConfiguration {
     if (d2rDb.getPassword() == null) {
       log.warn("[BOOT] no password set for JDBC connection {}", d2rDb.getJDBCDSN());
     }
-    return DatasourceSpec.connectTo(d2rDb.getJDBCDSN(), d2rDb.getJDBCDriver()).authenticateAs(
-        d2rDb.getUsername(), d2rDb.getPassword());
+    return DatasourceSpec
+        .connectTo(d2rDb.getJDBCDSN())
+        .with(d2rDb.getJDBCDriver())
+        .authenticateAs(d2rDb.getUsername(), d2rDb.getPassword());
   }
 
   @Bean(destroyMethod = "close")
