@@ -170,10 +170,18 @@ var asio = (function() {
   // on failure error will hold an Error object and xml is null
   exports.executeQuery = function(query, callback) {
     var target = endpoint() + SERVICE_QUERY;
+	$('#sql-result').hide();
     var req = $.ajax({
       type : 'POST',
       url : target,
       data : query,
+	  beforeSend: function () {
+		$('#ajaxLoadingScreen').fadeIn();
+	  },
+	  complete:function(){
+		$('#ajaxLoadingScreen').fadeOut();
+		$('#sql-result').fadeIn();
+	  },
       processData : false,
       contentType : 'application/sql-query',
       headers : {
@@ -183,6 +191,7 @@ var asio = (function() {
       },
       dataType : 'xml',
     });
+	
     req.done(forwardTo(callback)).fail(escalateTo(callback));
   };
 

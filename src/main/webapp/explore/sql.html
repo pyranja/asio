@@ -7,7 +7,6 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<script src="//code.jquery.com/jquery-2.0.3.min.js"></script>
 	
-	
 	<link rel="shortcut icon" href="http://www.vph-share.eu/sites/default/files/favicon_share.png" type="image/png" />
 	
 	<link href='//fonts.googleapis.com/css?family=Inder' rel='stylesheet' type='text/css'/>
@@ -22,8 +21,7 @@
 	<link rel="stylesheet" href="css/jquery.dataTables_themeroller.css" type="text/css" media="screen" />
 	
 	<link rel="stylesheet" href="css/jquery.collapsibleList.css" type="text/css" media="screen" />
-	
-	
+
 	<!-- START bootstrap  -->
 
     <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css" media="screen" />
@@ -58,6 +56,7 @@
         {{/rows}}
       </tbody>
     </table>
+	<p>&nbsp;</p>
   </script>
   <script id="template_explorer" type="text/html">
 	<ul class="collapsibleList treeView">
@@ -81,6 +80,15 @@
 <!-- ************************************************* -->
 
 <body>
+
+<div id="ajaxLoadingScreen"><div id="ajaxLoadingOverlay"></div>
+   <div id="ajaxLoaderImage">
+     <fieldset>
+		<p style="font-size: 1.5em;">Loading data. Please wait...<p>
+		<img src="img/ajaxspinner.gif" alt="Loading data. Please wait..." />
+	 </fieldset>
+   </div>
+</div>
 
 <div id="page-title-wrapper" class="dev-page-title-wrapper">
 
@@ -159,9 +167,7 @@
 		<div id="results">
 			<fieldset>
 				<legend>Results</legend>
-				<div id="sql-result">
-					No results
-				</div>
+				<div id="sql-result"></div>
 			</fieldset>
 		</div>
 	</div>
