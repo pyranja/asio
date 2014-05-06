@@ -1,0 +1,23 @@
+<!-- pack asio/bin scripts into assembly -->
+<component xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/component/1.1.2"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/component/1.1.2 http://maven.apache.org/xsd/component-1.1.2.xsd">
+  <fileSets>
+    <fileSet>
+      <directory>${project.basedir}/src/main/scripts</directory>
+      <outputDirectory>/bin</outputDirectory>
+      <fileMode>755</fileMode>
+      <excludes>
+        <exclude>*setenv.sh</exclude>
+      </excludes>
+    </fileSet>
+  </fileSets>
+  <files>
+    <file>
+      <source>${project.basedir}/src/main/scripts/setenv.sh</source>
+      <outputDirectory>/bin</outputDirectory>
+      <fileMode>755</fileMode>
+      <filtered>true</filtered>
+    </file>
+  </files>
+</component>
