@@ -24,8 +24,6 @@ var ResultView = new function () {
   this.update = function (model) {
     var content = ich.template_result(model.result);
     $('#sql-result').empty().append(content);
-	
-	console.log(columnWidths());
 	$('#zebra-table').dataTable({
         aoColumns: columnWidths()
     });
@@ -114,6 +112,14 @@ var Controller = new function () {
     }); 
   };
   
+  this.downloadTable = function() {
+	var req = $('#sql-download-form').submit(function(event){
+		$('#sql-download-command').val($('#sql-command').val());
+		$('#sql-download-form').attr('action', asio.endpoint());
+		return true;
+    });
+}; 
+  
   this.sync = function () {
     var $self = this;
     asio.fetchSchema(function (error, xml) {
@@ -171,11 +177,12 @@ function overrideForm() {
 }; 
 
 function downloadTable() {
-	$('#sql-download-form').submit(function(event){ //listen for submit event
+	/*$('#sql-download-form').submit(function(event){ //listen for submit event
 		$('#sql-download-command').val($('#sql-command').val());
 		$('#sql-download-form').attr('action', asio.endpoint());
 		return true;
-    });
+    });*/
+	return Controller.downloadTable();
 }; 
 
 function printMetadata()
@@ -218,7 +225,7 @@ function printMetadata()
 		}
 		else
 		{
-			console.log("Error printMetadata!!");
+			alert("Error: printMetadata");
 		}
 	}
 }

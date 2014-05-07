@@ -114,17 +114,16 @@ var asio = (function() {
 
     var tables = $(xml).find('table').map(function() {
       var tableName = $(this).attr('name');
-	  var datatype;
       var columns = $(this).find('column').map(function() {
-        datatype = $(this).find('sqlTypeName').map(function() {
+        var datatype = $(this).find('sqlTypeName').map(function() {
           return $(this).text();
         }).get();
-		return $(this).attr('name');
+		return { name: $(this).attr('name'), type: datatype };
       }).get();
+
 
       return {
         name : tableName,
-		datatype : datatype,
         columns : columns
       };
     }).get();
@@ -178,9 +177,12 @@ var asio = (function() {
 	  },
 	  complete:function(){
 		pleaseWaitDiv.modal('hide');
-		$('#cbcontainer').show();
-		$("#downloadbutton").removeAttr("disabled");
 	  },
+	  success:function () {
+        $('#cbcontainer').show();
+		$("#downloadbutton").removeAttr("disabled");
+		$("#downloadbutton").removeAttr("title");
+      },
       processData : false,
       contentType : 'application/sql-query',
       headers : {
@@ -193,7 +195,7 @@ var asio = (function() {
 	
     req.done(forwardTo(callback)).fail(escalateTo(callback));
   };
-
+ 
   // ==============================================================>
   // EXPORTS
   return exports;

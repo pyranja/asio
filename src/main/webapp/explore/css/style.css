@@ -61,7 +61,7 @@
 }
 
 .textcrop_rows {
-	width:230px;
+	width:200px;
 	height:18px;
 	line-height:15px;
 	overflow:hidden;
@@ -365,6 +365,7 @@ header #login a img{
 #zebra-table
 {
 	width: 100%;
+	max-width:940px;
 	text-align: left;
 	border-collapse: collapse;
 	overflow:hidden;

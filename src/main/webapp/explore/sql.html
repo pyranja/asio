@@ -63,10 +63,10 @@
 		<li><span class="textcrop_ds pointer_cursor" title='Dataset: "{{datasourceName}}". Click on tables or rows to see the data.'><img src="img/db.png" alt="Database" height="15" width="15">  &nbsp; {{datasourceName}}</span>
 			<ul>
 			  {{#tables}}
-			  <li xasiotablename={{name}}><img class="pointer_cursor" src="img/table.png" alt="Table" height="15" width="15" title="{{name}}"> &nbsp; <span class="textcrop_tables hand_cursor" title="{{name}}" onclick="onSelectTable(event, '{{name}}', $('#limitselect').val())">{{name}}</span> ({{datatype}})
+			  <li xasiotablename={{name}}><img class="pointer_cursor" src="img/table.png" alt="Table" height="15" width="15" title="{{name}}"> &nbsp; <span class="textcrop_tables hand_cursor" title="{{name}}" onclick="onSelectTable(event, '{{name}}', $('#limitselect').val())">{{name}}</span>
 			  {{#columns}}
 			  <ul>
-				<li><img class="pointer_cursor"  title="{{.}}" src="img/column.png" alt="Table" height="15" width="15"> &nbsp; <span class="textcrop_rows hand_cursor" title="{{.}}" onclick="onSelectField(event, '{{.}}', $('#limitselect').val())">{{.}}</span></li>
+				<li><img class="pointer_cursor"  title="{{name}}" src="img/column.png" alt="Table" height="15" width="15"> &nbsp; <span class="textcrop_rows hand_cursor" title="{{name}}" onclick="onSelectField(event, '{{name}}', $('#limitselect').val())">{{name}}</span> ({{type}})</li>
 			  </ul>
 			  {{/columns}}
 			  </li>
@@ -174,13 +174,13 @@
 					<form id="sql-command-form" action="/sql/query" method="post" target="_blank">	
 					<textarea id="sql-command" rows="2" cols="50" placeholder="SQL query..."></textarea>
 					<br class="clearfix" />
-					<button type="submit" class="btn btn-default btn-lg">
+					<button id="executebutton" type="submit" class="btn btn-default btn-lg">
 					 <span class="glyphicon glyphicon-ok-circle"></span> Execute
 					</button>
 					<!--<input type="submit" value="Execute" class="borderBoxSizing" />-->
-					<button type="reset" class="btn btn-default btn-lg">
+					<!--<button type="reset" class="btn btn-default btn-lg">
 					 <span class="glyphicon glyphicon-remove-circle"></span> Reset
-					</button>
+					</button>-->
 					<!--<input type="reset" value="Clear" />-->
 					</form>
 				</div>
