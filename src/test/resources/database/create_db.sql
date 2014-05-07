@@ -22,3 +22,9 @@ CREATE TABLE datetimes (
   moment TIMESTAMP,
   PRIMARY KEY (id)
 );
+
+CREATE TABLE dummy_table_with_long_name_for_gui_testing_xoxoxoxoxoxoxoxoxoxoxoxoxoxoxoxoxoxoxo (
+  id_of_very_long_named_table_dummy_iaiaiaiaiaiaiaiaiaiaiaiaiaiaiaiaiaiaiaia INT NOT NULL,
+  column_with_long_but_reasonable_name VARCHAR(255) DEFAULT NULL,
+  PRIMARY KEY(id_of_very_long_named_table_dummy_iaiaiaiaiaiaiaiaiaiaiaiaiaiaiaiaiaiaiaia)
+);

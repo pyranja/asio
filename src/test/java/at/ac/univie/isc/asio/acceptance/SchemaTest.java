@@ -1,12 +1,18 @@
 package at.ac.univie.isc.asio.acceptance;
 
-import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
-import static javax.ws.rs.core.Response.Status.Family.familyOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.equalToIgnoringCase;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import at.ac.univie.isc.asio.tool.FunctionalTest;
+import com.google.common.base.Charsets;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import uk.org.ogsadai.converters.databaseschema.ColumnMetaData;
+import uk.org.ogsadai.converters.databaseschema.DatabaseSchemaMetaData;
+import uk.org.ogsadai.converters.databaseschema.RelationalSchemaParseException;
+import uk.org.ogsadai.converters.databaseschema.TableMetaData;
+import uk.org.ogsadai.converters.databaseschema.fromxml.XMLSchemaConverter;
 
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -15,21 +21,12 @@ import java.net.URI;
 import java.sql.Types;
 import java.util.Map;
 
-import javax.ws.rs.core.Response;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
-
-import uk.org.ogsadai.converters.databaseschema.ColumnMetaData;
-import uk.org.ogsadai.converters.databaseschema.DatabaseSchemaMetaData;
-import uk.org.ogsadai.converters.databaseschema.RelationalSchemaParseException;
-import uk.org.ogsadai.converters.databaseschema.TableMetaData;
-import uk.org.ogsadai.converters.databaseschema.fromxml.XMLSchemaConverter;
-import at.ac.univie.isc.asio.tool.FunctionalTest;
-
-import com.google.common.base.Charsets;
+import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
+import static javax.ws.rs.core.Response.Status.Family.familyOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.equalToIgnoringCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 @Category(FunctionalTest.class)
 public class SchemaTest extends AcceptanceHarness {
@@ -62,7 +59,7 @@ public class SchemaTest extends AcceptanceHarness {
   private void verifySchema(final DatabaseSchemaMetaData schema) {
     @SuppressWarnings("unchecked")
     final Map<String, TableMetaData> tables = schema.getTables();
-    assertThat(tables.size(), is(3));
+    assertThat(tables.size(), is(4));
     final TableMetaData table = tables.get("PERSON");
     assertThat(table.getCatalogName(), is(equalToIgnoringCase("TEST")));
     assertEquals(5, table.getColumnCount());

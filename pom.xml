@@ -388,16 +388,16 @@
           <password>change</password>
           <sources>
             <script>
-              <sourceFile>${basedir}/src/test/resources/database/create_db.sql
-              </sourceFile>
+              <sourceFile>${basedir}/src/test/resources/database/create_db.sql</sourceFile>
             </script>
             <script>
-              <sourceFile>${basedir}/src/test/resources/database/fill_person.sql
-              </sourceFile>
+              <sourceFile>${basedir}/src/test/resources/database/fill_person.sql</sourceFile>
             </script>
             <script>
-              <sourceFile>${basedir}/src/test/resources/database/fill_datetimes.sql
-              </sourceFile>
+              <sourceFile>${basedir}/src/test/resources/database/fill_datetimes.sql</sourceFile>
+            </script>
+            <script>
+              <sourceFile>${basedir}/src/test/resources/database/fill_dummy.sql</sourceFile>
             </script>
           </sources>
         </configuration>
