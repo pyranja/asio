@@ -25,6 +25,12 @@ datasets in the [VPH-Share](http://vph-share.eu/) cloud. asio provides
 
 ## Release notes
 
+### v0.4.4
+
+ * Various design improvements in the SQL explorer
+ * XML and JSON representations of error messages
+ * New `upgrade` command for asio.sh : batch redeploy asio instances when installing a new version
+
 ### v0.4.3
 
  * SQL explorer pages are now SSL ready
