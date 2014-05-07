@@ -24,7 +24,11 @@ var ResultView = new function () {
   this.update = function (model) {
     var content = ich.template_result(model.result);
     $('#sql-result').empty().append(content);
-	$('#zebra-table').dataTable();
+	
+	console.log(columnWidths());
+	$('#zebra-table').dataTable({
+        aoColumns: columnWidths()
+    });
   };
 };
 
@@ -56,12 +60,43 @@ var Controller = new function () {
   };  
   
   this.fetchTable = function (table, limit) {
-	this.executeQuery("SELECT * FROM `" + table +"`");
+	if($("#cbinput").prop('checked'))
+		this.executeQuery("SELECT * FROM `" + table +"` LIMIT 1000");
+	else
+		this.executeQuery("SELECT * FROM `" + table +"`");
   };
   
   this.fetchTableField = function (table, field, limit) {
-	this.executeQuery("SELECT DISTINCT COUNT(`" + field + "`) AS occurence, `" + field +"` FROM `" + table +"` GROUP BY `"+ field +"` ORDER BY occurence DESC");
+	if($("#cbinput").prop('checked'))
+		this.executeQuery("SELECT DISTINCT COUNT(`" + field + "`) AS occurence, `" + field +"` FROM `" + table +"` GROUP BY `"+ field +"` ORDER BY occurence DESC LIMIT 1000");
+	else
+		this.executeQuery("SELECT DISTINCT COUNT(`" + field + "`) AS occurence, `" + field +"` FROM `" + table +"` GROUP BY `"+ field +"` ORDER BY occurence DESC");
   };
+  
+  this.onCheckLimitBox = function () {
+	var isChecked = $("#cbinput").prop('checked');
+	if(!isChecked){
+	    $.confirm({
+          text: "<span style='font-size: 20px;'>Are you sure you want to display all data? <br/> The processing of large datasets may take a while!</span>",
+          confirm: function() {
+            var query = $('#sql-command').val();
+			if(query.toUpperCase().lastIndexOf("LIMIT") != -1)
+				query = query.substring(0,query.toUpperCase().lastIndexOf("LIMIT"));
+			
+			Controller.executeQuery(query);
+          },
+          cancel: function() {
+            
+          }
+        });
+	} else {
+		var query = $('#sql-command').val();
+		if(query.toUpperCase().lastIndexOf("LIMIT") == -1)
+			query = query + " LIMIT 1000";
+		
+		Controller.executeQuery(query);
+	}
+  }
   
   this.executeQuery = function (query) {
     var $self = this;
@@ -105,6 +140,10 @@ function onSelectTable(event, tableName, limit) {
   event.preventDefault();
   event.stopPropagation();
   Controller.fetchTable(tableName, limit);
+};
+
+function onCheckLimitBox() {
+  Controller.onCheckLimitBox();
 };
 
 /*function onSelectLimit(){ // set limit according to select box 'limitselect'
@@ -182,6 +221,22 @@ function printMetadata()
 			console.log("Error printMetadata!!");
 		}
 	}
+}
+
+//create automatic widths for datatable columns
+function columnWidths() {
+    var ao = [];
+    $("#zebra-table th").each(function(i) {
+        switch (i) {
+            case 0 : 
+                ao.push({"sWidth": "15%"});
+                break;
+            default :
+                ao.push({"sWidth": "auto"});
+                break;
+        }
+    });
+    return ao;
 }
 
 //==============================================================>

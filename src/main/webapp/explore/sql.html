@@ -14,6 +14,7 @@
 	
 	<!-- JQuery Plugins  -->
 	
+	<script src="js/jquery.confirm.min.js" type="text/javascript"></script>
 	<script src="js/jquery.dataTables.min.js" type="text/javascript"></script>
 	<script src="js/jquery.collapsibleList.js" type="text/javascript"></script>
 		
@@ -23,7 +24,6 @@
 	<link rel="stylesheet" href="css/jquery.collapsibleList.css" type="text/css" media="screen" />
 
 	<!-- START bootstrap  -->
-
     <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css" media="screen" />
     <link rel="stylesheet" href="css/bootstrap-responsive.css" type="text/css" media="screen" />
     <script src="js/bootstrap.min.js" type="text/javascript"></script>
@@ -38,11 +38,11 @@
 	<!-- Data templates -->
 	
 	<script id="template_result" type="text/html">
-    <table id="zebra-table" class="zebra-table" summary="Query Results">	
+    <table id="zebra-table" summary="Query Results">	
       <thead>
         <tr>
           {{#columns}}
-          <td>{{.}}</td>
+          <th>{{.}}</td>
           {{/columns}}
         </tr>
       </thead>
@@ -81,15 +81,6 @@
 
 <body>
 
-<div id="ajaxLoadingScreen"><div id="ajaxLoadingOverlay"></div>
-   <div id="ajaxLoaderImage">
-     <fieldset>
-		<p style="font-size: 1.5em;">Loading data. Please wait...<p>
-		<img src="img/ajaxspinner.gif" alt="Loading data. Please wait..." />
-	 </fieldset>
-   </div>
-</div>
-
 <div id="page-title-wrapper" class="dev-page-title-wrapper">
 
     <a href="https://portal.vph-share.eu/">
@@ -107,7 +98,7 @@
 	  <tr><td valign="top">
 	  <div id="datasource"> 
 		<fieldset>
-			<legend>Explore and select Data</legend>
+			<legend>Explore and select data</legend>
 			<div class="block" id="sql-explorer">
 				
 			</div>
@@ -138,7 +129,7 @@
 					</select> 
 					
 					<input type="hidden" name="query" value="" id="sql-download-command">
-					<button type="submit" class="btn btn-default btn-lg" onclick="downloadTable();">
+					<button id="downloadbutton" disabled title="Please explore and select data first" type="submit" class="btn btn-default btn-lg" onclick="downloadTable();">
 						<span class="glyphicon glyphicon-download"></span> Download current data
 					</button>
 					
@@ -167,13 +158,14 @@
 		<div id="results">
 			<fieldset>
 				<legend>Results</legend>
+				<span id="cbcontainer">
+					<label id="cblabel" for="checkbox"><input id="cbinput" type="checkbox" name="limit" value="limit" onchange="onCheckLimitBox()" checked> Limit search results to 1000 rows</label>
+				</span>
 				<div id="sql-result"></div>
 			</fieldset>
 		</div>
 	</div>
 	
-	
-
 	<div class="box clearfix">
 		<div id="query">
 			<fieldset>

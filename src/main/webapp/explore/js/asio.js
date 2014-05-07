@@ -121,8 +121,6 @@ var asio = (function() {
         }).get();
 		return $(this).attr('name');
       }).get();
-	  
-	  console.log(datatype);
 
       return {
         name : tableName,
@@ -169,18 +167,19 @@ var asio = (function() {
   // where error is null on success and xml holds the xml response document
   // on failure error will hold an Error object and xml is null
   exports.executeQuery = function(query, callback) {
+    var pleaseWaitDiv = $('<div class="modal hide fade" id="pleaseWaitDialog" data-backdrop="static" data-keyboard="false"><div class="modal-header"><h1>Loading data. Please wait...</h1></div><div class="modal-body"><div class="progress progress-striped active"><div class="bar" style="width: 100%;"></div></div></div></div>');
     var target = endpoint() + SERVICE_QUERY;
-	$('#sql-result').hide();
     var req = $.ajax({
       type : 'POST',
       url : target,
       data : query,
 	  beforeSend: function () {
-		$('#ajaxLoadingScreen').fadeIn();
+		pleaseWaitDiv.modal();
 	  },
 	  complete:function(){
-		$('#ajaxLoadingScreen').fadeOut();
-		$('#sql-result').fadeIn();
+		pleaseWaitDiv.modal('hide');
+		$('#cbcontainer').show();
+		$("#downloadbutton").removeAttr("disabled");
 	  },
       processData : false,
       contentType : 'application/sql-query',

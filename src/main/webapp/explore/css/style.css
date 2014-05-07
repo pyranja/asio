@@ -176,7 +176,6 @@ header #headline{
     padding-top: 25px;
 }
 
-
 #headline a{
     text-decoration: none;
     color: #0072af;
@@ -320,47 +319,28 @@ header #login a img{
   color: white;
   font-weight: bold;
 }
-/*****************AJAX LOADING SCREEN****************/
-#ajaxLoadingScreen {
-	display: none;
-	width: 100%; 
-	height: 100%; 
-	top: 0pt;
-	left: 0pt;
+/*checkbox*/
+#cbcontainer{
+	display:none;
+	width:100%;
+	height:100%;
 }
-
-#ajaxLoadingOverlay {
-	filter:alpha(opacity=50);
-	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
-	-moz-opacity: 0.5;
-	-khtml-opacity: 0.5;
-	opacity: 0.5;
-	z-index: 9999;
-	border: medium none; 
-	margin: 0pt; 
-	padding: 0pt; 
-	width: 100%; 
-	height: 100%; 
-	top: 0pt;
-	left: 0pt; 
-	background-color: rgba(0, 0, 0, 0.5);
-	background-color: rgb(0, 0, 0);
-	cursor: wait; 
-	position: fixed;
+#cblabel {
+	display:block;
+    padding-left: 15px;
+    text-indent: -15px;
+	vertical-align: text-bottom;
 }
-
-#ajaxLoaderImage {
-	z-index: 10000; 
-	position: fixed; 
-	padding: 0px; 
-	margin: 0px;
-	width: 30%; 
-	top: 40%; 
-	left: 35%;
-	text-align: center;
-	cursor: wait; 
+#cbinput {
+    width: 13px;
+    height: 13px;
+    padding: 0;
+    margin:0;
+    vertical-align: bottom;
+    position: relative;
+    top: -1px;
+    *overflow: hidden;
 }
-/****************************************************/
 
 #results {
 	overflow: auto;
@@ -384,11 +364,10 @@ header #login a img{
 
 #zebra-table
 {
-	width: auto;
+	width: 100%;
 	text-align: left;
 	border-collapse: collapse;
 	overflow:hidden;
-	
 }
 #zebra-table thead
 {
