@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="http://isc.univie.ac.at/2013/asio"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:asio="http://isc.univie.ac.at/2013/asio"
+  xmlns:annox="http://annox.dev.java.net"
+	xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
+  jxb:version="2.1" jxb:extensionBindingPrefixes="annox"
+	elementFormDefault="qualified" attributeFormDefault="qualified">
+
+	<xsd:annotation>
+		<xsd:appinfo>
+			<jxb:schemaBindings>
+				<jxb:package name="at.ac.univie.isc.asio.transfer" />
+			</jxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>
+
+	<!-- response DTO for an UPDATE operation -->
+	<xsd:element name="update">
+		<xsd:complexType>
+      <xsd:annotation>
+        <xsd:documentation>
+          Response to an UPDATE operation, containing the executed command and
+          the modification count.
+        </xsd:documentation>
+        <xsd:appinfo>
+          <jxb:class name="UpdateResult" />
+          <annox:annotate>
+            <annox:annotate annox:class="javax.xml.bind.annotation.XmlRootElement" name="update" />
+          </annox:annotate>
+        </xsd:appinfo>
+      </xsd:annotation>
+			<xsd:sequence>
+				<xsd:element name="command" type="xsd:string" minOccurs="1"
+					maxOccurs="1" />
+				<xsd:element name="count" type="xsd:int" minOccurs="1"
+					maxOccurs="1" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+  <!-- repsonse DTO for an ERROR -->
+  <xsd:element name="error">
+    <xsd:complexType>
+      <xsd:annotation>
+        <xsd:documentation>
+          Response message on error, with exception details.
+        </xsd:documentation>
+        <xsd:appinfo>
+          <jxb:class name="ErrorMessage" />
+          <annox:annotate>
+            <annox:annotate annox:class="javax.xml.bind.annotation.XmlRootElement" name="error" />
+          </annox:annotate>
+        </xsd:appinfo>
+      </xsd:annotation>
+      <xsd:sequence>
+        <xsd:element name="message" type="xsd:string" minOccurs="1" maxOccurs="1" />
+        <xsd:element name="operation" type="xsd:string" minOccurs="0" maxOccurs="1" />
+        <xsd:element name="cause" type="xsd:string" minOccurs="0" maxOccurs="1" />
+        <xsd:element name="trace" type="xsd:string" minOccurs="0" maxOccurs="1" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
+</xsd:schema>

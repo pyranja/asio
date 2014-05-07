@@ -1,5 +1,8 @@
 release steps :
 
+ - test browser with checklist
+ - bump version
+
  - update latest release rewrite rule   @/src/site/resource/.htaccess
  - add release notes                    @/src/site/markdown/index.md
  - upload assembly artifacts            @login.univie.ac.at:/html/asio/archive

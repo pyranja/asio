@@ -114,19 +114,16 @@ var asio = (function() {
 
     var tables = $(xml).find('table').map(function() {
       var tableName = $(this).attr('name');
-	  var datatype;
       var columns = $(this).find('column').map(function() {
-        datatype = $(this).find('sqlTypeName').map(function() {
+        var datatype = $(this).find('sqlTypeName').map(function() {
           return $(this).text();
         }).get();
-		return $(this).attr('name');
+		return { name: $(this).attr('name'), type: datatype };
       }).get();
-	  
-	  console.log(datatype);
+
 
       return {
         name : tableName,
-		datatype : datatype,
         columns : columns
       };
     }).get();
@@ -169,11 +166,23 @@ var asio = (function() {
   // where error is null on success and xml holds the xml response document
   // on failure error will hold an Error object and xml is null
   exports.executeQuery = function(query, callback) {
+    var pleaseWaitDiv = $('<div class="modal hide fade" id="pleaseWaitDialog" data-backdrop="static" data-keyboard="false"><div class="modal-header"><h1>Loading data. Please wait...</h1></div><div class="modal-body"><div class="progress progress-striped active"><div class="bar" style="width: 100%;"></div></div></div></div>');
     var target = endpoint() + SERVICE_QUERY;
     var req = $.ajax({
       type : 'POST',
       url : target,
       data : query,
+	  beforeSend: function () {
+		pleaseWaitDiv.modal();
+	  },
+	  complete:function(){
+		pleaseWaitDiv.modal('hide');
+	  },
+	  success:function () {
+        $('#cbcontainer').show();
+		$("#downloadbutton").removeAttr("disabled");
+		$("#downloadbutton").removeAttr("title");
+      },
       processData : false,
       contentType : 'application/sql-query',
       headers : {
@@ -183,9 +192,10 @@ var asio = (function() {
       },
       dataType : 'xml',
     });
+	
     req.done(forwardTo(callback)).fail(escalateTo(callback));
   };
-
+ 
   // ==============================================================>
   // EXPORTS
   return exports;

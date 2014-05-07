@@ -18,14 +18,18 @@ datasets in the [VPH-Share](http://vph-share.eu/) cloud. asio provides
 ### Quick start
 
  * Download the [current release](http://homepage.univie.ac.at/chris.borckholder/asio/latest) and
-  unzip its contents to `/usr/share`.
- * Make sure, that the `$CATALINA_HOME` variable is set and points to the base directory of your
- tomcat installation.
+  untar its contents to `/usr/share`.
  * Execute `/usr/share/asio/bin/asio.sh <your_dataset_name> </path/to/d2r-mapping.ttl>` to deploy
   an asio instance and restart the tomcat to let the changes take effect.
  * Open `http://<tomcat_host>/<your_dataset_name>/explore/sql.html` to start browsing your data.
 
 ## Release notes
+
+### v0.4.4
+
+ * Various design improvements in the SQL explorer
+ * XML and JSON representations of error messages
+ * New `upgrade` command for asio.sh : batch redeploy asio instances when installing a new version
 
 ### v0.4.3
 

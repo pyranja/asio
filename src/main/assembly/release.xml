@@ -8,16 +8,14 @@
     <format>tar.gz</format>
   </formats>
 
+  <componentDescriptors>
+    <componentDescriptor>src/main/assembly/components/scripts.xml</componentDescriptor>
+  </componentDescriptors>
+
   <fileSets>
     <fileSet>
       <directory>${project.build.directory}/asio-${project.version}</directory>
       <outputDirectory>/webapp</outputDirectory>
-    </fileSet>
-    <fileSet>
-      <directory>${project.basedir}/src/main/scripts</directory>
-      <outputDirectory>/bin</outputDirectory>
-      <fileMode>755</fileMode>
-      <filtered>true</filtered>
     </fileSet>
   </fileSets>
   <files>

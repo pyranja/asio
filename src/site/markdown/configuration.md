@@ -5,13 +5,25 @@ There are two main domains in asio's configuration, deployment and runtime confi
 ## Deployment
 
 Dataset instances can be deployed through the `bin/asio.sh` script. Following environment variables
-are recognized by it.
+are recognized by it. They can be set in the `bin/setenv.sh` script.
+
+### Prerequisites
+
+  * [Java 7](http://openjdk.java.net/projects/jdk7/)
+  * [Apache Tomcat 7](http://tomcat.apache.org/)
+  * [MySQL database](http://dev.mysql.com/)
 
 ### Environment
 
+#### `ASIO_BASE`
+
+  asio's installation directory, defaults to `/usr/share/asio`.
+
+  Note: this variable **cannot** be set in the `/bin/setenv.sh`!
+
 #### `ASIO_HOME`
 
-  asio's installation directory, defaults to `/usr/share/asio`
+  asio's runtime files, defaults to `/var/lib/asio`.
 
 #### `CATALINA_HOME`
 
@@ -20,30 +32,6 @@ are recognized by it.
 #### `ASIO_OWNER`
 
   The user that will own created asio instances, defaults to the user executing the script.
-
-### Commands
-
-Following commands are supported:
-
-####`deploy <name> <path/to/config.ttl>`
-
-  Create an asio instance by creating the web application folder with the given `<name>` in the
-  local tomcat installation. The given `<config.ttl>` is copied to the dataset instance.
-  If that web application already exists and is an asio instance, its `<config.ttl>` will be saved
-  to `$ASIO_HOME/backups/dataset_name.ttl` and then overwritten.
-
-#### `undeploy <name>`
-
-  Delete the web application folder with the given `<name>`, if it exists.
-
-#### `migrate`
-
-  Attempt to convert legacy d2r/vce installations to asio instances. Backups of converted web
-  applications are stored in `$ASIO_HOME/backups`.
-
-#### `help`
-
-  Show command overview
 
 ## Runtime
 
