@@ -5,19 +5,19 @@
   Chris Borckholder
   -----------------------------
   2014-01-29
-  
+
 protocol operations
 
 * QUERY
 
 ** accepted parameters
-  
+
   [query] (exactly one) : query command to be executed
-    
+
 ** target
 
 ---
-http://host:port/path/to/endpoint/{language}/
+http://host:port/[dataset-name]/read/[language]/
 ---
 
 ** request types
@@ -29,7 +29,7 @@ http://host:port/path/to/endpoint/{language}/
 *---------*-------------------------*-----------------------------------*------------------------*
 | POST    | none                    | application/x-www-form-urlencoded | URL-encoded parameters |
 *---------*-------------------------*-----------------------------------*------------------------*
-| POST    | none                    | application/language-query        | unencoded command      |
+| POST    | none                    | application/[language]-query      | unencoded command      |
 *---------*-------------------------*-----------------------------------*------------------------*
 
 * UPDATE
@@ -37,11 +37,11 @@ http://host:port/path/to/endpoint/{language}/
 ** accepted parameters
 
   [update] (exactly one) : update command to be executed
-  
+
 ** target
 
 ---
-http://host:port/path/to/endpoint/{language}/
+http://host:port/[dataset-name]/full/[language]/
 ---
 
 ** request types
@@ -49,25 +49,7 @@ http://host:port/path/to/endpoint/{language}/
 *---------*---------------*-----------------------------------*------------------------*
 || method | query string  | content type                      | request body           |
 *---------*---------------*-----------------------------------*------------------------*
-| POST    | none          | application/x-www-form-urlencoded | URL-encoded parameters | 
+| POST    | none          | application/x-www-form-urlencoded | URL-encoded parameters |
 *---------*---------------*-----------------------------------*------------------------*
-| POST    | none          | application/language-query        | unencoded command      |
+| POST    | none          | application/[language]-update     | unencoded command      |
 *---------*---------------*-----------------------------------*------------------------*
-
-* SCHEMA
-
-** accepted parameters
-
-** target
-
----
-http://host:port/path/to/endpoint/{language}/schema/
----
-
-** request types
-
-*---------*---------------*---------------*---------------*
-|| method | query string  | content type  | request body  |
-*---------*---------------*---------------*---------------*
-| GET     | none          | none          | none          | 
-*---------*---------------*---------------*---------------*

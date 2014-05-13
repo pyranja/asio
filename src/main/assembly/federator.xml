@@ -5,12 +5,12 @@
   <id>federator</id>
   <baseDirectory>asio</baseDirectory>
   <formats>
-    <format>zip</format>
     <format>tar.gz</format>
   </formats>
 
   <componentDescriptors>
     <componentDescriptor>src/main/assembly/components/scripts.xml</componentDescriptor>
+    <componentDescriptor>src/main/assembly/components/legal.xml</componentDescriptor>
   </componentDescriptors>
 
   <fileSets>
@@ -23,12 +23,6 @@
     </fileSet>
   </fileSets>
   <files>
-    <file>
-      <source>${project.basedir}/README</source>
-      <outputDirectory>/</outputDirectory>
-      <lineEnding>unix</lineEnding>
-      <filtered>true</filtered>
-    </file>
     <file>
       <source>${project.basedir}/src/main/federator/web.xml</source>
       <outputDirectory>/webapp/WEB-INF</outputDirectory>

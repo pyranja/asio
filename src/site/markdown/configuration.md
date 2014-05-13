@@ -7,12 +7,6 @@ There are two main domains in asio's configuration, deployment and runtime confi
 Dataset instances can be deployed through the `bin/asio.sh` script. Following environment variables
 are recognized by it. They can be set in the `bin/setenv.sh` script.
 
-### Prerequisites
-
-  * [Java 7](http://openjdk.java.net/projects/jdk7/)
-  * [Apache Tomcat 7](http://tomcat.apache.org/)
-  * [MySQL database](http://dev.mysql.com/)
-
 ### Environment
 
 #### `ASIO_BASE`
