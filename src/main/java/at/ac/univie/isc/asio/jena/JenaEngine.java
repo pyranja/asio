@@ -1,23 +1,16 @@
 package at.ac.univie.isc.asio.jena;
 
-import java.util.Locale;
-import java.util.Set;
-
-import org.openjena.riot.Lang;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import at.ac.univie.isc.asio.DatasetEngine;
 import at.ac.univie.isc.asio.DatasetFailureException;
 import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
 import at.ac.univie.isc.asio.DatasetUsageException;
+import at.ac.univie.isc.asio.config.TimeoutSpec;
 import at.ac.univie.isc.asio.coordination.EngineSpec;
 import at.ac.univie.isc.asio.coordination.Operator;
 import at.ac.univie.isc.asio.coordination.OperatorCallback;
 import at.ac.univie.isc.asio.security.VphToken;
 import at.ac.univie.isc.asio.transport.Transfer;
-
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -32,6 +25,15 @@ import com.hp.hpl.jena.sparql.resultset.JSONOutput;
 import com.hp.hpl.jena.sparql.resultset.OutputFormatter;
 import com.hp.hpl.jena.sparql.resultset.XMLOutput;
 import com.hp.hpl.jena.sparql.util.Symbol;
+import org.openjena.riot.Lang;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Locale;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * Execute SPARQL queries through jena's ARQ.
@@ -47,11 +49,13 @@ public class JenaEngine implements DatasetEngine, Operator {
   private final Model model;
 
   private final String modelPrefixes;
+  private TimeoutSpec timeout;
 
   public JenaEngine(final ListeningExecutorService exec, final Model model) {
     super();
     this.exec = exec;
     this.model = model;
+    this.timeout = TimeoutSpec.undefined();
     modelPrefixes = createPrefixFromModel(model);
   }
 
@@ -62,6 +66,11 @@ public class JenaEngine implements DatasetEngine, Operator {
           model.getNsPrefixURI(prefix)));
     }
     return prefixIntro.toString();
+  }
+
+  public JenaEngine withTimeout(TimeoutSpec timeout) {
+    this.timeout = requireNonNull(timeout);
+    return this;
   }
 
   /**
@@ -90,6 +99,7 @@ public class JenaEngine implements DatasetEngine, Operator {
     // prepare execution
     final QueryExecution invocation = QueryExecutionFactory.create(query, model);
     delegateCredentials(operation, invocation);
+    invocation.setTimeout(timeout.getAs(TimeUnit.MILLISECONDS));
     log.debug(">> invoking ARQ query");
     final ListenableFuture<Void> future = exec.submit(task.use(invocation));
     Futures.addCallback(future, callbackFor(operation, callback));

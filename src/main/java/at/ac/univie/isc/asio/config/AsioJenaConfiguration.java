@@ -39,10 +39,12 @@ public class AsioJenaConfiguration {
   Environment env;
   @Autowired
   ServletContext webContext;
+  @Autowired
+  TimeoutSpec globalTimeout;
 
   @Bean
   public DatasetEngine jenaEngine() {
-    return new JenaEngine(queryWorkerPool(), d2rModel());
+    return new JenaEngine(queryWorkerPool(), d2rModel()).withTimeout(globalTimeout);
   }
 
   @Bean

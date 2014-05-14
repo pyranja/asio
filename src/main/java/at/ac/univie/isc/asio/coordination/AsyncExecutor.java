@@ -1,26 +1,25 @@
 package at.ac.univie.isc.asio.coordination;
 
+import at.ac.univie.isc.asio.DatasetException;
+import at.ac.univie.isc.asio.DatasetFailureException;
+import at.ac.univie.isc.asio.DatasetOperation;
+import at.ac.univie.isc.asio.Result;
+import at.ac.univie.isc.asio.transport.Transfer;
+import com.google.common.base.Supplier;
+import com.google.common.net.MediaType;
+import com.google.common.util.concurrent.AbstractFuture;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.Channels;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import at.ac.univie.isc.asio.DatasetException;
-import at.ac.univie.isc.asio.DatasetFailureException;
-import at.ac.univie.isc.asio.DatasetOperation;
-import at.ac.univie.isc.asio.Result;
-import at.ac.univie.isc.asio.transport.Transfer;
-
-import com.google.common.base.Supplier;
-import com.google.common.net.MediaType;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.SettableFuture;
 
 public class AsyncExecutor implements OperationAcceptor {
 
@@ -50,6 +49,29 @@ public class AsyncExecutor implements OperationAcceptor {
     }
   }
 
+  private final static class ExecutionPromise extends AbstractFuture<Result> {
+
+    private final Transfer exchange;
+
+    private ExecutionPromise(final Transfer exchange) {
+      this.exchange = exchange;
+    }
+
+    public boolean success(@Nullable final Result value) {
+      return super.set(value);
+    }
+
+    public boolean failure(final DatasetException cause) {
+      return super.setException(cause);
+    }
+
+    @Override
+    protected void interruptTask() {
+      exchange.release();
+      super.interruptTask();
+    }
+  }
+
   private static class ExecutionChain implements OperatorCallback {
 
     /* slf4j-logger */
@@ -57,7 +79,7 @@ public class AsyncExecutor implements OperationAcceptor {
 
     private final DatasetOperation operation;
     private final Transfer exchange;
-    private final SettableFuture<Result> promise;
+    private final ExecutionPromise promise;
     private final Set<Phase> steps;
 
     ExecutionChain(final DatasetOperation operation, final Transfer exchange) {
@@ -67,7 +89,7 @@ public class AsyncExecutor implements OperationAcceptor {
       steps =
           Collections.synchronizedSet(EnumSet.of(Phase.DELIVERY, Phase.EXECUTION,
               Phase.SERIALIZATION));
-      promise = SettableFuture.create();
+      promise = new ExecutionPromise(exchange);
     }
 
     @Override
@@ -76,7 +98,7 @@ public class AsyncExecutor implements OperationAcceptor {
       assert steps.contains(completed) : "phase " + completed + " completed twice";
       steps.remove(completed);
       if (Phase.EXECUTION == completed) {
-        promise.set(new Result() {
+        promise.success(new Result() {
           @Override
           public InputStream getInput() throws IOException {
             return Channels.newInputStream(exchange.source());
@@ -96,8 +118,8 @@ public class AsyncExecutor implements OperationAcceptor {
 
     @Override
     public void fail(final DatasetException cause) {
-      log.warn("received {} for {}", cause, operation);
-      promise.setException(cause);
+      log.error("received {} for {}", cause, operation, cause);
+      promise.failure(cause);
     }
 
     public ListenableFuture<Result> future() {

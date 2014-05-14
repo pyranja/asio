@@ -1,27 +1,29 @@
 package at.ac.univie.isc.asio.frontend;
 
+import at.ac.univie.isc.asio.DatasetException;
+import at.ac.univie.isc.asio.DatasetFailureException;
+import at.ac.univie.isc.asio.Result;
+import at.ac.univie.isc.asio.config.TimeoutSpec;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+
+import javax.annotation.Nonnull;
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.TimeoutHandler;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
-import javax.annotation.Nonnull;
-import javax.ws.rs.container.AsyncResponse;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
-
-import at.ac.univie.isc.asio.DatasetException;
-import at.ac.univie.isc.asio.DatasetFailureException;
-import at.ac.univie.isc.asio.Result;
-
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Await {@link Result} completion and resume the JAXRS response after completion.
@@ -39,10 +41,18 @@ public class AsyncProcessor {
   private final ExecutorService exec;
   private final VariantConverter converter;
 
+  private TimeoutSpec timeout;
+
   public AsyncProcessor(final ExecutorService exec, final VariantConverter converter) {
     super();
     this.exec = exec;
     this.converter = converter;
+    this.timeout = TimeoutSpec.undefined();
+  }
+
+  public AsyncProcessor withTimeout(TimeoutSpec timeout) {
+    this.timeout = requireNonNull(timeout);
+    return this;
   }
 
   /**
@@ -59,7 +69,14 @@ public class AsyncProcessor {
      * captured here to allow the thread which executes the callback to continue using it. A
      * response filter will clear it from the resumed response.
      */
-    response.setTimeout(DEFAULT_TIMEOUT, TimeUnit.NANOSECONDS);
+    response.setTimeout(timeout.getAs(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS);
+    response.setTimeoutHandler(new TimeoutHandler() {
+      @Override
+      public void handleTimeout(final AsyncResponse asyncResponse) {
+        future.cancel(true);
+        asyncResponse.resume(new DatasetFailureException("execution time limit exceeded", new TimeoutException()));
+      }
+    });
     final Map<?, ?> logContext = fetchMDC();
     final FutureCallback<Result> callback = new FutureCallback<Result>() {
       @Override
@@ -67,6 +84,7 @@ public class AsyncProcessor {
         MDC.setContextMap(logContext);
         try {
           log.info("<< operation completed successfully");
+          checkStillPending(response);
           final Response success = successResponse(result);
           response.resume(success);
         } catch (final IOException e) {
@@ -79,10 +97,17 @@ public class AsyncProcessor {
       public void onFailure(final Throwable t) {
         MDC.setContextMap(logContext);
         log.info("<< operation failed", t);
+        checkStillPending(response);
         response.resume(wrapFailure(t));
       }
     };
     Futures.addCallback(future, callback, exec);
+  }
+
+  private void checkStillPending(final AsyncResponse response) {
+    if (!response.isSuspended()) {
+      log.warn("!! handling non-suspended async response");
+    }
   }
 
   /**

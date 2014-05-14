@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Setup the asio endpoint infrastructure.
@@ -123,6 +124,14 @@ public class AsioConfiguration {
     };
   }
 
+  @Bean
+  public TimeoutSpec globalTimeout() {
+    Long timeout = env.getProperty("asio.timeout", Long.class, Long.valueOf(-1L));
+    TimeoutSpec spec = TimeoutSpec.from(timeout.longValue(), TimeUnit.SECONDS);
+    log.info("[BOOT] using timeout {}", spec);
+    return spec;
+  }
+
   // TODO let engine configurations create the metadata supplier
   @Bean
   public Supplier<DatasetMetadata> metadataSupplier() {
@@ -151,7 +160,7 @@ public class AsioConfiguration {
 
   @Bean
   public AsyncProcessor processor() {
-    return new AsyncProcessor(responseExecutor(), converter());
+    return new AsyncProcessor(responseExecutor(), converter()).withTimeout(globalTimeout());
   }
 
   @Bean(destroyMethod = "shutdown")
