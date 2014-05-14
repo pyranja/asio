@@ -45,7 +45,7 @@
 
     <!-- jaxrs framework -->
     <logger name="org.apache.cxf">
-        <level value="off"/>
+        <level value="warn"/>
     </logger>
 
     <root>
