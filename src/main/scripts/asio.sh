@@ -348,7 +348,7 @@ function main () {
     migrate)  migrate ;;
     upgrade)  upgrade ;;
     help)     usage ;;
-    *)        fail "unknown command $1" ; usage ;;
+    *)        log "unknown command $1" ; usage ;;
   esac
   exit 0
 }
