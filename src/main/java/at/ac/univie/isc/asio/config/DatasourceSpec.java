@@ -65,8 +65,8 @@ public class DatasourceSpec {
 
   @Override
   public String toString() {
-    return String.format("DatasourceSpec [jdbcUrl=%s, jdbcDriver=%s, username=%s, password=%s]",
-        jdbcUrl, jdbcDriver, username, password);
+    return String.format("DatasourceSpec [jdbcUrl=%s, jdbcDriver=%s, username=%s]",
+        jdbcUrl, jdbcDriver, username);
   }
 
   // ************** builder
