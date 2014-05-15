@@ -1,25 +1,28 @@
 package at.ac.univie.isc.asio.coordination;
 
-import at.ac.univie.isc.asio.DatasetException;
-import at.ac.univie.isc.asio.DatasetFailureException;
-import at.ac.univie.isc.asio.DatasetOperation;
-import at.ac.univie.isc.asio.Result;
-import at.ac.univie.isc.asio.transport.Transfer;
 import com.google.common.base.Supplier;
 import com.google.common.net.MediaType;
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.Channels;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
+
+import javax.annotation.Nullable;
+
+import at.ac.univie.isc.asio.DatasetException;
+import at.ac.univie.isc.asio.DatasetFailureException;
+import at.ac.univie.isc.asio.DatasetOperation;
+import at.ac.univie.isc.asio.Result;
+import at.ac.univie.isc.asio.transport.Transfer;
 
 public class AsyncExecutor implements OperationAcceptor {
 
@@ -120,6 +123,7 @@ public class AsyncExecutor implements OperationAcceptor {
     public void fail(final DatasetException cause) {
       log.error("received {} for {}", cause, operation, cause);
       promise.failure(cause);
+      exchange.release();
     }
 
     public ListenableFuture<Result> future() {

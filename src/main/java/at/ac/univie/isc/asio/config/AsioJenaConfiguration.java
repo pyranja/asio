@@ -1,17 +1,18 @@
 package at.ac.univie.isc.asio.config;
 
-import at.ac.univie.isc.asio.DatasetEngine;
-import at.ac.univie.isc.asio.jena.JenaEngine;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import com.hp.hpl.jena.rdf.model.Model;
+
 import de.fuberlin.wiwiss.d2rq.SystemLoader;
 import de.fuberlin.wiwiss.d2rq.map.Database;
 import de.fuberlin.wiwiss.d2rq.server.ConfigLoader;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +23,17 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 
-import javax.servlet.ServletContext;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import javax.servlet.ServletContext;
+
+import at.ac.univie.isc.asio.DatasetEngine;
+import at.ac.univie.isc.asio.jena.JenaEngine;
 
 import static com.google.common.base.Strings.emptyToNull;
 
@@ -91,7 +100,9 @@ public class AsioJenaConfiguration {
   public ListeningExecutorService queryWorkerPool() {
     final ThreadFactory factory =
         new ThreadFactoryBuilder().setNameFormat("jena-query-worker-%d").build();
-    return MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(5, factory));
+    final BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(30);
+    final ExecutorService exec = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, queue, factory);
+    return MoreExecutors.listeningDecorator(exec);
   }
 
   // transform a mapping file reference into an absolute URI

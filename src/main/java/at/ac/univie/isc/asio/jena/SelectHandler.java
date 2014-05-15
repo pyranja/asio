@@ -1,10 +1,10 @@
 package at.ac.univie.isc.asio.jena;
 
-import java.io.OutputStream;
-
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.sparql.resultset.OutputFormatter;
+
+import java.io.OutputStream;
 
 class SelectHandler implements QueryModeHandler<ResultSet> {
 
@@ -17,7 +17,9 @@ class SelectHandler implements QueryModeHandler<ResultSet> {
 
   @Override
   public ResultSet apply(final QueryExecution execution) {
-    return execution.execSelect();
+    final ResultSet result = execution.execSelect();
+    result.hasNext(); // force fail-fast on backing store
+    return result;
   }
 
   @Override

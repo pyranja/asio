@@ -1,21 +1,13 @@
 package at.ac.univie.isc.asio.frontend;
 
-import at.ac.univie.isc.asio.DatasetException;
-import at.ac.univie.isc.asio.DatasetFailureException;
-import at.ac.univie.isc.asio.Result;
-import at.ac.univie.isc.asio.config.TimeoutSpec;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import javax.annotation.Nonnull;
-import javax.ws.rs.container.AsyncResponse;
-import javax.ws.rs.container.TimeoutHandler;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
@@ -23,20 +15,28 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import javax.annotation.Nonnull;
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.TimeoutHandler;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+import at.ac.univie.isc.asio.DatasetException;
+import at.ac.univie.isc.asio.DatasetFailureException;
+import at.ac.univie.isc.asio.Result;
+import at.ac.univie.isc.asio.config.TimeoutSpec;
+
 import static java.util.Objects.requireNonNull;
 
 /**
  * Await {@link Result} completion and resume the JAXRS response after completion.
- * 
+ *
  * @author Chris Borckholder
  */
 public class AsyncProcessor {
 
   /* slf4j-logger */
   final static Logger log = LoggerFactory.getLogger(AsyncProcessor.class);
-
-  // XXX make configurable
-  private static final long DEFAULT_TIMEOUT = TimeUnit.NANOSECONDS.convert(20, TimeUnit.SECONDS);
 
   private final ExecutorService exec;
   private final VariantConverter converter;
@@ -57,7 +57,7 @@ public class AsyncProcessor {
 
   /**
    * Resume the given {@link AsyncResponse} when the given {@link Result} future completes.
-   * 
+   *
    * @param future pending results
    * @param response to be continued
    */
@@ -84,9 +84,13 @@ public class AsyncProcessor {
         MDC.setContextMap(logContext);
         try {
           log.info("<< operation completed successfully");
-          checkStillPending(response);
-          final Response success = successResponse(result);
-          response.resume(success);
+          if (response.isSuspended()) {
+            final Response success = successResponse(result);
+            response.resume(success);
+          } else {
+            log.error("!! response already resumed on success - cannot send results");
+            result.getInput().close();  // try cleaning up input
+          }
         } catch (final IOException e) {
           log.error("!! streaming result data failed", e);
           response.resume(wrapFailure(e));
@@ -97,17 +101,14 @@ public class AsyncProcessor {
       public void onFailure(final Throwable t) {
         MDC.setContextMap(logContext);
         log.info("<< operation failed", t);
-        checkStillPending(response);
-        response.resume(wrapFailure(t));
+        if (response.isSuspended()) {
+          response.resume(wrapFailure(t));
+        } else {
+          log.warn("!! response already resumed on failure - error swallowed", t);
+        }
       }
     };
     Futures.addCallback(future, callback, exec);
-  }
-
-  private void checkStillPending(final AsyncResponse response) {
-    if (!response.isSuspended()) {
-      log.warn("!! handling non-suspended async response");
-    }
   }
 
   /**
