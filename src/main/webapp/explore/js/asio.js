@@ -140,8 +140,22 @@ var asio = (function() {
   // on failure error will hold an Error object and xml is null
   exports.fetchSchema = function(callback) {
     var target = endpoint() + SERVICE_SCHEMA;
+	var pleaseWaitDiv = $('<div class="modal hide fade" id="pleaseWaitDialog" data-backdrop="static" data-keyboard="false"><div class="modal-header"><h1>Loading dataset schema. <br/>Please wait...</h1></div><div class="modal-body"><div class="progress progress-striped active"><div class="bar" style="width: 100%;"></div></div></div></div>');
+    
     var req = $.ajax({
       url : target,
+	  beforeSend: function () {
+		pleaseWaitDiv.modal();
+	  },
+	  complete:function(){
+		pleaseWaitDiv.modal('hide');
+	  },
+	  success: function () {
+		pleaseWaitDiv.modal('hide');
+	  },
+	  error:function(){
+		pleaseWaitDiv.modal('hide');
+	  },
       headers : {
         'Accept' : 'application/xml',
         'Accept-Language' : 'en',
@@ -176,6 +190,12 @@ var asio = (function() {
 		pleaseWaitDiv.modal();
 	  },
 	  complete:function(){
+		pleaseWaitDiv.modal('hide');
+	  },
+	  success: function () {
+		pleaseWaitDiv.modal('hide');
+	  },
+	  error:function(){
 		pleaseWaitDiv.modal('hide');
 	  },
 	  success:function () {
