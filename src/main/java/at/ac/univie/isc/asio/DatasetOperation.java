@@ -1,25 +1,28 @@
 package at.ac.univie.isc.asio;
 
+import com.google.common.base.Function;
+import com.google.common.base.Objects;
+import com.google.common.base.Optional;
+import com.google.common.net.MediaType;
+
 import java.security.Principal;
 
 import javax.annotation.Nullable;
 
+import at.ac.univie.isc.asio.common.CommandShortener;
 import at.ac.univie.isc.asio.security.Anonymous;
-
-import com.google.common.base.Optional;
-import com.google.common.net.MediaType;
 
 /**
  * Represent an operation on a dataset, including the command to be executed and the required output
  * format.
- * 
+ *
  * @author Chris Borckholder
  */
 public class DatasetOperation {
 
   /**
    * The different possible types of DatasetOperations.
-   * 
+   *
    * @author Chris Borckholder
    */
   public static enum Action {
@@ -28,7 +31,7 @@ public class DatasetOperation {
 
   /**
    * Marker interface for result output media types.
-   * 
+   *
    * @author Chris Borckholder
    */
   public static interface SerializationFormat {
@@ -57,11 +60,15 @@ public class DatasetOperation {
     };
   }
 
+  private static final Function<String, String> COMMAND_FORMATTER = new CommandShortener();
+
   private final String id;
   private final Action action;
   private final Optional<String> command;
   private final SerializationFormat format;
   private final Principal owner;
+
+  private String formattedCommandCache; // lazy loaded
 
   public DatasetOperation(final String id, final Action action, @Nullable final String command,
       final SerializationFormat format) {
@@ -71,6 +78,7 @@ public class DatasetOperation {
     this.command = Optional.fromNullable(command);
     this.format = format;
     owner = Anonymous.INSTANCE;
+    formattedCommandCache = null;
   }
 
   private DatasetOperation(final DatasetOperation prototype, final Principal owner) {
@@ -80,6 +88,7 @@ public class DatasetOperation {
     command = Optional.fromNullable(prototype.command.orNull());
     format = prototype.format;
     this.owner = owner;
+    formattedCommandCache = prototype.formattedCommandCache;
   }
 
   public DatasetOperation withOwner(final Principal owner) {
@@ -95,7 +104,7 @@ public class DatasetOperation {
 
   /**
    * The action of operation described by this instance.
-   * 
+   *
    * @return one of the possible {@link Action dataset actions}
    */
   public Action action() {
@@ -104,7 +113,7 @@ public class DatasetOperation {
 
   /**
    * The command to be executed by this operation if one is given.
-   * 
+   *
    * @return optional holding the command if one is set
    */
   public Optional<String> command() {
@@ -114,7 +123,7 @@ public class DatasetOperation {
   /**
    * If a command is required, this getter will fail fast if it is not present with a
    * {@link DatasetUsageException} holding details of this operation.
-   * 
+   *
    * @return the command if it is present
    * @throws DatasetUsageException if the command is not present
    */
@@ -128,7 +137,7 @@ public class DatasetOperation {
 
   /**
    * The output format in which the results of this operation must be rendered.
-   * 
+   *
    * @return the desired format
    */
   public SerializationFormat format() {
@@ -137,16 +146,28 @@ public class DatasetOperation {
 
   /**
    * The subject, that requested this operation.
-   * 
+   *
    * @return
    */
   public Principal owner() {
     return owner;
   }
 
+  private String logFormattedCommand() {
+    if (formattedCommandCache == null) {
+      // lazy loading is not thread-safe, but format result is constant
+      formattedCommandCache = command.transform(COMMAND_FORMATTER).or("none");
+    }
+    return formattedCommandCache;
+  }
+
   @Override
   public String toString() {
-    return String.format("[action=%s, command=\"%s\", format=%s]", action, command.or("none"),
-        format);
+    return Objects.toStringHelper(this)
+        .addValue(id)
+        .add("action", action)
+        .add("command", logFormattedCommand())
+        .add("format", format)
+        .toString();
   }
 }
