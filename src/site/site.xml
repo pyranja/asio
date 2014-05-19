@@ -14,6 +14,7 @@
   </bannerRight>
   <body>
     <menu name="Overview">
+      <item name="Start" href="index.html" />
       <item name="Configuration" href="configuration.html" />
       <item name="Administration" href="managing.html" />
       <item name="Usage" href="interface.html" />

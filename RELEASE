@@ -3,9 +3,7 @@ release steps :
  - test browser with checklist
  - bump version
 
- - update latest release rewrite rule   @/src/site/resource/.htaccess
  - add release notes                    @/src/site/markdown/index.md
  - upload assembly artifacts            @login.univie.ac.at:/html/asio/archive
   scp -q target/asio-version.tar.gz borckhc8@login.univie.ac.at:html/asio/archive
- - upload generated site                @login.univie.ac.at:/html/asio
-  scp -rq target/site/* borckhc8@login.univie.ac.at:html/asio
+ - deploy site

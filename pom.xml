@@ -23,6 +23,8 @@
     <version.spring>3.2.2.RELEASE</version.spring>
     <version.ogsadai>4.1.0</version.ogsadai>
     <version.jetty>9.1.3.v20140225</version.jetty>
+    <!-- properties for filtered sites - dot notation not allowed -->
+    <site-version>${project.version}</site-version>
   </properties>
 
   <organization>
