@@ -23,7 +23,7 @@ import uk.org.ogsadai.activity.workflow.Workflow;
 import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
 import at.ac.univie.isc.asio.MockOperations;
-import at.ac.univie.isc.asio.coordination.OperatorCallback;
+import at.ac.univie.isc.asio.engine.OperatorCallback;
 import at.ac.univie.isc.asio.transport.Transfer;
 
 import com.google.common.io.OutputSupplier;

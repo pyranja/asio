@@ -13,6 +13,8 @@ import at.ac.univie.isc.asio.protocol.EntryPoint;
 import at.ac.univie.isc.asio.protocol.OperationParser;
 import at.ac.univie.isc.asio.protocol.PrototypeEngineProvider;
 import at.ac.univie.isc.asio.transport.JdkPipeTransferFactory;
+import at.ac.univie.isc.asio.transport.ObservableStream;
+import at.ac.univie.isc.asio.transport.ObservableStreamBodyWriter;
 import at.ac.univie.isc.asio.transport.Transfer;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -28,6 +30,7 @@ import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
 
 import javax.annotation.PostConstruct;
+import javax.ws.rs.ext.MessageBodyWriter;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Set;
@@ -83,6 +86,11 @@ public class AsioConfiguration {
     return new DatasetExceptionMapper();
   }
 
+  @Bean(name = "asio_stream_writer")
+  public MessageBodyWriter<ObservableStream> streamWriter() {
+    return new ObservableStreamBodyWriter();
+  }
+
   @Bean(name = "asio_log_filter")
   public LogContextFilter logFilter() {
     return new LogContextFilter();
@@ -109,7 +117,7 @@ public class AsioConfiguration {
   @Bean
   public EndpointSupplier endpointSupplier() {
     log.info("[BOOT] using engines {}", engines);
-    return new PrototypeEngineProvider(engines, parser(), processor(), transferFactory());
+    return new PrototypeEngineProvider(engines, parser(), processor(), transferFactory(), responseExecutor(), globalTimeout());
   }
 
   // default resolver
@@ -160,7 +168,7 @@ public class AsioConfiguration {
 
   @Bean
   public AsyncProcessor processor() {
-    return new AsyncProcessor(responseExecutor(), converter()).withTimeout(globalTimeout());
+    return new ListeningAsyncProcessor(responseExecutor(), converter()).withTimeout(globalTimeout());
   }
 
   @Bean(destroyMethod = "shutdown")

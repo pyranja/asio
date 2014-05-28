@@ -5,26 +5,32 @@ import at.ac.univie.isc.asio.DatasetOperation.Action;
 import at.ac.univie.isc.asio.DatasetUsageException;
 import at.ac.univie.isc.asio.MockFormat;
 import at.ac.univie.isc.asio.MockResult;
-import at.ac.univie.isc.asio.coordination.OperationAcceptor;
+import at.ac.univie.isc.asio.engine.Engine;
 import at.ac.univie.isc.asio.tool.EmbeddedJaxrsServer;
 import at.ac.univie.isc.asio.tool.JaxrsClientProvider;
 import at.ac.univie.isc.asio.tool.ResponseMonitor;
+import at.ac.univie.isc.asio.transport.ObservableStream;
 import com.google.common.io.ByteStreams;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.*;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.runners.MockitoJUnitRunner;
+import rx.Observable;
+import rx.schedulers.Schedulers;
 
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static at.ac.univie.isc.asio.tool.JaxrsResponseMatchers.hasStatus;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -47,6 +53,8 @@ public class ProtocolAcceptanceTest {
 
   @Rule
   public TestRule chain = RuleChain.outerRule(provider).around(new ResponseMonitor(provider));
+  @Rule
+  public Timeout timeout = new Timeout(50000);
 
   private static final String PAYLOAD = "SELECT * FROM test_table";
 
@@ -55,14 +63,15 @@ public class ProtocolAcceptanceTest {
   @Captor
   private ArgumentCaptor<DatasetOperation> operation;
   // mock
-  private OperationAcceptor acceptor;
+  private Engine acceptor;
 
   @Before
   public void setUp() {
     client = provider.get().path("/");
     client.accept(MockFormat.APPLICABLE_CONTENT_TYPE);
     acceptor = application.getAcceptor();
-    when(acceptor.accept(operation.capture())).thenReturn(MockResult.successFuture());
+    final ByteArrayInputStream source = new ByteArrayInputStream(MockResult.PAYLOAD);
+    when(acceptor.execute(operation.capture())).thenReturn(Observable.just(ObservableStream.from(source)).subscribeOn(Schedulers.io()));
   }
 
   @After
@@ -193,10 +202,19 @@ public class ProtocolAcceptanceTest {
   }
 
   private void verifyFailure(final Response response) {
-    verify(acceptor, never()).accept(any(DatasetOperation.class));
+    verify(acceptor, never()).execute(any(DatasetOperation.class));
     assertThat(Status.Family.familyOf(response.getStatus()), is(Status.Family.CLIENT_ERROR));
   }
 
   // ====================================================================================>
   // ERROR HANDLING
+
+  @Test
+  public void should_fail_with_timeout_if_engine_not_responding() throws Exception {
+    when(acceptor.execute(operation.capture())).thenReturn(Observable.<ObservableStream>never());
+    client.type("application/test-query");
+    response = client.post(PAYLOAD);
+    verify(acceptor).execute(any(DatasetOperation.class));
+    assertThat(response, hasStatus(Status.SERVICE_UNAVAILABLE));
+  }
 }

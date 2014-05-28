@@ -16,7 +16,7 @@ import at.ac.univie.isc.asio.DatasetEngine;
 import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.Action;
-import at.ac.univie.isc.asio.coordination.OperatorCallback;
+import at.ac.univie.isc.asio.engine.OperatorCallback;
 import at.ac.univie.isc.asio.tool.ByteArrayTransfer;
 import at.ac.univie.isc.asio.tool.CsvToTable;
 

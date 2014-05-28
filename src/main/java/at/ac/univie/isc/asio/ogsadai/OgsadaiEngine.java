@@ -15,10 +15,10 @@ import at.ac.univie.isc.asio.DatasetEngine;
 import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
-import at.ac.univie.isc.asio.coordination.EngineSpec;
-import at.ac.univie.isc.asio.coordination.Operator;
-import at.ac.univie.isc.asio.coordination.OperatorCallback;
-import at.ac.univie.isc.asio.coordination.OperatorCallback.Phase;
+import at.ac.univie.isc.asio.engine.EngineSpec;
+import at.ac.univie.isc.asio.engine.Operator;
+import at.ac.univie.isc.asio.engine.OperatorCallback;
+import at.ac.univie.isc.asio.engine.OperatorCallback.Phase;
 import at.ac.univie.isc.asio.transport.Transfer;
 
 import com.google.common.io.OutputSupplier;

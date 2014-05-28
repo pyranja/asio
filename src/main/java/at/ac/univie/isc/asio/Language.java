@@ -2,7 +2,7 @@ package at.ac.univie.isc.asio;
 
 import java.util.Locale;
 
-import at.ac.univie.isc.asio.coordination.EngineSpec.Type;
+import at.ac.univie.isc.asio.engine.EngineSpec.Type;
 
 /**
  * The query language accepted by an endpoint.

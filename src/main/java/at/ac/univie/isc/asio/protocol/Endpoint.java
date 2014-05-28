@@ -1,5 +1,28 @@
 package at.ac.univie.isc.asio.protocol;
 
+import at.ac.univie.isc.asio.DatasetException;
+import at.ac.univie.isc.asio.DatasetOperation;
+import at.ac.univie.isc.asio.DatasetOperation.Action;
+import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
+import at.ac.univie.isc.asio.config.TimeoutSpec;
+import at.ac.univie.isc.asio.engine.Engine;
+import at.ac.univie.isc.asio.frontend.ContentNegotiator;
+import at.ac.univie.isc.asio.frontend.OperationFactory.OperationBuilder;
+import at.ac.univie.isc.asio.frontend.OperationObserver;
+import at.ac.univie.isc.asio.frontend.VariantConverter;
+import at.ac.univie.isc.asio.security.Anonymous;
+import at.ac.univie.isc.asio.transport.ObservableStream;
+import com.google.common.collect.Sets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import rx.Observable;
+import rx.Subscription;
+
+import javax.ws.rs.*;
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.Suspended;
+import javax.ws.rs.container.TimeoutHandler;
+import javax.ws.rs.core.*;
 import java.security.Principal;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -7,39 +30,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.container.AsyncResponse;
-import javax.ws.rs.container.Suspended;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Request;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import at.ac.univie.isc.asio.DatasetException;
-import at.ac.univie.isc.asio.DatasetOperation;
-import at.ac.univie.isc.asio.DatasetOperation.Action;
-import at.ac.univie.isc.asio.DatasetOperation.SerializationFormat;
-import at.ac.univie.isc.asio.Result;
-import at.ac.univie.isc.asio.coordination.OperationAcceptor;
-import at.ac.univie.isc.asio.frontend.AsyncProcessor;
-import at.ac.univie.isc.asio.frontend.ContentNegotiator;
-import at.ac.univie.isc.asio.frontend.OperationFactory.OperationBuilder;
-import at.ac.univie.isc.asio.security.Anonymous;
-
-import com.google.common.collect.Sets;
-import com.google.common.util.concurrent.ListenableFuture;
 
 @Path("")
 public class Endpoint {
@@ -50,11 +40,14 @@ public class Endpoint {
   private final static Set<Action> READ_ONLY = EnumSet.of(Action.QUERY);
   private final static Set<Action> READ_WRITE = EnumSet.of(Action.QUERY, Action.UPDATE);
 
+  private final TimeoutSpec timeout;
+
   // dependencies
   private final OperationParser parse;
   private final ContentNegotiator content;
-  private final OperationAcceptor backend;
-  private final AsyncProcessor next;
+  private final Engine backend;
+  private final VariantConverter convert;
+
 
   @Context
   private Request request;
@@ -64,12 +57,13 @@ public class Endpoint {
   private Principal owner = Anonymous.INSTANCE;
   private Set<Action> permissions = Collections.emptySet();
 
-  public Endpoint(final OperationParser parser, final ContentNegotiator negotiator,
-      final OperationAcceptor acceptor, final AsyncProcessor processor) {
+  public Endpoint(final Engine acceptor, final OperationParser parser, final ContentNegotiator negotiator,
+                  final VariantConverter convert, final TimeoutSpec timeout) {
     parse = parser;
     content = negotiator;
     backend = acceptor;
-    next = processor;
+    this.convert = convert;
+    this.timeout = timeout;
   }
 
   // FIXME : use container injection
@@ -127,33 +121,36 @@ public class Endpoint {
 
   @Path("/schema")
   @GET
-  public void serveSchema(@Suspended final AsyncResponse response) {
+  public void serveSchema(@Suspended final AsyncResponse async) {
     log.debug(">> handling SCHEMA request");
     try {
       final OperationBuilder op = parse.operationForAction(Action.SCHEMA);
       final SerializationFormat format = content.negotiate(request, Action.SCHEMA);
       final DatasetOperation operation = op.renderAs(format);
-      final ListenableFuture<Result> result = backend.accept(operation);
-      next.handle(result, response);
+      final Observable<ObservableStream> execution = backend.execute(operation);
+      final Response.ResponseBuilder response =
+          Response.ok().type(convert.asContentType(format.asMediaType()));
+      final Subscription subscription = execution.subscribe(new OperationObserver(async, response));
+      async.setTimeout(timeout.getAs(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS);
+      async.setTimeoutHandler(new UnsubscribeOnTimeout(subscription));
     } catch (final Throwable t) {
-      handleError(response, t);
+      handleError(async, t);
     }
   }
 
-  /**
-   * @param response
-   * @param parameters
-   * @param allowed
-   */
-  private void process(final AsyncResponse response,
+  private void process(final AsyncResponse async,
       final MultivaluedMap<String, String> parameters, final Set<Action> allowed) {
     log.debug("processing request with parameters {} expecting one of {}", parameters, allowed);
     final Set<Action> authorized = Sets.intersection(allowed, permissions);
     final OperationBuilder op = parse.operationFromParameters(parameters, authorized);
     final SerializationFormat format = content.negotiate(request, op.getAction());
     final DatasetOperation operation = op.renderAs(format).withOwner(owner);
-    final ListenableFuture<Result> result = backend.accept(operation);
-    next.handle(result, response);
+    final Observable<ObservableStream> execution = backend.execute(operation);
+    final Response.ResponseBuilder response =
+        Response.ok().type(convert.asContentType(format.asMediaType()));
+    final Subscription subscription = execution.subscribe(new OperationObserver(async, response));
+    async.setTimeout(timeout.getAs(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS);
+    async.setTimeoutHandler(new UnsubscribeOnTimeout(subscription));
   }
 
   static final Pattern MEDIA_SUBTYPE_PATTERN = Pattern.compile("^(\\w+)-(\\w+)$");
@@ -185,6 +182,20 @@ public class Endpoint {
       log.warn("request already processed - cannot send error", error);
     } else {
       response.resume(error);
+    }
+  }
+
+  private static class UnsubscribeOnTimeout implements TimeoutHandler {
+    private final Subscription subscription;
+
+    public UnsubscribeOnTimeout(final Subscription subscription) {
+      this.subscription = subscription;
+    }
+
+    @Override
+    public void handleTimeout(final AsyncResponse asyncResponse) {
+      asyncResponse.resume(new ServiceUnavailableException("execution time limit exceeded"));
+      subscription.unsubscribe();
     }
   }
 }

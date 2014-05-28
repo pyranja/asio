@@ -7,6 +7,12 @@ public class MockOperations {
 
   public static final String TEST_ID = "test-id";
 
+  private static final DatasetOperation DUMMY_OPERATION =
+      new DatasetOperation(TEST_ID, Action.SCHEMA, null, MockFormat.ALWAYS_APPLICABLE);
+  public static DatasetOperation dummy() {
+    return DUMMY_OPERATION;
+  }
+
   public static DatasetOperation query(final String query, final SerializationFormat format) {
     return new DatasetOperation(TEST_ID, Action.QUERY, query, format);
   }

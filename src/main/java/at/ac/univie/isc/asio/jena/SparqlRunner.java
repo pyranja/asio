@@ -4,8 +4,8 @@ import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.util.concurrent.Callable;
 
-import at.ac.univie.isc.asio.coordination.OperatorCallback;
-import at.ac.univie.isc.asio.coordination.OperatorCallback.Phase;
+import at.ac.univie.isc.asio.engine.OperatorCallback;
+import at.ac.univie.isc.asio.engine.OperatorCallback.Phase;
 import at.ac.univie.isc.asio.transport.Transfer;
 
 import com.hp.hpl.jena.query.QueryExecution;
