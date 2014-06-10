@@ -6,7 +6,8 @@ import com.google.common.collect.Iterables;
 import org.apache.cxf.jaxrs.client.WebClient;
 
 import javax.annotation.Nullable;
-import javax.ws.rs.client.ClientException;
+import javax.ws.rs.ProcessingException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBContext;
@@ -57,7 +58,7 @@ public class AtosMetadataService {
       } else {
         return extractFrom(response, id);
       }
-    } catch (final ClientException | IOException | JAXBException cause) {
+    } catch (final ProcessingException | WebApplicationException | IOException | JAXBException cause) {
       throw failure(client, "internal error", cause);
     } catch (final NoSuchElementException cause) {
       throw notFound(client, id, cause);

@@ -1,22 +1,18 @@
 package at.ac.univie.isc.asio.acceptance;
 
-import static javax.ws.rs.core.MediaType.APPLICATION_XML_TYPE;
-import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
-import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
-import static javax.ws.rs.core.Response.Status.Family.familyOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.net.URI;
-
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import org.apache.cxf.jaxrs.ext.form.Form;
+import at.ac.univie.isc.asio.tool.FunctionalTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import at.ac.univie.isc.asio.tool.FunctionalTest;
+import javax.ws.rs.core.Form;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.net.URI;
+
+import static javax.ws.rs.core.MediaType.APPLICATION_XML_TYPE;
+import static javax.ws.rs.core.Response.Status.Family.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 @Category(FunctionalTest.class)
@@ -40,7 +36,7 @@ public class SparqlQueryTest extends AcceptanceHarness {
   public void valid_query_as_form_param() throws Exception {
     client.accept(CSV);
     final Form values = new Form();
-    values.set(PARAM_QUERY, TEST_QUERY);
+    values.param(PARAM_QUERY, TEST_QUERY);
     response = client.form(values);
     verify(response);
   }
@@ -68,7 +64,7 @@ public class SparqlQueryTest extends AcceptanceHarness {
   }
 
   @Test
-  public void inacceptable_media_type() throws Exception {
+  public void unacceptable_media_type() throws Exception {
     client.accept(MediaType.valueOf("test/notexisting")).query(PARAM_QUERY, TEST_QUERY);
     response = client.get();
     assertEquals(CLIENT_ERROR, familyOf(response.getStatus()));

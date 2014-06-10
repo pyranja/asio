@@ -1,11 +1,18 @@
 package at.ac.univie.isc.asio.acceptance;
 
-import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
-import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
-import static javax.ws.rs.core.Response.Status.Family.familyOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import at.ac.univie.isc.asio.sql.H2Provider;
+import at.ac.univie.isc.asio.sql.KeyedRow;
+import at.ac.univie.isc.asio.tool.FunctionalTest;
+import at.ac.univie.isc.asio.transfer.UpdateResult;
+import com.google.common.collect.ImmutableMap;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+import javax.ws.rs.core.Form;
+import javax.ws.rs.core.MediaType;
+import javax.xml.bind.JAXB;
 import java.io.InputStream;
 import java.net.URI;
 import java.sql.Connection;
@@ -14,22 +21,9 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Map;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.xml.bind.JAXB;
-
-import org.apache.cxf.jaxrs.ext.form.Form;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import at.ac.univie.isc.asio.sql.H2Provider;
-import at.ac.univie.isc.asio.sql.KeyedRow;
-import at.ac.univie.isc.asio.tool.FunctionalTest;
-import at.ac.univie.isc.asio.transfer.UpdateResult;
-
-import com.google.common.collect.ImmutableMap;
+import static javax.ws.rs.core.Response.Status.Family.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @Category(FunctionalTest.class)
 public class SqlUpdateTest extends AcceptanceHarness {
@@ -58,36 +52,36 @@ public class SqlUpdateTest extends AcceptanceHarness {
   @Test
   public void insert_as_form_param() throws Exception {
     final Form values = new Form();
-    values.set(PARAM_UPDATE, INSERT);
+    values.param(PARAM_UPDATE, INSERT);
     response = client.accept(XML).form(values);
-    verify(response);
+    verify();
     wasInserted();
   }
 
   @Test
   public void insert_as_payload() throws Exception {
     response = client.accept(XML).type(APPLICATION_SQL_UPDATE).post(INSERT);
-    verify(response);
+    verify();
     wasInserted();
   }
 
   @Test
   public void bad_query_parameter() throws Exception {
     final Form values = new Form();
-    values.set(PARAM_UPDATE, "");
+    values.param(PARAM_UPDATE, "");
     response = client.accept(XML).post(values);
     assertEquals(CLIENT_ERROR, familyOf(response.getStatus()));
   }
 
   @Test
-  public void inacceptable_media_type() throws Exception {
+  public void unacceptable_media_type() throws Exception {
     response =
         client.accept(MediaType.valueOf("test/notexisting")).type(APPLICATION_SQL_UPDATE)
             .post("test-update");
     assertEquals(CLIENT_ERROR, familyOf(response.getStatus()));
   }
 
-  private void verify(final Response response2) {
+  private void verify() {
     assertEquals(SUCCESSFUL, familyOf(response.getStatus()));
     assertTrue(XML.isCompatible(response.getMediaType()));
     final UpdateResult result =

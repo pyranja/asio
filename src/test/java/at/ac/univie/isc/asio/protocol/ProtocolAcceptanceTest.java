@@ -1,32 +1,5 @@
 package at.ac.univie.isc.asio.protocol;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-import java.io.InputStream;
-
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
-import org.apache.cxf.jaxrs.client.WebClient;
-import org.apache.cxf.jaxrs.ext.form.Form;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestRule;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.runners.MockitoJUnitRunner;
-
 import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.Action;
 import at.ac.univie.isc.asio.DatasetUsageException;
@@ -36,8 +9,26 @@ import at.ac.univie.isc.asio.coordination.OperationAcceptor;
 import at.ac.univie.isc.asio.tool.EmbeddedJaxrsServer;
 import at.ac.univie.isc.asio.tool.JaxrsClientProvider;
 import at.ac.univie.isc.asio.tool.ResponseMonitor;
-
 import com.google.common.io.ByteStreams;
+import org.apache.cxf.jaxrs.client.WebClient;
+import org.junit.*;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import javax.ws.rs.core.Form;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import java.io.IOException;
+import java.io.InputStream;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
 
 /**
  * Verify the correct implementation of the SPARQL/(SQL) Protocol recommendation, w.r.t. to asio.
@@ -93,7 +84,7 @@ public class ProtocolAcceptanceTest {
   @Test
   public void should_accept_query_through_form_request() throws Exception {
     final Form params = new Form();
-    params.set("query", PAYLOAD);
+    params.param("query", PAYLOAD);
     response = client.form(params);
     verifySuccess(response);
     verifyOperation(Action.QUERY);
@@ -102,7 +93,7 @@ public class ProtocolAcceptanceTest {
   @Test
   public void should_accept_update_through_form_request() throws Exception {
     final Form params = new Form();
-    params.set("update", PAYLOAD);
+    params.param("update", PAYLOAD);
     response = client.form(params);
     verifySuccess(response);
     verifyOperation(Action.UPDATE);
@@ -164,7 +155,7 @@ public class ProtocolAcceptanceTest {
   @Test
   public void should_reject_form_if_no_command_given() throws Exception {
     final Form params = new Form();
-    params.set("other", "ignored"); // XXX CXF < 2.7.6 : posting empty form will trigger HTTP error
+    params.param("other", "ignored"); // XXX CXF < 2.7.6 : posting empty form will trigger HTTP error
     response = client.form(params);
     verifyFailure(response);
   }
@@ -172,8 +163,8 @@ public class ProtocolAcceptanceTest {
   @Test
   public void should_reject_form_with_duplicated_command() throws Exception {
     final Form params = new Form();
-    params.set("query", "a query");
-    params.set("query", "duplicate");
+    params.param("query", "a query");
+    params.param("query", "duplicate");
     response = client.form(params);
     verifyFailure(response);
   }
@@ -181,8 +172,8 @@ public class ProtocolAcceptanceTest {
   @Test
   public void should_reject_form_if_both_commands_given() throws Exception {
     final Form params = new Form();
-    params.set("query", "a query");
-    params.set("update", "an update");
+    params.param("query", "a query");
+    params.param("update", "an update");
     response = client.form(params);
     verifyFailure(response);
   }

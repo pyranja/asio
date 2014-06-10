@@ -4,11 +4,11 @@ import at.ac.univie.isc.asio.converter.CsvToMap;
 import at.ac.univie.isc.asio.converter.ResultSetToMap;
 import at.ac.univie.isc.asio.sql.KeyedRow;
 import at.ac.univie.isc.asio.tool.FunctionalTest;
-import org.apache.cxf.jaxrs.ext.form.Form;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
@@ -51,7 +51,7 @@ public class SqlQueryTest extends AcceptanceHarness {
   public void valid_query_as_form_param() throws Exception {
     client.accept(XML);
     final Form values = new Form();
-    values.set(PARAM_QUERY, COUNT_QUERY);
+    values.param(PARAM_QUERY, COUNT_QUERY);
     response = client.form(values);
     verify(response);
   }
@@ -95,7 +95,7 @@ public class SqlQueryTest extends AcceptanceHarness {
   }
 
   @Test
-  public void inacceptable_media_type() throws Exception {
+  public void unacceptable_media_type() throws Exception {
     client.accept(MediaType.valueOf("test/notexisting")).query(PARAM_QUERY, COUNT_QUERY);
     response = client.get();
     assertEquals(CLIENT_ERROR, familyOf(response.getStatus()));
