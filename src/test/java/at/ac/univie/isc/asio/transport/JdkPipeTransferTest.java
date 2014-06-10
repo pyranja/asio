@@ -3,7 +3,9 @@ package at.ac.univie.isc.asio.transport;
 import com.google.common.base.Charsets;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
@@ -16,6 +18,8 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 public class JdkPipeTransferTest {
+  @Rule
+  public Timeout timeout = new Timeout(1000);
 
   private final static byte[] PAYLOAD = "HELLO WORLD !".getBytes(Charsets.UTF_8);
   private ExecutorService executorService;
@@ -40,7 +44,7 @@ public class JdkPipeTransferTest {
     assertThat(subject.sink().isOpen(), is(false));
   }
 
-  @Test(timeout = 1000)
+  @Test
   public void can_read_from_source_when_writing_to_sink() throws Exception {
     final Transfer subject = new JdkPipeTransfer();
     subject.sink().write(ByteBuffer.wrap(PAYLOAD));
@@ -51,7 +55,7 @@ public class JdkPipeTransferTest {
     assertThat(PAYLOAD, is(received.array()));
   }
 
-  @Test(timeout = 100)
+  @Test
   public void releasing_transfer_interrupts_producer_and_consumer() throws Exception {
     final Transfer exchange = new JdkPipeTransfer();
     final Callable<Void> producer = new Callable<Void>() {
