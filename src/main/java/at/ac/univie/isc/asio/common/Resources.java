@@ -47,23 +47,5 @@ public final class Resources {
     }
   }
 
-  /**
-   * Disposes the given {@link Disposable resource} if it is not null. If an exception occurs while
-   * disposing, it is logged with level WARN, but not rethrown.
-   *
-   * @param that to be closed
-   */
-  public static void dispose(final Disposable that) {
-    if (that != null) {
-      try {
-        that.dispose();
-      } catch (final Exception e) {
-        log.warn(ERROR_MSG, that, e.getMessage(), e);
-      }
-    } else {
-      log.warn(ERROR_MSG, that, "was null");
-    }
-  }
-
   private Resources() {/* static helper */}
 }
