@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.transport;
 
-import at.ac.univie.isc.asio.common.Resources;
+import at.ac.univie.isc.asio.tool.Resources;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.ByteStreams;
 import rx.Observable;

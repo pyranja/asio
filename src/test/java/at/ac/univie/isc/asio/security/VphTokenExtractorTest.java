@@ -9,6 +9,7 @@ import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MultivaluedMap;
 import java.security.Principal;
 
 import static com.google.common.io.BaseEncoding.base64;
@@ -20,13 +21,13 @@ public class VphTokenExtractorTest {
 
   private final VphTokenExtractor subject = new VphTokenExtractor();
   @Mock
-  private HttpHeaders headers;
+  private MultivaluedMap<String, String> headers;
 
   @Test
   public void should_return_anonymous_if_no_auth_given() throws Exception {
     setAuthHeader();
-    final Principal user = subject.authenticate(headers);
-    assertThat(user, is(Anonymous.INSTANCE));
+    final Token user = subject.authenticate(headers);
+    assertThat(user, is(Token.ANONYMOUS));
   }
 
   @Test(expected = DatasetUsageException.class)
@@ -64,25 +65,25 @@ public class VphTokenExtractorTest {
   public void should_auth_with_empty_token_if_password_is_empty() throws Exception {
     final String credentials = base64().encode(":".getBytes());
     setAuthHeader("Basic " + credentials);
-    final VphToken user = (VphToken) subject.authenticate(headers);
-    assertThat(user.getToken(), is("".toCharArray()));
+    final Token user = (Token) subject.authenticate(headers);
+    assertThat(user.getToken(), is(""));
   }
 
   @Test
   public void should_auth_with_given_password_as_token() throws Exception {
     final String credentials = base64().encode(":test-password".getBytes());
     setAuthHeader("Basic " + credentials);
-    final VphToken user = (VphToken) subject.authenticate(headers);
-    assertThat(user.getToken(), is("test-password".toCharArray()));
+    final Token user = (Token) subject.authenticate(headers);
+    assertThat(user.getToken(), is("test-password"));
   }
 
   @Test
   public void should_accept_username_and_password() throws Exception {
     final String credentials = base64().encode("test-user:test-password".getBytes());
     setAuthHeader("Basic " + credentials);
-    final VphToken principal = (VphToken) subject.authenticate(headers);
+    final Token principal = (Token) subject.authenticate(headers);
     assertThat(principal.getName(), is("test-user"));
-    assertThat(principal.getToken(), is("test-password".toCharArray()));
+    assertThat(principal.getToken(), is("test-password"));
   }
 
   @Test
@@ -98,11 +99,11 @@ public class VphTokenExtractorTest {
     final String credentials = base64().encode(":test-password".getBytes());
     setAuthHeader("Basic "+ credentials);
     final Principal principal = subject.authenticate(headers);
-    assertThat(principal.getName(), is(VphToken.UNKNOWN_PRINCIPAL));
+    assertThat(principal.getName(), is(Token.UNKNOWN_PRINCIPAL));
   }
 
   private void setAuthHeader(final String... values) {
-    Mockito.when(headers.getRequestHeader(HttpHeaders.AUTHORIZATION)).thenReturn(
+    Mockito.when(headers.get(HttpHeaders.AUTHORIZATION)).thenReturn(
         ImmutableList.copyOf(values));
   }
 }

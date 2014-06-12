@@ -43,7 +43,7 @@ public class SparqlQueryTest extends AcceptanceHarness {
 
   @Test
   public void valid_query_as_payload() throws Exception {
-    client.accept(CSV).type("application/sql-query");
+    client.accept(CSV).type("application/sparql-query");
     response = client.post(TEST_QUERY);
     verify(response);
   }

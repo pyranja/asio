@@ -6,7 +6,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
 import at.ac.univie.isc.asio.DatasetTransportException;
-import at.ac.univie.isc.asio.common.Resources;
+import at.ac.univie.isc.asio.tool.Resources;
 
 /**
  * A transfer utilizing the JDK built in {@link Pipe}. Releasing will close both ends of the used

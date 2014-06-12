@@ -1,25 +1,24 @@
 package at.ac.univie.isc.asio;
 
-import java.util.Locale;
-
+import at.ac.univie.isc.asio.tool.TypedValue;
 import at.ac.univie.isc.asio.engine.EngineSpec.Type;
+
+import java.util.Locale;
 
 /**
  * The query language accepted by an endpoint.
- * 
- * @author Chris Borckholder
  */
-public final class Language {
+public final class Language extends TypedValue<String> {
 
   public static final Language SQL = new Language("SQL", Type.SQL);
   public static final Language SPARQL = new Language("SPARQL", Type.SPARQL);
-  // FIXME remove this
-  public static final Language TEST = new Language("TEST", null);
+  public static final Language TEST = new Language("TEST", null); // FIXME remove this
 
-  // TODO change to dynamic creation - let others handle rejection of unsupported language
-  public static Language fromString(final String value) {
-    final String name = value.toUpperCase(Locale.ENGLISH).trim();
-    switch (name) {
+  // FIXME : simplify when EngineType is removed
+  public static Language valueOf(final String value) {
+    if (value == null) { return new Language("", null); }
+    final String normalized = value.toUpperCase(Locale.ENGLISH).trim();
+    switch (normalized) {
       case "SQL":
         return SQL;
       case "SPARQL":
@@ -27,17 +26,20 @@ public final class Language {
       case "TEST": // FIXME remove this
         return TEST;
       default:
-        throw new DatasetUsageException("unsupported language : " + value);
+        return new Language(value, null);
     }
   }
 
-  private final String name;
-  private final Type engine; // XXX remove when merging with Type enum
+  private final Type engine; // FIXME : remove when merging with Type enum
 
   public Language(final String name, final Type engine) {
-    super();
-    this.name = name;
+    super(name);
     this.engine = engine;
+  }
+
+  @Override
+  protected String normalize(final String val) {
+    return val.toUpperCase(Locale.ENGLISH).trim();
   }
 
   public Type asEngineType() {
@@ -45,11 +47,6 @@ public final class Language {
   }
 
   public String name() {
-    return name;
-  }
-
-  @Override
-  public String toString() {
-    return String.format("[lang|%s]", name);
+    return this.value();
   }
 }

@@ -18,7 +18,7 @@ import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.DatasetOperation.Action;
 import at.ac.univie.isc.asio.engine.OperatorCallback;
 import at.ac.univie.isc.asio.tool.ByteArrayTransfer;
-import at.ac.univie.isc.asio.tool.CsvToTable;
+import at.ac.univie.isc.asio.sql.CsvToTable;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.Table;

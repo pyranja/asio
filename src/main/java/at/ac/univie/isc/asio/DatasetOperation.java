@@ -1,16 +1,14 @@
 package at.ac.univie.isc.asio;
 
+import at.ac.univie.isc.asio.tool.CommandShortener;
+import at.ac.univie.isc.asio.security.Token;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.net.MediaType;
 
-import java.security.Principal;
-
 import javax.annotation.Nullable;
-
-import at.ac.univie.isc.asio.common.CommandShortener;
-import at.ac.univie.isc.asio.security.Anonymous;
+import java.security.Principal;
 
 /**
  * Represent an operation on a dataset, including the command to be executed and the required output
@@ -77,7 +75,7 @@ public class DatasetOperation {
     this.action = action;
     this.command = Optional.fromNullable(command);
     this.format = format;
-    owner = Anonymous.INSTANCE;
+    owner = Token.ANONYMOUS;
     formattedCommandCache = null;
   }
 

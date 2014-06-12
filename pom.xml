@@ -271,6 +271,12 @@
       <version>${version.cxf}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-transports-local</artifactId>
+      <version>${version.cxf}</version>
+      <scope>test</scope>
+    </dependency>
     <!-- spring components required by cxf -->
     <dependency>
       <groupId>org.springframework</groupId>

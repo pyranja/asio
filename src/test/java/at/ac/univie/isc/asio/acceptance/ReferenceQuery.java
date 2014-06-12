@@ -7,7 +7,7 @@ import java.sql.Statement;
 import java.util.Collections;
 import java.util.Map;
 
-import at.ac.univie.isc.asio.converter.ResultSetToMap;
+import at.ac.univie.isc.asio.sql.ResultSetToMap;
 import at.ac.univie.isc.asio.sql.H2Provider;
 import at.ac.univie.isc.asio.sql.KeyedRow;
 

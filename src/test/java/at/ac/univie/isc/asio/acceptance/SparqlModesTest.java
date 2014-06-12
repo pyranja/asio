@@ -19,7 +19,7 @@ import java.net.URI;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import at.ac.univie.isc.asio.tool.CsvToTable;
+import at.ac.univie.isc.asio.sql.CsvToTable;
 import at.ac.univie.isc.asio.tool.FunctionalTest;
 
 import static at.ac.univie.isc.asio.tool.IsIsomorphic.isomorphicWith;

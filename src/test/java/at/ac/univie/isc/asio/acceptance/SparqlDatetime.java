@@ -10,7 +10,7 @@ import java.util.Map;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
-import at.ac.univie.isc.asio.converter.CsvToMap;
+import at.ac.univie.isc.asio.sql.CsvToMap;
 import at.ac.univie.isc.asio.sql.KeyedRow;
 
 import com.google.common.collect.Iterables;

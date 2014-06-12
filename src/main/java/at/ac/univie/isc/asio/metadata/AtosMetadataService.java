@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.metadata;
 
-import at.ac.univie.isc.asio.common.Resources;
+import at.ac.univie.isc.asio.tool.Resources;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import org.apache.cxf.jaxrs.client.WebClient;

@@ -9,12 +9,13 @@
     </layout>
   </appender>
 
-  <!-- enable HTTP response dump on failed test cases -->
+  <!-- FIXME : remove after getting rid of ResponseMonitor -->
   <logger name="at.ac.univie.isc.asio.tool.ResponseMonitor">
     <level value="error" />
   </logger>
 
-  <logger name="at.ac.univie.isc.asio.protocol.Endpoint">
+  <!-- enable HTTP response dump on failed test cases -->
+  <logger name="at.ac.univie.isc.asio.jaxrs.ManagedClient">
     <level value="error" />
   </logger>
 

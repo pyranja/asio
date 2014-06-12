@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.acceptance;
 
-import at.ac.univie.isc.asio.tool.CsvToTable;
+import at.ac.univie.isc.asio.sql.CsvToTable;
 import at.ac.univie.isc.asio.tool.FunctionalTest;
 import com.google.common.collect.Table;
 import com.google.common.util.concurrent.Futures;

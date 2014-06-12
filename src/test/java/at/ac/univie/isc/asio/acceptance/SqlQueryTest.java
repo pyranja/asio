@@ -1,7 +1,7 @@
 package at.ac.univie.isc.asio.acceptance;
 
-import at.ac.univie.isc.asio.converter.CsvToMap;
-import at.ac.univie.isc.asio.converter.ResultSetToMap;
+import at.ac.univie.isc.asio.sql.CsvToMap;
+import at.ac.univie.isc.asio.sql.ResultSetToMap;
 import at.ac.univie.isc.asio.sql.KeyedRow;
 import at.ac.univie.isc.asio.tool.FunctionalTest;
 import org.junit.BeforeClass;
@@ -15,7 +15,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Map;
 
-import static at.ac.univie.isc.asio.tool.CompatibleTo.compatibleTo;
+import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.compatibleTo;
 import static javax.ws.rs.core.Response.Status.Family.*;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;

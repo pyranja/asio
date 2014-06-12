@@ -17,7 +17,7 @@ import java.security.KeyStore;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Sets up a cxf WebClient before each test and disposes it after the test. If a test fails, the
@@ -37,14 +37,14 @@ public final class JaxrsClientProvider extends ExternalResource implements Suppl
 
   public JaxrsClientProvider(final URI baseAddress) {
     super();
-    this.baseAddress = baseAddress;
+    this.baseAddress = requireNonNull(baseAddress);
     this.providers = new CopyOnWriteArrayList<>();
   }
 
   public JaxrsClientProvider withKeystore(ByteSource keystore, String password) {
     this.secured = true;
-    this.keystoreFile = checkNotNull(keystore);
-    this.password = checkNotNull(password);
+    this.keystoreFile = requireNonNull(keystore);
+    this.password = requireNonNull(password);
     return this;
   }
 

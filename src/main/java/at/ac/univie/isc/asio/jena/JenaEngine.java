@@ -9,7 +9,7 @@ import at.ac.univie.isc.asio.config.TimeoutSpec;
 import at.ac.univie.isc.asio.engine.EngineSpec;
 import at.ac.univie.isc.asio.engine.Operator;
 import at.ac.univie.isc.asio.engine.OperatorCallback;
-import at.ac.univie.isc.asio.security.VphToken;
+import at.ac.univie.isc.asio.security.Token;
 import at.ac.univie.isc.asio.transport.Transfer;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -112,12 +112,11 @@ public class JenaEngine implements DatasetEngine, Operator {
       .create("http://jena.hpl.hp.com/Service#queryAuthPwd");
 
   private void delegateCredentials(final DatasetOperation operation, final QueryExecution invocation) {
-    if (operation.owner() instanceof VphToken) {
-      final VphToken token = (VphToken) operation.owner();
+    if (operation.owner() instanceof Token) {
+      final Token token = (Token) operation.owner();
       log.debug("found vph token - delegating credentials from {}", token);
       invocation.getContext().set(KEY_AUTH_USERNAME, "");
-      invocation.getContext().set(KEY_AUTH_PASSWORD, String.valueOf(token.getToken()));
-      token.destroy();
+      invocation.getContext().set(KEY_AUTH_PASSWORD, token.getToken());
     } else {
       log.debug("no vph token found - skipping credentials delegation");
     }
