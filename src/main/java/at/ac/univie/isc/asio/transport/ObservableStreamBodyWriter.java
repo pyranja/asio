@@ -1,7 +1,8 @@
 package at.ac.univie.isc.asio.transport;
 
-import at.ac.univie.isc.asio.DatasetTransportException;
-import rx.functions.Action2;
+import at.ac.univie.isc.asio.tool.Reactive;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
@@ -22,6 +23,7 @@ import static java.util.Objects.requireNonNull;
  */
 @Provider
 public class ObservableStreamBodyWriter implements MessageBodyWriter<ObservableStream> {
+  private static final Logger log = LoggerFactory.getLogger(ObservableStreamBodyWriter.class);
 
   @Override
   public boolean isWriteable(final Class<?> type, final Type genericType,
@@ -59,19 +61,7 @@ public class ObservableStreamBodyWriter implements MessageBodyWriter<ObservableS
       throws IOException, WebApplicationException {
     requireNonNull(source, "response entity missing on message write");
     requireNonNull(sink, "response stream missing on message write");
-    source.collect(sink, StreamCollector.INSTANCE).toBlocking().single();
-  }
-
-  private static class StreamCollector implements Action2<OutputStream, byte[]> {
-    public static final StreamCollector INSTANCE = new StreamCollector();
-
-    @Override
-    public void call(final OutputStream output, final byte[] bytes) {
-      try {
-        output.write(bytes);
-      } catch (IOException e) {
-        throw new DatasetTransportException(e);
-      }
-    }
+    log.debug("writing results on thread {}", Thread.currentThread());
+    source.collect(sink, Reactive.STREAM_COLLECTOR).toBlocking().single();
   }
 }

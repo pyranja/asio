@@ -4,14 +4,15 @@ import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.rdf.model.Model;
 import org.openjena.riot.Lang;
 
+import javax.ws.rs.core.MediaType;
 import java.io.OutputStream;
 
-final class DescribeHandler extends QueryModeHandler<Model> {
+final class DescribeHandler extends JenaQueryHandler.BaseQueryHandler<Model> {
 
   private final Lang language;
 
   public DescribeHandler(final Lang language) {
-    super();
+    super(MediaType.valueOf(language.getContentType()));
     this.language = language;
   }
 

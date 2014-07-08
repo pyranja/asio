@@ -12,7 +12,7 @@ import rx.observers.TestSubscriber;
 
 import java.util.Arrays;
 
-import static at.ac.univie.isc.asio.tool.ToObservableListenableFuture.listeningFor;
+import static at.ac.univie.isc.asio.tool.Reactive.listeningFor;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;

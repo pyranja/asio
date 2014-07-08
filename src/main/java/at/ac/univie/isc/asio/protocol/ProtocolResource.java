@@ -28,10 +28,10 @@ public class ProtocolResource {
     throw new AssertionError("attempt to use non-managed resource");
   }
 
-  private final Registry registry;
+  private final Connector registry;
   private final TimeoutSpec timeout;
 
-  public ProtocolResource(final Registry registry, final TimeoutSpec timeout) {
+  public ProtocolResource(final Connector registry, final TimeoutSpec timeout) {
     this.registry = registry;
     this.timeout = timeout;
   }
@@ -91,8 +91,7 @@ public class ProtocolResource {
     try {
       log.debug("request parameters : {}", params);
       params.failIfNotValid();
-      final Connector connector = registry.find(language);
-      final Command executable = connector.createCommand(params, security.getUserPrincipal());
+      final Command executable = registry.createCommand(params, security.getUserPrincipal());
       checkAuthorization(executable.requiredRole());
       final Subscription subscription = executable.observe().subscribe(
           OperationObserver.bridgeTo(async).send(Response.ok().type(executable.format()))

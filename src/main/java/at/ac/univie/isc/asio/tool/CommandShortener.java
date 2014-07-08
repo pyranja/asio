@@ -4,10 +4,8 @@ import com.google.common.base.Function;
 
 import javax.annotation.Nullable;
 
-/**
- * Created with IntelliJ IDEA. User: borck_000 ; Date: 5/15/2014 ; Time: 11:37 AM
- */
-public class CommandShortener implements Function<String, String> {
+public final class CommandShortener implements Function<String, String> {
+  public static final CommandShortener INSTANCE = new CommandShortener();
 
   public static final int MAX_LENGTH = 70;
   public static final String TRUNCATION_MARKER = "...";

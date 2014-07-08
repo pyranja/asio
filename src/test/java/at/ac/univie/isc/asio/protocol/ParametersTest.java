@@ -1,6 +1,7 @@
 package at.ac.univie.isc.asio.protocol;
 
 import at.ac.univie.isc.asio.Language;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -11,13 +12,16 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static at.ac.univie.isc.asio.tool.IsMultimapContaining.hasEntries;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.collection.IsMapContaining.hasEntry;
+import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class ParametersTest {
   private final HttpHeaders headers = mock(HttpHeaders.class);
@@ -29,10 +33,16 @@ public class ParametersTest {
       Parameters.builder(Language.TEST);
   private Parameters subject;
 
+  @Before
+  public void setup() {
+    when(headers.getAcceptableMediaTypes()).thenReturn(Collections.<MediaType>emptyList());
+    when(headers.getRequestHeaders()).thenReturn(new MultivaluedHashMap<String, String>());
+  }
+
   @Test
   public void should_set_language_param() throws Exception {
     subject = builder.build(headers);
-    assertThat(subject.properties(), hasEntry(Parameters.KEY_LANGUAGE, Arrays.asList(Language.TEST.name())));
+    assertThat(subject.language(), is(Language.TEST));
   }
 
   @Test
@@ -41,14 +51,14 @@ public class ParametersTest {
     map.putSingle("single", "value");
     map.put("multiple", Arrays.asList("one", "two"));
     subject = builder.add(map).build(headers);
-    assertThat(subject.properties(), hasEntry("multiple", Arrays.asList("one", "two")));
-    assertThat(subject.properties(), hasEntry("single", Arrays.asList("value")));
+    assertThat(subject.properties(), hasEntries("multiple", "one", "two"));
+    assertThat(subject.require("single"), is("value"));
   }
 
   @Test
   public void should_add_body_param() throws Exception {
     subject = builder.body("command", MediaType.valueOf("application/test-query")).build(headers);
-    assertThat(subject.properties(), hasEntry("query", Arrays.asList("command")));
+    assertThat(subject.require("query"), is("command"));
   }
 
   @Test
@@ -78,6 +88,32 @@ public class ParametersTest {
     error.expect(NullPointerException.class);
     subject.properties();
   }
+
+
+  @Test
+  public void should_add_manual_accepted_type() throws Exception {
+    subject = builder.accept(MediaType.TEXT_PLAIN_TYPE).build(headers);
+    assertThat(subject.acceptable(), is(Arrays.asList(MediaType.TEXT_PLAIN_TYPE)));
+  }
+
+  @Test
+  public void should_add_accepted_from_headers() throws Exception {
+    when(headers.getAcceptableMediaTypes())
+        .thenReturn(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM_TYPE, MediaType.TEXT_XML_TYPE));
+    subject = builder.build(headers);
+    assertThat(subject.acceptable(),
+        containsInAnyOrder(MediaType.APPLICATION_OCTET_STREAM_TYPE, MediaType.TEXT_XML_TYPE));
+  }
+
+  @Test
+  public void should_yield_accepted_from_manual_and_header() throws Exception {
+    when(headers.getAcceptableMediaTypes()).thenReturn(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM_TYPE));
+    subject = builder.accept(MediaType.APPLICATION_XML_TYPE).build(headers);
+    assertThat(subject.acceptable(),
+        containsInAnyOrder(MediaType.APPLICATION_OCTET_STREAM_TYPE, MediaType.APPLICATION_XML_TYPE));
+  }
+
+  // ======= MEDIATYPE REGEX TESTS =======
 
   private final Pattern p = Parameters.ParametersBuilder.MEDIA_SUBTYPE_PATTERN;
 

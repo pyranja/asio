@@ -18,6 +18,7 @@ import org.junit.Test;
 import org.junit.rules.Timeout;
 import org.mockito.ArgumentCaptor;
 import rx.Observable;
+import rx.schedulers.Schedulers;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
@@ -26,20 +27,18 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.security.Principal;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.hasBody;
 import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.hasStatus;
+import static at.ac.univie.isc.asio.tool.IsMultimapContaining.hasEntries;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
-import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
 public class ProtocolResourceTest {
   private final TimeoutSpec timeout = mock(TimeoutSpec.class);
-  private final Registry registry = mock(Registry.class);
   private final Connector connector = mock(Connector.class);
   private final Command command = mock(Command.class);
 
@@ -50,7 +49,7 @@ public class ProtocolResourceTest {
   @Rule
   public EmbeddedServer server = EmbeddedServer
       .host(JaxrsSpec.create(ProtocolResource.class))
-      .resource(new ProtocolResource(registry, timeout))
+      .resource(new ProtocolResource(connector, timeout))
       .enableLogging()
       .create();
 
@@ -60,12 +59,11 @@ public class ProtocolResourceTest {
   public void setup() {
     when(timeout.getAs(any(TimeUnit.class))).thenReturn(-1L);
     // prepare mocks
-    when(registry.find(any(Language.class))).thenReturn(connector);
     when(connector.createCommand(any(Parameters.class), any(Principal.class)))
         .thenReturn(command);
     when(command.format()).thenReturn(MediaType.APPLICATION_JSON_TYPE);
     when(command.requiredRole()).thenReturn(Role.ANY);
-    when(command.observe()).thenReturn(Payload.observableFrom(PAYLOAD));
+    when(command.observe()).thenReturn(Payload.observableFrom(PAYLOAD).subscribeOn(Schedulers.io()));
   }
 
   private WebTarget invoke(final Permission permission, final Language language) {
@@ -140,12 +138,6 @@ public class ProtocolResourceTest {
   // ====================================================================================>
   // INTERNAL INVOCATION
 
-  @Test
-  public void use_language_param_to_select_connecter() throws Exception {
-    invoke(Permission.READ, Language.SQL).request(MediaType.APPLICATION_JSON).get();
-    verify(registry).find(Language.valueOf("sql"));
-  }
-
   private final ArgumentCaptor<Parameters> params = ArgumentCaptor.forClass(Parameters.class);
 
   @Test
@@ -156,8 +148,8 @@ public class ProtocolResourceTest {
         .queryParam("two", "2")
         .request(MediaType.APPLICATION_JSON).get();
     verify(connector).createCommand(params.capture(), any(Principal.class));
-    assertThat(params.getValue().properties(), hasEntry("one", Arrays.asList("1")));
-    assertThat(params.getValue().properties(), hasEntry("two", Arrays.asList("2", "2")));
+    assertThat(params.getValue().properties(), hasEntries("one", "1"));
+    assertThat(params.getValue().properties(), hasEntries("two", "2", "2"));
   }
 
   @Test
@@ -166,8 +158,8 @@ public class ProtocolResourceTest {
     invoke(Permission.READ, Language.SQL).request(MediaType.APPLICATION_JSON)
         .post(Entity.entity(form, MediaType.APPLICATION_FORM_URLENCODED_TYPE));
     verify(connector).createCommand(params.capture(), any(Principal.class));
-    assertThat(params.getValue().properties(), hasEntry("one", Arrays.asList("1")));
-    assertThat(params.getValue().properties(), hasEntry("two", Arrays.asList("2", "2")));
+    assertThat(params.getValue().properties(), hasEntries("one", "1"));
+    assertThat(params.getValue().properties(), hasEntries("two", "2", "2"));
   }
 
   @Test
@@ -175,15 +167,14 @@ public class ProtocolResourceTest {
     invoke(Permission.READ, Language.SQL).request(MediaType.APPLICATION_JSON)
         .post(Entity.entity("1", MediaType.valueOf("application/sql-one")));
     verify(connector).createCommand(params.capture(), any(Principal.class));
-    assertThat(params.getValue().properties(), hasEntry("one", Arrays.asList("1")));
+    assertThat(params.getValue().properties(), hasEntries("one", "1"));
   }
 
   @Test
   public void forward_language() throws Exception {
     invoke(Permission.READ, Language.SQL).request(MediaType.APPLICATION_JSON).get();
     verify(connector).createCommand(params.capture(), any(Principal.class));
-    assertThat(params.getValue().properties(),
-        hasEntry(Parameters.KEY_LANGUAGE, Arrays.asList(Language.SQL.name())));
+    assertThat(params.getValue().language(), is(Language.SQL));
   }
 
   @Test
@@ -201,7 +192,7 @@ public class ProtocolResourceTest {
   public void default_to_xml_if_accept_header_missing() throws Exception {
     invoke(Permission.READ, Language.SQL).request().header(HttpHeaders.ACCEPT, null).get();
     verify(connector).createCommand(params.capture(), any(Principal.class));
-    assertThat(params.getValue().acceptable(), is(Arrays.asList(MediaType.APPLICATION_XML_TYPE)));
+    assertThat(params.getValue().acceptable(), containsInAnyOrder(MediaType.APPLICATION_XML_TYPE));
   }
 
   @Test
@@ -211,7 +202,7 @@ public class ProtocolResourceTest {
         .queryParam(AcceptTunnelFilter.ACCEPT_PARAM_TUNNEL, MediaType.TEXT_HTML)
         .request(MediaType.APPLICATION_JSON).get();
     verify(connector).createCommand(params.capture(), any(Principal.class));
-    assertThat(params.getValue().acceptable(), is(Arrays.asList(MediaType.TEXT_HTML_TYPE)));
+    assertThat(params.getValue().acceptable(), containsInAnyOrder(MediaType.TEXT_HTML_TYPE));
   }
 
   private final ArgumentCaptor<Principal> principal = ArgumentCaptor.forClass(Principal.class);
@@ -232,7 +223,8 @@ public class ProtocolResourceTest {
 
   @Test
   public void language_is_not_supported() throws Exception {
-    when(registry.find(Language.SQL)).thenThrow(new Registry.LanguageNotSupported(Language.SQL));
+    when(connector.createCommand(any(Parameters.class), any(Principal.class)))
+        .thenThrow(new Connector.LanguageNotSupported(Language.SQL));
     response = invoke(Permission.READ, Language.SQL).request().get();
     assertThat(response, hasStatus(Response.Status.NOT_FOUND));
   }

@@ -28,6 +28,10 @@
     <level value="error"/>
   </logger>
 
+  <logger name="com.hp.hpl.jena">
+    <level value="error" />
+  </logger>
+
   <logger name="uk.org.ogsadai">
     <level value="off"/>
   </logger>

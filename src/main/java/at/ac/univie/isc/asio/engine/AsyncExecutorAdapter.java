@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
 
-import static at.ac.univie.isc.asio.tool.ToObservableListenableFuture.listeningFor;
+import static at.ac.univie.isc.asio.tool.Reactive.listeningFor;
 import static java.util.Objects.requireNonNull;
 
 public class AsyncExecutorAdapter implements Engine {

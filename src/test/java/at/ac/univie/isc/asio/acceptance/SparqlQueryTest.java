@@ -9,9 +9,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 
+import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.hasStatus;
 import static javax.ws.rs.core.MediaType.APPLICATION_XML_TYPE;
 import static javax.ws.rs.core.Response.Status.Family.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 
@@ -68,6 +70,7 @@ public class SparqlQueryTest extends AcceptanceHarness {
     client.accept(MediaType.valueOf("test/notexisting")).query(PARAM_QUERY, TEST_QUERY);
     response = client.get();
     assertEquals(CLIENT_ERROR, familyOf(response.getStatus()));
+    assertThat(response, hasStatus(Response.Status.NOT_ACCEPTABLE));
   }
 
   private void verify(final Response response) {

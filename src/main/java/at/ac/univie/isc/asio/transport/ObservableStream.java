@@ -38,6 +38,16 @@ public final class ObservableStream extends Observable<byte[]> {
   }
 
   /**
+   * Invoke the given function when the {@code ObservableStream} is subscribed to.
+   * @see rx.Observable#create(rx.Observable.OnSubscribe)
+   * @param f called when on subscription
+   * @return an {@code ObservableStream}
+   */
+  public static ObservableStream make(final OnSubscribe<byte[]> f) {
+    return new ObservableStream(f);
+  }
+
+  /**
    * Wrap the given {@code Observable} with an {@code ObservableStream}.
    * All events emitted by {@code inner} are forwarded as is.
    * @param inner wrapped {@code Observable}

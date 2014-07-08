@@ -1,13 +1,16 @@
 package at.ac.univie.isc.asio.config;
 
+import at.ac.univie.isc.asio.Connector;
 import at.ac.univie.isc.asio.DatasetEngine;
-import at.ac.univie.isc.asio.protocol.PrototypeConnectorRegistry;
+import at.ac.univie.isc.asio.Language;
+import at.ac.univie.isc.asio.engine.*;
+import at.ac.univie.isc.asio.metadata.*;
+import at.ac.univie.isc.asio.protocol.CommandFactory;
+import at.ac.univie.isc.asio.protocol.FormatMatcher;
+import at.ac.univie.isc.asio.protocol.ProtocolResource;
 import at.ac.univie.isc.asio.tool.IdGenerator;
 import at.ac.univie.isc.asio.tool.RandomIdGenerator;
-import at.ac.univie.isc.asio.engine.OperationFactory;
 import at.ac.univie.isc.asio.tool.VariantConverter;
-import at.ac.univie.isc.asio.metadata.*;
-import at.ac.univie.isc.asio.protocol.ProtocolResource;
 import at.ac.univie.isc.asio.transport.JdkPipeTransferFactory;
 import at.ac.univie.isc.asio.transport.Transfer;
 import com.google.common.base.Supplier;
@@ -59,6 +62,8 @@ public class AsioConfiguration {
 
   @Autowired
   private Set<DatasetEngine> engines;
+  @Autowired
+  private Set<LanguageConnector> connectors;
 
   @PostConstruct
   public void reportProfile() {
@@ -103,7 +108,7 @@ public class AsioConfiguration {
   @Bean
   @Scope(BeanDefinition.SCOPE_PROTOTYPE)
   public ProtocolResource protocolResource() {
-    return new ProtocolResource(endpointSupplier(), globalTimeout());
+    return new ProtocolResource(registry(), globalTimeout());
   }
 
   @Bean
@@ -112,11 +117,24 @@ public class AsioConfiguration {
   }
 
   // asio jaxrs components
-
   @Bean
-  public PrototypeConnectorRegistry endpointSupplier() {
+  public ConnectorRegistry registry() {
+    log.info("[BOOT] using connectors {}", connectors);
     log.info("[BOOT] using engines {}", engines);
-    return new PrototypeConnectorRegistry(engines, transferFactory(), responseExecutor(), operationFactory());
+    final ConnectorRegistry.ConnectorRegistryBuilder builder = ConnectorRegistry.builder();
+    for (LanguageConnector each : connectors) {
+      builder.add(each.language(), each);
+    }
+    for (DatasetEngine each : engines) {
+      final Language language = Language.valueOf(each.type().name());
+      final FormatMatcher matcher = new FormatMatcher(each.supports());
+      final Engine backend = new AsyncExecutorAdapter(new AsyncExecutor(transferFactory(), each), responseExecutor());
+      final Connector connector = new CommandFactory(matcher, backend, operationFactory());
+      builder.add(language, connector);
+    }
+    final ConnectorRegistry connectorRegistry = builder.build();
+    log.info("[BOOT] {}", connectorRegistry);
+    return connectorRegistry;
   }
 
   // default resolver
@@ -160,8 +178,7 @@ public class AsioConfiguration {
 
   @Bean
   public OperationFactory operationFactory() {
-    final IdGenerator ids = RandomIdGenerator.withPrefix("asio");
-    return new OperationFactory(ids);
+    return new OperationFactory(ids());
   }
 
   @Bean(destroyMethod = "shutdown")
@@ -179,5 +196,10 @@ public class AsioConfiguration {
   @Bean
   public Supplier<Transfer> transferFactory() {
     return new JdkPipeTransferFactory();
+  }
+
+  @Bean
+  public IdGenerator ids() {
+    return RandomIdGenerator.withPrefix("asio");
   }
 }

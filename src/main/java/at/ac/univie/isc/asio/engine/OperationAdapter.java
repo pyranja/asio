@@ -22,11 +22,6 @@ public class OperationAdapter implements Command {
   }
 
   @Override
-  public Id id() {
-    return Id.valueOf(inner.id());
-  }
-
-  @Override
   public MediaType format() {
     return format;
   }

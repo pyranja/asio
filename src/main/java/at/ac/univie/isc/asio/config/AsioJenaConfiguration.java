@@ -1,18 +1,18 @@
 package at.ac.univie.isc.asio.config;
 
+import at.ac.univie.isc.asio.jena.JenaConnector;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
 import com.hp.hpl.jena.rdf.model.Model;
-
+import com.hp.hpl.jena.shared.PrefixMapping;
 import de.fuberlin.wiwiss.d2rq.SystemLoader;
+import de.fuberlin.wiwiss.d2rq.jena.ModelD2RQ;
 import de.fuberlin.wiwiss.d2rq.map.Database;
 import de.fuberlin.wiwiss.d2rq.server.ConfigLoader;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,38 +22,33 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
-
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import rx.Scheduler;
+import rx.schedulers.Schedulers;
 
 import javax.servlet.ServletContext;
-
-import at.ac.univie.isc.asio.DatasetEngine;
-import at.ac.univie.isc.asio.jena.JenaEngine;
+import java.util.concurrent.*;
 
 import static com.google.common.base.Strings.emptyToNull;
 
 @Configuration
 @Profile("dataset")
 public class AsioJenaConfiguration {
-
   /* slf4j-logger */
   private final static Logger log = LoggerFactory.getLogger(AsioJenaConfiguration.class);
 
   @Autowired
-  Environment env;
+  private Environment env;
   @Autowired
-  ServletContext webContext;
+  private ServletContext webContext;
   @Autowired
-  TimeoutSpec globalTimeout;
+  private TimeoutSpec globalTimeout;
 
   @Bean
-  public DatasetEngine jenaEngine() {
-    return new JenaEngine(queryWorkerPool(), d2rModel()).withTimeout(globalTimeout);
+  public JenaConnector jenaConnector() {
+    final Scheduler worker = Schedulers.from(queryWorkerPool());
+    final Model model = d2rModel();
+    log.info("[BOOT] using model {}", model);
+    return new JenaConnector(model, worker, globalTimeout);
   }
 
   @Bean
@@ -71,7 +66,9 @@ public class AsioJenaConfiguration {
 
   @Bean(destroyMethod = "close")
   public Model d2rModel() {
-    return d2rLoader().getModelD2RQ();
+    final ModelD2RQ model = d2rLoader().getModelD2RQ();
+    model.withDefaultMappings(PrefixMapping.Extended);
+    return model;
   }
 
   @Bean

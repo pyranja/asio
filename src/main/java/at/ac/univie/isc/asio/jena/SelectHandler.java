@@ -4,14 +4,19 @@ import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.sparql.resultset.OutputFormatter;
 
+import javax.ws.rs.core.MediaType;
 import java.io.OutputStream;
 
-final class SelectHandler extends QueryModeHandler<ResultSet> {
+final class SelectHandler extends JenaQueryHandler.BaseQueryHandler<ResultSet> {
 
   private final OutputFormatter serializer;
 
   public SelectHandler(final OutputFormatter serializer) {
-    super();
+    this(serializer, MediaType.WILDCARD_TYPE);
+  }
+
+  public SelectHandler(final OutputFormatter serializer, final MediaType format) {
+    super(format);
     this.serializer = serializer;
   }
 

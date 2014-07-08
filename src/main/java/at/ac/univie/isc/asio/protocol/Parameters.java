@@ -1,9 +1,9 @@
 package at.ac.univie.isc.asio.protocol;
 
+import at.ac.univie.isc.asio.DatasetUsageException;
 import at.ac.univie.isc.asio.Language;
 import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.Multimaps;
+import com.google.common.collect.*;
 
 import javax.annotation.concurrent.Immutable;
 import javax.ws.rs.BadRequestException;
@@ -24,25 +24,73 @@ public final class Parameters {
     return new ParametersBuilder(language);
   }
 
-  private final ImmutableListMultimap<String, String> parameters;
-  private final HttpHeaders headers;
+  public static final class MissingParameter extends DatasetUsageException {
+    public MissingParameter(final String key) {
+      super("required parameter "+ key +" is missing");
+    }
+  }
+
+  public static final class DuplicatedParameter extends DatasetUsageException {
+    public DuplicatedParameter(final String key) {
+      super("duplicated parameter "+ key +" found");
+    }
+  }
+
+  private final ListMultimap<String, String> parameters;
+  private final List<MediaType> acceptableTypes;
   private final RuntimeException cause;
 
-  private Parameters(final ImmutableListMultimap<String, String> parameters, final HttpHeaders headers, final RuntimeException cause) {
-    assert (parameters != null || cause != null) : "invalid params but no cause given";
-    this.headers = headers;
+  private Parameters(
+      final ListMultimap<String, String> parameters,
+      final List<MediaType> acceptableTypes,
+      final RuntimeException cause) {
+    assert ((parameters != null && acceptableTypes != null) || cause != null)
+        : "invalid params but no cause given";
     this.parameters = parameters;
+    this.acceptableTypes = acceptableTypes;
     this.cause = cause;
   }
 
-  public Map<String, List<String>> properties() {
+  @Deprecated
+  public Map<String, List<String>> props() {
     failIfNotValid();
     return Multimaps.asMap(parameters);
   }
 
+  public Multimap<String, String> properties() {
+    failIfNotValid();
+    return parameters;
+  }
+
+  /**
+   * @param key of required parameter
+   * @return the single value of the parameter
+   * @throws at.ac.univie.isc.asio.protocol.Parameters.MissingParameter if no value is given
+   * @throws at.ac.univie.isc.asio.protocol.Parameters.DuplicatedParameter if multiple values are given
+   */
+  public String require(final String key) {
+    failIfNotValid();
+    final List<String> values = parameters.get(key);
+    if (values.isEmpty()) {
+      throw new MissingParameter(key);
+    } else if (values.size() > 1) {
+      throw new DuplicatedParameter(key);
+    } else {
+      return Iterables.getOnlyElement(values);
+    }
+  }
+
+  /**
+   * Identical to
+   * <pre>Language.valueOf(this.require(KEY_LANGUAGE))</pre>
+   */
+  public Language language() {
+    return Language.valueOf(require(KEY_LANGUAGE));
+  }
+
   public List<MediaType> acceptable() {
     failIfNotValid();
-    return headers.getAcceptableMediaTypes();
+    return acceptableTypes;
   }
 
   public void failIfNotValid() {
@@ -57,14 +105,15 @@ public final class Parameters {
         .omitNullValues()
         .add("error", cause)
         .add("properties", parameters)
-        .add("headers", headers.getRequestHeaders())
         .toString();
   }
 
   public static class ParametersBuilder {
-    private ImmutableListMultimap.Builder<String, String> params = ImmutableListMultimap.builder();
-    private RuntimeException cause;
     private final Language language;
+    private ImmutableListMultimap.Builder<String, String> params = ImmutableListMultimap.builder();
+    private ImmutableList.Builder<MediaType> acceptedTypes = ImmutableList.builder();
+
+    private RuntimeException cause;
 
     private ParametersBuilder(final Language language) {
       this.language = language;
@@ -81,6 +130,15 @@ public final class Parameters {
       return this;
     }
 
+    public ParametersBuilder single(final String key, final String value) {
+      if (key == null || value == null) {
+        cause = new NullPointerException("illegal parameter");
+      } else {
+        params.put(key, value);
+      }
+      return this;
+    }
+
     static final Pattern MEDIA_SUBTYPE_PATTERN = Pattern.compile("^(\\w+)-(\\w+)$");
 
     public ParametersBuilder body(final String body, final MediaType content) {
@@ -92,20 +150,12 @@ public final class Parameters {
       return this;
     }
 
-    public ParametersBuilder single(final String key, final String value) {
-      if (key == null || value == null) {
-        cause = new NullPointerException("illegal parameter");
-      } else {
-        params.put(key, value);
-      }
-      return this;
-    }
-
     private boolean valid(Matcher match) {
       if (match.matches()) {
         return true;
       } else {
-        cause = new NotSupportedException("illegal content type for direct operation - use 'application/{language}-{operation}'");
+        cause =
+            new NotSupportedException("illegal content type for direct operation - use 'application/{language}-{operation}'");
         return false;
       }
     }
@@ -114,7 +164,8 @@ public final class Parameters {
       if (language.name().equalsIgnoreCase(given)) {
         return true;
       } else {
-        cause = new NotSupportedException("illegal content type for direct operation - expected language "+ language.name());
+        cause = new NotSupportedException(
+            "illegal content type for direct operation - expected language " + language.name());
         return false;
       }
     }
@@ -128,10 +179,36 @@ public final class Parameters {
       }
     }
 
-    public Parameters build(final HttpHeaders headers) {
-      if (headers == null) { cause = new NullPointerException("headers"); }
+    public ParametersBuilder accept(MediaType type) {
+      if (isNotNull(type, "accept type")) { acceptedTypes.add(type); }
+      return this;
+    }
+
+    public Parameters build(final HttpHeaders context) {
+      if (isNotNull(context, "http headers")) {
+        if (isNotNull(context.getAcceptableMediaTypes(), "accepted types")) {
+          acceptedTypes.addAll(context.getAcceptableMediaTypes());
+        }
+      }
+      return build();
+    }
+
+    public Parameters build() {
       params.put(KEY_LANGUAGE, language.name());
-      return new Parameters(params.build(), headers, cause);
+      return new Parameters(
+          params.build(),
+          acceptedTypes.build(),
+          cause
+      );
+    }
+
+    private boolean isNotNull(final Object that, final String message) {
+      if (that == null) {
+        cause = new NullPointerException(message);
+        return false;
+      } else {
+        return true;
+      }
     }
   }
 }
