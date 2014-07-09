@@ -6,7 +6,7 @@ import com.hp.hpl.jena.sparql.resultset.OutputFormatter;
 
 import java.io.OutputStream;
 
-class SelectHandler implements QueryModeHandler<ResultSet> {
+final class SelectHandler extends QueryModeHandler<ResultSet> {
 
   private final OutputFormatter serializer;
 
@@ -16,14 +16,14 @@ class SelectHandler implements QueryModeHandler<ResultSet> {
   }
 
   @Override
-  public ResultSet apply(final QueryExecution execution) {
+  protected ResultSet doInvoke(final QueryExecution execution) {
     final ResultSet result = execution.execSelect();
     result.hasNext(); // force fail-fast on backing store
     return result;
   }
 
   @Override
-  public void serialize(final OutputStream sink, final ResultSet data) {
+  protected void doSerialize(final OutputStream sink, final ResultSet data) {
     serializer.format(sink, data);
   }
 }

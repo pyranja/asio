@@ -1,11 +1,11 @@
 package at.ac.univie.isc.asio.jena;
 
-import java.io.OutputStream;
-
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.sparql.resultset.OutputFormatter;
 
-class AskHandler implements QueryModeHandler<Boolean> {
+import java.io.OutputStream;
+
+final class AskHandler extends QueryModeHandler<Boolean> {
 
   private final OutputFormatter serializer;
 
@@ -15,12 +15,12 @@ class AskHandler implements QueryModeHandler<Boolean> {
   }
 
   @Override
-  public Boolean apply(final QueryExecution execution) {
+  protected Boolean doInvoke(final QueryExecution execution) {
     return execution.execAsk();
   }
 
   @Override
-  public void serialize(final OutputStream sink, final Boolean data) {
+  protected void doSerialize(final OutputStream sink, final Boolean data) {
     serializer.format(sink, data);
   }
 }

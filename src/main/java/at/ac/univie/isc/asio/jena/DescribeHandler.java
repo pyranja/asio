@@ -1,13 +1,12 @@
 package at.ac.univie.isc.asio.jena;
 
-import java.io.OutputStream;
-
-import org.openjena.riot.Lang;
-
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.rdf.model.Model;
+import org.openjena.riot.Lang;
 
-class DescribeHandler implements QueryModeHandler<Model> {
+import java.io.OutputStream;
+
+final class DescribeHandler extends QueryModeHandler<Model> {
 
   private final Lang language;
 
@@ -17,12 +16,12 @@ class DescribeHandler implements QueryModeHandler<Model> {
   }
 
   @Override
-  public Model apply(final QueryExecution execution) {
+  protected Model doInvoke(final QueryExecution execution) {
     return execution.execDescribe();
   }
 
   @Override
-  public void serialize(final OutputStream sink, final Model data) {
+  protected void doSerialize(final OutputStream sink, final Model data) {
     data.write(sink, language.getName());
   }
 

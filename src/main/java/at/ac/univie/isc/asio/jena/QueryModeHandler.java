@@ -1,14 +1,29 @@
 package at.ac.univie.isc.asio.jena;
 
-import java.io.OutputStream;
-
-import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.hp.hpl.jena.query.QueryExecution;
 
-interface QueryModeHandler<RESULT> extends Function<QueryExecution, RESULT> {
+import java.io.OutputStream;
 
-  @Override
-  RESULT apply(QueryExecution execution);
+import static java.util.Objects.requireNonNull;
 
-  void serialize(OutputStream sink, RESULT data);
+abstract class QueryModeHandler<RESULT> {
+  private RESULT result;
+
+  public final void invoke(final QueryExecution execution) {
+    requireNonNull(execution);
+    Preconditions.checkState(result == null, "query invoked twice");
+    this.result = doInvoke(execution);
+    assert result != null : "implementation produced null result";
+  }
+
+  protected abstract RESULT doInvoke(QueryExecution execution);
+
+  public final void serialize(final OutputStream sink) {
+    requireNonNull(sink);
+    Preconditions.checkState(result != null, "no query results captured");
+    doSerialize(sink, result);
+  }
+
+  protected abstract void doSerialize(OutputStream sink, RESULT data);
 }
