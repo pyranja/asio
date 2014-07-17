@@ -610,27 +610,6 @@
           <licenseFile>${basedir}/LICENSE</licenseFile>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>properties-maven-plugin</artifactId>
-        <version>1.0-alpha-2</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>set-system-properties</goal>
-            </goals>
-            <configuration>
-              <properties>
-                <!-- suppress the jetty errors in combination with cxf 2.7.10 -->
-                <property>
-                  <name>org.eclipse.jetty.servlet.ServletHandler.LEVEL</name>
-                  <value>OFF</value>
-                </property>
-              </properties>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
   </build>
 
