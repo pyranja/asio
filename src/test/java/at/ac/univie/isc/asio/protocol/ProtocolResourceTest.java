@@ -11,6 +11,7 @@ import at.ac.univie.isc.asio.security.Token;
 import at.ac.univie.isc.asio.tool.Rules;
 import com.google.common.base.Charsets;
 import com.google.common.io.BaseEncoding;
+import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,7 +22,10 @@ import rx.Observable;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.Form;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.Principal;
@@ -55,16 +59,20 @@ public class ProtocolResourceTest {
 
   @Before
   public void setup() {
-    when(timeout.getAs(any(TimeUnit.class))).thenReturn(-1L);
+    when(timeout.getAs(any(TimeUnit.class), any(Long.class))).thenReturn(0L);
     // prepare mocks
     when(connector.createCommand(any(Parameters.class), any(Principal.class)))
         .thenReturn(command);
-    when(command.format()).thenReturn(MediaType.APPLICATION_JSON_TYPE);
     when(command.requiredRole()).thenReturn(Role.ANY);
     final Command.Results payloadStreamer = new Command.Results() {
       @Override
       public void write(final OutputStream output) throws IOException, WebApplicationException {
         output.write(PAYLOAD);
+      }
+
+      @Override
+      public MediaType format() {
+        return MediaType.APPLICATION_JSON_TYPE;
       }
 
       @Override
@@ -110,11 +118,13 @@ public class ProtocolResourceTest {
 
   @Test
   public void valid_schema_operation() throws Exception {
-    response = server.endpoint()
+    final WebTarget endpoint = server.endpoint();
+    response = endpoint
         .path("read/sql/schema")
         .request(MediaType.APPLICATION_JSON)
         .get();
-    verifySuccessful(response);
+    assertThat(response, hasStatus(Response.Status.MOVED_PERMANENTLY));
+    assertThat(response.getHeaderString(HttpHeaders.LOCATION), CoreMatchers.endsWith("read/meta/schema"));
   }
 
   private void verifySuccessful(final Response response) {
@@ -275,7 +285,8 @@ public class ProtocolResourceTest {
 
   @Test
   public void execution_times_out() throws Exception {
-    when(timeout.getAs(TimeUnit.NANOSECONDS)).thenReturn(TimeUnit.NANOSECONDS.convert(100, TimeUnit.MILLISECONDS));
+    when(timeout.getAs(any(TimeUnit.class), any(Long.class)))
+        .thenReturn(TimeUnit.NANOSECONDS.convert(100, TimeUnit.MILLISECONDS));
     when(command.observe()).thenReturn(Observable.<Command.Results>never());
     response = invoke(Permission.READ, Language.SQL).request().get();
     assertThat(response, hasStatus(Response.Status.SERVICE_UNAVAILABLE));
@@ -287,6 +298,11 @@ public class ProtocolResourceTest {
       @Override
       public void write(final OutputStream output) throws IOException, WebApplicationException {
         throw new DatasetFailureException(new IllegalStateException());
+      }
+
+      @Override
+      public MediaType format() {
+        return null;
       }
 
       @Override
@@ -303,6 +319,11 @@ public class ProtocolResourceTest {
       @Override
       public void write(final OutputStream output) throws IOException, WebApplicationException {
         throw new WebApplicationException(Response.Status.BAD_REQUEST);
+      }
+
+      @Override
+      public MediaType format() {
+        return null;
       }
 
       @Override

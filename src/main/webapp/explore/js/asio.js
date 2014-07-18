@@ -115,17 +115,11 @@ var asio = (function() {
     var tables = $(xml).find('table').map(function() {
       var tableName = $(this).attr('name');
       var columns = $(this).find('column').map(function() {
-        var datatype = $(this).find('sqlTypeName').map(function() {
-          return $(this).text();
-        }).get();
-		return { name: $(this).attr('name'), type: datatype };
+        var columnType = $(this).attr('sqlType');
+        var columnName = $(this).attr('name');
+		    return { name: columnName, type: columnType };
       }).get();
-
-
-      return {
-        name : tableName,
-        columns : columns
-      };
+      return { name : tableName, columns : columns };
     }).get();
 
     return {
@@ -139,7 +133,7 @@ var asio = (function() {
   // where error is null on success and xml holds the xml response document
   // on failure error will hold an Error object and xml is null
   exports.fetchSchema = function(callback) {
-    var target = endpoint() + SERVICE_SCHEMA;
+    var target = guessRoot() + SERVICE_META + SERVICE_SCHEMA;
 	var pleaseWaitDiv = $('<div class="modal hide fade" id="pleaseWaitDialog" data-backdrop="static" data-keyboard="false"><div class="modal-header"><h1>Loading dataset schema. <br/>Please wait...</h1></div><div class="modal-body"><div class="progress progress-striped active"><div class="bar" style="width: 100%;"></div></div></div></div>');
     
     var req = $.ajax({

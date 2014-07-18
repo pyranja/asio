@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.protocol;
 
+import at.ac.univie.isc.asio.Command;
 import at.ac.univie.isc.asio.MockFormat;
 import at.ac.univie.isc.asio.jaxrs.AsyncResponseFake;
 import org.junit.Before;
@@ -19,27 +20,24 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
 public class CommandObserverTest {
-  static final class Dummy {}
-  public static final Dummy PAYLOAD = new Dummy();
 
   @Rule
   public ExpectedException error = ExpectedException.none();
 
+  private Command.Results results = mock(Command.Results.class);
   private AsyncResponseFake async_context;
-  private CommandObserver<Dummy> subject;
-  private Response.ResponseBuilder response;
+  private CommandObserver subject;
 
   @Before
   public void setup() {
     async_context = spy(new AsyncResponseFake());
-    response = Response.ok().type(MockFormat.APPLICABLE_CONTENT_TYPE);
-    subject = new CommandObserver<>(async_context, response);
+    subject = new CommandObserver(async_context);
   }
 
   @Test
   public void should_resume_with_exception_on_error() throws Exception {
     final Throwable failure = new IllegalStateException("TEST");
-    Observable.<Dummy>error(failure).subscribe(subject);
+    Observable.<Command.Results>error(failure).subscribe(subject);
     assertThat(async_context.error(), is(failure));
   }
 
@@ -52,19 +50,19 @@ public class CommandObserverTest {
   @Test
   public void should_respond_with_observable_stream() throws Exception {
     observable().subscribe(subject);
-    assertThat(async_context.response().getEntity(), is((Object) PAYLOAD));
+    assertThat(async_context.response().getEntity(), is((Object) results));
   }
 
   @Test
   public void should_use_provided_content_type() throws Exception {
-    response.type(MockFormat.NOT_APPLICABLE_CONTENT_TYPE);
+    when(results.format()).thenReturn(MockFormat.NOT_APPLICABLE_CONTENT_TYPE);
     observable().subscribe(subject);
     assertThat(async_context.response().getMediaType(), is(equalTo(MockFormat.NOT_APPLICABLE_CONTENT_TYPE)));
   }
 
   @Test
   public void should_resume_with_no_content_if_observable_empty() throws Exception {
-    Observable.<Dummy>empty().subscribe(subject);
+    Observable.<Command.Results>empty().subscribe(subject);
     assertThat(async_context.response(), hasStatus(Response.Status.NO_CONTENT));
   }
 
@@ -79,11 +77,11 @@ public class CommandObserverTest {
   @Test
   public void should_not_resume_with_error_if_not_suspended() throws Exception {
     async_context.cancel();
-    Observable.<Dummy>error(new IllegalStateException("TEST")).subscribe(subject);
+    Observable.<Command.Results>error(new IllegalStateException("TEST")).subscribe(subject);
     verify(async_context, never()).resume(Mockito.any(Throwable.class));
   }
 
-  private Observable<Dummy> observable() {
-    return Observable.just(PAYLOAD);
+  private Observable<Command.Results> observable() {
+    return Observable.just(results);
   }
 }

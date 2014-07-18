@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.protocol;
 
+import at.ac.univie.isc.asio.Command;
 import com.google.common.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,32 +9,28 @@ import rx.Subscriber;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.core.Response;
 
-import static java.util.Objects.requireNonNull;
-
 /**
  * Bridge an observable stream to an {@link javax.ws.rs.container.AsyncResponse}
  */
-class CommandObserver<RESULT> extends Subscriber<RESULT> {
+class CommandObserver extends Subscriber<Command.Results> {
   private static final Logger log = LoggerFactory.getLogger(CommandObserver.class);
 
-  public static CommandObserverBuilder bridgeTo(final AsyncResponse async) {
-    return new CommandObserverBuilder<>(async);
+  public static CommandObserver bridgeTo(final AsyncResponse async) {
+    return new CommandObserver(async);
   }
 
   private final AsyncResponse async;
-  private final Response.ResponseBuilder response;
 
   @VisibleForTesting
-  CommandObserver(final AsyncResponse async, final Response.ResponseBuilder response) {
+  CommandObserver(final AsyncResponse async) {
     this.async = async;
-    this.response = response;
   }
 
   @Override
   public void onCompleted() {
     if (async.isSuspended()) {
       log.warn("got no data from operation - sending no content response");
-      async.resume(response.status(Response.Status.NO_CONTENT).variant(null).build());
+      async.resume(Response.noContent().build());
     }
   }
 
@@ -47,33 +44,18 @@ class CommandObserver<RESULT> extends Subscriber<RESULT> {
   }
 
   @Override
-  public void onNext(final RESULT observableStream) {
+  public void onNext(final Command.Results results) {
     if (async.isSuspended()) {
       log.debug("resuming response on thread {}", Thread.currentThread());
-      async.resume(response.status(Response.Status.OK).entity(observableStream).build());
+      final Response response = Response
+          .ok()
+          .entity(results)
+          .type(results.format())
+          .build();
+      async.resume(response);
     } else {
       log.warn("cannot send results - response already resumed");
       unsubscribe();
-    }
-  }
-
-  static class CommandObserverBuilder<T> {
-    private Response.ResponseBuilder response = Response.ok();
-    private final AsyncResponse async;
-
-    private CommandObserverBuilder(final AsyncResponse async) {
-      requireNonNull(async);
-      this.async = async;
-    }
-
-    public CommandObserver<T> send(final Response.ResponseBuilder response) {
-      requireNonNull(response);
-      this.response = response;
-      return create();
-    }
-
-    public CommandObserver<T> create() {
-      return new CommandObserver<>(this.async, response);
     }
   }
 }

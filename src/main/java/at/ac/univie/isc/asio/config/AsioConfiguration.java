@@ -1,21 +1,12 @@
 package at.ac.univie.isc.asio.config;
 
-import at.ac.univie.isc.asio.Connector;
-import at.ac.univie.isc.asio.DatasetEngine;
-import at.ac.univie.isc.asio.Language;
-import at.ac.univie.isc.asio.engine.*;
+import at.ac.univie.isc.asio.engine.Engine;
+import at.ac.univie.isc.asio.engine.EngineRegistry;
+import at.ac.univie.isc.asio.engine.sql.SqlSchema;
 import at.ac.univie.isc.asio.metadata.*;
-import at.ac.univie.isc.asio.protocol.CommandFactory;
-import at.ac.univie.isc.asio.protocol.FormatMatcher;
 import at.ac.univie.isc.asio.protocol.ProtocolResource;
-import at.ac.univie.isc.asio.tool.IdGenerator;
-import at.ac.univie.isc.asio.tool.RandomIdGenerator;
-import at.ac.univie.isc.asio.tool.VariantConverter;
-import at.ac.univie.isc.asio.transport.JdkPipeTransferFactory;
-import at.ac.univie.isc.asio.transport.Transfer;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.cxf.Bus;
 import org.apache.cxf.bus.spring.SpringBus;
@@ -30,16 +21,16 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
+import rx.Scheduler;
+import rx.schedulers.Schedulers;
 
 import javax.annotation.PostConstruct;
 import javax.ws.rs.ext.RuntimeDelegate;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * Setup the asio endpoint infrastructure.
@@ -57,13 +48,14 @@ public class AsioConfiguration {
   @Autowired
   @Qualifier("asio.meta.id")
   private Supplier<String> datasetIdResolver;
+  @Autowired(required = false)
+  @Qualifier("asio.meta.schema")
+  private Supplier<SqlSchema> schemaSource = Suppliers.ofInstance(new SqlSchema());
 
   // asio backend components
 
   @Autowired
-  private Set<DatasetEngine> engines;
-  @Autowired
-  private Set<LanguageConnector> connectors;
+  private Set<Engine> engines = Collections.emptySet();
 
   @PostConstruct
   public void reportProfile() {
@@ -113,28 +105,26 @@ public class AsioConfiguration {
 
   @Bean
   public MetadataResource metadataResource() {
-    return new MetadataResource(metadataSupplier());
+    return new MetadataResource(metadataSupplier(), schemaSource);
   }
 
   // asio jaxrs components
   @Bean
-  public ConnectorRegistry registry() {
-    log.info("[BOOT] using connectors {}", connectors);
+  public EngineRegistry registry() {
     log.info("[BOOT] using engines {}", engines);
-    final ConnectorRegistry.ConnectorRegistryBuilder builder = ConnectorRegistry.builder();
-    for (LanguageConnector each : connectors) {
-      builder.add(each.language(), each);
-    }
-    for (DatasetEngine each : engines) {
-      final Language language = Language.valueOf(each.type().name());
-      final FormatMatcher matcher = new FormatMatcher(each.supports());
-      final Engine backend = new AsyncExecutorAdapter(new AsyncExecutor(transferFactory(), each), responseExecutor());
-      final Connector connector = new CommandFactory(matcher, backend, operationFactory());
-      builder.add(language, connector);
-    }
-    final ConnectorRegistry connectorRegistry = builder.build();
-    log.info("[BOOT] {}", connectorRegistry);
-    return connectorRegistry;
+    final Scheduler scheduler = Schedulers.from(workerPool());
+    return new EngineRegistry(scheduler, engines);
+  }
+
+  @Bean(destroyMethod = "shutdownNow")
+  public ExecutorService workerPool() {
+    final ThreadFactory factory =
+        new ThreadFactoryBuilder()
+            .setDaemon(true)
+            .setNameFormat("asio-worker-%d")
+            .build();
+    final BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(30);
+    return new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, queue, factory);
   }
 
   // default resolver
@@ -174,32 +164,5 @@ public class AsioConfiguration {
       log.info("[BOOT] metadata resolution disabled");
       return Suppliers.ofInstance(StaticMetadata.NOT_AVAILABLE);
     }
-  }
-
-  @Bean
-  public OperationFactory operationFactory() {
-    return new OperationFactory(ids());
-  }
-
-  @Bean(destroyMethod = "shutdown")
-  public ExecutorService responseExecutor() {
-    final ThreadFactory factory =
-        new ThreadFactoryBuilder().setNameFormat("response-processer-%d").build();
-    return MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(5, factory));
-  }
-
-  @Bean
-  public VariantConverter converter() {
-    return new VariantConverter();
-  }
-
-  @Bean
-  public Supplier<Transfer> transferFactory() {
-    return new JdkPipeTransferFactory();
-  }
-
-  @Bean
-  public IdGenerator ids() {
-    return RandomIdGenerator.withPrefix("asio");
   }
 }

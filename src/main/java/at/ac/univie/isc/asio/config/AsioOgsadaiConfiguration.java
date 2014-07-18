@@ -6,7 +6,6 @@ import at.ac.univie.isc.asio.ogsadai.workflow.SqlComposer;
 import com.google.common.collect.Iterables;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 import uk.org.ogsadai.activity.event.RequestEventRouter;
@@ -26,7 +25,7 @@ import java.util.List;
  * 
  * @author Chris Borckholder
  */
-@Configuration
+// @Configuration
 @Profile("dataset")
 public class AsioOgsadaiConfiguration {
 

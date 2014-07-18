@@ -63,6 +63,16 @@ public class DatasourceSpec {
     return password;
   }
 
+  public String driverName() {
+    if (jdbcUrl.startsWith("jdbc:mysql")) {
+      return "com.mysql.jdbc.Driver";
+    } else if (jdbcUrl.startsWith("jdbc:h2")) {
+      return "org.h2.Driver";
+    } else {
+      throw new IllegalStateException("database type not supported : "+ jdbcUrl);
+    }
+  }
+
   @Override
   public String toString() {
     return String.format("DatasourceSpec [jdbcUrl=%s, jdbcDriver=%s, username=%s]",

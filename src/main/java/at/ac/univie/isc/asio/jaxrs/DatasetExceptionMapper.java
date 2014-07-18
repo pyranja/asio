@@ -3,7 +3,7 @@ package at.ac.univie.isc.asio.jaxrs;
 import at.ac.univie.isc.asio.Connector;
 import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.DatasetUsageException;
-import at.ac.univie.isc.asio.jena.JenaConnector;
+import at.ac.univie.isc.asio.engine.TypeMatchingResolver;
 import at.ac.univie.isc.asio.transfer.ErrorMessage;
 import com.google.common.collect.ImmutableMap;
 
@@ -71,7 +71,7 @@ public class DatasetExceptionMapper implements ExceptionMapper<DatasetException>
   private static final Map<Class<?>, Response.Status> ERROR_CODE_LOOKUP = ImmutableMap
       .<Class<?>, Response.Status>builder()
       .put(Connector.LanguageNotSupported.class, Response.Status.NOT_FOUND)
-      .put(JenaConnector.NoSupportedFormat.class, Response.Status.NOT_ACCEPTABLE)
+      .put(TypeMatchingResolver.NoMatchingFormat.class, Response.Status.NOT_ACCEPTABLE)
       .build();
 
   /**

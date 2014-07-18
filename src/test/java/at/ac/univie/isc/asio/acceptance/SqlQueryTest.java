@@ -10,12 +10,12 @@ import org.junit.experimental.categories.Category;
 
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Map;
 
 import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.compatibleTo;
+import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.hasFamily;
 import static javax.ws.rs.core.Response.Status.Family.*;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
@@ -44,7 +44,8 @@ public class SqlQueryTest extends AcceptanceHarness {
   public void valid_query_as_uri_param() throws Exception {
     client.accept(XML).query(PARAM_QUERY, COUNT_QUERY);
     response = client.get();
-    verify(response);
+    assertThat(response, hasFamily(SUCCESSFUL));
+    assertThat(response.getMediaType(), is(compatibleTo(XML)));
   }
 
   @Test
@@ -53,22 +54,24 @@ public class SqlQueryTest extends AcceptanceHarness {
     final Form values = new Form();
     values.param(PARAM_QUERY, COUNT_QUERY);
     response = client.form(values);
-    verify(response);
+    assertThat(response, hasFamily(SUCCESSFUL));
+    assertThat(response.getMediaType(), is(compatibleTo(XML)));
   }
 
   @Test
   public void valid_query_as_payload() throws Exception {
     client.accept(XML).type("application/sql-query");
     response = client.post(COUNT_QUERY);
-    verify(response);
+    assertThat(response, hasFamily(SUCCESSFUL));
+    assertThat(response.getMediaType(), is(compatibleTo(XML)));
   }
 
   @Test
   public void delivers_csv() throws Exception {
     client.accept(CSV).query(PARAM_QUERY, SCAN_QUERY);
     response = client.get();
-    assertEquals(SUCCESSFUL, familyOf(response.getStatus()));
-    assertTrue(CSV.isCompatible(response.getMediaType()));
+    assertThat(response, hasFamily(SUCCESSFUL));
+    assertThat(response.getMediaType(), is(compatibleTo(CSV)));
     final Map<String, KeyedRow> results =
         CsvToMap.convertStream((InputStream) response.getEntity(), SCAN_PK_LABEL);
     assertEquals("response body not matching expected query result", EXPECTED.getReference(),
@@ -79,8 +82,8 @@ public class SqlQueryTest extends AcceptanceHarness {
   public void delivers_xml() throws Exception {
     client.accept(XML).query(PARAM_QUERY, SCAN_QUERY);
     response = client.get();
-    assertEquals(SUCCESSFUL, familyOf(response.getStatus()));
-    assertTrue(XML.isCompatible(response.getMediaType()));
+    assertThat(response, hasFamily(SUCCESSFUL));
+    assertThat(response.getMediaType(), is(compatibleTo(XML)));
     final Map<String, KeyedRow> results =
         ResultSetToMap.convertStream((InputStream) response.getEntity(), SCAN_PK_LABEL);
     assertEquals("response body not matching expected query result", EXPECTED.getReference(),
@@ -117,8 +120,4 @@ public class SqlQueryTest extends AcceptanceHarness {
     assertThat(response.getMediaType(), is(compatibleTo(XML)));
   }
 
-  private void verify(final Response response) {
-    assertEquals(SUCCESSFUL, familyOf(response.getStatus()));
-    assertTrue(XML.isCompatible(response.getMediaType()));
-  }
 }

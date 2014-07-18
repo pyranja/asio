@@ -1,9 +1,11 @@
 package at.ac.univie.isc.asio.acceptance;
 
+import at.ac.univie.isc.asio.engine.sql.Head;
+import at.ac.univie.isc.asio.engine.sql.SqlResult;
+import at.ac.univie.isc.asio.engine.sql.Update;
 import at.ac.univie.isc.asio.sql.H2Provider;
 import at.ac.univie.isc.asio.sql.KeyedRow;
 import at.ac.univie.isc.asio.tool.FunctionalTest;
-import at.ac.univie.isc.asio.transfer.UpdateResult;
 import com.google.common.collect.ImmutableMap;
 import org.junit.After;
 import org.junit.Before;
@@ -21,9 +23,12 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Map;
 
+import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.compatibleTo;
+import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.hasFamily;
 import static javax.ws.rs.core.Response.Status.Family.*;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertThat;
 
 @Category(FunctionalTest.class)
 public class SqlUpdateTest extends AcceptanceHarness {
@@ -33,6 +38,10 @@ public class SqlUpdateTest extends AcceptanceHarness {
   // sql
   private static final String MOD_TABLE = "PATIENT";
   private static final String INSERT = "INSERT INTO " + MOD_TABLE + " VALUES(42, 'test-name')";
+
+  public static final SqlResult EXPECTED_RESULT = new SqlResult()
+      .withHead(new Head().withStatement(INSERT))
+      .withUpdate(new Update().withAffected(1));
 
   @Override
   protected URI getTargetUrl() {
@@ -54,14 +63,14 @@ public class SqlUpdateTest extends AcceptanceHarness {
     final Form values = new Form();
     values.param(PARAM_UPDATE, INSERT);
     response = client.accept(XML).form(values);
-    verify();
+    verifyResponse();
     wasInserted();
   }
 
   @Test
   public void insert_as_payload() throws Exception {
     response = client.accept(XML).type(APPLICATION_SQL_UPDATE).post(INSERT);
-    verify();
+    verifyResponse();
     wasInserted();
   }
 
@@ -81,13 +90,12 @@ public class SqlUpdateTest extends AcceptanceHarness {
     assertEquals(CLIENT_ERROR, familyOf(response.getStatus()));
   }
 
-  private void verify() {
-    assertEquals(SUCCESSFUL, familyOf(response.getStatus()));
-    assertTrue(XML.isCompatible(response.getMediaType()));
-    final UpdateResult result =
-        JAXB.unmarshal((InputStream) response.getEntity(), UpdateResult.class);
-    assertEquals(INSERT, result.getCommand());
-    assertEquals(1, result.getCount());
+  private void verifyResponse() {
+    assertThat(response, hasFamily(SUCCESSFUL));
+    assertThat(response.getMediaType(), is(compatibleTo(XML)));
+    final SqlResult result =
+        JAXB.unmarshal(response.readEntity(InputStream.class), SqlResult.class);
+    assertThat(result, is(EXPECTED_RESULT));
   }
 
   private void wasInserted() {

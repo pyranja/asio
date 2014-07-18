@@ -10,6 +10,8 @@ import java.io.OutputStream;
 
 public interface Command {
 
+  // use Command.Results#format()
+  @Deprecated
   MediaType format();
 
   Role requiredRole();
@@ -27,6 +29,11 @@ public interface Command {
      */
     @Override
     void write(OutputStream output) throws IOException, DatasetException;
+
+    /**
+     * @return the MIME type of this serialized result.
+     */
+    MediaType format();
 
     /**
      * Release resources associated with the results, for example an open database cursor. Closing

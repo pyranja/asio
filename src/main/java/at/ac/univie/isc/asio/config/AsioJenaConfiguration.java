@@ -1,12 +1,9 @@
 package at.ac.univie.isc.asio.config;
 
-import at.ac.univie.isc.asio.jena.JenaConnector;
+import at.ac.univie.isc.asio.jena.JenaEngine;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterables;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.shared.PrefixMapping;
 import de.fuberlin.wiwiss.d2rq.SystemLoader;
@@ -22,11 +19,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
-import rx.Scheduler;
-import rx.schedulers.Schedulers;
 
 import javax.servlet.ServletContext;
-import java.util.concurrent.*;
 
 import static com.google.common.base.Strings.emptyToNull;
 
@@ -44,11 +38,10 @@ public class AsioJenaConfiguration {
   private TimeoutSpec globalTimeout;
 
   @Bean
-  public JenaConnector jenaConnector() {
-    final Scheduler worker = Schedulers.from(queryWorkerPool());
+  public JenaEngine sparqlEngine() {
     final Model model = d2rModel();
     log.info("[BOOT] using model {}", model);
-    return new JenaConnector(model, worker, globalTimeout);
+    return new JenaEngine(model, globalTimeout);
   }
 
   @Bean
@@ -91,15 +84,6 @@ public class AsioJenaConfiguration {
       log.info("[BOOT] using d2r baseURI <{}> as dataset id", maybeId);
       return Suppliers.ofInstance(maybeId);
     }
-  }
-
-  @Bean(destroyMethod = "shutdownNow")
-  public ListeningExecutorService queryWorkerPool() {
-    final ThreadFactory factory =
-        new ThreadFactoryBuilder().setNameFormat("jena-query-worker-%d").build();
-    final BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(30);
-    final ExecutorService exec = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, queue, factory);
-    return MoreExecutors.listeningDecorator(exec);
   }
 
   // transform a mapping file reference into an absolute URI

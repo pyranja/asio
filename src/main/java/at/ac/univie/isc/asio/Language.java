@@ -10,13 +10,14 @@ import java.util.Locale;
  */
 public final class Language extends TypedValue<String> {
 
+  public static final Language UNKNOWN = new Language("UNKNOWN", null);
   public static final Language SQL = new Language("SQL", Type.SQL);
   public static final Language SPARQL = new Language("SPARQL", Type.SPARQL);
   public static final Language TEST = new Language("TEST", null); // FIXME remove this
 
   // FIXME : simplify when EngineType is removed
   public static Language valueOf(final String value) {
-    if (value == null) { return new Language("", null); }
+    if (value == null) { return UNKNOWN; }
     final String normalized = value.toUpperCase(Locale.ENGLISH).trim();
     switch (normalized) {
       case "SQL":

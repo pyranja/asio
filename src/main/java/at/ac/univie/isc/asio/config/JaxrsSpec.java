@@ -28,17 +28,11 @@ public class JaxrsSpec extends Application {
     this.resources = resources;
   }
 
-  /**
-   * @return set of resource class names
-   */
   @Override
   public Set<Class<?>> getClasses() {
     return resources;
   }
 
-  /**
-   * @return set of instantiated providers
-   */
   @Override
   public Set<Object> getSingletons() {
     final ImmutableSet.Builder<Object> providers = ImmutableSet.builder();
@@ -49,10 +43,8 @@ public class JaxrsSpec extends Application {
 
   private ImmutableSet<Object> converters() {
     final JSONProvider json = new JSONProvider();
-    json.setNamespaceMap(ImmutableMap.of("http://isc.univie.ac.at/2014/asio/metadata", "asio"));
-    return ImmutableSet.of(
-        new DatasetExceptionMapper(),
-        json);
+    json.setNamespaceMap(ImmutableMap.of("http://isc.univie.ac.at/2014/asio", "asio"));
+    return ImmutableSet.of(new DatasetExceptionMapper(), json);
   }
 
   private ImmutableSet<ContainerRequestFilter> filters() {

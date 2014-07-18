@@ -2,18 +2,18 @@ package at.ac.univie.isc.asio.jena;
 
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.rdf.model.Model;
-import org.openjena.riot.Lang;
+import com.hp.hpl.jena.rdf.model.RDFWriter;
 
 import javax.ws.rs.core.MediaType;
 import java.io.OutputStream;
 
 final class DescribeHandler extends JenaQueryHandler.BaseQueryHandler<Model> {
 
-  private final Lang language;
+  private final RDFWriter writer;
 
-  public DescribeHandler(final Lang language) {
-    super(MediaType.valueOf(language.getContentType()));
-    this.language = language;
+  public DescribeHandler(final RDFWriter writer, final MediaType format) {
+    super(format);
+    this.writer = writer;
   }
 
   @Override
@@ -23,7 +23,7 @@ final class DescribeHandler extends JenaQueryHandler.BaseQueryHandler<Model> {
 
   @Override
   protected void doSerialize(final OutputStream sink, final Model data) {
-    data.write(sink, language.getName());
+    writer.write(data, sink, "");
   }
 
 }

@@ -112,7 +112,14 @@ public final class ResponseMatchers {
 
     @Override
     protected boolean matchesSafely(final MediaType item) {
-      return reference.isCompatible(item);
+      return reference.isCompatible(item) || suffixExtensionMatches(item);
+    }
+
+    private boolean suffixExtensionMatches(final MediaType item) {
+      // check for extended MIME syntax as defined in RFC 3023 : "type/*+subtype"
+      final String suffixRegex = String.format(Locale.ENGLISH, ".+\\+%s", reference.getSubtype());
+      return reference.getType().equalsIgnoreCase(item.getType())  // types match
+          && item.getSubtype().matches(suffixRegex);  // has reference subtype as suffix
     }
 
     @Override

@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.jena;
 
+import at.ac.univie.isc.asio.security.Role;
 import com.google.common.collect.ImmutableList;
 import com.hp.hpl.jena.query.Query;
 import org.junit.Test;
@@ -24,6 +25,7 @@ public class HandlerFactoryTest {
   public static final MediaType XML_GRAPH = MediaType.valueOf("application/rdf+xml");
   public static final MediaType JSON_GRAPH = MediaType.valueOf("application/rdf+json");
 
+  private final HandlerFactory factory = new HandlerFactory();
 
   @Parameterized.Parameters(name = "#{index} (type {0}) & {1} |= '{2}'")
   public static Iterable<Object[]> data() {
@@ -57,14 +59,26 @@ public class HandlerFactoryTest {
 
   @Test
   public void should_yield_appropriate_handler_for_query_type() throws Exception {
-    final JenaQueryHandler handler = HandlerFactory.select(queryType, accepted);
+    final JenaQueryHandler handler = factory.select(queryType, accepted);
     assertThat(handler, is(instanceOf(matchingHandlerType())));
   }
 
   @Test
   public void should_serialize_to_expected_format() throws Exception {
-    final JenaQueryHandler handler = HandlerFactory.select(queryType, accepted);
-    assertThat(handler.format(), is(expectedFormat));
+    final JenaQueryHandler handler = factory.select(queryType, accepted);
+    assertThat(handler.produces(), is(expectedFormat));
+  }
+
+  @Test
+  public void should_have_expected_format() throws Exception {
+    final JenaQueryHandler handler = factory.select(queryType, accepted);
+    assertThat(handler.produces(), is(expectedFormat));
+  }
+
+  @Test
+  public void should_have_read_role() throws Exception {
+    final JenaQueryHandler handler = factory.select(queryType, accepted);
+    assertThat(handler.requires(), is(Role.READ));
   }
 
   private Class<?> matchingHandlerType() {

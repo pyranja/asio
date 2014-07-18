@@ -6,7 +6,7 @@ import at.ac.univie.isc.asio.DatasetUsageException;
 import at.ac.univie.isc.asio.Language;
 import at.ac.univie.isc.asio.engine.AsyncExecutorAdapter;
 import at.ac.univie.isc.asio.engine.AsyncExecutor;
-import at.ac.univie.isc.asio.engine.Engine;
+import at.ac.univie.isc.asio.engine.ReactiveOperationExecutor;
 import at.ac.univie.isc.asio.engine.EngineSpec.Type;
 import at.ac.univie.isc.asio.engine.OperationFactory;
 import at.ac.univie.isc.asio.transport.Transfer;
@@ -53,7 +53,7 @@ public class PrototypeConnectorRegistry implements Registry {
   @Override
   public Connector find(final Language language) {
     final DatasetEngine engine = engineFor(language);
-    final Engine acceptor = new AsyncExecutorAdapter(new AsyncExecutor(transferFactory, engine), responseThreadPool);
+    final ReactiveOperationExecutor acceptor = new AsyncExecutorAdapter(new AsyncExecutor(transferFactory, engine), responseThreadPool);
     final FormatMatcher matcher = new FormatMatcher(engine.supports());
     return new CommandFactory(matcher, acceptor, create);
   }

@@ -1,31 +1,23 @@
 package at.ac.univie.isc.asio.acceptance;
 
+import at.ac.univie.isc.asio.engine.sql.Column;
+import at.ac.univie.isc.asio.engine.sql.SqlSchema;
+import at.ac.univie.isc.asio.engine.sql.Table;
 import at.ac.univie.isc.asio.tool.FunctionalTest;
-import com.google.common.base.Charsets;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
-import uk.org.ogsadai.converters.databaseschema.ColumnMetaData;
-import uk.org.ogsadai.converters.databaseschema.DatabaseSchemaMetaData;
-import uk.org.ogsadai.converters.databaseschema.RelationalSchemaParseException;
-import uk.org.ogsadai.converters.databaseschema.TableMetaData;
-import uk.org.ogsadai.converters.databaseschema.fromxml.XMLSchemaConverter;
 
-import javax.ws.rs.core.Response;
-import java.io.IOException;
+import javax.ws.rs.core.MediaType;
+import javax.xml.bind.JAXB;
+import javax.xml.namespace.QName;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.URI;
-import java.sql.Types;
-import java.util.Map;
+import java.util.List;
 
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static javax.ws.rs.core.Response.Status.Family.familyOf;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.equalToIgnoringCase;
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertThat;
 
 @Category(FunctionalTest.class)
@@ -33,7 +25,7 @@ public class SchemaTest extends AcceptanceHarness {
 
   @Override
   protected URI getTargetUrl() {
-    return AcceptanceHarness.READ_ACCESS.resolve("sql/schema");
+    return AcceptanceHarness.READ_ACCESS.resolve("meta/schema");
   }
 
   @Test
@@ -41,42 +33,44 @@ public class SchemaTest extends AcceptanceHarness {
     response = client.accept(XML).get();
     assertThat(familyOf(response.getStatus()), is(SUCCESSFUL));
     assertThat(XML.isCompatible(response.getMediaType()), is(true));
-    final DatabaseSchemaMetaData schema = parse(response);
-    verifySchema(schema);
   }
 
-  private DatabaseSchemaMetaData parse(final Response response) {
-    try (Reader text = new InputStreamReader((InputStream) response.getEntity(), Charsets.UTF_8)) {
-      final InputSource xmlSource = new InputSource(text);
-      final Document schema = uk.org.ogsadai.util.xml.XML.toDocument(xmlSource);
-      return XMLSchemaConverter.convert(schema.getDocumentElement());
-    } catch (final IOException | RelationalSchemaParseException e) {
-      throw new AssertionError("parsing schema failed", e);
-    }
+  @Test
+  public void delivers_schema_as_json() throws Exception {
+    response = client.accept(MediaType.APPLICATION_JSON_TYPE).get();
+    assertThat(familyOf(response.getStatus()), is(SUCCESSFUL));
+    assertThat(MediaType.APPLICATION_JSON_TYPE.isCompatible(response.getMediaType()), is(true));
   }
 
-  // XXX : this depends on test schema !
-  private void verifySchema(final DatabaseSchemaMetaData schema) {
-    @SuppressWarnings("unchecked")
-    final Map<String, TableMetaData> tables = schema.getTables();
+  @Test
+  public void can_parse_xml_schema() throws Exception {
+    response = client.accept(XML).get();
+    final SqlSchema schema =
+        JAXB.unmarshal(response.readEntity(InputStream.class), SqlSchema.class);
+    verify(schema);
+  }
+
+  private void verify(final SqlSchema schema) {
+    final List<Table> tables = schema.getTable();
+    // !! depends on test schema
     assertThat(tables.size(), is(5));
-    final TableMetaData table = tables.get("PERSON");
-    assertThat(table.getCatalogName(), is(equalToIgnoringCase("TEST")));
-    assertEquals(5, table.getColumnCount());
-    ColumnMetaData column = table.getColumn(1);
-    assertThat(column.getName(), is(equalToIgnoringCase("id")));
-    assertEquals(Types.INTEGER, column.getDataType());
-    column = table.getColumn(2);
-    assertThat(column.getName(), is(equalToIgnoringCase("firstname")));
-    assertEquals(Types.VARCHAR, column.getDataType());
-    column = table.getColumn(3);
-    assertThat(column.getName(), is(equalToIgnoringCase("lastname")));
-    assertEquals(Types.VARCHAR, column.getDataType());
-    column = table.getColumn(4);
-    assertThat(column.getName(), is(equalToIgnoringCase("age")));
-    assertEquals(Types.VARCHAR, column.getDataType());
-    column = table.getColumn(5);
-    assertThat(column.getName(), is(equalToIgnoringCase("postalcode")));
-    assertEquals(Types.VARCHAR, column.getDataType());
+    assertThat(tables, hasItem(PERSON_TABLE));
   }
+
+  public static final Table PERSON_TABLE = new Table()
+      .withName("PATIENT")
+      .withCatalog("TEST")
+      .withSchema("PUBLIC")
+      .withColumn(
+          new Column()
+              .withName("ID")
+              .withType(QName.valueOf("{http://www.w3.org/2001/XMLSchema-instance}long"))
+              .withSqlType("integer")
+              .withLength(10)
+          , new Column()
+              .withName("NAME")
+              .withType(QName.valueOf("{http://www.w3.org/2001/XMLSchema-instance}string"))
+              .withSqlType("varchar")
+              .withLength(255)
+      );
 }

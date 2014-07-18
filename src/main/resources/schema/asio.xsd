@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="http://isc.univie.ac.at/2014/asio"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:asio="http://isc.univie.ac.at/2014/asio"
+            xmlns:annox="http://annox.dev.java.net"
+            xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
+            jxb:version="2.1" jxb:extensionBindingPrefixes="annox"
+            elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+  <xsd:annotation>
+    <xsd:appinfo>
+      <jxb:schemaBindings>
+        <jxb:package name="at.ac.univie.isc.asio.engine.sql"/>
+      </jxb:schemaBindings>
+    </xsd:appinfo>
+  </xsd:annotation>
+
+  <!-- SQL results format, derived from the SPARQL results format -->
+  <xsd:element name="sql">
+    <xsd:complexType>
+      <xsd:annotation>
+        <xsd:documentation>
+          Results of a SQL query execution. Either a result set with column definitions in the head
+          followed by the result rows, or an update part with number of affected rows.
+        </xsd:documentation>
+        <xsd:appinfo>
+          <jxb:class name="SqlResult"/>
+          <annox:annotate>
+            <annox:annotate annox:class="javax.xml.bind.annotation.XmlRootElement" name="sql" />
+          </annox:annotate>
+        </xsd:appinfo>
+      </xsd:annotation>
+      <xsd:sequence>
+        <xsd:element ref="asio:head"/>
+        <xsd:choice>
+          <xsd:element ref="asio:update"/>
+          <xsd:element ref="asio:rows"/>
+        </xsd:choice>
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
+  <!-- executed statement and meta data on the results -->
+  <xsd:element name="head">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element minOccurs="0" maxOccurs="unbounded" ref="asio:column" />
+      </xsd:sequence>
+      <xsd:attribute name="statement" use="required" type="xsd:string"/>
+    </xsd:complexType>
+  </xsd:element>
+
+  <!-- affected rows of a DML or DDL statement -->
+  <xsd:element name="update">
+    <xsd:complexType>
+      <xsd:attribute name="affected" use="required" type="xsd:long"/>
+    </xsd:complexType>
+  </xsd:element>
+
+  <!-- result rows of a SELECT statement -->
+  <xsd:element name="rows"/>
+
+  <!-- SQL database schema -->
+  <xsd:element name="schema">
+    <xsd:complexType>
+      <xsd:annotation>
+        <xsd:documentation>
+          Table schema of a relational database.
+        </xsd:documentation>
+        <xsd:appinfo>
+          <jxb:class name="SqlSchema"/>
+          <annox:annotate>
+            <annox:annotate annox:class="javax.xml.bind.annotation.XmlRootElement" name="schema" />
+          </annox:annotate>
+        </xsd:appinfo>
+      </xsd:annotation>
+      <xsd:sequence>
+        <xsd:element minOccurs="0" maxOccurs="unbounded" ref="asio:table" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
+  <!-- a single table -->
+  <xsd:element name="table">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element minOccurs="0" maxOccurs="unbounded" ref="asio:column" />
+      </xsd:sequence>
+      <xsd:attribute name="name" use="required" type="xsd:string" />
+      <xsd:attribute name="schema" use="optional" type="xsd:string" />
+      <xsd:attribute name="catalog" use="optional" type="xsd:string" />
+    </xsd:complexType>
+  </xsd:element>
+
+  <!-- a single column -->
+  <xsd:element name="column">
+    <xsd:complexType>
+      <xsd:attribute name="name" type="xsd:string" use="required" />
+      <xsd:attribute name="type" type="xsd:QName" use="required" />
+      <xsd:attribute name="sqlType" type="xsd:string" use="optional" />
+      <xsd:attribute name="length" type="xsd:int" use="optional" />
+      <xsd:attribute name="nullable" type="xsd:boolean" use="optional" />
+    </xsd:complexType>
+  </xsd:element>
+</xsd:schema>

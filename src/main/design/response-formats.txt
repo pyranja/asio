@@ -1,0 +1,60 @@
+sparql-results+xml
+
+<sparql xmlns="http://www.w3.org/2005/sparql-results#">
+  <head />
+  <results /> || <boolean />
+</sparql>
+
+// SQL SELECT responses
+
+application/sql-results+xml
+
+<sql xmlns="http://isc.univie.ac.at/2013/asio">
+  <head statement="SQL_QUERY">
+    <column name="NAME" type="XSD:TYPE" />
+    ...
+  </head>
+  <rows>
+    <row>
+      <cell>VALUE</cell>
+      ...
+    </row>
+    ...
+  </rows>
+</sql>
+
+application/sql-results+json
+
+{ "head" :  {  "statement" : "SQL_QUERY", "columns" : [ { "name" : "NAME", "type" : "XSD:TYPE" }, ... ] }
+  , "rows" : [ [ VALUE, ... ], ... ] }
+
+// SQL UPDATE responses
+
+application/sql-results+xml
+
+<sql xmlns="http://isc.univie.ac.at/2013/asio">
+  <head statement="SQL_UPDATE" />
+  <update affected="ROW_COUNT" />
+</sql>
+
+application/sql-results+json
+
+{ "head" : { "statement" : "SQL_UPDATE" }
+  , "update" : { "affected" : "ROW_COUNT" } }
+
+text/csv -> update
+
+statement,affected
+"SQL_UPDATE",ROW_COUNT
+
+// SQL SCHEMA responses
+
+application/sql-schema+xml
+
+<schema /* global properties e.g. service url / name / idk ? */>
+  <table name="TABLE_NAME" schema="SCHEMA_NAME" catalog="CATALOG_NAME">
+    <column name="NAME" type="XSD:TYPE" sqlType="SQL:TYPE" length="" nullable="" default="" />
+    ...
+  </table>
+  ...
+</schema>

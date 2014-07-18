@@ -12,9 +12,9 @@ public class OperationAdapter implements Command {
   private final MediaType format;
   // delegates
   private final DatasetOperation inner;
-  private final Engine backend;
+  private final ReactiveOperationExecutor backend;
 
-  public OperationAdapter(final MediaType format, final DatasetOperation inner, final Engine backend) {
+  public OperationAdapter(final MediaType format, final DatasetOperation inner, final ReactiveOperationExecutor backend) {
     this.format = format;
     this.inner = inner;
     this.backend = backend;

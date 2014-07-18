@@ -1,144 +1,119 @@
 package at.ac.univie.isc.asio.jena;
 
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableMap;
+import at.ac.univie.isc.asio.engine.TypeMatchingResolver;
+import com.google.common.base.Supplier;
+import com.hp.hpl.jena.n3.N3TurtleJenaWriter;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.rdf.model.RDFWriter;
-import com.hp.hpl.jena.rdf.model.RDFWriterF;
-import com.hp.hpl.jena.rdf.model.impl.RDFWriterFImpl;
 import com.hp.hpl.jena.sparql.resultset.CSVOutput;
 import com.hp.hpl.jena.sparql.resultset.JSONOutput;
 import com.hp.hpl.jena.sparql.resultset.OutputFormatter;
 import com.hp.hpl.jena.sparql.resultset.XMLOutput;
-import org.openjena.riot.Lang;
+import com.hp.hpl.jena.xmloutput.impl.Basic;
+import org.openjena.riot.system.JenaWriterRdfJson;
 
-import javax.annotation.Nullable;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
-import java.util.Map;
 
-final class HandlerFactory<SERIALIZER> {
+final class HandlerFactory {
+  // result set formats
+  public static final MediaType RESULTS_XML_TYPE =
+      MediaType.valueOf("application/sparql-results+xml");
+  public static final MediaType RESULTS_JSON_TYPE =
+      MediaType.valueOf("application/sparql-results+json");
+  public static final MediaType CSV_TYPE = MediaType.valueOf("text/csv");
+  // graph formats
+  public static final MediaType GRAPH_XML_TYPE = MediaType.valueOf("application/rdf+xml");
+  public static final MediaType GRAPH_JSON_TYPE = MediaType.valueOf("application/rdf+json");
+  public static final MediaType GRAPH_TURTLE_TYPE = MediaType.valueOf("text/turtle");
 
-  public static JenaQueryHandler select(final int queryType, final List<MediaType> acceptable) {
-    final HandlerFactory factory = FACTORIES.get(queryType);
-    if (factory == null) {
-      throw new JenaConnector.UnknownQueryType();
-    } else {
-      return factory.select(acceptable);
+  private final TypeMatchingResolver<OutputFormatter> resultFormatterRegistry;
+  private final TypeMatchingResolver<RDFWriter> graphFormatterRegistry;
+
+  public HandlerFactory() {
+    resultFormatterRegistry = TypeMatchingResolver.<OutputFormatter>builder()
+        .register(RESULTS_XML_TYPE, new Supplier<OutputFormatter>() {
+          @Override
+          public OutputFormatter get() {
+            return new XMLOutput();
+          }
+        })
+        .alias(MediaType.APPLICATION_XML_TYPE)
+        .register(RESULTS_JSON_TYPE, new Supplier<OutputFormatter>() {
+          @Override
+          public OutputFormatter get() {
+            return new JSONOutput();
+          }
+        })
+        .alias(MediaType.APPLICATION_JSON_TYPE)
+        .register(CSV_TYPE, new Supplier<OutputFormatter>() {
+          @Override
+          public OutputFormatter get() {
+            return new CSVOutput();
+          }
+        })
+        .make();
+    graphFormatterRegistry = TypeMatchingResolver.<RDFWriter>builder()
+        .register(GRAPH_XML_TYPE, new Supplier<RDFWriter>() {
+          @Override
+          public RDFWriter get() {
+            return new Basic();
+          }
+        })
+        .alias(MediaType.APPLICATION_XML_TYPE)
+        .register(GRAPH_JSON_TYPE, new Supplier<RDFWriter>() {
+          @Override
+          public RDFWriter get() {
+            return new JenaWriterRdfJson();
+          }
+        })
+        .alias(MediaType.APPLICATION_JSON_TYPE)
+        .register(GRAPH_TURTLE_TYPE, new Supplier<RDFWriter>() {
+          @Override
+          public RDFWriter get() {
+            return new N3TurtleJenaWriter();
+          }
+        })
+        .alias(MediaType.TEXT_PLAIN_TYPE)
+        .make();
+  }
+
+  public JenaQueryHandler select(final int queryType, final List<MediaType> acceptable) {
+    switch (queryType) {
+      case Query.QueryTypeAsk:
+        return handleAsk(acceptable);
+      case Query.QueryTypeSelect:
+        return handleSelect(acceptable);
+      case Query.QueryTypeConstruct:
+        return handleConstruct(acceptable);
+      case Query.QueryTypeDescribe:
+        return handleDescribe(acceptable);
+      default:
+        throw new JenaEngine.UnknownQueryType();
     }
   }
 
-  private final Map<MediaType, SERIALIZER> mappings;
-  private final Function<SERIALIZER, ? extends JenaQueryHandler> provider;
-
-  HandlerFactory(final Map<MediaType, SERIALIZER> mappings, final Function<SERIALIZER, ? extends JenaQueryHandler> provider) {
-    this.mappings = mappings;
-    this.provider = provider;
+  private AskHandler handleAsk(final List<MediaType> acceptable) {
+    final TypeMatchingResolver.Selection<OutputFormatter> selection =
+        resultFormatterRegistry.select(acceptable);
+    return new AskHandler(selection.value(), selection.type());
   }
 
-  public final JenaQueryHandler select(final List<MediaType> accepted) {
-    for (MediaType candidate : accepted) {
-      for (Map.Entry<MediaType, SERIALIZER> mapping : this.mappings.entrySet()) {
-        if (mapping.getKey().isCompatible(candidate)) {
-          return provider.apply(mapping.getValue());
-        }
-      }
-    }
-    throw new JenaConnector.NoSupportedFormat(accepted, mappings.keySet());
+  private JenaQueryHandler handleSelect(final List<MediaType> acceptable) {
+    final TypeMatchingResolver.Selection<OutputFormatter> selection =
+        resultFormatterRegistry.select(acceptable);
+    return new SelectHandler(selection.value(), selection.type());
   }
 
-  // ======================== HACK : add N-TRIPLE writer name alias to support Lang enum
-  static {
-    // FIXME : move to spring config initialization ?
-    final RDFWriterF writerFactory = new RDFWriterFImpl();
-    final RDFWriter nTripleWriter = writerFactory.getWriter("N-TRIPLE");
-    RDFWriterFImpl.setBaseWriterClassName(
-        Lang.NTRIPLES.getName(),
-        nTripleWriter.getClass().getName());
+  private JenaQueryHandler handleDescribe(final List<MediaType> acceptable) {
+    final TypeMatchingResolver.Selection<RDFWriter> selection =
+        graphFormatterRegistry.select(acceptable);
+    return new DescribeHandler(selection.value(), selection.type());
   }
 
-  // ======================== MIME -> HandlerParameter mappings
-  // !! order matters - mimes higher up take precedence, e.g. when matching */* !!
-
-  private static final Map<MediaType, Lang> GRAPH_FORMAT_MAPPING = ImmutableMap
-      .<MediaType, Lang>builder()
-      .put(MediaType.APPLICATION_XML_TYPE, Lang.RDFXML) // default
-      .put(MediaType.TEXT_XML_TYPE, Lang.RDFXML)
-      .put(MediaType.valueOf(Lang.RDFXML.getContentType()), Lang.RDFXML)
-      .put(MediaType.APPLICATION_JSON_TYPE, Lang.RDFJSON)
-      .put(MediaType.valueOf(Lang.RDFJSON.getContentType()), Lang.RDFJSON)
-      .put(MediaType.valueOf(Lang.TURTLE.getContentType()), Lang.TURTLE)
-      .put(MediaType.TEXT_PLAIN_TYPE, Lang.NTRIPLES)
-      .build();
-
-  public static final FormatterAndMediaType XML_RESULTS_FORMATTER =
-      new FormatterAndMediaType(new XMLOutput(), MediaType.valueOf("application/sparql-results+xml"));
-  public static final FormatterAndMediaType JSON_RESULTS_FORMATTER =
-      new FormatterAndMediaType(new JSONOutput(), MediaType.valueOf("application/sparql-results+json"));
-  public static final FormatterAndMediaType CSV_RESULTS_FORMATTER =
-      new FormatterAndMediaType(new CSVOutput(), MediaType.valueOf("text/csv"));
-
-  private static final Map<MediaType, FormatterAndMediaType> RESULT_FORMAT_MAPPING = ImmutableMap
-      .<MediaType, FormatterAndMediaType>builder()
-      .put(MediaType.APPLICATION_XML_TYPE, XML_RESULTS_FORMATTER) // default
-      .put(MediaType.TEXT_XML_TYPE, XML_RESULTS_FORMATTER)
-      .put(XML_RESULTS_FORMATTER.format, XML_RESULTS_FORMATTER)
-      .put(MediaType.APPLICATION_JSON_TYPE, JSON_RESULTS_FORMATTER)
-      .put(JSON_RESULTS_FORMATTER.format, JSON_RESULTS_FORMATTER)
-      .put(CSV_RESULTS_FORMATTER.format, CSV_RESULTS_FORMATTER)
-      .build();
-
-  // ======================== Handler constructor functions
-
-  private static final Function<Lang, ConstructHandler> CONSTRUCT_PROVIDER =
-      new Function<Lang, ConstructHandler>() {
-        @Nullable
-        @Override
-        public ConstructHandler apply(@Nullable final Lang input) {
-          return new ConstructHandler(input);
-        }
-      };
-
-  private static final Function<Lang, DescribeHandler> DESCRIBE_PROVIDER =
-      new Function<Lang, DescribeHandler>() {
-        @Nullable
-        @Override
-        public DescribeHandler apply(@Nullable final Lang input) {
-          return new DescribeHandler(input);
-        }
-      };
-
-  private static final Function<FormatterAndMediaType, SelectHandler> SELECT_PROVIDER =
-      new Function<FormatterAndMediaType, SelectHandler>() {
-        @Override
-        public SelectHandler apply(final FormatterAndMediaType input) {
-          return new SelectHandler(input.formatter, input.format);
-        }
-      };
-
-  private static final Function<FormatterAndMediaType, AskHandler> ASK_PROVIDER =
-      new Function<FormatterAndMediaType, AskHandler>() {
-        @Override
-        public AskHandler apply(final FormatterAndMediaType input) {
-          return new AskHandler(input.formatter, input.format);
-        }
-      };
-
-  private static final Map<Integer, HandlerFactory> FACTORIES = ImmutableMap
-      .<Integer, HandlerFactory>builder()
-      .put(Query.QueryTypeSelect, new HandlerFactory(RESULT_FORMAT_MAPPING, SELECT_PROVIDER))
-      .put(Query.QueryTypeAsk, new HandlerFactory(RESULT_FORMAT_MAPPING, ASK_PROVIDER))
-      .put(Query.QueryTypeConstruct, new HandlerFactory(GRAPH_FORMAT_MAPPING, CONSTRUCT_PROVIDER))
-      .put(Query.QueryTypeDescribe, new HandlerFactory(GRAPH_FORMAT_MAPPING, DESCRIBE_PROVIDER))
-      .build();
-
-  /** struct */
-  private static final class FormatterAndMediaType {
-    public final OutputFormatter formatter;
-    public final MediaType format;
-    private FormatterAndMediaType(final OutputFormatter formatter, final MediaType format) {
-      this.formatter = formatter;
-      this.format = format;
-    }
+  private JenaQueryHandler handleConstruct(final List<MediaType> acceptable) {
+    final TypeMatchingResolver.Selection<RDFWriter> selection =
+        graphFormatterRegistry.select(acceptable);
+    return new ConstructHandler(selection.value(), selection.type());
   }
 }

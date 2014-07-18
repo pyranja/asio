@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
+import javax.xml.stream.XMLStreamWriter;
 
 /**
  * Utility methods for resource clean up.
@@ -44,6 +45,18 @@ public final class Resources {
       }
     } else {
       log.warn(ERROR_MSG, response, "was null");
+    }
+  }
+
+  public static void close(final XMLStreamWriter that) {
+    if (that != null) {
+      try {
+        that.close();
+      } catch (final Exception e) {
+        log.warn(ERROR_MSG, that, e.getMessage(), e);
+      }
+    } else {
+      log.warn(ERROR_MSG, that, "was null");
     }
   }
 

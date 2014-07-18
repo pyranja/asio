@@ -2,6 +2,7 @@ package at.ac.univie.isc.asio.protocol;
 
 import at.ac.univie.isc.asio.*;
 import at.ac.univie.isc.asio.config.TimeoutSpec;
+import at.ac.univie.isc.asio.metadata.MetadataResource;
 import at.ac.univie.isc.asio.security.Permission;
 import at.ac.univie.isc.asio.security.Role;
 import com.google.common.base.Throwables;
@@ -12,6 +13,7 @@ import rx.Subscription;
 import javax.ws.rs.*;
 import javax.ws.rs.container.*;
 import javax.ws.rs.core.*;
+import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
 @Path("/{permission}/{language}")
@@ -75,12 +77,17 @@ public class ProtocolResource {
 
   @Path("/schema")
   @GET
-  public void serveSchema(@Suspended final AsyncResponse async) {
-    final Parameters handler = Parameters
-        .builder(language)
-        .single("schema", "schema")
-        .build(headers);
-    process(async, handler);
+  @Deprecated // use MetadataResource#schema directly.
+  public void serveSchema(@Suspended final AsyncResponse async, @Context final UriInfo uri,
+                          @PathParam("permission") final String permission) {
+    final URI redirect =
+        uri.getBaseUriBuilder()
+            .path(MetadataResource.class)
+            .path(MetadataResource.class, "schema")
+            .build(permission);
+    async.resume(Response
+        .status(Response.Status.MOVED_PERMANENTLY)
+        .header(HttpHeaders.LOCATION, redirect).build());
   }
 
   private void process(final AsyncResponse async, final Parameters params) {
@@ -90,13 +97,13 @@ public class ProtocolResource {
       params.failIfNotValid();
       final Command executable = registry.createCommand(params, security.getUserPrincipal());
       checkAuthorization(executable.requiredRole());
-      final Subscription subscription = executable.observe().subscribe(
-          CommandObserver.bridgeTo(async).send(Response.ok().type(executable.format()))
-      );
+      final Subscription subscription = executable
+          .observe()
+          .subscribe(CommandObserver.bridgeTo(async));
       final SubscriptionCleaner cleaner = new SubscriptionCleaner(subscription);
       async.register(cleaner);
       async.setTimeoutHandler(cleaner);
-      async.setTimeout(timeout.getAs(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS);
+      async.setTimeout(timeout.getAs(TimeUnit.NANOSECONDS, 0L), TimeUnit.NANOSECONDS);
     } catch (final Throwable t) {
       resumeWithError(async, t);
     }

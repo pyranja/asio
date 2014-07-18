@@ -1,15 +1,15 @@
 package at.ac.univie.isc.asio.acceptance;
 
+import at.ac.univie.isc.asio.sql.H2Provider;
+import at.ac.univie.isc.asio.sql.KeyedRow;
+import at.ac.univie.isc.asio.sql.ResultSetToMap;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collections;
 import java.util.Map;
-
-import at.ac.univie.isc.asio.sql.ResultSetToMap;
-import at.ac.univie.isc.asio.sql.H2Provider;
-import at.ac.univie.isc.asio.sql.KeyedRow;
 
 /**
  * Execute a query against the integration database and hold the result data as an in-memory map to
@@ -37,7 +37,7 @@ public class ReferenceQuery {
   private final Map<String, KeyedRow> reference;
   private final String query;
 
-  private ReferenceQuery(final Connection conn, final String query, final String keyColumn) {
+  public ReferenceQuery(final Connection conn, final String query, final String keyColumn) {
     super();
     this.query = query;
     final ResultSetToMap converter = new ResultSetToMap();

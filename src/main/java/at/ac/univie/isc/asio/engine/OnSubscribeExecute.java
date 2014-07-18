@@ -1,8 +1,7 @@
-package at.ac.univie.isc.asio.jena;
+package at.ac.univie.isc.asio.engine;
 
 import at.ac.univie.isc.asio.Command;
 import at.ac.univie.isc.asio.tool.Resources;
-import com.hp.hpl.jena.query.QueryExecution;
 import rx.Observable;
 import rx.Subscriber;
 import rx.functions.Action0;
@@ -10,14 +9,17 @@ import rx.subscriptions.Subscriptions;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.NotThreadSafe;
+import javax.ws.rs.core.MediaType;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.Objects.requireNonNull;
 
 /**
- * Turn a {@code QueryExecution} into a reactive sequence yielding the
- * {@link at.ac.univie.isc.asio.Command.Results results} on completion or an error.
+ * Turn an {@link Invocation} into a reactive
+ * sequence yielding the {@link at.ac.univie.isc.asio.Command.Results results} on completion or an
+ * error.
  * <p>A single execution may only be subscribed to once. Subsequent subscriptions will fail
  * immediately.</p>
  * <p>To properly clean up utilized resources, the results <strong>must</strong>
@@ -25,12 +27,9 @@ import static java.util.Objects.requireNonNull;
  */
 @NotThreadSafe
 @Nonnull
-final class OnSubscribeExecuteQuery implements Observable.OnSubscribe<Command.Results> {
+public class OnSubscribeExecute implements Observable.OnSubscribe<Command.Results> {
 
-  private final QueryExecution query;
-  private final JenaQueryHandler handler;
-
-  private static enum State { EXECUTE, STREAM, COMPLETE, ABORT, DONE }
+  private static enum State {EXECUTE, STREAM, COMPLETE, ABORT, DONE}
   /* null      => initial - not started
    * EXECUTE   => query is running
    * STREAM    => results are ready to be/are being serialized
@@ -39,10 +38,10 @@ final class OnSubscribeExecuteQuery implements Observable.OnSubscribe<Command.Re
    * DONE      => resources have been released
    */
   private final AtomicReference<State> state;
+  private final Invocation delegate;
 
-  public OnSubscribeExecuteQuery(final QueryExecution query, final JenaQueryHandler handler) {
-    this.query = requireNonNull(query);
-    this.handler = requireNonNull(handler);
+  public OnSubscribeExecute(final Invocation delegate) {
+    this.delegate = requireNonNull(delegate);
     this.state = new AtomicReference<>();
   }
 
@@ -75,21 +74,26 @@ final class OnSubscribeExecuteQuery implements Observable.OnSubscribe<Command.Re
 
   private void execute() {
     if (state.get() != State.EXECUTE) { return; }
-    handler.invoke(query);
+    delegate.execute();
   }
 
   private void stream(final Subscriber<? super Command.Results> subscriber) {
     if (state.get() != State.EXECUTE) { return; }
     subscriber.onNext(new Command.Results() {
       @Override
-      public void write(final OutputStream output) {
+      public void write(final OutputStream output) throws IOException {
         state.compareAndSet(State.EXECUTE, State.STREAM);
         try {
-          handler.serialize(output);
+          delegate.write(output);
           state.compareAndSet(State.STREAM, State.COMPLETE);
         } finally {
           Resources.close(this);
         }
+      }
+
+      @Override
+      public MediaType format() {
+        return delegate.produces();
       }
 
       @Override
@@ -106,14 +110,13 @@ final class OnSubscribeExecuteQuery implements Observable.OnSubscribe<Command.Re
 
   private void cancel(State expectedPhase) {
     if (state.compareAndSet(expectedPhase, State.ABORT)) {
-      query.abort();
+      delegate.cancel();
     }
   }
 
   private void cleanUp() {
     if (state.getAndSet(State.DONE) != State.DONE) {
-      query.close();
+      delegate.close();
     }
   }
-
 }

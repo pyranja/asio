@@ -13,6 +13,7 @@ import rx.schedulers.Schedulers;
 
 import javax.annotation.Nonnull;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -21,7 +22,7 @@ import java.util.concurrent.ExecutorService;
 import static at.ac.univie.isc.asio.tool.Reactive.listeningFor;
 import static java.util.Objects.requireNonNull;
 
-public class AsyncExecutorAdapter implements Engine {
+public class AsyncExecutorAdapter implements ReactiveOperationExecutor {
 
   private final AsyncExecutor adapted;
   private final Scheduler scheduler;
@@ -47,6 +48,11 @@ public class AsyncExecutorAdapter implements Engine {
                   try (final InputStream source = result.getInput()) {
                     ByteStreams.copy(source, output);
                   }
+                }
+
+                @Override
+                public MediaType format() {
+                  return MediaType.valueOf(result.mediaType().toString());
                 }
 
                 @Override

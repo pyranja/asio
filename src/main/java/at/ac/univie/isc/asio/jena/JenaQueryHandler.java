@@ -1,5 +1,7 @@
 package at.ac.univie.isc.asio.jena;
 
+import at.ac.univie.isc.asio.engine.Invocation;
+import at.ac.univie.isc.asio.security.Role;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.hp.hpl.jena.query.QueryExecution;
@@ -14,29 +16,24 @@ import static java.util.Objects.requireNonNull;
 /**
  * Handle general Jena query execution and serialization, independent from the actual query type
  * ({@code SELECT}, {@code ASK}, {@code DESCRIBE} or {@code CONSTRUCT}). The query must be
- * {@link at.ac.univie.isc.asio.jena.JenaQueryHandler#invoke invoked} exactly once, then the results
+ * {@link JenaQueryHandler#execute()}  invoked} exactly once, then the results
  * are ready to be
- * {@link at.ac.univie.isc.asio.jena.JenaQueryHandler#serialize(java.io.OutputStream) serialized}.
+ * {@link at.ac.univie.isc.asio.jena.JenaQueryHandler#write(java.io.OutputStream)}  serialized}.
  * Serialization <strong>MAY</strong> consume the result data.
  * <p>Any error during execution or serialization is rethrown.</p>
  */
-public interface JenaQueryHandler {
+public interface JenaQueryHandler extends Invocation {
   /**
-   * Invoke the given query synchronously.
-   * @param execution query descriptor
+   * This must be called before using a Handler.
+   * @param query actual query instance to be executed
+   * @return initialized handler
    */
-  void invoke(QueryExecution execution);
+  JenaQueryHandler init(QueryExecution query);
 
   /**
-   * Write the results of the executed query to the given byte stream.
-   * @param sink byte stream where results will be written
+   * @return command to be executed
    */
-  void serialize(OutputStream sink);
-
-  /**
-   * @return MIME type of the serialized data
-   */
-  MediaType format();
+  QueryExecution query();
 
   /**
    * Manage execution state and enforce invariants.
@@ -46,6 +43,7 @@ public interface JenaQueryHandler {
   @Nonnull
   abstract class BaseQueryHandler<RESULT> implements JenaQueryHandler {
     private final MediaType format;
+    private QueryExecution query;
     private RESULT result;
 
     protected BaseQueryHandler(final MediaType format) {
@@ -53,22 +51,38 @@ public interface JenaQueryHandler {
     }
 
     @Override
-    public final MediaType format() {
+    public JenaQueryHandler init(final QueryExecution query) {
+      this.query = requireNonNull(query);
+      return this;
+    }
+
+    @Override
+    public QueryExecution query() {
+      return query;
+    }
+
+    @Override
+    public Role requires() {
+      return Role.READ;
+    }
+
+    @Override
+    public final MediaType produces() {
       return format;
     }
 
     @Override
-    public final void invoke(final QueryExecution execution) {
-      requireNonNull(execution);
+    public final void execute() {
+      assert query != null : "not initialized";
       Preconditions.checkState(result == null, "query invoked twice");
-      this.result = doInvoke(execution);
+      this.result = doInvoke(query);
       assert result != null : "implementation produced null result";
     }
 
     protected abstract RESULT doInvoke(QueryExecution execution);
 
     @Override
-    public final void serialize(final OutputStream sink) {
+    public final void write(final OutputStream sink) {
       requireNonNull(sink);
       Preconditions.checkState(result != null, "no query results captured");
       doSerialize(sink, result);
@@ -77,9 +91,20 @@ public interface JenaQueryHandler {
     protected abstract void doSerialize(OutputStream sink, RESULT data);
 
     @Override
+    public final void cancel() {
+      query.abort();
+    }
+
+    @Override
+    public final void close() {
+      query.close();
+    }
+
+    @Override
     public String toString() {
       return Objects.toStringHelper(this)
           .add("format", format)
+          .add("query", query)
           .toString();
     }
   }

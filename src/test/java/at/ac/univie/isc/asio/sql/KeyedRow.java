@@ -2,8 +2,6 @@ package at.ac.univie.isc.asio.sql;
 
 import java.util.List;
 
-import com.google.common.collect.ImmutableList;
-
 /**
  * DTO (key, [columns])
  * 
@@ -17,7 +15,7 @@ public class KeyedRow {
   public KeyedRow(final String key, final List<String> columns) {
     super();
     this.key = key;
-    this.columns = ImmutableList.copyOf(columns);
+    this.columns = columns;
   }
 
   /**

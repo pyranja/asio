@@ -1,5 +1,7 @@
 package at.ac.univie.isc.asio.tool;
 
+import com.google.common.base.Charsets;
+
 import java.io.ByteArrayInputStream;
 import java.util.Random;
 
@@ -21,4 +23,8 @@ public final class Payload {
     return new ByteArrayInputStream(randomWithLength(size));
   }
 
+  /** convert raw UTF_8 encoded data back to String */
+  public static String asString(final byte[] data) {
+    return new String(data, Charsets.UTF_8);
+  }
 }

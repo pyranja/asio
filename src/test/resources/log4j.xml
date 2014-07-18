@@ -41,6 +41,14 @@
     <level value="off" />
   </logger>
 
+  <logger name="org.jooq">
+    <level value="off" />
+  </logger>
+
+  <logger name="org.dbunit">
+    <level value="off"/>
+  </logger>
+
   <!-- disable logging for quiet testing -->
   <root>
     <level value="off"/>

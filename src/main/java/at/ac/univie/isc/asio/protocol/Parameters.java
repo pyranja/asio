@@ -36,6 +36,12 @@ public final class Parameters {
     }
   }
 
+  public static final class IllegalParameter extends DatasetUsageException {
+    public IllegalParameter(final String key, final String reason) {
+      super("illegal parameter "+ key +" found : "+ reason);
+    }
+  }
+
   private final ListMultimap<String, String> parameters;
   private final List<MediaType> acceptableTypes;
   private final RuntimeException cause;
@@ -67,6 +73,7 @@ public final class Parameters {
    * @return the single value of the parameter
    * @throws at.ac.univie.isc.asio.protocol.Parameters.MissingParameter if no value is given
    * @throws at.ac.univie.isc.asio.protocol.Parameters.DuplicatedParameter if multiple values are given
+   * @throws at.ac.univie.isc.asio.protocol.Parameters.IllegalParameter if found value is an empty string
    */
   public String require(final String key) {
     failIfNotValid();
@@ -76,7 +83,11 @@ public final class Parameters {
     } else if (values.size() > 1) {
       throw new DuplicatedParameter(key);
     } else {
-      return Iterables.getOnlyElement(values);
+      final String value = Iterables.getOnlyElement(values);
+      if (value.trim().isEmpty()) {
+        throw new IllegalParameter(key, "empty value");
+      }
+      return value;
     }
   }
 

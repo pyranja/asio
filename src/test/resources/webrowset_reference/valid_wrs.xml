@@ -10,7 +10,7 @@
     <!-- invalid syntax but sets to null instead of empty string -->
 		<concurrency>1008</concurrency> <!-- == CONCUR_UPDATABLE | fix after parsing ? -->
     <!-- must be updatable to allow modification while parsing -->
-		<datasource/><!-- empty ok : gives null -->
+		<datasource><!-- <null /> --></datasource><!-- must not be empty : <null /> or with content -->
 		<escape-processing>true</escape-processing>
 		<fetch-direction>1000</fetch-direction><!-- 1001 == REVERSE -->
 		<fetch-size>0</fetch-size>
