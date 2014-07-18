@@ -9,7 +9,6 @@ import at.ac.univie.isc.asio.protocol.Parameters;
 import at.ac.univie.isc.asio.security.Role;
 import at.ac.univie.isc.asio.security.Token;
 import at.ac.univie.isc.asio.tool.CommandShortener;
-import at.ac.univie.isc.asio.transport.ObservableStream;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
 import com.hp.hpl.jena.query.*;
@@ -121,7 +120,7 @@ public final class JenaConnector implements LanguageConnector {
     }
 
     @Override
-    public Observable<ObservableStream> observe() {
+    public Observable<Results> observe() {
       final OnSubscribeExecuteQuery query = new OnSubscribeExecuteQuery(this.execution, handler);
       return Observable.create(query).subscribeOn(scheduler);
     }

@@ -10,7 +10,7 @@ public interface OperatorCallback {
     /** results of execution were serialized in the required format */
     SERIALIZATION,
     /** serialized results were transported to the recipient */
-    DELIVERY;
+    DELIVERY
   }
 
   void completed(Phase completed);

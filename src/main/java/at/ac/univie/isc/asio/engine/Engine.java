@@ -1,7 +1,7 @@
 package at.ac.univie.isc.asio.engine;
 
+import at.ac.univie.isc.asio.Command;
 import at.ac.univie.isc.asio.DatasetOperation;
-import at.ac.univie.isc.asio.transport.ObservableStream;
 import rx.Observable;
 
 /**
@@ -25,5 +25,5 @@ public interface Engine {
    * {@code Observable} as soon as streaming of result data may begin.
    * Once subscribed, the inner one will emit byte[] chunks until all result data has been processed.
    */
-  Observable<ObservableStream> execute(DatasetOperation operation);
+  Observable<Command.Results> execute(DatasetOperation operation);
 }

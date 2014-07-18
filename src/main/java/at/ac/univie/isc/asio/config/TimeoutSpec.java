@@ -21,6 +21,7 @@ public class TimeoutSpec {
     }
   };
 
+  @SuppressWarnings("SameReturnValue")
   public static TimeoutSpec undefined() {
     return UNDEFINED;
   }

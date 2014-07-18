@@ -6,7 +6,6 @@ import at.ac.univie.isc.asio.jaxrs.DatasetExceptionMapper;
 import at.ac.univie.isc.asio.jaxrs.LogContextFilter;
 import at.ac.univie.isc.asio.security.VphAuthFilter;
 import at.ac.univie.isc.asio.security.VphTokenExtractor;
-import at.ac.univie.isc.asio.transport.ObservableStreamBodyWriter;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.apache.cxf.jaxrs.provider.json.JSONProvider;
@@ -53,7 +52,6 @@ public class JaxrsSpec extends Application {
     json.setNamespaceMap(ImmutableMap.of("http://isc.univie.ac.at/2014/asio/metadata", "asio"));
     return ImmutableSet.of(
         new DatasetExceptionMapper(),
-        new ObservableStreamBodyWriter(),
         json);
   }
 

@@ -1,9 +1,6 @@
 package at.ac.univie.isc.asio.protocol;
 
-import at.ac.univie.isc.asio.Command;
-import at.ac.univie.isc.asio.Connector;
-import at.ac.univie.isc.asio.DatasetException;
-import at.ac.univie.isc.asio.Language;
+import at.ac.univie.isc.asio.*;
 import at.ac.univie.isc.asio.config.TimeoutSpec;
 import at.ac.univie.isc.asio.security.Permission;
 import at.ac.univie.isc.asio.security.Role;
@@ -13,9 +10,7 @@ import org.slf4j.LoggerFactory;
 import rx.Subscription;
 
 import javax.ws.rs.*;
-import javax.ws.rs.container.AsyncResponse;
-import javax.ws.rs.container.Suspended;
-import javax.ws.rs.container.TimeoutHandler;
+import javax.ws.rs.container.*;
 import javax.ws.rs.core.*;
 import java.util.concurrent.TimeUnit;
 
@@ -23,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 public class ProtocolResource {
   private static final Logger log = LoggerFactory.getLogger(ProtocolResource.class);
 
+  @SuppressWarnings("UnusedDeclaration")
   @Deprecated
   public ProtocolResource() {
     throw new AssertionError("attempt to use non-managed resource");
@@ -89,15 +85,18 @@ public class ProtocolResource {
 
   private void process(final AsyncResponse async, final Parameters params) {
     try {
-      log.debug("request parameters : {}", params);
+      log.debug("incoming request\n {}\n Headers   {}",
+          params, headers.getRequestHeaders());
       params.failIfNotValid();
       final Command executable = registry.createCommand(params, security.getUserPrincipal());
       checkAuthorization(executable.requiredRole());
       final Subscription subscription = executable.observe().subscribe(
-          OperationObserver.bridgeTo(async).send(Response.ok().type(executable.format()))
+          CommandObserver.bridgeTo(async).send(Response.ok().type(executable.format()))
       );
+      final SubscriptionCleaner cleaner = new SubscriptionCleaner(subscription);
+      async.register(cleaner);
+      async.setTimeoutHandler(cleaner);
       async.setTimeout(timeout.getAs(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS);
-      async.setTimeoutHandler(new UnsubscribeOnTimeout(subscription));
     } catch (final Throwable t) {
       resumeWithError(async, t);
     }
@@ -120,6 +119,7 @@ public class ProtocolResource {
     final boolean errorSent = response.resume(error);
     if (!errorSent) { log.warn("request failed - could not send error response"); }
     if (isRegular(error)) {
+      //noinspection ThrowableResultOfMethodCallIgnored
       final Throwable root = Throwables.getRootCause(error);
       log.warn("request failed - {}", root.getMessage());
     } else {
@@ -131,17 +131,26 @@ public class ProtocolResource {
     return error instanceof DatasetException || error instanceof WebApplicationException;
   }
 
-  private static class UnsubscribeOnTimeout implements TimeoutHandler {
-
+  private static class SubscriptionCleaner implements TimeoutHandler, CompletionCallback, ConnectionCallback {
     private final Subscription subscription;
 
-    public UnsubscribeOnTimeout(final Subscription subscription) {
+    public SubscriptionCleaner(final Subscription subscription) {
       this.subscription = subscription;
     }
 
     @Override
     public void handleTimeout(final AsyncResponse asyncResponse) {
       asyncResponse.resume(new ServiceUnavailableException("execution time limit exceeded"));
+      subscription.unsubscribe();
+    }
+
+    @Override
+    public void onComplete(final Throwable throwable) {
+      subscription.unsubscribe();
+    }
+
+    @Override
+    public void onDisconnect(final AsyncResponse disconnected) {
       subscription.unsubscribe();
     }
   }

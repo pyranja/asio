@@ -8,7 +8,7 @@ import at.ac.univie.isc.asio.protocol.Parameters;
 import at.ac.univie.isc.asio.security.Role;
 import at.ac.univie.isc.asio.security.Token;
 import at.ac.univie.isc.asio.sql.CsvToTable;
-import at.ac.univie.isc.asio.tool.Reactive;
+import at.ac.univie.isc.asio.tool.Unchecked;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Table;
 import com.hp.hpl.jena.query.QueryCancelledException;
@@ -22,10 +22,13 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.openjena.riot.Lang;
 import rx.Scheduler;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.StreamingOutput;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.concurrent.TimeUnit;
 
 import static at.ac.univie.isc.asio.tool.IsIsomorphic.isomorphicWith;
@@ -110,8 +113,14 @@ public class JenaConnectorTest {
   private byte[] executeCommandWith(final Parameters params) {
     return subject.createCommand(params, Token.ANONYMOUS)
         .observe()
-        .flatMap(Reactive.IDENTITY)
-        .reduce(Reactive.BYTE_ACCUMULATOR)
+        .map(new Func1<StreamingOutput, byte[]>() {
+          @Override
+          public byte[] call(final StreamingOutput streamingOutput) {
+            final ByteArrayOutputStream sink = new ByteArrayOutputStream();
+            Unchecked.write(streamingOutput, sink);
+            return sink.toByteArray();
+          }
+        })
         .toBlocking().single();
   }
 

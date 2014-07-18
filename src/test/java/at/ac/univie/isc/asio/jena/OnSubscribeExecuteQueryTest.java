@@ -1,9 +1,10 @@
 package at.ac.univie.isc.asio.jena;
 
+import at.ac.univie.isc.asio.Command;
 import at.ac.univie.isc.asio.tool.Payload;
-import at.ac.univie.isc.asio.tool.Reactive;
+import at.ac.univie.isc.asio.tool.Resources;
+import at.ac.univie.isc.asio.tool.Rules;
 import at.ac.univie.isc.asio.tool.Unchecked;
-import at.ac.univie.isc.asio.transport.ObservableStream;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.hp.hpl.jena.query.QueryExecution;
 import org.junit.Before;
@@ -14,6 +15,7 @@ import org.junit.rules.Timeout;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import rx.Observable;
+import rx.Observer;
 import rx.Subscription;
 import rx.functions.Action0;
 import rx.functions.Action1;
@@ -21,6 +23,8 @@ import rx.observables.ConnectableObservable;
 import rx.observers.TestSubscriber;
 import rx.schedulers.Schedulers;
 
+import javax.ws.rs.core.StreamingOutput;
+import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -33,21 +37,36 @@ import static org.mockito.Mockito.*;
 public class OnSubscribeExecuteQueryTest {
 
   @Rule
-  public Timeout timeout = new Timeout(2000);
+  public Timeout timeout = Rules.timeout(2, TimeUnit.SECONDS);
   @Rule
   public ExpectedException error = ExpectedException.none();
 
   private final QueryExecution query = mock(QueryExecution.class);
   private final JenaQueryHandler handler = mock(JenaQueryHandler.class);
 
-  private Observable<ObservableStream> subject;
-  private TestSubscriber<byte[]> subscriber;
+  private Observable<Command.Results> subject;
+  private TestSubscriber<Command.Results> subscriber;
+  private ByteArrayOutputStream sink;
 
   @Before
   public void setUp() throws Exception {
-    subject = Observable
-        .create(new OnSubscribeExecuteQuery(query, handler));
-    subscriber = new TestSubscriber<>();
+    subject = Observable.create(new OnSubscribeExecuteQuery(query, handler));
+    final Observer<Command.Results> consumer = new Observer<Command.Results>() {
+      @Override
+      public void onCompleted() {
+      }
+
+      @Override
+      public void onError(final Throwable e) {
+      }
+
+      @Override
+      public void onNext(final Command.Results results) {
+        Unchecked.write(results, sink);
+      }
+    };
+    subscriber = new TestSubscriber<>(consumer);
+    sink = new ByteArrayOutputStream();
   }
 
   // ========================= SYNC BEHAVIOR
@@ -56,18 +75,15 @@ public class OnSubscribeExecuteQueryTest {
   public void should_yield_serialized_query_results() throws Exception {
     final byte[] expected = Payload.randomWithLength(21_943);
     doAnswer(WriteToSink.use(expected)).when(handler).serialize(any(OutputStream.class));
-    final byte[] result = subject
-        .flatMap(Reactive.IDENTITY)
-        .reduce(Reactive.BYTE_ACCUMULATOR)
-        .toBlocking().single();
-    assertThat(result, is(equalTo(expected)));
+    subject.toBlocking().single().write(sink);
+    assertThat(sink.toByteArray(), is(equalTo(expected)));
   }
 
   @Test
   public void should_close_query_after_results_consumed() throws Exception {
     doAnswer(WriteToSink.use(Payload.randomWithLength(2453)))
         .when(handler).serialize(any(OutputStream.class));
-    subject.flatMap(Reactive.IDENTITY).toBlocking().last();
+    subject.toBlocking().single().write(sink);
     verify(query).close();
   }
 
@@ -76,7 +92,7 @@ public class OnSubscribeExecuteQueryTest {
     final RuntimeException cause = new RuntimeException("test");
     doThrow(cause).when(handler).invoke(any(QueryExecution.class));
     error.expect(is(cause));
-    subject.flatMap(Reactive.IDENTITY).toBlocking().last();
+    subject.toBlocking().last();
   }
 
   @Test
@@ -84,13 +100,13 @@ public class OnSubscribeExecuteQueryTest {
     final RuntimeException cause = new RuntimeException("test");
     doThrow(cause).when(handler).serialize(any(OutputStream.class));
     error.expect(is(cause));
-    subject.flatMap(Reactive.IDENTITY).toBlocking().last();
+    subject.toBlocking().single().write(sink);
   }
 
   @Test
   public void should_close_query_after_execution_error() throws Exception {
     doThrow(RuntimeException.class).when(handler).invoke(any(QueryExecution.class));
-    subject.flatMap(Reactive.IDENTITY).subscribe(subscriber);
+    subject.subscribe(subscriber);
     subscriber.awaitTerminalEvent();
     verify(query).close();
   }
@@ -98,7 +114,7 @@ public class OnSubscribeExecuteQueryTest {
   @Test
   public void should_close_query_after_serialization_error() throws Exception {
     doThrow(RuntimeException.class).when(handler).serialize(any(OutputStream.class));
-    subject.flatMap(Reactive.IDENTITY).subscribe(subscriber);
+    subject.subscribe(subscriber);
     subscriber.awaitTerminalEvent();
     verify(query).close();
   }
@@ -116,44 +132,31 @@ public class OnSubscribeExecuteQueryTest {
         return null;
       }
     }).when(handler).serialize(any(OutputStream.class));
-    final TestSubscriber<ObservableStream> querySubscriber = new TestSubscriber<>();
-    final ConnectableObservable<ObservableStream> observableQuery = subject
+    final TestSubscriber<StreamingOutput> querySubscriber = new TestSubscriber<>();
+    final ConnectableObservable<Command.Results> observableQuery = subject
         .subscribeOn(Schedulers.newThread())
         .publish();
     observableQuery.subscribe(querySubscriber);
-    observableQuery.subscribe(new Action1<ObservableStream>() {
+    observableQuery.subscribe(new Action1<StreamingOutput>() {
       @Override
-      public void call(final ObservableStream stream) {
-        stream.subscribeOn(Schedulers.newThread()).subscribe();
+      public void call(final StreamingOutput streamingOutput) {
+        Unchecked.write(streamingOutput, sink);
       }
     });
     observableQuery.connect();
     Unchecked.await(serializing);
-    querySubscriber.awaitTerminalEvent();
     verify(query, never()).close();
   }
 
   @Test
-  public void should_not_abort_query_after_observable_stream_has_been_yielded() throws Exception {
+  public void should_not_allow_cancelling_after_stream_has_been_yielded() throws Exception {
     final CountDownLatch streamReceived = new CountDownLatch(1);
     final Subscription subscription = subject
         .subscribeOn(Schedulers.newThread())
-        .subscribe(new Action1<ObservableStream>() {
+        .subscribe(new Action1<StreamingOutput>() {
           @Override
-          public void call(final ObservableStream observableStream) {
+          public void call(final StreamingOutput streamingOutput) {
             streamReceived.countDown();
-          }
-        }
-            , new Action1<Throwable>() {
-          @Override
-          public void call(final Throwable throwable) {
-            return;
-          }
-        }
-            , new Action0() {
-          @Override
-          public void call() {
-            Uninterruptibles.sleepUninterruptibly(4000, TimeUnit.MILLISECONDS);
           }
         });
     streamReceived.await();
@@ -174,7 +177,6 @@ public class OnSubscribeExecuteQueryTest {
     }).when(handler).invoke(any(QueryExecution.class));
     final Subscription subscription = subject
         .subscribeOn(Schedulers.newThread())
-        .flatMap(Reactive.IDENTITY)
         .subscribe();
     Unchecked.await(invoked);
     subscription.unsubscribe();
@@ -212,7 +214,8 @@ public class OnSubscribeExecuteQueryTest {
   }
 
   @Test
-  public void should_abort_query_if_unsubscribing_during_serialization() throws Exception {
+  public void should_abort_query_if_closing_results_before_consumption() throws Exception {
+    final CountDownLatch closed = new CountDownLatch(1);
     final CountDownLatch serializing = new CountDownLatch(1);
     doAnswer(new Answer<Void>() {
       @Override
@@ -222,12 +225,21 @@ public class OnSubscribeExecuteQueryTest {
         return null;
       }
     }).when(handler).serialize(any(OutputStream.class));
-    final Subscription subscription = subject
-        .toBlocking().single()
-        .subscribeOn(Schedulers.newThread())
-        .subscribe();
-    serializing.await();
-    subscription.unsubscribe();
+    subject.subscribe(new Action1<Command.Results>() {
+      @Override
+      public void call(final Command.Results results) {
+        Schedulers.newThread().createWorker().schedule(new Action0() {
+          @Override
+          public void call() {
+            Unchecked.write(results, sink);
+          }
+        });
+        Unchecked.await(serializing);
+        Resources.close(results);
+        closed.countDown();
+      }
+    });
+    closed.await();
     verify(query).abort();
   }
 
@@ -251,12 +263,22 @@ public class OnSubscribeExecuteQueryTest {
         return null;
       }
     }).when(query).close();
-    final Subscription subscription = subject
-        .toBlocking().single()
-        .subscribeOn(Schedulers.newThread())
-        .subscribe();
+    subject
+        .subscribe(new Action1<Command.Results>() {
+          @Override
+          public void call(final Command.Results results) {
+            Schedulers.newThread().createWorker().schedule(new Action0() {
+              @Override
+              public void call() {
+                Unchecked.write(results, sink);
+              }
+            });
+            Unchecked.await(serializingStarted);
+            Resources.close(results);
+            continueSerialization.countDown();
+          }
+        });
     serializingStarted.await();
-    subscription.unsubscribe();
     continueSerialization.countDown();
     closed.await();
     verify(query).close();

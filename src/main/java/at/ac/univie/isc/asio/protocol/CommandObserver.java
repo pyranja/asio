@@ -1,6 +1,5 @@
 package at.ac.univie.isc.asio.protocol;
 
-import at.ac.univie.isc.asio.transport.ObservableStream;
 import com.google.common.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,18 +13,18 @@ import static java.util.Objects.requireNonNull;
 /**
  * Bridge an observable stream to an {@link javax.ws.rs.container.AsyncResponse}
  */
-class OperationObserver extends Subscriber<ObservableStream> {
-  private static final Logger log = LoggerFactory.getLogger(OperationObserver.class);
+class CommandObserver<RESULT> extends Subscriber<RESULT> {
+  private static final Logger log = LoggerFactory.getLogger(CommandObserver.class);
 
-  public static OperationObserverBuilder bridgeTo(final AsyncResponse async) {
-    return new OperationObserverBuilder(async);
+  public static CommandObserverBuilder bridgeTo(final AsyncResponse async) {
+    return new CommandObserverBuilder<>(async);
   }
 
   private final AsyncResponse async;
   private final Response.ResponseBuilder response;
 
   @VisibleForTesting
-  OperationObserver(final AsyncResponse async, final Response.ResponseBuilder response) {
+  CommandObserver(final AsyncResponse async, final Response.ResponseBuilder response) {
     this.async = async;
     this.response = response;
   }
@@ -48,7 +47,7 @@ class OperationObserver extends Subscriber<ObservableStream> {
   }
 
   @Override
-  public void onNext(final ObservableStream observableStream) {
+  public void onNext(final RESULT observableStream) {
     if (async.isSuspended()) {
       log.debug("resuming response on thread {}", Thread.currentThread());
       async.resume(response.status(Response.Status.OK).entity(observableStream).build());
@@ -58,23 +57,23 @@ class OperationObserver extends Subscriber<ObservableStream> {
     }
   }
 
-  static class OperationObserverBuilder {
+  static class CommandObserverBuilder<T> {
     private Response.ResponseBuilder response = Response.ok();
     private final AsyncResponse async;
 
-    private OperationObserverBuilder(final AsyncResponse async) {
+    private CommandObserverBuilder(final AsyncResponse async) {
       requireNonNull(async);
       this.async = async;
     }
 
-    public OperationObserver send(final Response.ResponseBuilder response) {
+    public CommandObserver<T> send(final Response.ResponseBuilder response) {
       requireNonNull(response);
       this.response = response;
       return create();
     }
 
-    public OperationObserver create() {
-      return new OperationObserver(this.async, response);
+    public CommandObserver<T> create() {
+      return new CommandObserver<>(this.async, response);
     }
   }
 }

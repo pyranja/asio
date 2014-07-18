@@ -132,5 +132,5 @@ public final class PipeActivities {
     return consumer(product, "input");
   }
 
-  private PipeActivities() {/* static helper */};
+  private PipeActivities() {/* static helper */}
 }

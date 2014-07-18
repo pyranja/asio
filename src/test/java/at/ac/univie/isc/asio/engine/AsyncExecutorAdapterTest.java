@@ -1,8 +1,8 @@
 package at.ac.univie.isc.asio.engine;
 
+import at.ac.univie.isc.asio.*;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -11,25 +11,16 @@ import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import rx.Observable;
 
 import java.io.ByteArrayOutputStream;
-
-import at.ac.univie.isc.asio.DatasetException;
-import at.ac.univie.isc.asio.DatasetOperation;
-import at.ac.univie.isc.asio.MockDatasetException;
-import at.ac.univie.isc.asio.MockResult;
-import at.ac.univie.isc.asio.transport.ObservableStream;
-import rx.Observable;
-import rx.functions.Action2;
 
 import static at.ac.univie.isc.asio.MockOperations.dummy;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 /**
  * @author pyranja
@@ -45,7 +36,7 @@ public class AsyncExecutorAdapterTest {
   private AsyncExecutorAdapter subject;
   @Mock
   private AsyncExecutor adapted;
-  private Observable<ObservableStream> obs;
+  private Observable<Command.Results> obs;
 
   @Before
   public void setup() {
@@ -88,23 +79,11 @@ public class AsyncExecutorAdapterTest {
   }
 
   @Test
-  public void should_return_nested_observable_on_successful_future() throws Exception {
+  public void should_return_stream_with_payload_from_future() throws Exception {
     doReturn(MockResult.successFuture()).when(adapted).accept(any(DatasetOperation.class));
     obs = subject.execute(dummy());
-    obs.toBlocking().single();
-  }
-
-  @Test
-  public void should_return_nested_observable_stream_with_payload_from_future() throws Exception {
-    doReturn(MockResult.successFuture()).when(adapted).accept(any(DatasetOperation.class));
-    obs = subject.execute(dummy());
-    final byte[] actual =
-        obs.toBlocking().single().collect(new ByteArrayOutputStream(), new Action2<ByteArrayOutputStream, byte[]>() {
-          @Override
-          public void call(final ByteArrayOutputStream baos, final byte[] bytes) {
-            baos.write(bytes, 0, bytes.length);
-          }
-        }).toBlocking().single().toByteArray();
-    assertThat(actual, is(equalTo(MockResult.PAYLOAD)));
+    final ByteArrayOutputStream sink = new ByteArrayOutputStream();
+    obs.toBlocking().single().write(sink);
+    assertThat(sink.toByteArray(), is(equalTo(MockResult.PAYLOAD)));
   }
 }

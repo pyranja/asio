@@ -110,8 +110,8 @@ public final class Parameters {
 
   public static class ParametersBuilder {
     private final Language language;
-    private ImmutableListMultimap.Builder<String, String> params = ImmutableListMultimap.builder();
-    private ImmutableList.Builder<MediaType> acceptedTypes = ImmutableList.builder();
+    private final ImmutableListMultimap.Builder<String, String> params = ImmutableListMultimap.builder();
+    private final ImmutableList.Builder<MediaType> acceptedTypes = ImmutableList.builder();
 
     private RuntimeException cause;
 

@@ -44,7 +44,7 @@ public class ConnectorRegistry implements Connector {
   }
 
   public static class ConnectorRegistryBuilder {
-    private ImmutableMap.Builder<Language, Connector> connectors =
+    private final ImmutableMap.Builder<Language, Connector> connectors =
         ImmutableMap.builder();
 
     public ConnectorRegistryBuilder add(final Language language, final Connector connector) {

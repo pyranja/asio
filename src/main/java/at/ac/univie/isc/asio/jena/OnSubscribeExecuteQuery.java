@@ -1,11 +1,8 @@
 package at.ac.univie.isc.asio.jena;
 
-import at.ac.univie.isc.asio.transport.ObservableStream;
-import at.ac.univie.isc.asio.transport.SubscribedOutputStream;
+import at.ac.univie.isc.asio.Command;
+import at.ac.univie.isc.asio.tool.Resources;
 import com.hp.hpl.jena.query.QueryExecution;
-import com.hp.hpl.jena.shared.JenaException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.Subscriber;
 import rx.functions.Action0;
@@ -13,36 +10,33 @@ import rx.subscriptions.Subscriptions;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.NotThreadSafe;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.Objects.requireNonNull;
 
 /**
- * Turn a {@code QueryExecution} into a reactive sequence of nested {@code Observables}. The
- * outermost one yields a single {@link at.ac.univie.isc.asio.transport.ObservableStream}, as soon
- * as the query is executed. The inner {@code Observable} yields the serialized results as a series
- * of {@code byte[]} chunks.
+ * Turn a {@code QueryExecution} into a reactive sequence yielding the
+ * {@link at.ac.univie.isc.asio.Command.Results results} on completion or an error.
  * <p>A single execution may only be subscribed to once. Subsequent subscriptions will fail
  * immediately.</p>
- * <p>To properly clean up utilized resources, the {@code ObservableStream} <strong>must</strong>
- * either be consumed or unsubscribed from, even if query execution is aborted.</p>
+ * <p>To properly clean up utilized resources, the results <strong>must</strong>
+ * either be consumed or closed.</p>
  */
 @NotThreadSafe
 @Nonnull
-final class OnSubscribeExecuteQuery implements Observable.OnSubscribe<ObservableStream> {
-  private static final Logger log = LoggerFactory.getLogger(OnSubscribeExecuteQuery.class);
+final class OnSubscribeExecuteQuery implements Observable.OnSubscribe<Command.Results> {
 
   private final QueryExecution query;
   private final JenaQueryHandler handler;
 
-  private static enum State { EXECUTE, STREAM, ABORT, DONE }
+  private static enum State { EXECUTE, STREAM, COMPLETE, ABORT, DONE }
   /* null      => initial - not started
    * EXECUTE   => query is running
    * STREAM    => results are ready to be/are being serialized
-   * DONE      => resources have been released
+   * COMPLETE  => result serialization finished successfully
    * ABORT     => query has been aborted before completing
+   * DONE      => resources have been released
    */
   private final AtomicReference<State> state;
 
@@ -53,25 +47,25 @@ final class OnSubscribeExecuteQuery implements Observable.OnSubscribe<Observable
   }
 
   @Override
-  public void call(final Subscriber<? super ObservableStream> executionConsumer) {
+  public void call(final Subscriber<? super Command.Results> subscriber) {
     try {
-      prepare(executionConsumer);
+      prepare(subscriber);
       execute();
-      stream(executionConsumer);
+      stream(subscriber);
     } catch (final Exception e) {
-      executionConsumer.onError(e);
+      subscriber.onError(e);
     } finally {
       if (state.get() != State.STREAM) {
-        cleanUp();
+        cleanUp();  // if aborted/failed before subscriber consumed results
       }
     }
-    executionConsumer.onCompleted();
+    subscriber.onCompleted();
   }
 
-  private void prepare(final Subscriber<? super ObservableStream> executionConsumer) {
+  private void prepare(final Subscriber<?> subscriber) {
     final boolean firstSubscription = state.compareAndSet(null, State.EXECUTE);
     assert firstSubscription : "multiple subscriptions";
-    executionConsumer.add(Subscriptions.create(new Action0() {
+    subscriber.add(Subscriptions.create(new Action0() {
       @Override
       public void call() {
         cancel(State.EXECUTE);
@@ -84,30 +78,29 @@ final class OnSubscribeExecuteQuery implements Observable.OnSubscribe<Observable
     handler.invoke(query);
   }
 
-  private void stream(final Subscriber<? super ObservableStream> executionConsumer) {
+  private void stream(final Subscriber<? super Command.Results> subscriber) {
     if (state.get() != State.EXECUTE) { return; }
-    executionConsumer.onNext(
-        ObservableStream.make(new Observable.OnSubscribe<byte[]>() {
-          @Override
-          public void call(final Subscriber<? super byte[]> streamConsumer) {
-            state.compareAndSet(State.EXECUTE, State.STREAM);
-            streamConsumer.add(Subscriptions.create(new Action0() {
-              @Override
-              public void call() {
-                cancel(State.STREAM);
-              }
-            }));
-            try (final OutputStream sink = new SubscribedOutputStream(streamConsumer)) {
-              handler.serialize(sink);
-            } catch (JenaException | IOException e) {
-              streamConsumer.onError(e);
-            } finally {
-              cleanUp();
-            }
-            streamConsumer.onCompleted();
-          }
-        })
-    );
+    subscriber.onNext(new Command.Results() {
+      @Override
+      public void write(final OutputStream output) {
+        state.compareAndSet(State.EXECUTE, State.STREAM);
+        try {
+          handler.serialize(output);
+          state.compareAndSet(State.STREAM, State.COMPLETE);
+        } finally {
+          Resources.close(this);
+        }
+      }
+
+      @Override
+      public void close() {
+        try {
+          cancel(State.STREAM);
+        } finally {
+          cleanUp();
+        }
+      }
+    });
     state.compareAndSet(State.EXECUTE, State.STREAM);
   }
 

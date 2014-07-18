@@ -24,7 +24,7 @@ public class DatasetOperation {
    * @author Chris Borckholder
    */
   public static enum Action {
-    QUERY, SCHEMA, UPDATE, BATCH;
+    QUERY, SCHEMA, UPDATE, BATCH
   }
 
   /**

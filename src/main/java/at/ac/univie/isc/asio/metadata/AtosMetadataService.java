@@ -81,7 +81,7 @@ public class AtosMetadataService {
   }
 
   private String describe(final Response response) {
-    return String.format("$s : %s", response.getStatus(), response.getStatusInfo());
+    return String.format("%s : %s", response.getStatus(), response.getStatusInfo());
   }
 
   private DatasetMetadata extractFrom(final Response response, final String id) throws IOException, JAXBException {

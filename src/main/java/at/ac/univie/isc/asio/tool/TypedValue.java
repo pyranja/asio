@@ -40,11 +40,7 @@ public class TypedValue<VALUE> {
 
     final TypedValue that = (TypedValue) other;
 
-    if (!val.equals(that.val)) {
-      return false;
-    }
-
-    return true;
+    return val.equals(that.val);
   }
 
   @Override

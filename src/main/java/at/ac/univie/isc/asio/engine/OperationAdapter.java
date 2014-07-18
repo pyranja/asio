@@ -3,7 +3,6 @@ package at.ac.univie.isc.asio.engine;
 import at.ac.univie.isc.asio.Command;
 import at.ac.univie.isc.asio.DatasetOperation;
 import at.ac.univie.isc.asio.security.Role;
-import at.ac.univie.isc.asio.transport.ObservableStream;
 import rx.Observable;
 
 import javax.ws.rs.core.MediaType;
@@ -40,7 +39,7 @@ public class OperationAdapter implements Command {
   }
 
   @Override
-  public Observable<ObservableStream> observe() {
+  public Observable<Results> observe() {
     return backend.execute(inner);
   }
 }

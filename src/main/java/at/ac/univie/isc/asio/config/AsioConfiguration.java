@@ -151,8 +151,8 @@ public class AsioConfiguration {
 
   @Bean
   public TimeoutSpec globalTimeout() {
-    Long timeout = env.getProperty("asio.timeout", Long.class, Long.valueOf(-1L));
-    TimeoutSpec spec = TimeoutSpec.from(timeout.longValue(), TimeUnit.SECONDS);
+    Long timeout = env.getProperty("asio.timeout", Long.class, -1L);
+    TimeoutSpec spec = TimeoutSpec.from(timeout, TimeUnit.SECONDS);
     log.info("[BOOT] using timeout {}", spec);
     return spec;
   }

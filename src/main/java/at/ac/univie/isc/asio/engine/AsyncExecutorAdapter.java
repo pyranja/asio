@@ -1,10 +1,10 @@
 package at.ac.univie.isc.asio.engine;
 
+import at.ac.univie.isc.asio.Command;
 import at.ac.univie.isc.asio.DatasetOperation;
-import at.ac.univie.isc.asio.DatasetTransportException;
 import at.ac.univie.isc.asio.Result;
-import at.ac.univie.isc.asio.transport.ObservableStream;
-import com.google.common.io.InputSupplier;
+import com.google.common.base.Throwables;
+import com.google.common.io.ByteStreams;
 import com.google.common.util.concurrent.ListenableFuture;
 import rx.Observable;
 import rx.Scheduler;
@@ -12,8 +12,10 @@ import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 import javax.annotation.Nonnull;
+import javax.ws.rs.WebApplicationException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.concurrent.ExecutorService;
 
 import static at.ac.univie.isc.asio.tool.Reactive.listeningFor;
@@ -31,28 +33,36 @@ public class AsyncExecutorAdapter implements Engine {
   }
 
   @Override
-  public Observable<ObservableStream> execute(@Nonnull final DatasetOperation operation) {
+  public Observable<Command.Results> execute(@Nonnull final DatasetOperation operation) {
     requireNonNull(operation);
     try {
       final ListenableFuture<Result> future = adapted.accept(operation);
       return Observable.create(listeningFor(future))
-          .map(new Func1<Result, ObservableStream>() {
-        @Override
-        public ObservableStream call(final Result result) {
-          return ObservableStream.from(unchecked(result));
-        }
-      }).observeOn(scheduler);
+          .map(new Func1<Result, Command.Results>() {
+            @Override
+            public Command.Results call(final Result result) {
+              return new Command.Results() {
+                @Override
+                public void write(final OutputStream output) throws IOException, WebApplicationException {
+                  try (final InputStream source = result.getInput()) {
+                    ByteStreams.copy(source, output);
+                  }
+                }
+
+                @Override
+                public void close() {
+                  try {
+                    result.getInput().close();
+                  } catch (IOException e) {
+                    Throwables.propagate(e);
+                  }
+                }
+              };
+            }
+          })
+          .observeOn(scheduler);
     } catch (Exception e) {
       return Observable.error(e);
     }
   }
-
-  private static InputStream unchecked(InputSupplier<InputStream> supplier) {
-    try {
-      return supplier.getInput();
-    } catch (IOException e) {
-      throw new DatasetTransportException(e);
-    }
-  }
-
 }

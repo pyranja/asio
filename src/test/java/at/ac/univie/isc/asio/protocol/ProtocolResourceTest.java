@@ -8,8 +8,7 @@ import at.ac.univie.isc.asio.jaxrs.EmbeddedServer;
 import at.ac.univie.isc.asio.security.Permission;
 import at.ac.univie.isc.asio.security.Role;
 import at.ac.univie.isc.asio.security.Token;
-import at.ac.univie.isc.asio.tool.Payload;
-import at.ac.univie.isc.asio.transport.ObservableStream;
+import at.ac.univie.isc.asio.tool.Rules;
 import com.google.common.base.Charsets;
 import com.google.common.io.BaseEncoding;
 import org.junit.Before;
@@ -18,14 +17,13 @@ import org.junit.Test;
 import org.junit.rules.Timeout;
 import org.mockito.ArgumentCaptor;
 import rx.Observable;
-import rx.schedulers.Schedulers;
 
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Form;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.*;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.security.Principal;
 import java.util.concurrent.TimeUnit;
 
@@ -45,7 +43,7 @@ public class ProtocolResourceTest {
   private final byte[] PAYLOAD = "{response : success}".getBytes(Charsets.UTF_8);
 
   @Rule
-  public Timeout testTimeout = new Timeout(2000);
+  public Timeout testTimeout = Rules.timeout(2, TimeUnit.SECONDS);
   @Rule
   public EmbeddedServer server = EmbeddedServer
       .host(JaxrsSpec.create(ProtocolResource.class))
@@ -63,7 +61,16 @@ public class ProtocolResourceTest {
         .thenReturn(command);
     when(command.format()).thenReturn(MediaType.APPLICATION_JSON_TYPE);
     when(command.requiredRole()).thenReturn(Role.ANY);
-    when(command.observe()).thenReturn(Payload.observableFrom(PAYLOAD).subscribeOn(Schedulers.io()));
+    final Command.Results payloadStreamer = new Command.Results() {
+      @Override
+      public void write(final OutputStream output) throws IOException, WebApplicationException {
+        output.write(PAYLOAD);
+      }
+
+      @Override
+      public void close() {}
+    };
+    when(command.observe()).thenReturn(Observable.from(payloadStreamer));
   }
 
   private WebTarget invoke(final Permission permission, final Language language) {
@@ -253,7 +260,7 @@ public class ProtocolResourceTest {
   @Test
   public void observable_fails_due_to_client_error() throws Exception {
     when(command.observe())
-        .thenReturn(Observable.<ObservableStream>error(new DatasetUsageException("test-exception")));
+        .thenReturn(Observable.<Command.Results>error(new DatasetUsageException("test-exception")));
     response = invoke(Permission.READ, Language.SQL).request().get();
     assertThat(response, hasStatus(Response.Status.BAD_REQUEST));
   }
@@ -261,7 +268,7 @@ public class ProtocolResourceTest {
   @Test
   public void observable_fails_due_to_internal_error() throws Exception {
     when(command.observe())
-        .thenReturn(Observable.<ObservableStream>error(new DatasetFailureException(new IllegalStateException())));
+        .thenReturn(Observable.<Command.Results>error(new DatasetFailureException(new IllegalStateException())));
     response = invoke(Permission.READ, Language.SQL).request().get();
     assertThat(response, hasStatus(Response.Status.INTERNAL_SERVER_ERROR));
   }
@@ -269,9 +276,40 @@ public class ProtocolResourceTest {
   @Test
   public void execution_times_out() throws Exception {
     when(timeout.getAs(TimeUnit.NANOSECONDS)).thenReturn(TimeUnit.NANOSECONDS.convert(100, TimeUnit.MILLISECONDS));
-    when(command.observe()).thenReturn(Observable.<ObservableStream>never());
+    when(command.observe()).thenReturn(Observable.<Command.Results>never());
     response = invoke(Permission.READ, Language.SQL).request().get();
     assertThat(response, hasStatus(Response.Status.SERVICE_UNAVAILABLE));
   }
 
+  @Test
+  public void serialization_fails_fatally() throws Exception {
+    final Command.Results failing = new Command.Results() {
+      @Override
+      public void write(final OutputStream output) throws IOException, WebApplicationException {
+        throw new DatasetFailureException(new IllegalStateException());
+      }
+
+      @Override
+      public void close() {}
+    };
+    when(command.observe()).thenReturn(Observable.just(failing));
+    response = invoke(Permission.READ, Language.SQL).request().get();
+    assertThat(response, hasStatus(Response.Status.INTERNAL_SERVER_ERROR));
+  }
+
+  @Test
+  public void serialization_fails_with_web_error() throws Exception {
+    final Command.Results failing = new Command.Results() {
+      @Override
+      public void write(final OutputStream output) throws IOException, WebApplicationException {
+        throw new WebApplicationException(Response.Status.BAD_REQUEST);
+      }
+
+      @Override
+      public void close() {}
+    };
+    when(command.observe()).thenReturn(Observable.just(failing));
+    response = invoke(Permission.READ, Language.SQL).request().get();
+    assertThat(response, hasStatus(Response.Status.BAD_REQUEST));
+  }
 }
