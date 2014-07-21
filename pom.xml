@@ -475,6 +475,10 @@
               <!--suppress CheckValidXmlInScriptTagBody -->
               <sourceFile>${basedir}/src/test/resources/database/fill_dummy.sql</sourceFile>
             </script>
+            <script>
+              <!--suppress CheckValidXmlInScriptTagBody -->
+              <sourceFile>${basedir}/src/test/resources/database/fill_urls.sql</sourceFile>
+            </script>
           </sources>
         </configuration>
         <executions>

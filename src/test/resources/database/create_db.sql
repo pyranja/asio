@@ -28,3 +28,10 @@ CREATE TABLE dummy_table_with_long_name_for_gui_testing_xoxoxoxoxoxoxoxoxoxoxoxo
   column_with_long_but_reasonable_name VARCHAR(255) DEFAULT NULL,
   PRIMARY KEY(id_of_very_long_named_table_dummy_iaiaiaiaiaiaiaiaiaiaiaiaiaiaiaiaiaiaiaia)
 );
+
+CREATE TABLE urls (
+  id INT NOT NULL,
+  link VARCHAR(255),
+  comment VARCHAR(255),
+  PRIMARY KEY (id)
+);

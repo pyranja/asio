@@ -59,7 +59,7 @@ public class SchemaTest extends AcceptanceHarness {
   private void verifySchema(final DatabaseSchemaMetaData schema) {
     @SuppressWarnings("unchecked")
     final Map<String, TableMetaData> tables = schema.getTables();
-    assertThat(tables.size(), is(4));
+    assertThat(tables.size(), is(5));
     final TableMetaData table = tables.get("PERSON");
     assertThat(table.getCatalogName(), is(equalToIgnoringCase("TEST")));
     assertEquals(5, table.getColumnCount());
