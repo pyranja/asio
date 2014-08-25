@@ -3,7 +3,7 @@ package at.ac.univie.isc.asio.config;
 import at.ac.univie.isc.asio.engine.Command;
 import at.ac.univie.isc.asio.engine.Engine;
 import at.ac.univie.isc.asio.engine.EngineRegistry;
-import at.ac.univie.isc.asio.engine.sql.SqlSchema;
+import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.metadata.*;
 import at.ac.univie.isc.asio.engine.ProtocolResource;
 import com.google.common.base.Supplier;

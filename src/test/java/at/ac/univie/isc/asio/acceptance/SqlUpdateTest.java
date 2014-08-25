@@ -1,8 +1,8 @@
 package at.ac.univie.isc.asio.acceptance;
 
-import at.ac.univie.isc.asio.engine.sql.Head;
-import at.ac.univie.isc.asio.engine.sql.SqlResult;
-import at.ac.univie.isc.asio.engine.sql.Update;
+import at.ac.univie.isc.asio.Head;
+import at.ac.univie.isc.asio.SqlResult;
+import at.ac.univie.isc.asio.Update;
 import at.ac.univie.isc.asio.sql.H2Provider;
 import at.ac.univie.isc.asio.sql.KeyedRow;
 import at.ac.univie.isc.asio.tool.FunctionalTest;

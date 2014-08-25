@@ -1,6 +1,9 @@
 package at.ac.univie.isc.asio.engine.sql;
 
 import at.ac.univie.isc.asio.DatasetFailureException;
+import at.ac.univie.isc.asio.ObjectFactory;
+import at.ac.univie.isc.asio.SqlSchema;
+import at.ac.univie.isc.asio.Table;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableSet;
 import org.jooq.*;

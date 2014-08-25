@@ -9,7 +9,7 @@
     },
     elementFormDefault = XmlNsForm.QUALIFIED,
     attributeFormDefault = XmlNsForm.UNQUALIFIED)
-package at.ac.univie.isc.asio.engine.sql;
+package at.ac.univie.isc.asio;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.annotation.XmlNs;

@@ -1,5 +1,9 @@
 package at.ac.univie.isc.asio.engine.sql;
 
+import at.ac.univie.isc.asio.Column;
+import at.ac.univie.isc.asio.ObjectFactory;
+import at.ac.univie.isc.asio.SqlSchema;
+import at.ac.univie.isc.asio.Table;
 import at.ac.univie.isc.asio.sql.EmbeddedDb;
 import com.google.common.collect.Iterables;
 import org.jooq.impl.SQLDataType;

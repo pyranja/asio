@@ -1,9 +1,9 @@
 package at.ac.univie.isc.asio.metadata;
 
 import at.ac.univie.isc.asio.config.JaxrsSpec;
-import at.ac.univie.isc.asio.engine.sql.Column;
-import at.ac.univie.isc.asio.engine.sql.SqlSchema;
-import at.ac.univie.isc.asio.engine.sql.Table;
+import at.ac.univie.isc.asio.Column;
+import at.ac.univie.isc.asio.SqlSchema;
+import at.ac.univie.isc.asio.Table;
 import at.ac.univie.isc.asio.jaxrs.EmbeddedServer;
 import at.ac.univie.isc.asio.jaxrs.ManagedClient;
 import at.ac.univie.isc.asio.engine.sql.XmlSchemaType;

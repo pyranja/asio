@@ -1,8 +1,8 @@
 package at.ac.univie.isc.asio.acceptance;
 
-import at.ac.univie.isc.asio.engine.sql.Column;
-import at.ac.univie.isc.asio.engine.sql.SqlSchema;
-import at.ac.univie.isc.asio.engine.sql.Table;
+import at.ac.univie.isc.asio.Column;
+import at.ac.univie.isc.asio.SqlSchema;
+import at.ac.univie.isc.asio.Table;
 import at.ac.univie.isc.asio.tool.FunctionalTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

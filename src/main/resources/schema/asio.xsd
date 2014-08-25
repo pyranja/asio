@@ -10,10 +10,32 @@
   <xsd:annotation>
     <xsd:appinfo>
       <jxb:schemaBindings>
-        <jxb:package name="at.ac.univie.isc.asio.engine.sql"/>
+        <jxb:package name="at.ac.univie.isc.asio"/>
       </jxb:schemaBindings>
     </xsd:appinfo>
   </xsd:annotation>
+
+  <!-- structured error message -->
+  <xsd:element name="error">
+    <xsd:complexType>
+      <xsd:annotation>
+        <xsd:documentation>
+          Response in case of an error during processing.
+        </xsd:documentation>
+        <xsd:appinfo>
+          <jxb:class name="ErrorMessage" />
+          <annox:annotate>
+            <annox:annotate annox:class="javax.xml.bind.annotation.XmlRootElement" name="error" />
+          </annox:annotate>
+        </xsd:appinfo>
+      </xsd:annotation>
+      <xsd:sequence>
+        <xsd:element name="message" type="xsd:string" minOccurs="1" maxOccurs="1" />
+        <xsd:element name="cause" type="xsd:string" minOccurs="0" maxOccurs="1" />
+        <xsd:element name="trace" type="xsd:string" minOccurs="0" maxOccurs="1" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
 
   <!-- SQL results format, derived from the SPARQL results format -->
   <xsd:element name="sql">
