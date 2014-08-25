@@ -1,16 +1,14 @@
 package at.ac.univie.isc.asio.engine.sql;
 
-import org.jooq.Cursor;
-import org.jooq.Record;
-
-import java.io.IOException;
-import java.io.OutputStream;
-
-import javax.ws.rs.core.MediaType;
-
 import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.engine.Invocation;
 import at.ac.univie.isc.asio.security.Role;
+import org.jooq.Cursor;
+import org.jooq.Record;
+
+import javax.ws.rs.core.MediaType;
+import java.io.IOException;
+import java.io.OutputStream;
 
 final class SelectInvocation implements Invocation {
   interface CursorWriter {
@@ -62,7 +60,7 @@ final class SelectInvocation implements Invocation {
 
   @Override
   public final void cancel() {
-    try (final Invocation me = this;) {
+    try (final Invocation me = this) {
       jdbc.cancel();
     }
   }

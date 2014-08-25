@@ -225,7 +225,7 @@ final class Representations {
   }
 
   private static class Base64 implements Representation {
-    private static BaseEncoding BASE_64 = BaseEncoding.base64();
+    private static final BaseEncoding BASE_64 = BaseEncoding.base64();
     @Override
     public String apply(final Object input) {
       return BASE_64.encode((byte[]) input);

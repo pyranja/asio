@@ -10,10 +10,6 @@ final class AskHandler extends JenaQueryHandler.BaseQueryHandler<Boolean> {
 
   private final OutputFormatter serializer;
 
-  public AskHandler(final OutputFormatter serializer) {
-    this(serializer, MediaType.WILDCARD_TYPE);
-  }
-
   public AskHandler(final OutputFormatter serializer, final MediaType format) {
     super(format);
     this.serializer = serializer;

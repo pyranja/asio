@@ -3,13 +3,9 @@ package at.ac.univie.isc.asio.metadata;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by pyranja on 28/03/2014.
- */
 @XmlRootElement(name = "resource_metadata_list")
 public class RepositoryResponse {
 
