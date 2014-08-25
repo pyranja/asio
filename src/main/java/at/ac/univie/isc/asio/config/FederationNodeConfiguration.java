@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.config;
 
-import at.ac.univie.isc.asio.jena.JenaEngine;
+import at.ac.univie.isc.asio.engine.sparql.JenaEngine;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import org.slf4j.Logger;

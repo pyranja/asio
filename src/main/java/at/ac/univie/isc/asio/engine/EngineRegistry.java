@@ -1,9 +1,6 @@
 package at.ac.univie.isc.asio.engine;
 
-import at.ac.univie.isc.asio.Command;
-import at.ac.univie.isc.asio.Connector;
 import at.ac.univie.isc.asio.Language;
-import at.ac.univie.isc.asio.protocol.Parameters;
 import at.ac.univie.isc.asio.security.Role;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
@@ -12,11 +9,10 @@ import rx.Observable;
 import rx.Scheduler;
 
 import javax.annotation.Nullable;
-import javax.ws.rs.core.MediaType;
 import java.security.Principal;
 import java.util.Map;
 
-public final class EngineRegistry implements Connector {
+public final class EngineRegistry implements Command.Factory {
   private final Map<Language, Engine> registry;
   private final Scheduler scheduler;
 
@@ -31,13 +27,12 @@ public final class EngineRegistry implements Connector {
     });
   }
 
-  @Override
-  public Command createCommand(final Parameters params, final Principal owner) {
+  public Command accept(final Parameters params, final Principal owner) {
     final Engine delegate = registry.get(params.language());
     if (delegate == null) {
       throw new LanguageNotSupported(params.language());
     }
-    final Invocation invocation = delegate.create(params, owner);
+    final Invocation invocation = delegate.prepare(params, owner);
     return new ScheduledCommand(invocation, scheduler);
   }
 
@@ -49,11 +44,6 @@ public final class EngineRegistry implements Connector {
     ScheduledCommand(final Invocation handler, final Scheduler scheduler) {
       this.handler = handler;
       this.scheduler = scheduler;
-    }
-
-    @Override
-    public MediaType format() {
-      throw new UnsupportedOperationException("deprecated");
     }
 
     @Override

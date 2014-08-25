@@ -1,6 +1,5 @@
 package at.ac.univie.isc.asio.engine;
 
-import at.ac.univie.isc.asio.Command;
 import at.ac.univie.isc.asio.tool.Resources;
 import rx.Observable;
 import rx.Subscriber;
@@ -18,7 +17,7 @@ import static java.util.Objects.requireNonNull;
 
 /**
  * Turn an {@link Invocation} into a reactive
- * sequence yielding the {@link at.ac.univie.isc.asio.Command.Results results} on completion or an
+ * sequence yielding the {@link Command.Results results} on completion or an
  * error.
  * <p>A single execution may only be subscribed to once. Subsequent subscriptions will fail
  * immediately.</p>

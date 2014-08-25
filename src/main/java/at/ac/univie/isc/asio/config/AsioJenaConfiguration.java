@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.config;
 
-import at.ac.univie.isc.asio.jena.JenaEngine;
+import at.ac.univie.isc.asio.engine.sparql.JenaEngine;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterables;

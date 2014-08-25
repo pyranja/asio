@@ -1,8 +1,8 @@
 package at.ac.univie.isc.asio.jaxrs;
 
-import at.ac.univie.isc.asio.Connector;
 import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.DatasetUsageException;
+import at.ac.univie.isc.asio.engine.Command;
 import at.ac.univie.isc.asio.engine.TypeMatchingResolver;
 import at.ac.univie.isc.asio.transfer.ErrorMessage;
 import com.google.common.collect.ImmutableMap;
@@ -13,7 +13,6 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import static com.google.common.base.Throwables.getRootCause;
 import static com.google.common.base.Throwables.getStackTraceAsString;
@@ -56,12 +55,12 @@ public class DatasetExceptionMapper implements ExceptionMapper<DatasetException>
     if (selected == null) {
       // fall back to plain text
       final String message =
-          format(ENGLISH, ERROR_MESSAGE, error.getLocalizedMessage(), error.failedOperation()
-              .orNull(), getRootCause(error), getStackTraceAsString(error));
+          format(ENGLISH, ERROR_MESSAGE, error.getLocalizedMessage(), null, getRootCause(error), getStackTraceAsString(error));
       return response.entity(message).type(TEXT_PLAIN_TYPE).build();
     } else {
+      //noinspection ThrowableResultOfMethodCallIgnored
       final ErrorMessage message = new ErrorMessage().withMessage(error.getLocalizedMessage())
-          .withOperation(Objects.toString(error.failedOperation().orNull()))
+          .withOperation(null)
           .withCause(getRootCause(error).getLocalizedMessage())
           .withTrace(getStackTraceAsString(error));
       return response.entity(message).type(selected.getMediaType()).build();
@@ -70,7 +69,7 @@ public class DatasetExceptionMapper implements ExceptionMapper<DatasetException>
 
   private static final Map<Class<?>, Response.Status> ERROR_CODE_LOOKUP = ImmutableMap
       .<Class<?>, Response.Status>builder()
-      .put(Connector.LanguageNotSupported.class, Response.Status.NOT_FOUND)
+      .put(Command.Factory.LanguageNotSupported.class, Response.Status.NOT_FOUND)
       .put(TypeMatchingResolver.NoMatchingFormat.class, Response.Status.NOT_ACCEPTABLE)
       .build();
 

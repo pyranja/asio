@@ -65,7 +65,7 @@ public class VphTokenExtractorTest {
   public void should_auth_with_empty_token_if_password_is_empty() throws Exception {
     final String credentials = base64().encode(":".getBytes());
     setAuthHeader("Basic " + credentials);
-    final Token user = (Token) subject.authenticate(headers);
+    final Token user = subject.authenticate(headers);
     assertThat(user.getToken(), is(""));
   }
 
@@ -73,7 +73,7 @@ public class VphTokenExtractorTest {
   public void should_auth_with_given_password_as_token() throws Exception {
     final String credentials = base64().encode(":test-password".getBytes());
     setAuthHeader("Basic " + credentials);
-    final Token user = (Token) subject.authenticate(headers);
+    final Token user = subject.authenticate(headers);
     assertThat(user.getToken(), is("test-password"));
   }
 
@@ -81,7 +81,7 @@ public class VphTokenExtractorTest {
   public void should_accept_username_and_password() throws Exception {
     final String credentials = base64().encode("test-user:test-password".getBytes());
     setAuthHeader("Basic " + credentials);
-    final Token principal = (Token) subject.authenticate(headers);
+    final Token principal = subject.authenticate(headers);
     assertThat(principal.getName(), is("test-user"));
     assertThat(principal.getToken(), is("test-password"));
   }

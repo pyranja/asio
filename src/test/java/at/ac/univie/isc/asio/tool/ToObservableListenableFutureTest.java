@@ -1,7 +1,5 @@
 package at.ac.univie.isc.asio.tool;
 
-import at.ac.univie.isc.asio.DatasetException;
-import at.ac.univie.isc.asio.MockDatasetException;
 import com.google.common.util.concurrent.SettableFuture;
 import org.junit.Before;
 import org.junit.Rule;
@@ -45,7 +43,7 @@ public class ToObservableListenableFutureTest {
 
   @Test
   public void should_yield_cause_if_future_fails() throws Exception {
-    final DatasetException failure = new MockDatasetException();
+    final RuntimeException failure = new RuntimeException("test");
     future.setException(failure);
     assertThat(subscriber.getOnErrorEvents(), is(equalTo(Arrays.<Throwable>asList(failure))));
     subscriber.assertTerminalEvent();

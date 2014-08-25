@@ -1,7 +1,6 @@
 package at.ac.univie.isc.asio.engine;
 
 import at.ac.univie.isc.asio.Language;
-import at.ac.univie.isc.asio.protocol.Parameters;
 
 import java.security.Principal;
 
@@ -22,5 +21,5 @@ public interface Engine {
    * @param owner initiating user
    * @return ready to be executed Invocation.
    */
-  Invocation create(Parameters parameters, Principal owner);
+  Invocation prepare(Parameters parameters, Principal owner);
 }

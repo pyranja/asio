@@ -1,6 +1,5 @@
 package at.ac.univie.isc.asio.engine;
 
-import at.ac.univie.isc.asio.Command;
 import at.ac.univie.isc.asio.tool.Payload;
 import at.ac.univie.isc.asio.tool.Resources;
 import at.ac.univie.isc.asio.tool.Rules;

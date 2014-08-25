@@ -1,8 +1,8 @@
 package at.ac.univie.isc.asio.config;
 
 import at.ac.univie.isc.asio.engine.sql.SqlSchema;
-import at.ac.univie.isc.asio.jooq.JooqEngine;
-import at.ac.univie.isc.asio.jooq.SchemaProvider;
+import at.ac.univie.isc.asio.engine.sql.JooqEngine;
+import at.ac.univie.isc.asio.engine.sql.SchemaProvider;
 import com.google.common.base.Supplier;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;

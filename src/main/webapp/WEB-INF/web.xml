@@ -29,15 +29,6 @@
     <param-value>dataset</param-value>
   </context-param>
 
-  <!--
-    must be specified as classpath reference for OGSADAI initalization
-    i.e. relative to WEB-INF/classes
-   -->
-  <context-param>
-    <param-name>ogsadaiConfigLocation</param-name>
-    <param-value>spring/ogsadai-context.xml</param-value>
-  </context-param>
-
   <!-- leak preventor options -->
   <context-param> <!-- XXX increase for production -->
     <param-name>ClassLoaderLeakPreventor.threadWaitMs</param-name>
@@ -53,13 +44,6 @@
   <listener>
     <listener-class>
       se.jiderhamn.classloader.leak.prevention.ClassLoaderLeakPreventor
-    </listener-class>
-  </listener>
-
-  <!-- ogsadai must be initialized before asio -->
-  <listener>
-    <listener-class>
-      uk.org.ogsadai.context.OgsadaiContextLoaderListener
     </listener-class>
   </listener>
 

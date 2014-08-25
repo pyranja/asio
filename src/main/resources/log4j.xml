@@ -43,10 +43,6 @@
     <level value="error"/>
   </logger>
 
-  <logger name="uk.org.ogsadai">
-    <level value="warn"/>
-  </logger>
-
   <!-- jaxrs framework -->
   <logger name="org.apache.cxf">
     <level value="warn"/>

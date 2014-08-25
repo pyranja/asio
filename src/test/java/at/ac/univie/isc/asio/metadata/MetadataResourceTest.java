@@ -6,7 +6,7 @@ import at.ac.univie.isc.asio.engine.sql.SqlSchema;
 import at.ac.univie.isc.asio.engine.sql.Table;
 import at.ac.univie.isc.asio.jaxrs.EmbeddedServer;
 import at.ac.univie.isc.asio.jaxrs.ManagedClient;
-import at.ac.univie.isc.asio.jooq.XmlSchemaType;
+import at.ac.univie.isc.asio.engine.sql.XmlSchemaType;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;
 import org.apache.cxf.jaxrs.provider.json.JSONProvider;
