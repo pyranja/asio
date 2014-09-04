@@ -1,10 +1,12 @@
 package at.ac.univie.isc.asio.engine;
 
-import at.ac.univie.isc.asio.*;
+import at.ac.univie.isc.asio.DatasetException;
+import at.ac.univie.isc.asio.Language;
 import at.ac.univie.isc.asio.config.TimeoutSpec;
 import at.ac.univie.isc.asio.metadata.MetadataResource;
 import at.ac.univie.isc.asio.security.Permission;
 import at.ac.univie.isc.asio.security.Role;
+import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,10 +30,13 @@ public class ProtocolResource {
 
   private final Command.Factory connector;
   private final TimeoutSpec timeout;
+  private final EventReporter report;
 
-  public ProtocolResource(final Command.Factory connector, final TimeoutSpec timeout) {
+  public ProtocolResource(final Command.Factory connector, final TimeoutSpec timeout,
+                          final Supplier<EventReporter> scopedEventReporter) {
     this.connector = connector;
     this.timeout = timeout;
+    report = scopedEventReporter.get();
   }
 
   @Context
@@ -92,10 +97,15 @@ public class ProtocolResource {
 
   private void process(final AsyncResponse async, final Parameters params) {
     try {
-      log.debug("incoming request\n {}\n Headers   {}",
-          params, headers.getRequestHeaders());
+      report
+          .with(params)
+          .and("http-headers", headers.getRequestHeaders().toString())
+          .event(EventReporter.RECEIVED);
       params.failIfNotValid();
       final Command executable = connector.accept(params, security.getUserPrincipal());
+      report
+          .with(executable)
+          .event(EventReporter.ACCEPTED);
       checkAuthorization(executable.requiredRole());
       final Subscription subscription = executable
           .observe()
@@ -104,14 +114,17 @@ public class ProtocolResource {
       async.register(cleaner);
       async.setTimeoutHandler(cleaner);
       async.setTimeout(timeout.getAs(TimeUnit.NANOSECONDS, 0L), TimeUnit.NANOSECONDS);
-    } catch (final Throwable t) {
-      resumeWithError(async, t);
+    } catch (final Throwable error) {
+      report
+          .with(error)
+          .event(EventReporter.REJECTED);
+      resumeWithError(async, error);
     }
   }
 
   private void checkAuthorization(final Role required) {
     boolean authorized = security.isUserInRole(required.name());
-    if (HttpMethod.GET.equals(request.getMethod())) { // restrict to READ permission
+    if (HttpMethod.GET.equalsIgnoreCase(request.getMethod())) { // restrict to READ permission
       authorized = Permission.READ.grants(required) && authorized;
     }
     if (!authorized) {

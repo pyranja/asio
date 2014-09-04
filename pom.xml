@@ -23,6 +23,7 @@
     <version.spring>3.2.2.RELEASE</version.spring>
     <version.ogsadai>4.1.0</version.ogsadai>
     <version.jetty>9.1.3.v20140225</version.jetty>
+    <version.tomcat>8.0.11</version.tomcat>
     <!-- properties for filtered sites - dot notation not allowed -->
     <site-version>${project.version}</site-version>
   </properties>
@@ -152,6 +153,12 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>com.jayway.awaitility</groupId>
+      <artifactId>awaitility</artifactId>
+      <version>1.6.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <version>1.9.5</version>
@@ -160,8 +167,19 @@
     <dependency>
       <groupId>com.github.tomakehurst</groupId>
       <artifactId>wiremock</artifactId>
-      <version>1.45</version>
-      <classifier>standalone</classifier>
+      <version>1.47</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.mortbay.jetty</groupId>
+          <artifactId>servlet-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency> <!-- explicit declaration of wiremock transitive dependency to override older jena client jar -->
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.2.3</version>
       <scope>test</scope>
     </dependency>
     <!-- integration tests -->
@@ -194,6 +212,17 @@
       <groupId>javax.ws.rs</groupId>
       <artifactId>javax.ws.rs-api</artifactId>
       <version>2.0</version>
+    </dependency>
+    <!-- json support -->
+    <dependency>
+      <groupId>javax.json</groupId>
+      <artifactId>javax.json-api</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish</groupId>
+      <artifactId>javax.json</artifactId>
+      <version>1.0.4</version>
     </dependency>
     <!-- jaxb support -->
     <dependency>
@@ -331,6 +360,19 @@
       <artifactId>spring-web</artifactId>
       <version>${version.spring}</version>
     </dependency>
+    <!-- embedded tomcate -->
+    <dependency>
+      <groupId>org.apache.tomcat.embed</groupId>
+      <artifactId>tomcat-embed-core</artifactId>
+      <version>${version.tomcat}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tomcat.embed</groupId>
+      <artifactId>tomcat-embed-logging-juli</artifactId>
+      <version>${version.tomcat}</version>
+      <scope>test</scope>
+    </dependency>
     <!-- memory leak prevention -->
     <dependency>
       <groupId>se.jiderhamn</groupId>
@@ -407,7 +449,8 @@
             <arg>-XhashCode</arg>
             <arg>-XtoString</arg>
             <arg>-Xannotate</arg>
-            <arg>-npa</arg> <!-- omit package-info.java -->
+            <arg>-npa</arg>
+            <!-- omit package-info.java -->
           </args>
           <plugins>
             <plugin>
@@ -456,6 +499,9 @@
         <version>2.14.1</version>
         <configuration>
           <excludedGroups>at.ac.univie.isc.asio.tool.FunctionalTest</excludedGroups>
+          <classpathDependencyExcludes> <!-- mysql starts a clean up thread, disable in unit tests -->
+            <classpathDependencyExclude>mysql:mysql-connector-java</classpathDependencyExclude>
+          </classpathDependencyExcludes>
         </configuration>
       </plugin>
       <!-- integration test configuration -->

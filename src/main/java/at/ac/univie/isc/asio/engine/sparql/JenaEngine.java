@@ -29,7 +29,6 @@ public final class JenaEngine implements Engine {
 
   private final Model model;
   private final TimeoutSpec timeout;
-
   private final HandlerFactory handlers;
 
   public JenaEngine(final Model model, final TimeoutSpec timeout) {
@@ -44,19 +43,19 @@ public final class JenaEngine implements Engine {
   }
 
   @Override
-  public JenaQueryHandler prepare(final Parameters params, final Principal owner) {
+  public SparqlInvocation<?> prepare(final Parameters params, final Principal owner) {
     // must set model's default prefixes before parsing
     final Query query = QueryFactory.create();
     query.getPrefixMapping().withDefaultMappings(model);
     QueryFactory.parse(query, params.require(KEY_QUERY), null, Syntax.syntaxARQ);
     log.debug("parsed ARQ query\n{}", query);
-    final JenaQueryHandler handler = handlers.select(query.getQueryType(), params.acceptable());
-    log.debug("using handler {}", handler);
+    final SparqlInvocation<?> handler = handlers.select(query.getQueryType(), params.acceptable());
     final QueryExecution execution = QueryExecutionFactory.create(query, model);
-    execution.getContext().set(ARQ.symLogExec, Explain.InfoLevel.ALL);  // FIXME disable || parameterize
+    execution.getContext().set(ARQ.symLogExec, Explain.InfoLevel.ALL);  // FIXME disable || parameterize || set global context value
     execution.setTimeout(timeout.getAs(TimeUnit.MILLISECONDS, -1L));
     attachCredentials(execution, owner);
     handler.init(execution);
+    log.debug("using handler {}", handler);
     return handler;
   }
 

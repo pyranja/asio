@@ -1,13 +1,13 @@
 package at.ac.univie.isc.asio.config;
 
-import at.ac.univie.isc.asio.engine.Command;
-import at.ac.univie.isc.asio.engine.Engine;
-import at.ac.univie.isc.asio.engine.EngineRegistry;
 import at.ac.univie.isc.asio.SqlSchema;
+import at.ac.univie.isc.asio.engine.*;
 import at.ac.univie.isc.asio.metadata.*;
-import at.ac.univie.isc.asio.engine.ProtocolResource;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.base.Ticker;
+import com.google.common.eventbus.AsyncEventBus;
+import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.cxf.Bus;
 import org.apache.cxf.bus.spring.SpringBus;
@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
+import org.springframework.web.context.WebApplicationContext;
 import rx.Scheduler;
 import rx.schedulers.Schedulers;
 
@@ -101,7 +102,7 @@ public class AsioConfiguration {
   @Bean
   @Scope(BeanDefinition.SCOPE_PROTOTYPE)
   public ProtocolResource protocolResource() {
-    return new ProtocolResource(registry(), globalTimeout());
+    return new ProtocolResource(registry(), globalTimeout(), eventBuilder());
   }
 
   @Bean
@@ -114,7 +115,29 @@ public class AsioConfiguration {
   public Command.Factory registry() {
     log.info("[BOOT] using engines {}", engines);
     final Scheduler scheduler = Schedulers.from(workerPool());
-    return new EngineRegistry(scheduler, engines);
+    final EngineRegistry engineRegistry = new EngineRegistry(scheduler, engines);
+    return new EventfulCommandDecorator(engineRegistry, eventBuilder());
+  }
+
+  @Bean
+  @Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.INTERFACES)
+  public Supplier<EventReporter> eventBuilder() {
+    final EventReporter eventReporter = new EventReporter(eventBus(), Ticker.systemTicker());
+    return Suppliers.ofInstance(eventReporter);
+  }
+
+  @Bean
+  public EventBus eventBus() {
+    return new AsyncEventBus("asio-events", eventWorker());
+  }
+
+  @Bean(destroyMethod = "shutdownNow")
+  public ExecutorService eventWorker() {
+    final ThreadFactory factory =
+        new ThreadFactoryBuilder()
+            .setNameFormat("asio-events-%d")
+            .build();
+    return Executors.newSingleThreadScheduledExecutor(factory);
   }
 
   @Bean(destroyMethod = "shutdownNow")

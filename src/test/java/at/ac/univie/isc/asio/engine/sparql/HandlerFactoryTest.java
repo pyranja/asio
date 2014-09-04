@@ -59,25 +59,25 @@ public class HandlerFactoryTest {
 
   @Test
   public void should_yield_appropriate_handler_for_query_type() throws Exception {
-    final JenaQueryHandler handler = factory.select(queryType, accepted);
+    final SparqlInvocation handler = factory.select(queryType, accepted);
     assertThat(handler, is(instanceOf(matchingHandlerType())));
   }
 
   @Test
   public void should_serialize_to_expected_format() throws Exception {
-    final JenaQueryHandler handler = factory.select(queryType, accepted);
+    final SparqlInvocation handler = factory.select(queryType, accepted);
     assertThat(handler.produces(), is(expectedFormat));
   }
 
   @Test
   public void should_have_expected_format() throws Exception {
-    final JenaQueryHandler handler = factory.select(queryType, accepted);
+    final SparqlInvocation handler = factory.select(queryType, accepted);
     assertThat(handler.produces(), is(expectedFormat));
   }
 
   @Test
   public void should_have_read_role() throws Exception {
-    final JenaQueryHandler handler = factory.select(queryType, accepted);
+    final SparqlInvocation handler = factory.select(queryType, accepted);
     assertThat(handler.requires(), is(Role.READ));
   }
 
@@ -85,13 +85,13 @@ public class HandlerFactoryTest {
     final Class<?> expectedHandlerType;
     switch (queryType) {
       case Query.QueryTypeSelect:
-        expectedHandlerType = SelectHandler.class; break;
+        expectedHandlerType = SelectInvocation.class; break;
       case Query.QueryTypeAsk:
-        expectedHandlerType = AskHandler.class; break;
+        expectedHandlerType = AskInvocation.class; break;
       case Query.QueryTypeConstruct:
-        expectedHandlerType = ConstructHandler.class; break;
+        expectedHandlerType = ConstructInvocation.class; break;
       case Query.QueryTypeDescribe:
-        expectedHandlerType = DescribeHandler.class; break;
+        expectedHandlerType = DescribeInvocation.class; break;
       default:
         throw new AssertionError("unknown query type : "+ queryType);
     }

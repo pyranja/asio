@@ -6,11 +6,11 @@ import com.hp.hpl.jena.sparql.resultset.OutputFormatter;
 import javax.ws.rs.core.MediaType;
 import java.io.OutputStream;
 
-final class AskHandler extends JenaQueryHandler.BaseQueryHandler<Boolean> {
+final class AskInvocation extends SparqlInvocation<Boolean> {
 
   private final OutputFormatter serializer;
 
-  public AskHandler(final OutputFormatter serializer, final MediaType format) {
+  public AskInvocation(final OutputFormatter serializer, final MediaType format) {
     super(format);
     this.serializer = serializer;
   }

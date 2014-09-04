@@ -1,12 +1,12 @@
 package at.ac.univie.isc.asio.engine;
 
-import java.io.IOException;
-import java.io.OutputStream;
-
-import javax.ws.rs.core.MediaType;
-
 import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.security.Role;
+import com.google.common.collect.Multimap;
+
+import javax.ws.rs.core.MediaType;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * Wrap a two-phase operation on a dataset.
@@ -21,6 +21,11 @@ public interface Invocation extends AutoCloseable {
    * @return role required to execute this.
    */
   Role requires();
+
+  /**
+   * @return contextual information
+   */
+  Multimap<String, String> properties();
 
   /**
    * Perform the operation and prepare resources for result serialization.

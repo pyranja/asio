@@ -1,6 +1,9 @@
 package at.ac.univie.isc.asio.engine;
 
-import at.ac.univie.isc.asio.*;
+import at.ac.univie.isc.asio.DatasetFailureException;
+import at.ac.univie.isc.asio.DatasetUsageException;
+import at.ac.univie.isc.asio.Language;
+import at.ac.univie.isc.asio.admin.Event;
 import at.ac.univie.isc.asio.config.JaxrsSpec;
 import at.ac.univie.isc.asio.config.TimeoutSpec;
 import at.ac.univie.isc.asio.jaxrs.AcceptTunnelFilter;
@@ -8,8 +11,14 @@ import at.ac.univie.isc.asio.jaxrs.EmbeddedServer;
 import at.ac.univie.isc.asio.security.Permission;
 import at.ac.univie.isc.asio.security.Role;
 import at.ac.univie.isc.asio.security.Token;
+import at.ac.univie.isc.asio.tool.CaptureEvents;
 import at.ac.univie.isc.asio.tool.Rules;
+import at.ac.univie.isc.asio.tool.TestTicker;
 import com.google.common.base.Charsets;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import com.google.common.base.Ticker;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.io.BaseEncoding;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
@@ -33,8 +42,10 @@ import java.util.concurrent.TimeUnit;
 
 import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.hasBody;
 import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.hasStatus;
+import static at.ac.univie.isc.asio.tool.EventMatchers.*;
 import static at.ac.univie.isc.asio.tool.IsMultimapContaining.hasEntries;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
+import static org.hamcrest.core.CombinableMatcher.both;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
@@ -44,6 +55,11 @@ public class ProtocolResourceTest {
   private final Command.Factory connector = mock(Command.Factory.class);
   private final Command command = mock(Command.class);
 
+  private final CaptureEvents events = CaptureEvents.create();
+  private final Ticker time = TestTicker.create(42);
+  private final Supplier<EventReporter> eventBuilder =
+      Suppliers.ofInstance(new EventReporter(events.bus(), time));
+
   private final byte[] PAYLOAD = "{response : success}".getBytes(Charsets.UTF_8);
 
   @Rule
@@ -51,7 +67,7 @@ public class ProtocolResourceTest {
   @Rule
   public EmbeddedServer server = EmbeddedServer
       .host(JaxrsSpec.create(ProtocolResource.class))
-      .resource(new ProtocolResource(connector, timeout))
+      .resource(new ProtocolResource(connector, timeout, eventBuilder))
       .enableLogging()
       .create();
 
@@ -61,9 +77,9 @@ public class ProtocolResourceTest {
   public void setup() {
     when(timeout.getAs(any(TimeUnit.class), any(Long.class))).thenReturn(0L);
     // prepare mocks
-    when(connector.accept(any(Parameters.class), any(Principal.class)))
-        .thenReturn(command);
+    when(connector.accept(any(Parameters.class), any(Principal.class))).thenReturn(command);
     when(command.requiredRole()).thenReturn(Role.ANY);
+    when(command.properties()).thenReturn(ImmutableMultimap.<String, String>of());
     final Command.Results payloadStreamer = new Command.Results() {
       @Override
       public void write(final OutputStream output) throws IOException, WebApplicationException {
@@ -76,7 +92,8 @@ public class ProtocolResourceTest {
       }
 
       @Override
-      public void close() {}
+      public void close() {
+      }
     };
     when(command.observe()).thenReturn(Observable.from(payloadStreamer));
   }
@@ -134,6 +151,44 @@ public class ProtocolResourceTest {
   }
 
   // ====================================================================================>
+  // EVENTING
+
+  @Test
+  public void successful_request_events() throws Exception {
+    invoke(Permission.READ, Language.SQL).request().get();
+    assertThat(events.captured(Event.class),
+        is(both(orderedStreamOf(event("received"), event("accepted")))
+            .and(correlated()))
+    );
+  }
+
+  @Test
+  public void fail_due_to_illegal_parameters_events() throws Exception {
+    invoke(Permission.READ, Language.SQL).request().post(Entity.text("illegal"));
+    assertThat(events.captured(Event.class),
+        is(both(orderedStreamOf(event("received"), event("rejected"))).and(correlated()))
+    );
+  }
+
+  @Test
+  public void connector_failing_events() throws Exception {
+    when(connector.accept(any(Parameters.class), any(Principal.class))).thenThrow(new IllegalStateException("test"));
+    invoke(Permission.READ, Language.SQL).request().get();
+    assertThat(events.captured(Event.class),
+        is(both(orderedStreamOf(event("received"), event("rejected"))).and(correlated()))
+    );
+  }
+
+  @Test
+  public void fail_to_observer_events() throws Exception {
+    when(command.observe()).thenThrow(new IllegalStateException("test"));
+    invoke(Permission.READ, Language.SQL).request().get();
+    assertThat(events.captured(Event.class),
+        is(both(orderedStreamOf(event("received"), event("accepted"), event("rejected"))).and(correlated()))
+    );
+  }
+
+  // ====================================================================================>
   // ILLEGAL REQUESTS
 
   @Test
@@ -171,7 +226,7 @@ public class ProtocolResourceTest {
 
   @Test
   public void forward_all_parameters_from_form_operation() throws Exception {
-    final Form form = new Form("two", "2").param("two","2").param("one", "1");
+    final Form form = new Form("two", "2").param("two", "2").param("one", "1");
     invoke(Permission.READ, Language.SQL).request(MediaType.APPLICATION_JSON)
         .post(Entity.entity(form, MediaType.APPLICATION_FORM_URLENCODED_TYPE));
     verify(connector).accept(params.capture(), any(Principal.class));
@@ -200,9 +255,9 @@ public class ProtocolResourceTest {
         .request(MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_PLAIN).get();
     verify(connector).accept(params.capture(), any(Principal.class));
     assertThat(params.getValue().acceptable(), containsInAnyOrder(
-            MediaType.TEXT_PLAIN_TYPE,
-            MediaType.APPLICATION_XML_TYPE,
-            MediaType.APPLICATION_JSON_TYPE));
+        MediaType.TEXT_PLAIN_TYPE,
+        MediaType.APPLICATION_XML_TYPE,
+        MediaType.APPLICATION_JSON_TYPE));
   }
 
   @Test
@@ -226,7 +281,8 @@ public class ProtocolResourceTest {
 
   @Test
   public void forward_authorization_token() throws Exception {
-    final String authText = "Basic " + BaseEncoding.base64().encode("test:password".getBytes(Charsets.UTF_8));
+    final String authText =
+        "Basic " + BaseEncoding.base64().encode("test:password".getBytes(Charsets.UTF_8));
     invoke(Permission.READ, Language.SQL).request(MediaType.APPLICATION_JSON)
         .header(HttpHeaders.AUTHORIZATION, authText).get();
     verify(connector).accept(any(Parameters.class), principal.capture());
@@ -306,7 +362,8 @@ public class ProtocolResourceTest {
       }
 
       @Override
-      public void close() {}
+      public void close() {
+      }
     };
     when(command.observe()).thenReturn(Observable.just(failing));
     response = invoke(Permission.READ, Language.SQL).request().get();
@@ -327,7 +384,8 @@ public class ProtocolResourceTest {
       }
 
       @Override
-      public void close() {}
+      public void close() {
+      }
     };
     when(command.observe()).thenReturn(Observable.just(failing));
     response = invoke(Permission.READ, Language.SQL).request().get();

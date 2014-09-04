@@ -10,39 +10,24 @@ import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.io.OutputStream;
 
-final class SelectInvocation implements Invocation {
+final class SelectInvocation extends SqlInvocation {
   interface CursorWriter {
     void serialize(OutputStream output, String statement, Cursor<Record> cursor) throws IOException;
   }
 
   private final CursorWriter writer;
-  private final MediaType contentType;
-  private final JdbcContext jdbc;
-  private final String sql;
 
   private Cursor<Record> cursor;
 
-  protected SelectInvocation(final JdbcContext jdbc, final String sql, final CursorWriter writer,
-                             final MediaType contentType) {
+  public SelectInvocation(final JdbcContext jdbc, final String sql, final CursorWriter writer,
+                          final MediaType contentType) {
+    super(jdbc, sql, contentType, Role.READ);
     this.writer = writer;
-    this.jdbc = jdbc;
-    this.sql = sql;
-    this.contentType = contentType;
-  }
-
-  @Override
-  public Role requires() {
-    return Role.READ;
   }
 
   @Override
   public final void execute() throws DatasetException {
     cursor = jdbc.query(sql);
-  }
-
-  @Override
-  public MediaType produces() {
-    return contentType;
   }
 
   @Override

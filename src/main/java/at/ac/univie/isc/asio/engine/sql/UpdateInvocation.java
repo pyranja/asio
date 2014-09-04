@@ -1,51 +1,37 @@
 package at.ac.univie.isc.asio.engine.sql;
 
+import at.ac.univie.isc.asio.DatasetException;
+import at.ac.univie.isc.asio.engine.Invocation;
+import at.ac.univie.isc.asio.security.Role;
+import at.ac.univie.isc.asio.tool.Resources;
 import com.google.common.base.Charsets;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Locale;
 
 import javax.ws.rs.core.MediaType;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Locale;
 
-import at.ac.univie.isc.asio.DatasetException;
-import at.ac.univie.isc.asio.engine.Invocation;
-import at.ac.univie.isc.asio.security.Role;
-import at.ac.univie.isc.asio.tool.Resources;
-
-final class UpdateInvocation implements Invocation {
+final class UpdateInvocation extends SqlInvocation {
+  interface ModCountWriter {
+    void serialize(OutputStream output, String statement, int modCount) throws IOException;
+  }
 
   private final ModCountWriter writer;
-  private final MediaType contentType;
-  private final JdbcContext jdbc;
-  private final String sql;
 
   private int rowCount = -1;
 
   public UpdateInvocation(final JdbcContext jdbc, final String sql, final ModCountWriter writer,
                           final MediaType contentType) {
+    super(jdbc, sql, contentType, Role.WRITE);
     this.writer = writer;
-    this.jdbc = jdbc;
-    this.sql = sql;
-    this.contentType = contentType;
-  }
-
-  @Override
-  public Role requires() {
-    return Role.WRITE;
   }
 
   @Override
   public void execute() throws DatasetException {
     rowCount = jdbc.update(sql);
-  }
-
-  @Override
-  public MediaType produces() {
-    return contentType;
   }
 
   @Override
@@ -63,10 +49,6 @@ final class UpdateInvocation implements Invocation {
   @Override
   public void close() throws DatasetException {
     jdbc.close();
-  }
-
-  interface ModCountWriter {
-    void serialize(OutputStream output, String statement, int modCount) throws IOException;
   }
 
   static class XmlModCountWriter implements ModCountWriter {

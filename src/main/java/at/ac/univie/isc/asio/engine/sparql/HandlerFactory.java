@@ -78,7 +78,7 @@ final class HandlerFactory {
         .make();
   }
 
-  public JenaQueryHandler select(final int queryType, final List<MediaType> acceptable) {
+  public SparqlInvocation select(final int queryType, final List<MediaType> acceptable) {
     switch (queryType) {
       case Query.QueryTypeAsk:
         return handleAsk(acceptable);
@@ -93,27 +93,27 @@ final class HandlerFactory {
     }
   }
 
-  private AskHandler handleAsk(final List<MediaType> acceptable) {
+  private AskInvocation handleAsk(final List<MediaType> acceptable) {
     final TypeMatchingResolver.Selection<OutputFormatter> selection =
         resultFormatterRegistry.select(acceptable);
-    return new AskHandler(selection.value(), selection.type());
+    return new AskInvocation(selection.value(), selection.type());
   }
 
-  private JenaQueryHandler handleSelect(final List<MediaType> acceptable) {
+  private SparqlInvocation handleSelect(final List<MediaType> acceptable) {
     final TypeMatchingResolver.Selection<OutputFormatter> selection =
         resultFormatterRegistry.select(acceptable);
-    return new SelectHandler(selection.value(), selection.type());
+    return new SelectInvocation(selection.value(), selection.type());
   }
 
-  private JenaQueryHandler handleDescribe(final List<MediaType> acceptable) {
+  private SparqlInvocation handleDescribe(final List<MediaType> acceptable) {
     final TypeMatchingResolver.Selection<RDFWriter> selection =
         graphFormatterRegistry.select(acceptable);
-    return new DescribeHandler(selection.value(), selection.type());
+    return new DescribeInvocation(selection.value(), selection.type());
   }
 
-  private JenaQueryHandler handleConstruct(final List<MediaType> acceptable) {
+  private SparqlInvocation handleConstruct(final List<MediaType> acceptable) {
     final TypeMatchingResolver.Selection<RDFWriter> selection =
         graphFormatterRegistry.select(acceptable);
-    return new ConstructHandler(selection.value(), selection.type());
+    return new ConstructInvocation(selection.value(), selection.type());
   }
 }

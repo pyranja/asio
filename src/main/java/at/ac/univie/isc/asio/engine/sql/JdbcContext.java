@@ -3,6 +3,7 @@ package at.ac.univie.isc.asio.engine.sql;
 import at.ac.univie.isc.asio.DatasetFailureException;
 import at.ac.univie.isc.asio.config.TimeoutSpec;
 import at.ac.univie.isc.asio.tool.Resources;
+import com.google.common.base.Objects;
 import org.jooq.ConnectionProvider;
 import org.jooq.Cursor;
 import org.jooq.DSLContext;
@@ -29,6 +30,14 @@ final class JdbcContext implements AutoCloseable {
     this.jooq = jooq;
     this.pool = jooq.configuration().connectionProvider();
     this.timeout = timeout;
+  }
+
+  String dialect() {
+    return jooq.configuration().dialect().getName();
+  }
+
+  TimeoutSpec timeout() {
+    return timeout;
   }
 
   public Cursor<Record> query(final String sql) {
@@ -82,5 +91,13 @@ final class JdbcContext implements AutoCloseable {
     if (connection != null) {
       pool.release(connection);
     }
+  }
+
+  @Override
+  public String toString() {
+    return Objects.toStringHelper(this)
+        .add("timeout", timeout)
+        .add("dialect", jooq.configuration().dialect().getName())
+        .toString();
   }
 }

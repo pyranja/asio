@@ -3,14 +3,14 @@
     xmlns="http://java.sun.com/xml/ns/javaee"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
-    metadata-complete="true" version="3.0"
+    metadata-complete="false" version="3.0"
     >
 
   <display-name>asio</display-name>
   <description>HTTP frontend for a relational database</description>
 
   <!-- disable jar scanning -->
-  <absolute-ordering />
+  <absolute-ordering/>
 
   <!-- spring configuration setup - scans given pacakge for @Configuration classes -->
   <context-param>
@@ -42,15 +42,15 @@
 
   <!-- clean up listener wraps all others -->
   <listener>
-    <listener-class>
-      se.jiderhamn.classloader.leak.prevention.ClassLoaderLeakPreventor
-    </listener-class>
+    <listener-class>se.jiderhamn.classloader.leak.prevention.ClassLoaderLeakPreventor</listener-class>
   </listener>
 
   <listener>
-    <listener-class>
-      org.springframework.web.context.ContextLoaderListener
-    </listener-class>
+    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+  </listener>
+
+  <listener>  <!-- enables spring request scopes -->
+    <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
   </listener>
 
   <!-- cxf dispatch -->
@@ -64,6 +64,18 @@
     <init-param>
       <param-name>static-resources-list</param-name>
       <param-value>/explore/.*</param-value>
+    </init-param>
+    <init-param>
+      <param-name>redirects-list</param-name>
+      <param-value>/admin/events</param-value>
+    </init-param>
+    <init-param>
+      <param-name>redirect-servlet-name</param-name>
+      <param-value>MonitorServlet</param-value>
+    </init-param>
+    <init-param>
+      <param-name>redirect-attributes</param-name>
+      <param-value>javax.servlet.include.request_uri</param-value>
     </init-param>
   </servlet>
 

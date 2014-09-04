@@ -16,9 +16,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Turn an {@link Invocation} into a reactive
- * sequence yielding the {@link Command.Results results} on completion or an
- * error.
+ * Turn an {@link Invocation} into a reactive sequence yielding the {@link Command.Results results}
+ * on completion or an error.
  * <p>A single execution may only be subscribed to once. Subsequent subscriptions will fail
  * immediately.</p>
  * <p>To properly clean up utilized resources, the results <strong>must</strong>

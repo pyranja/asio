@@ -1,7 +1,6 @@
 package at.ac.univie.isc.asio.engine;
 
 import at.ac.univie.isc.asio.Language;
-import at.ac.univie.isc.asio.engine.Parameters;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -66,28 +65,28 @@ public class ParametersTest {
   public void should_fail_on_language_mismatch() throws Exception {
     subject = builder.body("command", MediaType.valueOf("application/sql-query")).build(headers);
     error.expect(NotSupportedException.class);
-    subject.properties();
+    subject.failIfNotValid();
   }
 
   @Test
   public void should_fail_on_malformed_content_type() throws Exception {
     subject = builder.body("command", MediaType.valueOf("application/json")).build(headers);
     error.expect(NotSupportedException.class);
-    subject.properties();
+    subject.failIfNotValid();
   }
 
   @Test
   public void should_fail_on_null_body() throws Exception {
     subject = builder.body(null, MediaType.valueOf("application/test-update")).build(headers);
     error.expect(BadRequestException.class);
-    subject.properties();
+    subject.failIfNotValid();
   }
 
   @Test
   public void should_fail_on_null_headers() throws Exception {
     subject = builder.build(null);
     error.expect(NullPointerException.class);
-    subject.properties();
+    subject.failIfNotValid();
   }
 
 

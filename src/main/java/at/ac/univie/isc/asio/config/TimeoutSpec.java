@@ -41,6 +41,14 @@ public class TimeoutSpec {
     return timeoutInNanos;
   }
 
+  public final String asText() {
+    if (defined) {
+      return Long.toString(TimeUnit.NANOSECONDS.toMillis(timeoutInNanos));
+    } else {
+      return "undefined";
+    }
+  }
+
   @Override
   public String toString() {
     final Objects.ToStringHelper builder = Objects.toStringHelper(this);

@@ -2,9 +2,10 @@ package at.ac.univie.isc.asio.jaxrs;
 
 import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.DatasetUsageException;
+import at.ac.univie.isc.asio.ErrorMessage;
+import at.ac.univie.isc.asio.ObjectFactory;
 import at.ac.univie.isc.asio.engine.Command;
 import at.ac.univie.isc.asio.engine.TypeMatchingResolver;
-import at.ac.univie.isc.asio.ErrorMessage;
 import com.google.common.collect.ImmutableMap;
 
 import javax.ws.rs.core.*;
@@ -35,6 +36,7 @@ public class DatasetExceptionMapper implements ExceptionMapper<DatasetException>
 			"[CAUSE] %s\n" 	+ 	// root level message
 			"[TRACE] %s"	;	// stack trace
 	// @formatter:on
+  private static final ObjectFactory JAXB = new ObjectFactory();
 
   private final List<Variant> variants;
 
@@ -58,9 +60,12 @@ public class DatasetExceptionMapper implements ExceptionMapper<DatasetException>
       return response.entity(message).type(TEXT_PLAIN_TYPE).build();
     } else {
       //noinspection ThrowableResultOfMethodCallIgnored
-      final ErrorMessage message = new ErrorMessage().withMessage(error.getLocalizedMessage())
-          .withCause(getRootCause(error).getLocalizedMessage())
-          .withTrace(getStackTraceAsString(error));
+      final ErrorMessage message = JAXB.createErrorMessage()
+          .withMessage(error.getLocalizedMessage())
+          .withCause(error.toString())
+          .withRoot(getRootCause(error).toString())
+          .withTrace(getStackTraceAsString(error)) // FIXME : control with debug flag
+          ;
       return response.entity(message).type(selected.getMediaType()).build();
     }
   }

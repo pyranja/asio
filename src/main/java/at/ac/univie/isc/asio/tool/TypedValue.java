@@ -1,25 +1,27 @@
 package at.ac.univie.isc.asio.tool;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
 
 @Immutable
-@Nonnull
 public class TypedValue<VALUE> {
-  private final VALUE val;
+  @Nonnull private final VALUE val;
 
-  protected TypedValue(final VALUE val) {
+  protected TypedValue(@Nonnull final VALUE val) {
     requireNonNull(val, "id must not be null");
     this.val = normalize(val);
   }
 
-  protected VALUE normalize(final VALUE val) {
+  @Nonnull
+  protected VALUE normalize(@Nonnull final VALUE val) {
     return val;
   }
 
+  @Nonnull
   protected final VALUE value() {
     return val;
   }
@@ -30,7 +32,7 @@ public class TypedValue<VALUE> {
   }
 
   @Override
-  public final boolean equals(final Object other) {
+  public final boolean equals(@Nullable final Object other) {
     if (this == other) {
       return true;
     }

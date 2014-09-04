@@ -16,6 +16,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Hold properties extracted from a protocol request.
+ */
 @Immutable
 public final class Parameters {
   public static final String KEY_LANGUAGE = "language";
@@ -57,14 +60,10 @@ public final class Parameters {
     this.cause = cause;
   }
 
-  @Deprecated
-  public Map<String, List<String>> props() {
-    failIfNotValid();
-    return Multimaps.asMap(parameters);
-  }
-
+  /**
+   * @return all captured parameters
+   */
   public Multimap<String, String> properties() {
-    failIfNotValid();
     return parameters;
   }
 
@@ -76,7 +75,6 @@ public final class Parameters {
    * @throws Parameters.IllegalParameter if found value is an empty string
    */
   public String require(final String key) {
-    failIfNotValid();
     final List<String> values = parameters.get(key);
     if (values.isEmpty()) {
       throw new MissingParameter(key);
@@ -99,11 +97,17 @@ public final class Parameters {
     return Language.valueOf(require(KEY_LANGUAGE));
   }
 
+  /**
+   * @return all accepted mime types sorted by preference
+   */
   public List<MediaType> acceptable() {
-    failIfNotValid();
     return acceptableTypes;
   }
 
+  /**
+   * Throw an exception, which may have occurred during construction.
+   * @throws java.lang.Exception any validation error
+   */
   public void failIfNotValid() {
     if (cause != null) {
       throw cause;

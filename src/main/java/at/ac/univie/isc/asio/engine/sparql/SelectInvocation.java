@@ -7,15 +7,15 @@ import com.hp.hpl.jena.sparql.resultset.OutputFormatter;
 import javax.ws.rs.core.MediaType;
 import java.io.OutputStream;
 
-final class SelectHandler extends JenaQueryHandler.BaseQueryHandler<ResultSet> {
+final class SelectInvocation extends SparqlInvocation<ResultSet> {
 
   private final OutputFormatter serializer;
 
-  public SelectHandler(final OutputFormatter serializer) {
+  public SelectInvocation(final OutputFormatter serializer) {
     this(serializer, MediaType.WILDCARD_TYPE);
   }
 
-  public SelectHandler(final OutputFormatter serializer, final MediaType format) {
+  public SelectInvocation(final OutputFormatter serializer, final MediaType format) {
     super(format);
     this.serializer = serializer;
   }

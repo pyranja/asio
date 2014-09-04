@@ -8,6 +8,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import rx.Observable;
 import rx.Subscriber;
 import rx.functions.Action0;
+import rx.functions.Action1;
 import rx.subscriptions.Subscriptions;
 
 import javax.annotation.Nonnull;
@@ -37,6 +38,19 @@ public final class Reactive {
    */
   public static <T> ToObservableListenableFuture<T> listeningFor(@Nonnull final ListenableFuture<T> future) {
     return new ToObservableListenableFuture<>(future);
+  }
+
+  private static final Action1<Throwable> EMPTY_ACTION = new Action1<Throwable>() {
+    @Override
+    public void call(final Throwable o) {}
+  };
+
+  /**
+   * Create an {@link rx.functions.Action1 error handler}, which ignores errors.
+   * @return An empty {@code Action1<Throwable>}, that does nothing.
+   */
+  public static Action1<Throwable> ignoreErrors() {
+    return EMPTY_ACTION;
   }
 
   private Reactive() {

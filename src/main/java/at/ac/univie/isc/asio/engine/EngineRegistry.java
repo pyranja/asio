@@ -5,10 +5,10 @@ import at.ac.univie.isc.asio.security.Role;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import rx.Observable;
 import rx.Scheduler;
 
-import javax.annotation.Nullable;
 import java.security.Principal;
 import java.util.Map;
 
@@ -19,9 +19,8 @@ public final class EngineRegistry implements Command.Factory {
   public EngineRegistry(final Scheduler scheduler, final Iterable<Engine> engines) {
     this.scheduler = scheduler;
     this.registry = Maps.uniqueIndex(engines, new Function<Engine, Language>() {
-      @Nullable
       @Override
-      public Language apply(@Nullable final Engine input) {
+      public Language apply(final Engine input) {
         return input.language();
       }
     });
@@ -52,10 +51,20 @@ public final class EngineRegistry implements Command.Factory {
     }
 
     @Override
+    public Multimap<String, String> properties() {
+      return handler.properties();
+    }
+
+    @Override
     public Observable<Results> observe() {
       return Observable
           .create(new OnSubscribeExecute(handler))
           .subscribeOn(scheduler);
+    }
+
+    @Override
+    public String toString() {
+      return handler.toString();
     }
   }
 }

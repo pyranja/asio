@@ -7,23 +7,22 @@ import com.hp.hpl.jena.rdf.model.RDFWriter;
 import javax.ws.rs.core.MediaType;
 import java.io.OutputStream;
 
-final class DescribeHandler extends JenaQueryHandler.BaseQueryHandler<Model> {
+final class ConstructInvocation extends SparqlInvocation<Model> {
 
   private final RDFWriter writer;
 
-  public DescribeHandler(final RDFWriter writer, final MediaType format) {
+  public ConstructInvocation(final RDFWriter writer, final MediaType format) {
     super(format);
     this.writer = writer;
   }
 
   @Override
   protected Model doInvoke(final QueryExecution execution) {
-    return execution.execDescribe();
+    return execution.execConstruct();
   }
 
   @Override
   protected void doSerialize(final OutputStream sink, final Model data) {
     writer.write(data, sink, "");
   }
-
 }

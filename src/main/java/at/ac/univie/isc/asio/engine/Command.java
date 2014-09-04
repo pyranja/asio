@@ -4,6 +4,7 @@ import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.DatasetUsageException;
 import at.ac.univie.isc.asio.Language;
 import at.ac.univie.isc.asio.security.Role;
+import com.google.common.collect.Multimap;
 import rx.Observable;
 
 import javax.ws.rs.core.MediaType;
@@ -21,6 +22,11 @@ public interface Command {
    * @return role required to execute this command.
    */
   Role requiredRole();
+
+  /**
+   * @return contextual information
+   */
+  Multimap<String, String> properties();
 
   /**
    * Start processing of the encapsulated command asynchronously.
