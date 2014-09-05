@@ -83,7 +83,6 @@ public final class EventSource implements AutoCloseable {
     }
   }
 
-
   /**
    * this event source is closed
    */
@@ -98,7 +97,7 @@ public final class EventSource implements AutoCloseable {
 
   private final HttpGet request;
   private final Observable<MessageEvent> events;
-  private final Subject<Void, Void> connection;
+  private final Subject<HttpResponse, HttpResponse> connection;
   private volatile boolean closed;
 
   private EventSource(final URI target, final Scheduler scheduler) {
@@ -110,12 +109,12 @@ public final class EventSource implements AutoCloseable {
   }
 
   /**
-   * Emits a {@code null} item, whenever this source connects to the event server.
+   * Emits the http response, whenever this source connects to the event server.
    *
    * @return observable connection events
    */
-  public Observable<Void> connection() {
-    return connection;
+  public Observable<HttpResponse> connection() {
+    return connection.asObservable();
   }
 
   /**
@@ -165,9 +164,9 @@ public final class EventSource implements AutoCloseable {
         if (closed || eventObserver.isUnsubscribed()) {
           throw new EventSourceClosed();
         }
+        connection.onNext(response);
         if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
           log.debug("connection established");
-          connection.onNext(null);
           consume(response);
           log.debug("event stream consumed");
           eventObserver.onCompleted();

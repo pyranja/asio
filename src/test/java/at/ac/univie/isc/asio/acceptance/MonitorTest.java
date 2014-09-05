@@ -3,6 +3,7 @@ package at.ac.univie.isc.asio.acceptance;
 import at.ac.univie.isc.asio.jaxrs.EventSource;
 import at.ac.univie.isc.asio.tool.FunctionalTest;
 import at.ac.univie.isc.asio.tool.Rules;
+import org.apache.http.HttpResponse;
 import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Rule;
@@ -60,9 +61,9 @@ public class MonitorTest extends AcceptanceHarness {
 
   @Test
   public void successful_query_event_sequence() throws Exception {
-    monitor.connection().subscribe(new Action1<Void>() {
+    monitor.connection().subscribe(new Action1<HttpResponse>() {
       @Override
-      public void call(final Void aVoid) {
+      public void call(final HttpResponse aVoid) {
         client.accept(XML).query(PARAM_QUERY, "SELECT 1").async().get();
       }
     });
@@ -74,9 +75,9 @@ public class MonitorTest extends AcceptanceHarness {
 
   @Test
   public void failed_query_event_sequence() throws Exception {
-    monitor.connection().subscribe(new Action1<Void>() {
+    monitor.connection().subscribe(new Action1<HttpResponse>() {
       @Override
-      public void call(final Void aVoid) {
+      public void call(final HttpResponse aVoid) {
         client.accept(XML).query(PARAM_QUERY, "SELECT * FROM NOT_EXISTING").async().get();
       }
     });
@@ -87,9 +88,9 @@ public class MonitorTest extends AcceptanceHarness {
 
   @Test
   public void rejected_query_event_sequence() throws Exception {
-    monitor.connection().subscribe(new Action1<Void>() {
+    monitor.connection().subscribe(new Action1<HttpResponse>() {
       @Override
-      public void call(final Void aVoid) {
+      public void call(final HttpResponse aVoid) {
         client.accept(XML).async().get();
       }
     });
