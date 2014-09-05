@@ -13,7 +13,6 @@ import at.ac.univie.isc.asio.sql.EmbeddedDb;
 import at.ac.univie.isc.asio.tool.ConvertToTable;
 import com.google.common.collect.Table;
 import com.google.common.io.ByteStreams;
-import com.sun.rowset.WebRowSetImpl;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.conf.Settings;
@@ -25,6 +24,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import javax.sql.rowset.RowSetProvider;
 import javax.sql.rowset.WebRowSet;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXB;
@@ -155,7 +155,7 @@ public class JooqEngineTest {
   }
 
   private WebRowSet parseWebRowSet(final byte[] raw) throws SQLException, IOException {
-    final WebRowSet wrs = new WebRowSetImpl();
+    final WebRowSet wrs = RowSetProvider.newFactory().createWebRowSet();
     wrs.readXml(new ByteArrayInputStream(raw));
     return wrs;
   }

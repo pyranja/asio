@@ -1,18 +1,16 @@
 package at.ac.univie.isc.asio.sql;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
+
+import javax.sql.rowset.RowSetFactory;
+import javax.sql.rowset.RowSetProvider;
+import javax.sql.rowset.WebRowSet;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
-
-import uk.org.ogsadai.converters.webrowset.WebRowSetResultSetParseException;
-import uk.org.ogsadai.converters.webrowset.resultset.WebRowSetToResultSet;
-
-import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 
 /**
  * Convert a XML Webrowset into a map of key->[columns] pairs
@@ -31,14 +29,12 @@ public final class ResultSetToMap {
    * @return map of {@link at.ac.univie.isc.asio.sql.KeyedRow}s
    */
   public static Map<String, KeyedRow> convertStream(final InputStream stream, final String keyColumn) {
-    try (InputStreamReader xml = new InputStreamReader(stream, Charsets.UTF_8)) {
-      final WebRowSetToResultSet parser = new WebRowSetToResultSet(xml);
-      // force eager parsing
-      parser.setResultSetType(ResultSet.TYPE_SCROLL_INSENSITIVE);
-      try (ResultSet rs = parser.getResultSet();) {
-        return INSTANCE.convert(rs, keyColumn);
-      }
-    } catch (final SQLException | IOException | WebRowSetResultSetParseException e) {
+    try (final InputStream ignored = stream) {
+      final RowSetFactory rowSetFactory = RowSetProvider.newFactory();
+      final WebRowSet webRowSet = rowSetFactory.createWebRowSet();
+      webRowSet.readXml(stream);
+      return INSTANCE.convert(webRowSet, keyColumn);
+    } catch (final SQLException | IOException e) {
       throw new IllegalStateException("failed to convert webrowset stream", e);
     }
   }

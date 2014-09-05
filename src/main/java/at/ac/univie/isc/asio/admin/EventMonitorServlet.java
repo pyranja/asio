@@ -8,7 +8,6 @@ import com.google.common.base.Function;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.net.HttpHeaders;
-import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.context.WebApplicationContext;
@@ -25,7 +24,10 @@ import rx.subjects.Subject;
 import rx.subscriptions.Subscriptions;
 
 import javax.annotation.Nullable;
-import javax.servlet.*;
+import javax.servlet.AsyncContext;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -155,7 +157,7 @@ public final class EventMonitorServlet extends HttpServlet {
   protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
     log.debug("{}@{} subscribes to event stream", req.getRemoteUser(), req.getRemoteAddr());
     if (listenerCount.get() + 1 > maxListenerCount) {
-      resp.sendError(HttpStatus.SC_SERVICE_UNAVAILABLE, "too many listeners connected");
+      resp.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE, "too many listeners connected");
       return;
     }
     populateHeaders(resp);
