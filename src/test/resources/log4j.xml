@@ -9,6 +9,12 @@
     </layout>
   </appender>
 
+  <appender name="asio-events" class="org.apache.log4j.ConsoleAppender">
+    <layout class="org.apache.log4j.PatternLayout">
+      <param name="ConversionPattern" value="%d{ISO8601} %-5p %m%n" />
+    </layout>
+  </appender>
+
   <!-- FIXME : remove after getting rid of ResponseMonitor -->
   <logger name="at.ac.univie.isc.asio.tool.ResponseMonitor">
     <level value="error" />
@@ -22,6 +28,11 @@
   <!-- application logger -->
   <logger name="at.ac.univie.isc.asio">
     <level value="off" />
+  </logger>
+
+  <logger name="at.ac.univie.isc.asio.events" additivity="false">
+    <level value="off" />
+    <appender-ref ref="asio-events" />
   </logger>
 
   <logger name="de.fuberlin.wiwiss.d2rq">

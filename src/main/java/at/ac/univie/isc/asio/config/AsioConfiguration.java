@@ -1,6 +1,7 @@
 package at.ac.univie.isc.asio.config;
 
 import at.ac.univie.isc.asio.SqlSchema;
+import at.ac.univie.isc.asio.admin.EventLoggerBridge;
 import at.ac.univie.isc.asio.engine.*;
 import at.ac.univie.isc.asio.metadata.*;
 import com.google.common.base.Supplier;
@@ -138,6 +139,12 @@ public class AsioConfiguration {
             .setNameFormat("asio-events-%d")
             .build();
     return Executors.newSingleThreadScheduledExecutor(factory);
+  }
+
+  @Bean
+  @SuppressWarnings("UnusedDeclaration")  // lifecycle managed by spring
+  public EventLoggerBridge eventLogger() {
+    return new EventLoggerBridge(eventBus());
   }
 
   @Bean(destroyMethod = "shutdownNow")
