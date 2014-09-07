@@ -1,7 +1,9 @@
 package at.ac.univie.isc.asio.jaxrs;
 
 import com.google.common.base.Charsets;
+import com.google.common.base.Throwables;
 import com.google.common.io.ByteStreams;
+import org.apache.cxf.transport.https.CertificateHostnameVerifier;
 import org.junit.internal.AssumptionViolatedException;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -12,12 +14,17 @@ import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
 import javax.annotation.concurrent.NotThreadSafe;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 import javax.ws.rs.client.*;
 import javax.ws.rs.ext.Provider;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 
 import static java.util.Objects.requireNonNull;
 
@@ -26,7 +33,6 @@ import static java.util.Objects.requireNonNull;
  */
 @NotThreadSafe
 public final class ManagedClient implements TestRule {
-  // TODO : add SSL support
   private static final Logger log = LoggerFactory.getLogger(ManagedClient.class);
   private static final Marker MONITOR = MarkerFactory.getMarker("MONITOR");
 
@@ -37,7 +43,6 @@ public final class ManagedClient implements TestRule {
   private final ClientBuilder builder;
   private final URI serviceAddress;
   private Client client;
-  private WebTarget target;
 
   private ManagedClient(final ClientBuilder builder, final URI serviceAddress) {
     this.builder = requireNonNull(builder);
@@ -99,7 +104,7 @@ public final class ManagedClient implements TestRule {
 
     private final ExchangeReporter reporter = ExchangeReporter.create();
 
-    public static final String findReport(Client client) {
+    public static String findReport(Client client) {
       final Object reporter = client.getConfiguration().getProperty(REPORT_KEY);
       if (reporter != null && reporter instanceof ExchangeReporter) {
         return ((ExchangeReporter) reporter).format();
@@ -128,15 +133,36 @@ public final class ManagedClient implements TestRule {
     }
   }
 
-  public static class ManagedClientBuilder {
+  public final static class ManagedClientBuilder {
     private ClientBuilder builder;
 
     public ManagedClientBuilder() {
       builder = ClientBuilder.newBuilder();
     }
 
-    public ManagedClientBuilder use(Object provider) {
+    public ManagedClientBuilder use(final Object provider) {
       builder.register(provider);
+      return this;
+    }
+
+    public ManagedClientBuilder secured(final KeyStore keyStore) {
+      try {
+        TrustManagerFactory trustFactory =
+            TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        trustFactory.init(keyStore);
+        TrustManager[] trustManagers = trustFactory.getTrustManagers();
+
+        final SSLContext context = SSLContext.getInstance("TLS");
+        // null KeyManager[] : not required for clients
+        // null SecureRandom : default is used
+        context.init(null, trustManagers, null);
+
+        builder
+            .hostnameVerifier(CertificateHostnameVerifier.DEFAULT_AND_LOCALHOST)
+            .sslContext(context);
+      } catch (GeneralSecurityException e) {
+        Throwables.propagate(e);
+      }
       return this;
     }
 

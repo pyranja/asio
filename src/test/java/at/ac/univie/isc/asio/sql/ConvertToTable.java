@@ -1,6 +1,5 @@
-package at.ac.univie.isc.asio.tool;
+package at.ac.univie.isc.asio.sql;
 
-import at.ac.univie.isc.asio.sql.ResultSetIterator;
 import au.com.bytecode.opencsv.CSVReader;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableTable;

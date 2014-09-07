@@ -7,7 +7,7 @@ import at.ac.univie.isc.asio.engine.Parameters;
 import at.ac.univie.isc.asio.engine.TypeMatchingResolver;
 import at.ac.univie.isc.asio.security.Role;
 import at.ac.univie.isc.asio.security.Token;
-import at.ac.univie.isc.asio.tool.ConvertToTable;
+import at.ac.univie.isc.asio.sql.ConvertToTable;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Table;
 import com.hp.hpl.jena.query.QueryCancelledException;

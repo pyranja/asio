@@ -1,37 +1,25 @@
 package at.ac.univie.isc.asio.metadata;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.any;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.givenThat;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static com.github.tomakehurst.wiremock.client.WireMock.verify;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-
-import javax.xml.bind.JAXB;
-
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
 import at.ac.univie.isc.asio.tool.ClasspathResource;
-
 import com.github.tomakehurst.wiremock.client.MappingBuilder;
 import com.github.tomakehurst.wiremock.http.Fault;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.common.net.HttpHeaders;
 import com.google.common.net.MediaType;
 import com.google.common.net.PercentEscaper;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+import javax.xml.bind.JAXB;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 // @formatter:off+
 public class AtosMetadataServiceTest {
@@ -42,13 +30,10 @@ public class AtosMetadataServiceTest {
   @ClassRule
   public static WireMockRule SERVER = new WireMockRule(7042);
 
-  @ClassRule
   public static ClasspathResource EXPECTED_METADATA = ClasspathResource
       .fromRoot("metadata/ref_wp4_expected.xml");
-  @ClassRule
   public static ClasspathResource VALID_ANSWER = ClasspathResource
       .fromRoot("metadata/ref_wp4_localid_answer.xml");
-  @ClassRule
   public static ClasspathResource EMPTY_ANSWER = ClasspathResource
       .fromRoot("metadata/ref_wp4_empty_answer.xml");
 
@@ -73,7 +58,7 @@ public class AtosMetadataServiceTest {
         .withBody(VALID_ANSWER.get().read())
        ));
     final DatasetMetadata result = subject.fetchMetadataForId(LOCAL_ID);
-    assertThat(result, is(equalTo(expected_metadata())));
+    assertThat(result, is(expected_metadata()));
   }
 
   @Test
@@ -129,10 +114,6 @@ public class AtosMetadataServiceTest {
     subject.fetchMetadataForId(LOCAL_ID);
   }
 
-  /**
-   * @return
-   * @throws IOException
-   */
   private DatasetMetadata expected_metadata() throws IOException {
     try (InputStream stream = EXPECTED_METADATA.get().openStream()) {
       return JAXB.unmarshal(stream, DatasetMetadata.class);

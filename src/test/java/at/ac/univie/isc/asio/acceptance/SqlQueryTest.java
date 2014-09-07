@@ -1,123 +1,119 @@
 package at.ac.univie.isc.asio.acceptance;
 
-import at.ac.univie.isc.asio.sql.CsvToMap;
-import at.ac.univie.isc.asio.sql.ResultSetToMap;
-import at.ac.univie.isc.asio.sql.KeyedRow;
+import at.ac.univie.isc.asio.jaxrs.Mime;
+import at.ac.univie.isc.asio.sql.ConvertToTable;
 import at.ac.univie.isc.asio.tool.FunctionalTest;
+import com.google.common.collect.Table;
+import com.google.common.escape.Escaper;
+import com.google.common.net.UrlEscapers;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import javax.sql.rowset.RowSetProvider;
+import javax.sql.rowset.WebRowSet;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.Map;
 
-import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.compatibleTo;
-import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.hasFamily;
-import static javax.ws.rs.core.Response.Status.Family.*;
+import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.*;
+import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
+import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 
 @Category(FunctionalTest.class)
 public class SqlQueryTest extends AcceptanceHarness {
+  public static final Escaper URL_ESCAPER = UrlEscapers.urlPathSegmentEscaper();
 
   private static final String COUNT_QUERY = "SELECT COUNT(*) FROM person";
   private static final String SCAN_QUERY = "SELECT * FROM person";
-  private static final String SCAN_PK_LABEL = "ID";
-
-  private static ReferenceQuery EXPECTED;
 
   @Override
   protected URI getTargetUrl() {
-    return AcceptanceHarness.READ_ACCESS.resolve("sql");
+    return readAccess().resolve("sql");
   }
 
   @BeforeClass
   public static void fetchReferenceData() {
-    EXPECTED = ReferenceQuery.forQuery(SCAN_QUERY, SCAN_PK_LABEL);
   }
 
   @Test
   public void valid_query_as_uri_param() throws Exception {
-    client.accept(XML).query(PARAM_QUERY, COUNT_QUERY);
-    response = client.get();
+    // JAX-RS client api interprets { } (curly braces) as URI template
+    //  => must escape query when using query parameters
+    final String query = URL_ESCAPER.escape(COUNT_QUERY);
+    response = client().queryParam("query", query).request(Mime.XML.type()).get();
     assertThat(response, hasFamily(SUCCESSFUL));
-    assertThat(response.getMediaType(), is(compatibleTo(XML)));
+    assertThat(response.getMediaType(), is(compatibleTo(Mime.XML.type())));
   }
 
   @Test
   public void valid_query_as_form_param() throws Exception {
-    client.accept(XML);
-    final Form values = new Form();
-    values.param(PARAM_QUERY, COUNT_QUERY);
-    response = client.form(values);
+    final Form values = new Form().param("query", COUNT_QUERY);
+    response = client().request(Mime.XML.type()).post(Entity.form(values));
     assertThat(response, hasFamily(SUCCESSFUL));
-    assertThat(response.getMediaType(), is(compatibleTo(XML)));
+    assertThat(response.getMediaType(), is(compatibleTo(Mime.XML.type())));
   }
 
   @Test
   public void valid_query_as_payload() throws Exception {
-    client.accept(XML).type("application/sql-query");
-    response = client.post(COUNT_QUERY);
+    response = client().request(Mime.XML.type()).post(Entity.entity(COUNT_QUERY, Mime.QUERY_SQL.type()));
     assertThat(response, hasFamily(SUCCESSFUL));
-    assertThat(response.getMediaType(), is(compatibleTo(XML)));
+    assertThat(response.getMediaType(), is(compatibleTo(Mime.XML.type())));
   }
 
   @Test
   public void delivers_csv() throws Exception {
-    client.accept(CSV).query(PARAM_QUERY, SCAN_QUERY);
-    response = client.get();
+    response = client().request(Mime.CSV.type()).post(Entity.entity(SCAN_QUERY, Mime.QUERY_SQL.type()));
     assertThat(response, hasFamily(SUCCESSFUL));
-    assertThat(response.getMediaType(), is(compatibleTo(CSV)));
-    final Map<String, KeyedRow> results =
-        CsvToMap.convertStream((InputStream) response.getEntity(), SCAN_PK_LABEL);
-    assertEquals("response body not matching expected query result", EXPECTED.getReference(),
-        results);
+    assertThat(response.getMediaType(), is(compatibleTo(Mime.CSV.type())));
+    final Table<Integer, String, String> results =
+        ConvertToTable.fromCsv(response.readEntity(InputStream.class));
+    final Table<Integer, String, String> expected = database().reference(SCAN_QUERY);
+    assertThat(results, is(expected));
   }
 
   @Test
   public void delivers_xml() throws Exception {
-    client.accept(XML).query(PARAM_QUERY, SCAN_QUERY);
-    response = client.get();
+    response = client().request(Mime.XML.type()).post(Entity.entity(SCAN_QUERY, Mime.QUERY_SQL.type()));
     assertThat(response, hasFamily(SUCCESSFUL));
-    assertThat(response.getMediaType(), is(compatibleTo(XML)));
-    final Map<String, KeyedRow> results =
-        ResultSetToMap.convertStream((InputStream) response.getEntity(), SCAN_PK_LABEL);
-    assertEquals("response body not matching expected query result", EXPECTED.getReference(),
-        results);
+    assertThat(response.getMediaType(), is(compatibleTo(Mime.XML.type())));
+    final WebRowSet webRowSet = RowSetProvider.newFactory().createWebRowSet();
+    webRowSet.readXml(response.readEntity(InputStream.class));
+    final Table<Integer, String, String> results = ConvertToTable.fromResultSet(webRowSet);
+    final Table<Integer, String, String> expected = database().reference(SCAN_QUERY);
+    assertThat(results, is(expected));
   }
 
   @Test
   public void bad_query_parameter() throws Exception {
-    client.accept(XML).query(PARAM_QUERY, "");
-    response = client.get();
-    assertEquals(CLIENT_ERROR, familyOf(response.getStatus()));
+    response = client().queryParam("query", "").request(Mime.XML.type()).get();
+    assertThat(response, hasFamily(CLIENT_ERROR));
   }
 
   @Test
   public void unacceptable_media_type() throws Exception {
-    client.accept(MediaType.valueOf("test/notexisting")).query(PARAM_QUERY, COUNT_QUERY);
-    response = client.get();
-    assertEquals(CLIENT_ERROR, familyOf(response.getStatus()));
+    response = client().request(MediaType.valueOf("test/not-existing"))
+        .post(Entity.entity(COUNT_QUERY, Mime.QUERY_SQL.type()));
+    assertThat(response, hasStatus(Response.Status.NOT_ACCEPTABLE));
   }
 
   @Test
   public void delivers_xml_if_no_accepted_type_given() throws Exception {
-    client.query(PARAM_QUERY, COUNT_QUERY);
-    response = client.get();
-    assertThat(familyOf(response.getStatus()), is(SUCCESSFUL));
-    assertThat(response.getMediaType(), is(compatibleTo(XML)));
+    response = client().request().post(Entity.entity(COUNT_QUERY, Mime.QUERY_SQL.type()));
+    assertThat(response, hasFamily(SUCCESSFUL));
+    assertThat(response.getMediaType(), is(compatibleTo(Mime.XML.type())));
   }
 
   @Test
   public void delivers_xml_if_wildcard_accept_header_given() throws Exception {
-    client.accept(MediaType.WILDCARD).query(PARAM_QUERY, COUNT_QUERY);
-    response = client.get();
-    assertThat(familyOf(response.getStatus()), is(SUCCESSFUL));
-    assertThat(response.getMediaType(), is(compatibleTo(XML)));
+    response = client().request(MediaType.WILDCARD_TYPE).post(Entity.entity(COUNT_QUERY, Mime.QUERY_SQL.type()));
+    assertThat(response, hasFamily(SUCCESSFUL));
+    assertThat(response.getMediaType(), is(compatibleTo(Mime.XML.type())));
   }
-
 }

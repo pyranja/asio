@@ -3,14 +3,12 @@ package at.ac.univie.isc.asio.acceptance;
 import at.ac.univie.isc.asio.Column;
 import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.Table;
+import at.ac.univie.isc.asio.jaxrs.Mime;
 import at.ac.univie.isc.asio.tool.FunctionalTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import javax.ws.rs.core.MediaType;
-import javax.xml.bind.JAXB;
 import javax.xml.namespace.QName;
-import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
 
@@ -25,28 +23,34 @@ public class SchemaTest extends AcceptanceHarness {
 
   @Override
   protected URI getTargetUrl() {
-    return AcceptanceHarness.READ_ACCESS.resolve("meta/schema");
+    return readAccess().resolve("meta/schema");
   }
 
   @Test
   public void delivers_schema_as_xml() throws Exception {
-    response = client.accept(XML).get();
+    response = client().request(Mime.XML.type()).get();
     assertThat(familyOf(response.getStatus()), is(SUCCESSFUL));
-    assertThat(XML.isCompatible(response.getMediaType()), is(true));
+    assertThat(Mime.XML.type().isCompatible(response.getMediaType()), is(true));
+    response.readEntity(SqlSchema.class); // ignore actual content
   }
 
   @Test
   public void delivers_schema_as_json() throws Exception {
-    response = client.accept(MediaType.APPLICATION_JSON_TYPE).get();
+    response = client().request(Mime.JSON.type()).get();
     assertThat(familyOf(response.getStatus()), is(SUCCESSFUL));
-    assertThat(MediaType.APPLICATION_JSON_TYPE.isCompatible(response.getMediaType()), is(true));
+    assertThat(Mime.JSON.type().isCompatible(response.getMediaType()), is(true));
+    response.readEntity(SqlSchema.class); // ignore actual content
   }
 
   @Test
   public void can_parse_xml_schema() throws Exception {
-    response = client.accept(XML).get();
-    final SqlSchema schema =
-        JAXB.unmarshal(response.readEntity(InputStream.class), SqlSchema.class);
+    final SqlSchema schema = client().request(Mime.XML.type()).get(SqlSchema.class);
+    verify(schema);
+  }
+
+  @Test
+  public void can_parse_json_schema() throws Exception {
+    final SqlSchema schema = client().request(Mime.JSON.type()).get(SqlSchema.class);
     verify(schema);
   }
 
@@ -54,10 +58,10 @@ public class SchemaTest extends AcceptanceHarness {
     final List<Table> tables = schema.getTable();
     // !! depends on test schema
     assertThat(tables.size(), is(5));
-    assertThat(tables, hasItem(PERSON_TABLE));
+    assertThat(tables, hasItem(PATIENT_TABLE));
   }
 
-  public static final Table PERSON_TABLE = new Table()
+  public static final Table PATIENT_TABLE = new Table()
       .withName("PATIENT")
       .withCatalog("TEST")
       .withSchema("PUBLIC")

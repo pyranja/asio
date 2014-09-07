@@ -1,6 +1,5 @@
 package at.ac.univie.isc.asio.sql;
 
-import at.ac.univie.isc.asio.tool.ConvertToTable;
 import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 import com.google.common.collect.Table;

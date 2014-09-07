@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.acceptance;
 
+import at.ac.univie.isc.asio.jaxrs.Mime;
 import at.ac.univie.isc.asio.tool.FunctionalTest;
 import com.google.common.base.Strings;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -11,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.HttpHeaders;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -27,18 +29,17 @@ import static org.junit.Assert.assertThat;
 @Category(FunctionalTest.class)
 public class SparqlFederationTest extends AcceptanceHarness {
 
-  public static final
-  String
-      MOCK_SERVER_FEDERATED_QUERY =
-      "SELECT * WHERE { SERVICE <http://localhost:1337/sparql> { ?s ?p ?o }}";
+  public static final String MOCK_SERVER_FEDERATED_QUERY =
+      "SELECT * WHERE { SERVICE <http://localhost:55321/sparql> { ?s ?p ?o }}";
 
   @Override
   protected URI getTargetUrl() {
-    return AcceptanceHarness.READ_ACCESS.resolve("sparql");
+    return readAccess().resolve("sparql");
   }
 
   private HttpServer server;
   private MockHandler handler;
+
 
   private static class MockHandler implements HttpHandler {
     public final AtomicReference<HttpExchange> received = new AtomicReference<>();
@@ -53,7 +54,8 @@ public class SparqlFederationTest extends AcceptanceHarness {
 
   @Before
   public void setUp() throws IOException {
-    final InetSocketAddress address = new InetSocketAddress(1337);
+    // FIXME : find random free port, maybe in a rule?
+    final InetSocketAddress address = new InetSocketAddress(55321);
     handler = new MockHandler();
     server = HttpServer.create(address, 10);
     server.createContext("/sparql", handler);
@@ -68,44 +70,41 @@ public class SparqlFederationTest extends AcceptanceHarness {
 
   @Test
   public void should_execute_remote_request_on_federated_sparql_query() throws Exception {
-    client.accept(CSV).query(PARAM_QUERY, MOCK_SERVER_FEDERATED_QUERY);
-    client.get(); // do not care for response
+    client().request()
+        .post(Entity.entity(MOCK_SERVER_FEDERATED_QUERY, Mime.QUERY_SPARQL.type()));
     assertThat(handler.received.get(), is(notNullValue()));
   }
 
   @Test
   public void should_delegate_credentials_to_remote_request_in_federation() throws Exception {
-    client.accept(CSV).query(PARAM_QUERY, MOCK_SERVER_FEDERATED_QUERY);
     // a mock vph token
     final String credentials = base64().encode(":test-password".getBytes());
-    client.header(HttpHeaders.AUTHORIZATION, "Basic " + credentials);
-    client.get(); // do not care for response
+    client().request().header(HttpHeaders.AUTHORIZATION, "Basic " + credentials)
+        .post(Entity.entity(MOCK_SERVER_FEDERATED_QUERY, Mime.QUERY_SPARQL.type()));
     verifyDelegatedCredentials(":test-password");
   }
 
   @Test
   public void should_drop_username_on_delegation() throws Exception {
-    client.accept(CSV).query(PARAM_QUERY, MOCK_SERVER_FEDERATED_QUERY);
     final String credentials = base64().encode("test-user:test-password".getBytes());
-    client.header(HttpHeaders.AUTHORIZATION, "Basic "+ credentials);
-    client.get();
+    client().request().header(HttpHeaders.AUTHORIZATION, "Basic " + credentials)
+        .post(Entity.entity(MOCK_SERVER_FEDERATED_QUERY, Mime.QUERY_SPARQL.type()));
     verifyDelegatedCredentials(":test-password");
   }
 
   @Test
   public void should_handle_delegation_of_large_credentials_payload() throws Exception {
-    client.accept(CSV).query(PARAM_QUERY, MOCK_SERVER_FEDERATED_QUERY);
     // a long vph token - XXX is the token sufficiently long ?
     final String token = ":" + Strings.repeat("test", 1000);
     final String credentials = base64().encode(token.getBytes());
-    client.header(HttpHeaders.AUTHORIZATION, "Basic "+ credentials);
-    client.get();
+    client().request().header(HttpHeaders.AUTHORIZATION, "Basic " + credentials)
+        .post(Entity.entity(MOCK_SERVER_FEDERATED_QUERY, Mime.QUERY_SPARQL.type()));
     verifyDelegatedCredentials(token);
   }
 
   private void verifyDelegatedCredentials(final String expected) {
-    final String delegated =
-        handler.received.get().getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+    final String delegated = handler.received.get()
+        .getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION);
     assertThat(delegated, startsWith("Basic "));
     final String decoded = new String(base64().decode(delegated.substring(6)));
     assertThat(decoded, is(expected));
