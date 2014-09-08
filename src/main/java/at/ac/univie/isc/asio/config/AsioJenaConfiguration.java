@@ -41,7 +41,9 @@ public class AsioJenaConfiguration {
   public JenaEngine sparqlEngine() {
     final Model model = d2rModel();
     log.info("[BOOT] using model {}", model);
-    return new JenaEngine(model, globalTimeout);
+    final boolean allowFederated =
+        env.getProperty("asio.sparql.allowFederated", Boolean.class, Boolean.FALSE);
+    return new JenaEngine(model, globalTimeout, allowFederated);
   }
 
   @Bean

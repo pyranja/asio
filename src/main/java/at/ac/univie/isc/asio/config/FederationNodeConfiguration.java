@@ -22,7 +22,8 @@ public class FederationNodeConfiguration {
   @Bean
   public JenaEngine jenaFederationConnector() {
     log.info("[BOOT] creating jena federation engine");
-    return new JenaEngine(emptyModel(), globalTimeout);
+    final boolean allowFederated = true;  // false would render this node useless
+    return new JenaEngine(emptyModel(), globalTimeout, allowFederated);
   }
 
   @Bean(destroyMethod = "close")

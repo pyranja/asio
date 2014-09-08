@@ -50,7 +50,7 @@ public class JenaEngineTest {
     model = ModelFactory.createDefaultModel();
     model.createResource("http://example.com/test").addProperty(RDF.value, "test-value");
     final TimeoutSpec timeout = TimeoutSpec.UNDEFINED;
-    subject = new JenaEngine(model, timeout);
+    subject = new JenaEngine(model, timeout, false);
   }
 
   // ========= VALID QUERIES
@@ -143,7 +143,7 @@ public class JenaEngineTest {
 
   @Test
   public void should_set_timeout_on_query() throws Exception {
-    subject = new JenaEngine(model, TimeoutSpec.from(1, TimeUnit.MILLISECONDS));
+    subject = new JenaEngine(model, TimeoutSpec.from(1, TimeUnit.MILLISECONDS), false);
     final SparqlInvocation invocation = subject.prepare(Parameters.builder(Language.SPARQL)
             .single(JenaEngine.KEY_QUERY, WILDCARD_QUERY)
             .accept(MediaType.WILDCARD_TYPE).build(),
@@ -208,6 +208,17 @@ public class JenaEngineTest {
         .single(JenaEngine.KEY_QUERY, WILDCARD_QUERY)
         .accept(MediaType.valueOf("image/jpg")).build();
     error.expect(TypeMatchingResolver.NoMatchingFormat.class);
+    subject.prepare(params, Token.ANONYMOUS);
+  }
+
+  @Test
+  public void should_reject_federated_query_if_federated_query_lock_in_place() throws Exception {
+    subject = new JenaEngine(model, TimeoutSpec.undefined(), false);
+    final String fedQuery = "SELECT * WHERE { SERVICE <http://example.com> { ?s ?p ?o } }";
+    final Parameters params = Parameters.builder(Language.SPARQL)
+        .single(JenaEngine.KEY_QUERY, fedQuery)
+        .accept(MediaType.WILDCARD_TYPE).build();
+    error.expect(DatasetUsageException.class);
     subject.prepare(params, Token.ANONYMOUS);
   }
 }
