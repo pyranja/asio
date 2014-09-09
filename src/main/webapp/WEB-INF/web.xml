@@ -10,7 +10,10 @@
   <description>HTTP frontend for a relational database</description>
 
   <!-- disable jar scanning -->
-  <absolute-ordering/>
+  <absolute-ordering>
+    <name>log4j</name>
+    <others />
+  </absolute-ordering>
 
   <!-- spring configuration setup - scans given pacakge for @Configuration classes -->
   <context-param>
@@ -22,8 +25,6 @@
     <param-name>contextConfigLocation</param-name>
     <param-value>at.ac.univie.isc.asio.config</param-value>
   </context-param>
-
-  <!-- enable d2r and ogsadai engines -->
   <context-param>
     <param-name>spring.profiles.default</param-name>
     <param-value>dataset</param-value>
@@ -35,9 +36,8 @@
     <param-value>1000</param-value>
   </context-param>
 
-  <session-config>
+  <session-config> <!-- minutes -->
     <session-timeout>10</session-timeout>
-    <!-- minutes -->
   </session-config>
 
   <!-- clean up listener wraps all others -->

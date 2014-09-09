@@ -40,7 +40,7 @@ public class AsioJenaConfiguration {
   @Bean
   public JenaEngine sparqlEngine() {
     final Model model = d2rModel();
-    log.info("[BOOT] using model {}", model);
+    log.info(AsioConfiguration.SYSTEM, "using model {}", model);
     final boolean allowFederated =
         env.getProperty("asio.sparql.allowFederated", Boolean.class, Boolean.FALSE);
     return new JenaEngine(model, globalTimeout, allowFederated);
@@ -51,7 +51,7 @@ public class AsioJenaConfiguration {
     // XXX will not work if multiple database bindings are defined in d2r mapping .ttl
     final Database d2rDb = Iterables.getOnlyElement(d2rLoader().getMapping().databases());
     if (d2rDb.getPassword() == null) {
-      log.warn("[BOOT] no password set for JDBC connection {}", d2rDb.getJDBCDSN());
+      log.warn(AsioConfiguration.SYSTEM, "no password set for JDBC connection {}", d2rDb.getJDBCDSN());
     }
     return DatasourceSpec
         .connectTo(d2rDb.getJDBCDSN())
@@ -80,10 +80,10 @@ public class AsioJenaConfiguration {
   public Supplier<String> mappingDatasetIdResolver() {
     final String maybeId = d2rLoader().getServerConfig().baseURI();
     if (emptyToNull(maybeId) == null) {
-      log.warn("[BOOT] no valid baseURI defined in d2r mapping");
+      log.warn(AsioConfiguration.SYSTEM, "no valid baseURI defined in d2r mapping");
       return Suppliers.ofInstance("unknown");
     } else {
-      log.info("[BOOT] using d2r baseURI <{}> as dataset id", maybeId);
+      log.info(AsioConfiguration.SYSTEM, "using d2r baseURI <{}> as dataset id", maybeId);
       return Suppliers.ofInstance(maybeId);
     }
   }

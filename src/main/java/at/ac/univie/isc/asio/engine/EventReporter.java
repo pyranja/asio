@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.eventbus.EventBus;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -66,7 +67,7 @@ public final class EventReporter {
   public ContextHolder with(final Throwable error) {
     //noinspection ThrowableResultOfMethodCallIgnored
     return new ContextHolder()
-        .and("message", error.getMessage())
+        .and("message", Objects.toString(error.getMessage())) // null safe
         .and("cause", error.toString())
         .and("root", Throwables.getRootCause(error).toString())
         .and("trace", Throwables.getStackTraceAsString(error)); // FIXME : switch with debug flag

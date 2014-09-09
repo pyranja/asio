@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.tool;
 
+import at.ac.univie.isc.asio.config.AsioConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +32,7 @@ public final class Resources {
         log.warn(ERROR_MSG, that, e.getMessage(), e);
       }
     } else {
-      log.warn(ERROR_MSG, that, "was null");
+      log.warn(ERROR_MSG, AutoCloseable.class, "was null");
     }
   }
 
@@ -48,7 +49,7 @@ public final class Resources {
         log.warn(ERROR_MSG, response, e.getMessage(), e);
       }
     } else {
-      log.warn(ERROR_MSG, response, "was null");
+      log.warn(ERROR_MSG, Response.class, "was null");
     }
   }
 
@@ -65,7 +66,7 @@ public final class Resources {
         log.warn(ERROR_MSG, xmlWriter, e.getMessage(), e);
       }
     } else {
-      log.warn(ERROR_MSG, xmlWriter, "was null");
+      log.warn(ERROR_MSG, XMLStreamWriter.class, "was null");
     }
   }
 
@@ -79,7 +80,7 @@ public final class Resources {
       holder = Resources.ClientDisconnectUnknown.class;
     }
     CLIENT_DISCONNECT_EXCEPTION = holder;
-    log.info("[BOOT] using {} as client disconnect indicator", CLIENT_DISCONNECT_EXCEPTION.getName());
+    log.info(AsioConfiguration.SYSTEM, "using {} as client disconnect indicator", CLIENT_DISCONNECT_EXCEPTION.getName());
   }
 
   /**

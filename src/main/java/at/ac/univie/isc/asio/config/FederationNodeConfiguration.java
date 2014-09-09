@@ -21,7 +21,7 @@ public class FederationNodeConfiguration {
 
   @Bean
   public JenaEngine jenaFederationConnector() {
-    log.info("[BOOT] creating jena federation engine");
+    log.info(AsioConfiguration.SYSTEM, "creating jena federation engine");
     final boolean allowFederated = true;  // false would render this node useless
     return new JenaEngine(emptyModel(), globalTimeout, allowFederated);
   }

@@ -18,6 +18,8 @@ import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.apache.cxf.jaxrs.spring.SpringResourceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -44,7 +46,8 @@ import java.util.concurrent.*;
 @PropertySource(value = {"classpath:/asio.properties"})
 public class AsioConfiguration {
   /* slf4j-logger */
-  private final static Logger log = LoggerFactory.getLogger(AsioConfiguration.class);
+  private static final Logger log = LoggerFactory.getLogger(AsioConfiguration.class);
+  public static final Marker SYSTEM = MarkerFactory.getMarker("SYSTEM");
 
   @Autowired
   private Environment env;
@@ -66,7 +69,7 @@ public class AsioConfiguration {
         env.getActiveProfiles().length == 0
             ? env.getDefaultProfiles()
             : env.getActiveProfiles();
-    log.info("[BOOT] active profiles : {}", Arrays.toString(profiles));
+    log.info(SYSTEM, "active profiles : {}", Arrays.toString(profiles));
   }
 
   // JAX-RS
@@ -82,7 +85,7 @@ public class AsioConfiguration {
         JaxrsSpec.create(ProtocolResource.class, MetadataResource.class),
         JAXRSServerFactoryBean.class
     );
-    log.info("[BOOT] publishing jaxrs endpoint at <{}>", factory.getAddress());
+    log.info(SYSTEM, "publishing jaxrs endpoint at <{}>", factory.getAddress());
     // Use spring managed resource instances
     factory.setResourceProvider(ProtocolResource.class, protocolResourceProvider());
     factory.setResourceProvider(MetadataResource.class, metadataResourceProvider());
@@ -114,7 +117,7 @@ public class AsioConfiguration {
   // asio jaxrs components
   @Bean
   public Command.Factory registry() {
-    log.info("[BOOT] using engines {}", engines);
+    log.info(SYSTEM, "using engines {}", engines);
     final Scheduler scheduler = Schedulers.from(workerPool());
     final EngineRegistry engineRegistry = new EngineRegistry(scheduler, engines);
     return new EventfulCommandDecorator(engineRegistry, eventBuilder());
@@ -174,7 +177,7 @@ public class AsioConfiguration {
   public TimeoutSpec globalTimeout() {
     Long timeout = env.getProperty("asio.timeout", Long.class, -1L);
     TimeoutSpec spec = TimeoutSpec.from(timeout, TimeUnit.SECONDS);
-    log.info("[BOOT] using timeout {}", spec);
+    log.info(SYSTEM, "using timeout {}", spec);
     return spec;
   }
 
@@ -183,16 +186,16 @@ public class AsioConfiguration {
   public Supplier<DatasetMetadata> metadataSupplier() {
     final boolean contactRemote = env.getProperty("asio.meta.enable", Boolean.class, Boolean.FALSE);
     if (env.acceptsProfiles("federation")) {  // FIXME ignore setting if federation node
-      log.info("[BOOT] using federation node metadata");
+      log.info(SYSTEM, "using federation node metadata");
       return Suppliers.ofInstance(StaticMetadata.FEDERATION_NODE);
     } else if (contactRemote) {
       final URI repository = URI.create(env.getRequiredProperty("asio.meta.repository"));
       AtosMetadataService proxy = new AtosMetadataService(repository);
       final String datasetId = datasetIdResolver.get();
-      log.info("[BOOT] using metadata service {} with id {}", proxy, datasetId);
+      log.info(SYSTEM, "using metadata service {} with id {}", proxy, datasetId);
       return new RemoteMetadata(proxy, datasetId);
     } else {
-      log.info("[BOOT] metadata resolution disabled");
+      log.info(SYSTEM, "metadata resolution disabled");
       return Suppliers.ofInstance(StaticMetadata.NOT_AVAILABLE);
     }
   }

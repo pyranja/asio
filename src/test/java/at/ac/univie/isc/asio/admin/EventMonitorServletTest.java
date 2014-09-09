@@ -47,7 +47,7 @@ import static org.junit.Assert.assertThat;
 
 public class EventMonitorServletTest {
   public static final EventSource.MessageEvent.Builder TEST_EVENT =
-      EventSource.MessageEvent.create().withType("test");
+      EventSource.MessageEvent.create().withType("TEST");
 
   private final EventBus events = new EventBus();
   private final ExecutorService exec = Executors.newCachedThreadPool();
@@ -132,7 +132,7 @@ public class EventMonitorServletTest {
     final ServerSentEvent event =
         ServerSentEvent.Default.create(ServerSentEvent.Type.valueOf("test-type"), "test-payload");
     subject.writeEvent(event, sink);
-    assertThat(sink.toString(), is("event:test-type\ndata:test-payload\n\n"));
+    assertThat(sink.toString(), is(equalToIgnoringCase("event:test-type\ndata:test-payload\n\n")));
   }
 
   @Test
@@ -169,7 +169,7 @@ public class EventMonitorServletTest {
   @Test
   public void initial_event_is_subscription_confirmation() throws Exception {
     final EventSource.MessageEvent event = monitor.events().take(1).toBlocking().single();
-    assertThat(event.type(), is("system"));
+    assertThat(event.type(), is(equalToIgnoringCase("system")));
     assertThat(event.data(), is("{\"message\":\"subscribed\"}"));
   }
 

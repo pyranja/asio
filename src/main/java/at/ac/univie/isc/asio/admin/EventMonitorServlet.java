@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.admin;
 
+import at.ac.univie.isc.asio.config.AsioConfiguration;
 import at.ac.univie.isc.asio.tool.Duration;
 import at.ac.univie.isc.asio.tool.Resources;
 import com.google.common.annotations.VisibleForTesting;
@@ -124,15 +125,15 @@ public final class EventMonitorServlet extends HttpServlet {
       @Override
       public void call() {
         bus.unregister(self);
-        log.info("[BOOT] unregistered from event bus");
+        log.info(AsioConfiguration.SYSTEM, "unregistered from event bus");
       }
     };
-    log.info("[BOOT] registered with event bus");
+    log.info(AsioConfiguration.SYSTEM, "registered with event bus");
   }
 
   @Override
   public void destroy() {
-    log.info("[BOOT] shutting down");
+    log.info(AsioConfiguration.SYSTEM, "shutting down");
     publisher.onCompleted();
     cleanUp.call();
   }

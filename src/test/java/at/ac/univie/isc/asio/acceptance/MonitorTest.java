@@ -18,6 +18,7 @@ import java.util.List;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.StringContains.containsString;
+import static org.hamcrest.text.IsEqualIgnoringCase.equalToIgnoringCase;
 import static org.junit.Assert.assertThat;
 
 @Category(FunctionalTest.class)
@@ -46,7 +47,7 @@ public class MonitorTest extends AcceptanceHarness {
   @Test
   public void emits_subscribed_event() throws Exception {
     final EventSource.MessageEvent received = monitor.events().take(1).toBlocking().single();
-    assertThat(received.type(), is("system"));
+    assertThat(received.type(), is(equalToIgnoringCase("system")));
     assertThat(received.data(), message("subscribed"));
   }
 

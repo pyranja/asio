@@ -23,6 +23,7 @@
     <version.spring>3.2.2.RELEASE</version.spring>
     <version.jetty>9.1.3.v20140225</version.jetty>
     <version.tomcat>8.0.11</version.tomcat>
+    <version.log4j>2.0.2</version.log4j>
     <!-- properties for filtered sites - dot notation not allowed -->
     <site-version>${project.version}</site-version>
   </properties>
@@ -205,16 +206,34 @@
       <artifactId>slf4j-api</artifactId>
       <version>1.7.5</version>
     </dependency>
-    <dependency>  <!-- logging over ogsadai's log4j -->
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-      <version>1.7.5</version>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>${version.log4j}</version>
       <scope>runtime</scope>
     </dependency>
-    <dependency>  <!-- override ogsa log4j version for slf4j -->
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>1.2.17</version>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>${version.log4j}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-web</artifactId>
+      <version>${version.log4j}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>  <!-- bridge to slf4j -->
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <version>${version.log4j}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency> <!-- log4j adapter for jena/d2r -->
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-1.2-api</artifactId>
+      <version>${version.log4j}</version>
       <scope>runtime</scope>
     </dependency>
     <!-- JAX-RS api -->
@@ -255,13 +274,33 @@
     <!-- jena -->
     <dependency>
       <groupId>org.apache.jena</groupId>
-      <artifactId>jena-arq</artifactId>
-      <version>2.9.1</version>
+      <artifactId>jena-core</artifactId>
+      <version>2.7.1</version>
+      <exclusions>  <!-- exclude log4j from jena to avoid cp pollution -->
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>log4j</groupId>
+          <artifactId>log4j</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.jena</groupId>
-      <artifactId>jena-core</artifactId>
-      <version>2.7.1</version>
+      <artifactId>jena-arq</artifactId>
+      <version>2.9.1</version>
+      <exclusions>  <!-- exclude log4j from jena to avoid cp pollution -->
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>log4j</groupId>
+          <artifactId>log4j</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>  <!-- required for xerces impl in jena, but asio only requires JDK built-in api -->
       <groupId>xml-apis</groupId>

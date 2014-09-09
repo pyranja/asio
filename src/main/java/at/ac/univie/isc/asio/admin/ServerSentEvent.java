@@ -46,7 +46,7 @@ public interface ServerSentEvent {
     @Nonnull
     @Override
     protected String normalize(@Nonnull final String val) {
-      return val.toLowerCase(Locale.ENGLISH);
+      return val.toUpperCase(Locale.ENGLISH);
     }
   }
 

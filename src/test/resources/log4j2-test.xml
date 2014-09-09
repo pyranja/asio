@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Configuration status="error" strict="true" name="asio-test">
+  <Filters> <!-- global log level -->
+    <MarkerFilter marker="MONITOR" onMatch="ACCEPT" onMismatch="NEUTRAL" />
+    <ThresholdFilter level="off" onMatch="NEUTRAL" onMismatch="DENY" />
+  </Filters>
+
+  <Appenders>
+    <Appender type="Console" name="stdout">
+      <Layout type="PatternLayout" pattern="%date{ISO8601} %-5level %marker [%thread] %logger{1} : %message%n"/>
+    </Appender>
+    <Appender type="Console" name="asio-events">
+      <Layout type="PatternLayout" pattern="%date{ISO8601} %-5level %message%n"/>
+    </Appender>
+  </Appenders>
+
+  <Loggers>
+    <Logger name="at.ac.univie.isc.asio" level="info">
+      <MarkerFilter marker="SYSTEM" onMatch="ACCEPT" onMismatch="NEUTRAL"/>
+    </Logger>
+    <Logger name="at.ac.univie.isc.asio.events" level="info" additivity="false">
+      <MarkerFilter marker="EVENT" onMatch="ACCEPT" onMismatch="NEUTRAL"/>
+      <AppenderRef ref="asio-events"/>
+    </Logger>
+    <!-- 3rd party -->
+    <Logger name="de.fuberlin.wiwiss.d2rq" level="off"/>
+    <Logger name="com.hp.hpl.jena" level="off"/>
+    <Logger name="org.apache.cxf" level="off"/>
+    <Logger name="org.jooq" level="off"/>
+    <!-- test output -->
+    <Logger name="at.ac.univie.isc.asio.jaxrs.ManagedClient" level="error"/>
+    <Logger name="org.dbunit" level="off"/>
+
+    <Root level="off">
+      <AppenderRef ref="stdout"/>
+    </Root>
+  </Loggers>
+</Configuration>
