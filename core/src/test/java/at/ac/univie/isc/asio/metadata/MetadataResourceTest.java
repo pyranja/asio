@@ -1,13 +1,15 @@
 package at.ac.univie.isc.asio.metadata;
 
-import at.ac.univie.isc.asio.config.JaxrsSpec;
 import at.ac.univie.isc.asio.Column;
 import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.Table;
+import at.ac.univie.isc.asio.config.JaxrsSpec;
+import at.ac.univie.isc.asio.engine.sql.XmlSchemaType;
+import at.ac.univie.isc.asio.jaxrs.DisableAuthorizationFilter;
 import at.ac.univie.isc.asio.jaxrs.EmbeddedServer;
 import at.ac.univie.isc.asio.jaxrs.ManagedClient;
-import at.ac.univie.isc.asio.engine.sql.XmlSchemaType;
 import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import org.apache.cxf.jaxrs.provider.json.JSONProvider;
 import org.junit.Before;
@@ -20,11 +22,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.hasFamily;
-import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.hasStatus;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class MetadataResourceTest {
   public static final SqlSchema MOCK_SQL_SCHEMA = new SqlSchema().withTable(
@@ -46,15 +45,15 @@ public class MetadataResourceTest {
           )
   );
 
-  private final Supplier<DatasetMetadata> metaSource = mock(Supplier.class);
-  private final Supplier<SqlSchema> schemaSource = mock(Supplier.class);
+  private final Supplier<DatasetMetadata> metaSource = Suppliers.ofInstance(StaticMetadata.MOCK_METADATA);
+  private final Supplier<SqlSchema> schemaSource = Suppliers.ofInstance(MOCK_SQL_SCHEMA);
 
   private final JSONProvider json = new JSONProvider();
   @Rule
   public Timeout timeout = new Timeout(2000);
   @Rule
   public EmbeddedServer service = EmbeddedServer
-      .host(JaxrsSpec.create(MetadataResource.class))
+      .host(JaxrsSpec.create(MetadataResource.class, DisableAuthorizationFilter.class))
       .resource(new MetadataResource(metaSource, schemaSource))
       .enableLogging()
       .clientConfig(ManagedClient.create().use(json))
@@ -64,16 +63,14 @@ public class MetadataResourceTest {
 
   @Before
   public void setup() {
-    endpoint = service.endpoint().path("{permission}").path("meta");
-    when(metaSource.get()).thenReturn(StaticMetadata.MOCK_METADATA);
-    when(schemaSource.get()).thenReturn(MOCK_SQL_SCHEMA);
+    endpoint = service.endpoint().path("meta");
     json.setNamespaceMap(ImmutableMap.of("http://isc.univie.ac.at/2014/asio", "asio"));
   }
 
   @Test
   public void should_fetch_xml_metadata() throws Exception {
     final Response response =
-        endpoint.resolveTemplate("permission", "read").request(MediaType.APPLICATION_XML).get();
+        endpoint.request(MediaType.APPLICATION_XML).get();
     assertThat(response, hasFamily(Response.Status.Family.SUCCESSFUL));
     assertThat(response.readEntity(DatasetMetadata.class), is(StaticMetadata.MOCK_METADATA));
   }
@@ -81,23 +78,15 @@ public class MetadataResourceTest {
   @Test
   public void should_fetch_json_metadata() throws Exception {
     final Response response =
-        endpoint.resolveTemplate("permission", "read").request(MediaType.APPLICATION_JSON).get();
+        endpoint.request(MediaType.APPLICATION_JSON).get();
     assertThat(response, hasFamily(Response.Status.Family.SUCCESSFUL));
     assertThat(response.readEntity(DatasetMetadata.class), is(StaticMetadata.MOCK_METADATA));
   }
 
   @Test
-  public void should_not_allow_access_to_metadata_for_unauthorized() throws Exception {
-    final Response response =
-        endpoint.resolveTemplate("permission", "none").request(MediaType.APPLICATION_XML).get();
-    assertThat(response, hasStatus(Response.Status.FORBIDDEN));
-  }
-
-  @Test
   public void should_fetch_xml_schema() throws Exception {
     final Response response =
-        endpoint.resolveTemplate("permission", "read").path("schema")
-            .request(MediaType.APPLICATION_XML).get();
+        endpoint.path("schema").request(MediaType.APPLICATION_XML).get();
     assertThat(response, hasFamily(Response.Status.Family.SUCCESSFUL));
     assertThat(response.readEntity(SqlSchema.class), is(MOCK_SQL_SCHEMA));
   }
@@ -105,17 +94,8 @@ public class MetadataResourceTest {
   @Test
   public void should_fetch_json_schema() throws Exception {
     final Response response =
-        endpoint.resolveTemplate("permission", "read").path("schema")
-            .request(MediaType.APPLICATION_JSON).get();
+        endpoint.path("schema").request(MediaType.APPLICATION_JSON).get();
     assertThat(response, hasFamily(Response.Status.Family.SUCCESSFUL));
     assertThat(response.readEntity(SqlSchema.class), is(MOCK_SQL_SCHEMA));
-  }
-
-  @Test
-  public void should_not_allow_access_to_schema_for_unauthorized() throws Exception {
-    final Response response =
-        endpoint.resolveTemplate("permission", "none").path("schema")
-            .request(MediaType.APPLICATION_XML).get();
-    assertThat(response, hasStatus(Response.Status.FORBIDDEN));
   }
 }

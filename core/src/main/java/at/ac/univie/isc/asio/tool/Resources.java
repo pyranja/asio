@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.ws.rs.core.Response;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.IOException;
@@ -24,7 +25,7 @@ public final class Resources {
    *
    * @param that to be closed
    */
-  public static void close(final AutoCloseable that) {
+  public static void close(@Nullable final AutoCloseable that) {
     if (that != null) {
       try {
         that.close();
@@ -41,7 +42,7 @@ public final class Resources {
    * @see #close(AutoCloseable)
    * @param response to be closed
    */
-  public static void close(Response response) {
+  public static void close(@Nullable Response response) {
     if (response != null) {
       try {
         response.close();
@@ -58,7 +59,7 @@ public final class Resources {
    * @see #close(AutoCloseable)
    * @param xmlWriter to be closed
    */
-  public static void close(final XMLStreamWriter xmlWriter) {
+  public static void close(@Nullable final XMLStreamWriter xmlWriter) {
     if (xmlWriter != null) {
       try {
         xmlWriter.close();

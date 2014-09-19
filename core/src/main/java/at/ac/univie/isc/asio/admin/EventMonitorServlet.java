@@ -46,7 +46,12 @@ import java.util.concurrent.atomic.AtomicLong;
  * Publish {@link at.ac.univie.isc.asio.admin.ServerSentEvent server events} as a HTTP
  * <a href="http://www.w3.org/TR/eventsource/">event stream</a>.
  */
-@WebServlet(name = "MonitorServlet", urlPatterns = "/admin/events", asyncSupported = true, loadOnStartup = 10)
+@WebServlet(name = "event-stream-servlet", displayName = "Event Stream"
+    , description = "Publish system and request events for monitoring"
+    , urlPatterns = "/meta/events"
+    , loadOnStartup = -1  // lazy initialization
+    , asyncSupported = true
+    , initParams = {})
 public final class EventMonitorServlet extends HttpServlet {
   private static final Logger log = LoggerFactory.getLogger(EventMonitorServlet.class);
   // TODO : use Observable#doOn(Un)Subscribe to track listener count

@@ -5,6 +5,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import javax.annotation.Nonnull;
+
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNot.not;
@@ -43,8 +45,9 @@ public class TypedValueTest {
   public void should_call_normalize() throws Exception {
     final String replacement = "replaced";
     final TypedValue<String> subject = new TypedValue<String>("test") {
+      @Nonnull
       @Override
-      protected String normalize(final String val) {
+      protected String normalize(@Nonnull final String val) {
         return replacement;
       }
     };

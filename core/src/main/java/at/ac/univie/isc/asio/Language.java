@@ -2,6 +2,7 @@ package at.ac.univie.isc.asio;
 
 import at.ac.univie.isc.asio.tool.TypedValue;
 
+import javax.annotation.Nonnull;
 import java.util.Locale;
 
 /**
@@ -25,8 +26,9 @@ public final class Language extends TypedValue<String> {
     super(name);
   }
 
+  @Nonnull
   @Override
-  protected String normalize(final String val) {
+  protected String normalize(@Nonnull final String val) {
     return val.toUpperCase(Locale.ENGLISH).trim();
   }
 

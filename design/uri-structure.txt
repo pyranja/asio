@@ -1,0 +1,7 @@
+# asio uri structure
+
+http://host:port/{dataset-name}/{permission}/               => asio browser || service descriptor
+http://host:port/{dataset-name}/{permission}/index.html     => asio browser
+http://host:port/{dataset-name}/{permission}/{sparql|sql}   => query endpoint
+http://host:port/{dataset-name}/{permission}/meta           => meta data
+http://host:port/{dataset-name}/{permission}/meta/events    => event stream

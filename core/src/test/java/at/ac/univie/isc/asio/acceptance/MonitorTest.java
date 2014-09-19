@@ -37,7 +37,7 @@ public class MonitorTest extends AcceptanceHarness {
     return readAccess().resolve("sql");
   }
 
-  private EventSource monitor = EventSource.listenTo(adminAccess().resolve("events"));
+  private EventSource monitor = EventSource.listenTo(adminAccess().resolve("meta/events"));
 
   @After
   public void tearDown() {

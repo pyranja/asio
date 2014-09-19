@@ -67,11 +67,11 @@
     </init-param>
     <init-param>
       <param-name>redirects-list</param-name>
-      <param-value>/admin/events</param-value>
+      <param-value>/meta/events</param-value>
     </init-param>
     <init-param>
       <param-name>redirect-servlet-name</param-name>
-      <param-value>MonitorServlet</param-value>
+      <param-value>event-stream-servlet</param-value>
     </init-param>
     <init-param>
       <param-name>redirect-attributes</param-name>

@@ -9,7 +9,7 @@ import static java.util.Objects.requireNonNull;
 
 @Immutable
 public class TypedValue<VALUE> {
-  @Nonnull private final VALUE val;
+  private final VALUE val;
 
   protected TypedValue(@Nonnull final VALUE val) {
     requireNonNull(val, "id must not be null");

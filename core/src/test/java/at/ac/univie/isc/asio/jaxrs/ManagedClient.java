@@ -51,8 +51,12 @@ public final class ManagedClient implements TestRule {
   }
 
   public WebTarget endpoint() {
+    return target(serviceAddress);
+  }
+
+  public WebTarget target(final URI address) {
     assert client != null : "JAX-RS client not initialized";
-    return client.target(serviceAddress);
+    return client.target(address);
   }
 
   @Override

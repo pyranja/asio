@@ -12,7 +12,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
 
-@Path("/{permission}/meta")
+@Path("/meta")
 @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 public final class MetadataResource {
 

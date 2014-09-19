@@ -8,8 +8,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.net.URI;
 
+import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.hasStatus;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static javax.ws.rs.core.Response.Status.Family.familyOf;
 import static org.hamcrest.Matchers.equalTo;
@@ -40,5 +42,17 @@ public class MetadataTest extends AcceptanceHarness {
     assertThat(MediaType.APPLICATION_JSON_TYPE.isCompatible(response.getMediaType()), is(true));
     final DatasetMetadata document = response.readEntity(DatasetMetadata.class);
     assertThat(document, is(equalTo(StaticMetadata.NOT_AVAILABLE)));
+  }
+
+  @Test
+  public void reject_unauthorized_access_to_metadata() throws Exception {
+    response = client(serverAddress()).path("none").path("meta").request().get();
+    assertThat(response, hasStatus(Response.Status.FORBIDDEN));
+  }
+
+  @Test
+  public void reject_unauthorized_access_to_schema() throws Exception {
+    response = client(serverAddress()).path("none").path("meta").path("schema").request().get();
+    assertThat(response, hasStatus(Response.Status.FORBIDDEN));
   }
 }

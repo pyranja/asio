@@ -3,44 +3,40 @@ package at.ac.univie.isc.asio.security;
 import at.ac.univie.isc.asio.DatasetUsageException;
 import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
-import com.google.common.collect.Iterables;
 import com.google.common.io.BaseEncoding;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MultivaluedMap;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static java.util.Objects.requireNonNull;
-
 /**
- * Parse HTTP headers for a VPH-Share auth token. Tokens MUST be transmitted through the HTTP
- * Authorization header, using the password of the Basic Authentication scheme. A username MAY be
- * given in addition.
+ * Parse a HTTP "Authorization" header string for a VPH-Share auth token.
+ * <p>The header <strong>MUST</strong> be formatted according to the Basic Authentication scheme.
+ * The password <strong>MUST</strong> be the Base64 encoded VPH token.
+ * The username <strong>MAY</strong> be omitted.</p>
  */
 @ThreadSafe
 public final class VphTokenExtractor {
-  /* slf4j-logger */
-  private final static Logger log = LoggerFactory.getLogger(VphTokenExtractor.class);
-
   private final static Pattern BASIC_AUTH_PATTERN = Pattern.compile("^Basic ([A-Za-z0-9+/=]*)$");
   private final static Pattern CREDENTIALS_PATTERN = Pattern.compile("^([^:]*):(.*)$");
 
-  public Token authenticate(final MultivaluedMap<String, String> headers) {
-    requireNonNull(headers);
-    final Optional<String> auth = findAuthentication(headers);
-    if (!auth.isPresent()) {
+  /**
+   * @param auth Authorization header value
+   * @return extracted token
+   * @throws at.ac.univie.isc.asio.security.VphTokenExtractor.MalformedAuthHeader if parsing the header fails
+   */
+  @Nonnull
+  public Token authenticate(@Nonnull Optional<String> auth) throws MalformedAuthHeader {
+    if (auth.isPresent()) {
+      final String encodedCredentials = readBasicAuthCredentials(auth.get());
+      final CharBuffer credentials = decode(encodedCredentials);
+      return parse(credentials);
+    } else {
       return Token.ANONYMOUS;
     }
-    final String encodedCredentials = readBasicAuthCredentials(auth.get());
-    final CharBuffer credentials = decode(encodedCredentials);
-    return parse(credentials);
   }
 
   private CharBuffer decode(final String encodedCredentials) {
@@ -55,7 +51,7 @@ public final class VphTokenExtractor {
       final String password = match.group(2);
       return Token.from(username, password);
     } else {
-      throw new DatasetUsageException("illegal credentials format");
+      throw new MalformedAuthHeader("illegal credentials format");
     }
   }
 
@@ -64,19 +60,13 @@ public final class VphTokenExtractor {
     if (match.matches()) {
       return match.group(1);
     } else {
-      throw new DatasetUsageException("unsupported auth scheme : expected BasicAuthentication");
+      throw new MalformedAuthHeader("unsupported auth scheme : expected BasicAuthentication");
     }
   }
 
-  private Optional<String> findAuthentication(final MultivaluedMap<String, String> headers) {
-    final List<String> authHeader = headers.get(HttpHeaders.AUTHORIZATION);
-    if (authHeader == null || authHeader.isEmpty()) {
-      return Optional.absent();
-    } else if (authHeader.size() == 1) {
-      return Optional.of(Iterables.getOnlyElement(authHeader));
-    } else {
-      log.warn("illegal authentication header {}", authHeader);
-      throw new DatasetUsageException("illegal access credentials");
+  public static class MalformedAuthHeader extends DatasetUsageException {
+    public MalformedAuthHeader(final String reason) {
+      super(reason);
     }
   }
 }

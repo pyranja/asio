@@ -3,26 +3,28 @@ package at.ac.univie.isc.asio.tool;
 import com.google.common.base.Objects;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import static java.util.Objects.requireNonNull;
 
 @Immutable
-@Nonnull
 public class Pair<FIRST, SECOND> {
 
   private final FIRST first;
   private final SECOND second;
 
-  protected Pair(final FIRST first, final SECOND second) {
+  protected Pair(@Nonnull final FIRST first, @Nonnull final SECOND second) {
     this.first = requireNonNull(first);
     this.second = requireNonNull(second);
   }
 
+  @Nonnull
   protected final FIRST first() {
     return first;
   }
 
+  @Nonnull
   protected final SECOND second() {
     return second;
   }
@@ -36,7 +38,7 @@ public class Pair<FIRST, SECOND> {
   }
 
   @Override
-  public final boolean equals(final Object other) {
+  public final boolean equals(@Nullable final Object other) {
     if (this == other) {
       return true;
     }

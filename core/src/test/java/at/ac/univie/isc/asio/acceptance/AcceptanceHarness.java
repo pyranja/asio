@@ -43,6 +43,10 @@ public abstract class AcceptanceHarness {
     return provider.endpoint();
   }
 
+  protected final WebTarget client(final URI address) {
+    return provider.target(address);
+  }
+
   protected final Database database() {
     return TestContext.database();
   }

@@ -3,8 +3,6 @@ package at.ac.univie.isc.asio.config;
 import at.ac.univie.isc.asio.jaxrs.AcceptTunnelFilter;
 import at.ac.univie.isc.asio.jaxrs.ContentNegotiationDefaultsFilter;
 import at.ac.univie.isc.asio.jaxrs.DatasetExceptionMapper;
-import at.ac.univie.isc.asio.security.VphAuthFilter;
-import at.ac.univie.isc.asio.security.VphTokenExtractor;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.apache.cxf.jaxrs.provider.json.JSONProvider;
@@ -47,9 +45,8 @@ public class JaxrsSpec extends Application {
   }
 
   private ImmutableSet<ContainerRequestFilter> filters() {
-    return ImmutableSet.of(
-        new AcceptTunnelFilter(),
-        new ContentNegotiationDefaultsFilter(),
-        new VphAuthFilter(new VphTokenExtractor()));
+    return ImmutableSet.of(new AcceptTunnelFilter()
+        , new ContentNegotiationDefaultsFilter()
+    );
   }
 }

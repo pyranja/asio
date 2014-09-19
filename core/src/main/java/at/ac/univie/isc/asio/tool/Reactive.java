@@ -36,6 +36,7 @@ public final class Reactive {
    * @param <T> return type of the future
    * @return subscription function
    */
+  @Nonnull
   public static <T> ToObservableListenableFuture<T> listeningFor(@Nonnull final ListenableFuture<T> future) {
     return new ToObservableListenableFuture<>(future);
   }
@@ -49,6 +50,7 @@ public final class Reactive {
    * Create an {@link rx.functions.Action1 error handler}, which ignores errors.
    * @return An empty {@code Action1<Throwable>}, that does nothing.
    */
+  @Nonnull
   public static Action1<Throwable> ignoreErrors() {
     return EMPTY_ACTION;
   }
@@ -82,7 +84,7 @@ public final class Reactive {
         }
 
         @Override
-        public void onFailure(final Throwable t) {
+        public void onFailure(@Nonnull final Throwable t) {
           if (subscriber.isUnsubscribed()) { return; }
           Throwable cause = t;
           if (t instanceof ExecutionException) {

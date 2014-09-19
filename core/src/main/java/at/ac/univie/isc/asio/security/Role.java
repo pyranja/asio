@@ -2,6 +2,7 @@ package at.ac.univie.isc.asio.security;
 
 import at.ac.univie.isc.asio.tool.TypedValue;
 
+import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 import java.util.Locale;
 
@@ -23,8 +24,9 @@ public final class Role extends TypedValue<String> {
     super(name);
   }
 
+  @Nonnull
   @Override
-  protected String normalize(final String val) {
+  protected String normalize(@Nonnull final String val) {
     return val.toUpperCase(Locale.ENGLISH);
   }
 
