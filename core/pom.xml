@@ -434,10 +434,49 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>license-maven-plugin</artifactId>
-        <configuration>
-          <licenseName>apache_v2</licenseName>
-          <licenseFile>${project.basedir}/LICENSE</licenseFile>
-        </configuration>
+        <executions>
+          <execution>
+            <id>collect-third-party-licenses</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>add-third-party</goal>
+            </goals>
+            <configuration>
+              <thirdPartyFilename>THIRD-PARTY</thirdPartyFilename>
+              <fileTemplate>/org/codehaus/mojo/license/third-party-file-groupByLicense.ftl</fileTemplate>
+              <useMissingFile>true</useMissingFile>
+              <excludedScopes>test</excludedScopes>
+              <licenseMerges>
+                <licenseMerge>The Apache Software License, Version 2.0|Apache License, Version 2.0|Apache License|Apache License 2.0|Apache 2|ASF 2.0</licenseMerge>
+                <licenseMerge>BSD|BSD-Style License|The BSD License</licenseMerge>
+                <licenseMerge>CDDL 1.1|CDDL + GPLv2 with classpath exception|Dual license consisting of the CDDL v1.1 and GPL v2|GPL2 w/ CPE</licenseMerge>
+                <licenseMerge>Public Domain|The SAX License</licenseMerge>
+              </licenseMerges>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-thirdparty-licenses</id>
+            <phase>package</phase>
+            <goals>
+              <goal>attach-artifact</goal>
+            </goals>
+            <configuration>
+              <artifacts>
+                <artifact>
+                  <file>${project.build.directory}/generated-sources/license/THIRD-PARTY</file>
+                  <type>txt</type>
+                  <classifier>thirdparty-licenses</classifier>
+                </artifact>
+              </artifacts>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
