@@ -12,7 +12,7 @@ import org.junit.runner.notification.Failure;
  */
 public final class Check {
   private static final Class<?>[] TESTS = new Class[] {
-      MetadataTest.class, MonitorTest.class, PermissionTest.class, SchemaTest.class,
+      MetadataTest.class, EventStreamTest.class, PermissionTest.class, SchemaTest.class,
       SparqlDatetime.class, SparqlFederationTest.class, SparqlModesTest.class, SparqlQueryTest.class
       , SqlQueryTest.class, SqlUpdateTest.class
   };

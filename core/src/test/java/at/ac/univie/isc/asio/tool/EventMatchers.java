@@ -18,7 +18,7 @@ public final class EventMatchers {
 
   @Factory
   public static EventTypeMatcher event(final String type) {
-    return new EventTypeMatcher(Event.Message.valueOf(type));
+    return new EventTypeMatcher(type);
   }
 
   @Factory
@@ -32,9 +32,9 @@ public final class EventMatchers {
   }
 
   static class EventTypeMatcher extends TypeSafeMatcher<Event> {
-    private final Event.Message expected;
+    private final String expected;
 
-    EventTypeMatcher(final Event.Message expected) {
+    EventTypeMatcher(final String expected) {
       this.expected = requireNonNull(expected);
     }
 

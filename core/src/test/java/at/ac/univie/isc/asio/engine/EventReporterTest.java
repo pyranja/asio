@@ -14,7 +14,7 @@ import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertThat;
 
 public class EventReporterTest {
-  public static final Event.Message TEST_MESSAGE = Event.Message.valueOf("test");
+  public static final String TEST_MESSAGE = "test";
 
   private final CaptureEvents events = CaptureEvents.create();
   private final TestTicker time = TestTicker.create(0);
@@ -50,6 +50,6 @@ public class EventReporterTest {
   @Test
   public void emits_request_type_events() throws Exception {
     final Event event = subject.event(TEST_MESSAGE);
-    assertThat(event.type(), is(EventReporter.REQUEST_TYPE));
+    assertThat(event.type(), is(EventReporter.REQUEST_TYPE.toString()));
   }
 }

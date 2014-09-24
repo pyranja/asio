@@ -22,7 +22,7 @@ import static org.hamcrest.text.IsEqualIgnoringCase.equalToIgnoringCase;
 import static org.junit.Assert.assertThat;
 
 @Category(FunctionalTest.class)
-public class MonitorTest extends AcceptanceHarness {
+public class EventStreamTest extends AcceptanceHarness {
 
   public static final Func1<EventSource.MessageEvent, String>
       EXTRACT_DATA = new Func1<EventSource.MessageEvent, String>() {
@@ -47,8 +47,8 @@ public class MonitorTest extends AcceptanceHarness {
   @Test
   public void emits_subscribed_event() throws Exception {
     final EventSource.MessageEvent received = monitor.events().take(1).toBlocking().single();
-    assertThat(received.type(), is(equalToIgnoringCase("system")));
-    assertThat(received.data(), message("subscribed"));
+    assertThat(received.type(), is(equalToIgnoringCase("stream")));
+    assertThat(received.data(), is("subscribed"));
   }
 
   private Matcher<String> message(final String message) {

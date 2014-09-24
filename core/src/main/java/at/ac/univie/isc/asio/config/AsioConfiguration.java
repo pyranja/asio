@@ -2,8 +2,10 @@ package at.ac.univie.isc.asio.config;
 
 import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.admin.EventLoggerBridge;
+import at.ac.univie.isc.asio.admin.EventStream;
 import at.ac.univie.isc.asio.engine.*;
 import at.ac.univie.isc.asio.metadata.*;
+import at.ac.univie.isc.asio.tool.Duration;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.base.Ticker;
@@ -131,6 +133,21 @@ public class AsioConfiguration {
   }
 
   @Bean
+  public EventStream eventStream() {
+    final EventStream stream =
+        new EventStream(Schedulers.io(), Duration.create(1L, TimeUnit.SECONDS), 50);
+    eventBus().register(stream);
+    return stream;
+  }
+
+  @Bean
+  public EventLoggerBridge eventLogger() {
+    final EventLoggerBridge bridge = new EventLoggerBridge();
+    eventBus().register(bridge);
+    return bridge;
+  }
+
+  @Bean
   public EventBus eventBus() {
     return new AsyncEventBus("asio-events", eventWorker());
   }
@@ -142,12 +159,6 @@ public class AsioConfiguration {
             .setNameFormat("asio-events-%d")
             .build();
     return Executors.newSingleThreadScheduledExecutor(factory);
-  }
-
-  @Bean
-  @SuppressWarnings("UnusedDeclaration")  // lifecycle managed by spring
-  public EventLoggerBridge eventLogger() {
-    return new EventLoggerBridge(eventBus());
   }
 
   @Bean(destroyMethod = "shutdownNow")

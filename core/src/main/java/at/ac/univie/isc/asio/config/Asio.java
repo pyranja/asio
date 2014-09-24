@@ -17,11 +17,15 @@ import javax.servlet.ServletRegistration;
 import javax.servlet.SessionTrackingMode;
 
 /**
- * Programmatic replacement for {@code web.xml}.
+ * Configure asio web components.
+ * <p>This is a programmatic replacement for most parts of the {@code web.xml}.
+ * Global (context) listeners and Servlets without annotations are registered here.</p>
  */
 @SuppressWarnings("UnusedDeclaration")
-public class AsioInitializer implements WebApplicationInitializer {
-  private static final Logger log = LoggerFactory.getLogger(AsioInitializer.class);
+public final class Asio implements WebApplicationInitializer {
+  private static final Logger log = LoggerFactory.getLogger(Asio.class);
+
+  public Asio() { /* used by servlet container */ }
 
   static final ImmutableMap<String, String> CXF_PARAMETERS = ImmutableMap.of(
       "static-resources-list", "/explore/.*"
@@ -34,6 +38,7 @@ public class AsioInitializer implements WebApplicationInitializer {
   public void onStartup(final ServletContext container) throws ServletException {
     // enforce statelessness
     container.setSessionTrackingModes(ImmutableSet.<SessionTrackingMode>of());
+    // !listener order is relevant!
     // leak preventor
     container.setInitParameter("ClassLoaderLeakPreventor.threadWaitMs", "1000");
     container.addListener(ClassLoaderLeakPreventor.class);
@@ -41,13 +46,15 @@ public class AsioInitializer implements WebApplicationInitializer {
     final AnnotationConfigWebApplicationContext spring = new AnnotationConfigWebApplicationContext();
     spring.scan("at.ac.univie.isc.asio.config");
     container.addListener(new ContextLoaderListener(spring));
-    container.addListener(RequestContextListener.class);  // enables spring request scopes
+    // enable spring request scope
+    container.addListener(RequestContextListener.class);
     // cxf dispatcher
-    final ServletRegistration.Dynamic cxf = container.addServlet("cxf-dispatcher", new CXFServlet());
+    final ServletRegistration.Dynamic cxf =
+        container.addServlet("cxf-dispatcher", new CXFServlet());
     cxf.addMapping("/*");
     cxf.setLoadOnStartup(1);
     cxf.setAsyncSupported(true);
     cxf.setInitParameters(CXF_PARAMETERS);
-    log.info(AsioConfiguration.SYSTEM, "web app configuration completed");
+    log.info(AsioConfiguration.SYSTEM, "web components registered\n servlets : {}\n filters : {}", container.getServletRegistrations().keySet(), container.getFilterRegistrations().keySet());
   }
 }

@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
  * Extract permission string from a request URI, according to VPH spec :
  *  http://host:port/{common/prefix}/{permission}/{service/path}
  */
-final class UriPermissionExtractor {
+public final class UriPermissionExtractor {
   /*
    * string template for the request URI matching pattern
    * the single parameter defines the common prefix which is to be ignored when parsing
@@ -25,12 +25,17 @@ final class UriPermissionExtractor {
     return new Result(permission, tail);
   }
 
-  private final Pattern cachedParser;
-  private final String defaultPrefix;
+  private Pattern cachedParser;
+  private String defaultPrefix;
 
-  public UriPermissionExtractor(@Nullable final String prefix) {
+  public UriPermissionExtractor() {
+    cachePrefix(null);
+  }
+
+  public UriPermissionExtractor cachePrefix(@Nullable final String prefix) {
     defaultPrefix = Strings.nullToEmpty(prefix);
     cachedParser = makePattern(defaultPrefix);
+    return this;
   }
 
   /**

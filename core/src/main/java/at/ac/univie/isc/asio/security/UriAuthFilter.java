@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+@SuppressWarnings("UnusedDeclaration")
 @WebFilter(filterName = "auth-filter", displayName = "Uri Auth Filter"
     , description = "Authorize based on the request URI"
     , urlPatterns = "/*"
@@ -24,15 +25,13 @@ public final class UriAuthFilter implements Filter {
 
   private UriPermissionExtractor parser;
   private VphTokenExtractor extractor;
-  private final boolean mustInitialize;
 
   /** servlet container constructor */
   public UriAuthFilter() {
-    mustInitialize = true;
+    this(new UriPermissionExtractor(), new VphTokenExtractor());
   }
 
   public UriAuthFilter(final UriPermissionExtractor parser, final VphTokenExtractor extractor) {
-    mustInitialize = false;
     this.parser = parser;
     this.extractor = extractor;
   }
@@ -70,10 +69,7 @@ public final class UriAuthFilter implements Filter {
   @Override
   public void init(final FilterConfig config) throws ServletException {
     final String contextPath = config.getServletContext().getContextPath();
-    if (mustInitialize) {
-      parser = new UriPermissionExtractor(contextPath);
-      extractor = new VphTokenExtractor();
-    }
+    parser.cachePrefix(contextPath);
     log.info(AsioConfiguration.SYSTEM, "initialized on context <{}>", contextPath);
   }
 

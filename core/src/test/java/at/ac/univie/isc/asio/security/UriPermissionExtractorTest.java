@@ -17,7 +17,7 @@ public class UriPermissionExtractorTest {
 
   @Before
   public void setUp() throws Exception {
-    subject = new UriPermissionExtractor("");
+    subject = new UriPermissionExtractor();
   }
 
   @Test
