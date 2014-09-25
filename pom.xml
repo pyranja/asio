@@ -27,6 +27,7 @@
       <id>release</id>
       <modules>
         <module>distribution</module>
+        <module>ssl-fix</module>
       </modules>
     </profile>
   </profiles>
