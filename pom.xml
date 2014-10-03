@@ -23,18 +23,12 @@
 
   <profiles>
     <profile>
-      <!-- add tar-ball packaging -->
       <id>release</id>
       <modules>
+        <module>d2rq</module>
+        <module>flock-node</module>
         <module>distribution</module>
         <module>ssl-fix</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>flock</id>
-      <modules>
-        <module>ssl-fix</module>
-        <module>flock-node</module>
       </modules>
     </profile>
   </profiles>

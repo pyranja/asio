@@ -72,7 +72,7 @@
     <!-- local copy of d2rq dependency -->
     <repository>
       <id>d2rq-local</id>
-      <url>file://${project.basedir}/../d2r</url>
+      <url>file://${project.basedir}/../d2r-repo</url>
     </repository>
     <repository>
       <id>isc-release</id>
