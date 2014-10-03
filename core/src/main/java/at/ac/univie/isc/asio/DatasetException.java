@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio;
 
+import javax.ws.rs.WebApplicationException;
 import java.util.Locale;
 
 /**
@@ -23,5 +24,19 @@ public abstract class DatasetException extends RuntimeException {
         ? cause.toString()
         : message;
     return String.format(Locale.ENGLISH, MESSAGE_TEMPLATE, prefix, reason);
+  }
+
+  public static boolean isRegular(final Throwable error) {
+    return error instanceof DatasetException || error instanceof WebApplicationException;
+  }
+
+  public static Throwable wrapIfNecessary(final Throwable error) {
+    final Throwable throwMe;
+    if (!isRegular(error)) {
+      throwMe = new DatasetFailureException(error);
+    } else {
+      throwMe = error;
+    }
+    return throwMe;
   }
 }

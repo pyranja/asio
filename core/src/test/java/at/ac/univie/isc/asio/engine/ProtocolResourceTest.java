@@ -45,6 +45,8 @@ import static at.ac.univie.isc.asio.tool.EventMatchers.correlated;
 import static at.ac.univie.isc.asio.tool.EventMatchers.event;
 import static at.ac.univie.isc.asio.tool.EventMatchers.orderedStreamOf;
 import static at.ac.univie.isc.asio.tool.IsMultimapContaining.hasEntries;
+import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.hamcrest.core.CombinableMatcher.both;
 import static org.hamcrest.core.Is.is;
@@ -312,6 +314,7 @@ public class ProtocolResourceTest {
     when(command.observe()).thenThrow(IllegalStateException.class);
     response = invoke(Language.SQL).request().get();
     assertThat(response, hasStatus(Response.Status.INTERNAL_SERVER_ERROR));
+    assertThat(response.readEntity(String.class), not(isEmptyString()));
   }
 
   @Test
@@ -320,6 +323,7 @@ public class ProtocolResourceTest {
         .thenReturn(Observable.<Command.Results>error(new DatasetUsageException("test-exception")));
     response = invoke(Language.SQL).request().get();
     assertThat(response, hasStatus(Response.Status.BAD_REQUEST));
+    assertThat(response.readEntity(String.class), not(isEmptyString()));
   }
 
   @Test
@@ -328,6 +332,16 @@ public class ProtocolResourceTest {
         .thenReturn(Observable.<Command.Results>error(new DatasetFailureException(new IllegalStateException())));
     response = invoke(Language.SQL).request().get();
     assertThat(response, hasStatus(Response.Status.INTERNAL_SERVER_ERROR));
+    assertThat(response.readEntity(String.class), not(isEmptyString()));
+  }
+
+  @Test
+  public void observable_fails_with_fatal_error() throws Exception {
+    when(command.observe())
+        .thenReturn(Observable.<Command.Results>error(new IllegalStateException()));
+    response = invoke(Language.SQL).request().get();
+    assertThat(response, hasStatus(Response.Status.INTERNAL_SERVER_ERROR));
+    assertThat(response.readEntity(String.class), not(isEmptyString()));
   }
 
   @Test

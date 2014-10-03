@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.engine;
 
+import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.jaxrs.AsyncResponseFake;
 import org.junit.Before;
 import org.junit.Rule;
@@ -13,6 +14,7 @@ import javax.ws.rs.core.Response;
 
 import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.hasFamily;
 import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.hasStatus;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
@@ -34,10 +36,11 @@ public class CommandObserverTest {
   }
 
   @Test
-  public void should_resume_with_exception_on_error() throws Exception {
+  public void should_resume_with_wrapped_exception_on_error() throws Exception {
     final Throwable failure = new IllegalStateException("TEST");
     Observable.<Command.Results>error(failure).subscribe(subject);
-    assertThat(async_context.error(), is(failure));
+    assertThat(async_context.error(), instanceOf(DatasetException.class));
+    assertThat(async_context.error().getCause(), is(failure));
   }
 
   @Test

@@ -135,19 +135,16 @@ public class ProtocolResource {
    * log the occurred error and resume the response if it is still suspended.
    */
   private void resumeWithError(final AsyncResponse response, final Throwable error) {
-    final boolean errorSent = response.resume(error);
+    final Throwable wrapped = DatasetException.wrapIfNecessary(error);
+    final boolean errorSent = response.resume(wrapped);
     if (!errorSent) { log.warn("request failed - could not send error response"); }
-    if (isRegular(error)) {
+    if (DatasetException.isRegular(error)) {
       //noinspection ThrowableResultOfMethodCallIgnored
       final Throwable root = Throwables.getRootCause(error);
       log.warn("request failed - {}", root.getMessage());
     } else {
       log.error("request failed - {}", error.getMessage(), error);
     }
-  }
-
-  private boolean isRegular(final Throwable error) {
-    return error instanceof DatasetException || error instanceof WebApplicationException;
   }
 
   private static class SubscriptionCleaner implements TimeoutHandler, CompletionCallback, ConnectionCallback {

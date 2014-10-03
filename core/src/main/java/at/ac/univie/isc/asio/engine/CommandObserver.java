@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.engine;
 
+import at.ac.univie.isc.asio.DatasetException;
 import com.google.common.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +37,8 @@ class CommandObserver extends Subscriber<Command.Results> {
   @Override
   public void onError(final Throwable e) {
     if (async.isSuspended()) {
-      async.resume(e);
+      final Throwable wrapped = DatasetException.wrapIfNecessary(e);
+      async.resume(wrapped);
     } else {
       log.warn("must swallow error - response already resumed", e);
     }
