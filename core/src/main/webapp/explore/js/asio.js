@@ -16,11 +16,11 @@ var asio = (function() {
 
   // relative path from site location to asio sql endpoint
   // change this to adapt to deployment location
-  var ENDPOINT_PATH = "/read/sql";
+  var ENDPOINT_PATH = "/sql";
   // service suffixes
   var SERVICE_SCHEMA = "/schema";
   var SERVICE_QUERY = "/";
-  var SERVICE_META = "/read/meta";
+  var SERVICE_META = "/meta";
 
   // ==============================================================>
   // UTILS
