@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Configuration name="asio" status="error" monitorInterval="60" shutdownHook="disable">
+  <Properties> <!-- fallback values -->
+    <Property name="contextPath">asio</Property>
+    <Property name="catalina.base">${sys:user.home}</Property>
+  </Properties>
+
+  <Filters> <!-- let these pass regardless of log level -->
+    <MarkerFilter marker="SYSTEM" onMatch="ACCEPT" onMismatch="NEUTRAL" />
+    <MarkerFilter marker="EVENT" onMatch="ACCEPT" onMismatch="NEUTRAL" />
+  </Filters>
+
+  <Appenders>
+    <RollingFile name="asio"
+                 fileName="${sys:catalina.base}/logs/${web:contextPath}.log"
+                 filePattern="${sys:catalina.base}/logs/archive/${web:contextPath}-%i-%d{MM-dd-YYYY}.log">
+      <Policies>
+        <TimeBasedTriggeringPolicy/>
+      </Policies>
+      <DefaultRolloverStrategy max="5"/>
+      <PatternLayout pattern="%date{ISO8601} %-5level %marker [%thread] %logger{1} : %message%n"
+                     charset="UTF-8"/>
+    </RollingFile>
+    <RollingFile name="asio-events"
+                 fileName="${sys:catalina.base}/logs/${web:contextPath}-events.log"
+                 filePattern="${sys:catalina.base}/logs/archive/${web:contextPath}-events-%i-%d{MM-dd-YYYY}.log">
+      <Policies>
+        <TimeBasedTriggeringPolicy/>
+      </Policies>
+      <DefaultRolloverStrategy max="1"/>
+      <PatternLayout pattern="%date{ISO8601} %-5level %message%n" charset="UTF-8"/>
+    </RollingFile>
+  </Appenders>
+
+  <Loggers>
+    <Logger name="at.ac.univie.isc.asio" level="warn" />
+    <Logger name="at.ac.univie.isc.asio.events" level="info" additivity="false">
+      <AppenderRef ref="asio-events"/>
+    </Logger>
+    <!-- 3rd party -->
+    <Logger name="com.hp.hpl.jena" level="error"/>
+    <Logger name="org.apache.cxf" level="warn"/>
+
+    <Root level="warn">
+      <AppenderRef ref="asio"/>
+    </Root>
+  </Loggers>
+</Configuration>
