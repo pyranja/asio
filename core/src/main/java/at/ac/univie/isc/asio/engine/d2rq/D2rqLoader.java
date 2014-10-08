@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.engine.d2rq;
 
-import at.ac.univie.isc.asio.config.DatasourceSpec;
+import at.ac.univie.isc.asio.tool.DatasourceSpec;
 import com.google.common.collect.Iterables;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;

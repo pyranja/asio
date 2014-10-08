@@ -1,11 +1,22 @@
 package at.ac.univie.isc.asio.config;
 
 import at.ac.univie.isc.asio.SqlSchema;
-import at.ac.univie.isc.asio.admin.EventLoggerBridge;
-import at.ac.univie.isc.asio.admin.EventStream;
-import at.ac.univie.isc.asio.engine.*;
-import at.ac.univie.isc.asio.metadata.*;
+import at.ac.univie.isc.asio.insight.EventLoggerBridge;
+import at.ac.univie.isc.asio.insight.EventStream;
+import at.ac.univie.isc.asio.engine.Command;
+import at.ac.univie.isc.asio.engine.Engine;
+import at.ac.univie.isc.asio.engine.EngineRegistry;
+import at.ac.univie.isc.asio.engine.EventReporter;
+import at.ac.univie.isc.asio.engine.EventfulCommandDecorator;
+import at.ac.univie.isc.asio.engine.ProtocolResource;
+import at.ac.univie.isc.asio.jaxrs.AppSpec;
+import at.ac.univie.isc.asio.metadata.AtosMetadataService;
+import at.ac.univie.isc.asio.metadata.DatasetMetadata;
+import at.ac.univie.isc.asio.metadata.MetadataResource;
+import at.ac.univie.isc.asio.metadata.RemoteMetadata;
+import at.ac.univie.isc.asio.metadata.StaticMetadata;
 import at.ac.univie.isc.asio.tool.Duration;
+import at.ac.univie.isc.asio.tool.TimeoutSpec;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.base.Ticker;
@@ -21,11 +32,15 @@ import org.apache.cxf.jaxrs.spring.SpringResourceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
-import org.slf4j.MarkerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.core.env.Environment;
 import org.springframework.web.context.WebApplicationContext;
 import rx.Scheduler;
@@ -37,7 +52,13 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
-import java.util.concurrent.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Setup the asio endpoint infrastructure.
@@ -49,7 +70,7 @@ import java.util.concurrent.*;
 public class AsioConfiguration {
   /* slf4j-logger */
   private static final Logger log = LoggerFactory.getLogger(AsioConfiguration.class);
-  public static final Marker SYSTEM = MarkerFactory.getMarker("SYSTEM");
+  private static final Marker SCOPE_SYSTEM = at.ac.univie.isc.asio.Scope.SYSTEM.marker();
 
   @Autowired
   private Environment env;
@@ -71,7 +92,7 @@ public class AsioConfiguration {
         env.getActiveProfiles().length == 0
             ? env.getDefaultProfiles()
             : env.getActiveProfiles();
-    log.info(SYSTEM, "active profiles : {}", Arrays.toString(profiles));
+    log.info(SCOPE_SYSTEM, "active profiles : {}", Arrays.toString(profiles));
   }
 
   // JAX-RS
@@ -84,10 +105,10 @@ public class AsioConfiguration {
   @DependsOn("cxf")
   public Server jaxrsServer() {
     final JAXRSServerFactoryBean factory = RuntimeDelegate.getInstance().createEndpoint(
-        JaxrsSpec.create(ProtocolResource.class, MetadataResource.class),
+        AppSpec.create(ProtocolResource.class, MetadataResource.class),
         JAXRSServerFactoryBean.class
     );
-    log.info(SYSTEM, "publishing jaxrs endpoint at <{}>", factory.getAddress());
+    log.info(SCOPE_SYSTEM, "publishing jaxrs endpoint at <{}>", factory.getAddress());
     // Use spring managed resource instances
     factory.setResourceProvider(ProtocolResource.class, protocolResourceProvider());
     factory.setResourceProvider(MetadataResource.class, metadataResourceProvider());
@@ -119,7 +140,7 @@ public class AsioConfiguration {
   // asio jaxrs components
   @Bean
   public Command.Factory registry() {
-    log.info(SYSTEM, "using engines {}", engines);
+    log.info(SCOPE_SYSTEM, "using engines {}", engines);
     final Scheduler scheduler = Schedulers.from(workerPool());
     final EngineRegistry engineRegistry = new EngineRegistry(scheduler, engines);
     return new EventfulCommandDecorator(engineRegistry, eventBuilder());
@@ -188,7 +209,7 @@ public class AsioConfiguration {
   public TimeoutSpec globalTimeout() {
     Long timeout = env.getProperty("asio.timeout", Long.class, -1L);
     TimeoutSpec spec = TimeoutSpec.from(timeout, TimeUnit.SECONDS);
-    log.info(SYSTEM, "using timeout {}", spec);
+    log.info(SCOPE_SYSTEM, "using timeout {}", spec);
     return spec;
   }
 
@@ -197,16 +218,16 @@ public class AsioConfiguration {
   public Supplier<DatasetMetadata> metadataSupplier() {
     final boolean contactRemote = env.getProperty("asio.meta.enable", Boolean.class, Boolean.FALSE);
     if (env.acceptsProfiles("federation")) {  // FIXME ignore setting if federation node
-      log.info(SYSTEM, "using federation node metadata");
+      log.info(SCOPE_SYSTEM, "using federation node metadata");
       return Suppliers.ofInstance(StaticMetadata.FEDERATION_NODE);
     } else if (contactRemote) {
       final URI repository = URI.create(env.getRequiredProperty("asio.meta.repository"));
       AtosMetadataService proxy = new AtosMetadataService(repository);
       final String datasetId = datasetIdResolver.get();
-      log.info(SYSTEM, "using metadata service {} with id {}", proxy, datasetId);
+      log.info(SCOPE_SYSTEM, "using metadata service {} with id {}", proxy, datasetId);
       return new RemoteMetadata(proxy, datasetId);
     } else {
-      log.info(SYSTEM, "metadata resolution disabled");
+      log.info(SCOPE_SYSTEM, "metadata resolution disabled");
       return Suppliers.ofInstance(StaticMetadata.NOT_AVAILABLE);
     }
   }

@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.config;
 
+import at.ac.univie.isc.asio.Scope;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.apache.cxf.transport.servlet.CXFServlet;
@@ -55,6 +56,6 @@ public final class Asio implements WebApplicationInitializer {
     cxf.setLoadOnStartup(1);
     cxf.setAsyncSupported(true);
     cxf.setInitParameters(CXF_PARAMETERS);
-    log.info(AsioConfiguration.SYSTEM, "web components registered\n servlets : {}\n filters : {}", container.getServletRegistrations().keySet(), container.getFilterRegistrations().keySet());
+    log.info(Scope.SYSTEM.marker(), "web components registered\n servlets : {}\n filters : {}", container.getServletRegistrations().keySet(), container.getFilterRegistrations().keySet());
   }
 }

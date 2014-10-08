@@ -2,7 +2,7 @@ package at.ac.univie.isc.asio.acceptance;
 
 import at.ac.univie.isc.asio.jaxrs.Mime;
 import at.ac.univie.isc.asio.sql.ConvertToTable;
-import at.ac.univie.isc.asio.tool.FunctionalTest;
+import at.ac.univie.isc.asio.FunctionalTest;
 import com.google.common.collect.Table;
 import com.google.common.escape.Escaper;
 import com.google.common.net.UrlEscapers;

@@ -1,0 +1,5 @@
+SELECT ?person ?name ?email
+WHERE {
+  SERVICE <${endpoint.names}> { ?person ?p1 ?name }
+  SERVICE <${endpoint.emails}> { ?person ?p2 ?email }
+}

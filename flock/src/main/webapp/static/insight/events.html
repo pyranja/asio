@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="asioApp">
+<head>
+  <meta charset="utf-8"/>
+  <title>Asio Insights</title>
+  <link rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.5/angular.min.js"></script>
+  <script src="/static/insight/app.js"></script>
+</head>
+<body ng-controller="EventMonitor">
+<div class="container">
+  <h1>Asio Insights
+    <small>Event Monitor</small>
+  </h1>
+  <div class="table-responsive">
+    <table class="table table-hover table-condensed" style="word-wrap: break-word;">
+      <thead>
+      <td>Type</td>
+      <td>Message</td>
+      <td>Origin</td>
+      </thead>
+      <tr ng-repeat="event in events">
+        <td>{{event.type}}</td>
+        <td>{{event.data}}</td>
+        <td>{{event.origin}}</td>
+      </tr>
+    </table>
+  </div>
+</div>
+</body>
+</html>

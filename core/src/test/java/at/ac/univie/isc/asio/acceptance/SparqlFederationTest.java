@@ -1,7 +1,7 @@
 package at.ac.univie.isc.asio.acceptance;
 
 import at.ac.univie.isc.asio.jaxrs.Mime;
-import at.ac.univie.isc.asio.tool.FunctionalTest;
+import at.ac.univie.isc.asio.FunctionalTest;
 import com.google.common.base.Strings;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.sun.net.httpserver.HttpExchange;

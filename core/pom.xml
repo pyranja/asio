@@ -21,8 +21,12 @@
     <site-version>${project.version}</site-version>
   </properties>
 
-  <!-- shared dependencies -->
   <dependencies>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>asio-base</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>asio-d2rq</artifactId>
@@ -64,11 +68,6 @@
       <version>1.0.4</version>
       <scope>runtime</scope>
     </dependency>
-    <dependency>  <!-- jaxb generated classes support -->
-      <groupId>org.jvnet.jaxb2_commons</groupId>
-      <artifactId>jaxb2-basics-runtime</artifactId>
-      <version>0.6.5</version>
-    </dependency>
     <!-- logging -->
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -101,6 +100,11 @@
     </dependency>
     <!-- test -->
     <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>asio-test</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
@@ -126,6 +130,16 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpcore</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.dbunit</groupId>
       <artifactId>dbunit</artifactId>
       <scope>test</scope>
@@ -133,24 +147,6 @@
     <dependency>
       <groupId>net.sf.opencsv</groupId>
       <artifactId>opencsv</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.github.tomakehurst</groupId>
-      <artifactId>wiremock</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <!-- explicit declaration of wiremock transitive dependency to override older jena client jar -->
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpcore</artifactId>
-      <version>4.2.3</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <version>4.2.3</version>
       <scope>test</scope>
     </dependency>
     <dependency>  <!-- SQL engine -->
@@ -281,24 +277,12 @@
           </execution>
         </executions>
       </plugin>
-      <!-- JAXB source generation -->
-      <plugin>
-        <groupId>org.jvnet.jaxb2.maven2</groupId>
-        <artifactId>maven-jaxb2-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>generate</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
       <!-- testing -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <excludedGroups>at.ac.univie.isc.asio.tool.FunctionalTest</excludedGroups>
+          <excludedGroups>at.ac.univie.isc.asio.FunctionalTest</excludedGroups>
           <classpathDependencyExcludes> <!-- mysql starts a clean up thread, disable in unit tests -->
             <classpathDependencyExclude>mysql:mysql-connector-java</classpathDependencyExclude>
           </classpathDependencyExcludes>
@@ -312,7 +296,7 @@
           <includes>
             <include>**/*.java</include>
           </includes>
-          <groups>at.ac.univie.isc.asio.tool.FunctionalTest</groups>
+          <groups>at.ac.univie.isc.asio.FunctionalTest</groups>
         </configuration>
         <executions>
           <execution>

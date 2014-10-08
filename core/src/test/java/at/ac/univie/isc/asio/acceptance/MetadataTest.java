@@ -3,7 +3,7 @@ package at.ac.univie.isc.asio.acceptance;
 import at.ac.univie.isc.asio.jaxrs.Mime;
 import at.ac.univie.isc.asio.metadata.DatasetMetadata;
 import at.ac.univie.isc.asio.metadata.StaticMetadata;
-import at.ac.univie.isc.asio.tool.FunctionalTest;
+import at.ac.univie.isc.asio.FunctionalTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 

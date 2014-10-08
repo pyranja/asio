@@ -1,15 +1,21 @@
 package at.ac.univie.isc.asio.security;
 
-import at.ac.univie.isc.asio.config.AsioConfiguration;
+import at.ac.univie.isc.asio.Scope;
 import com.google.common.base.Optional;
 import com.google.common.net.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.*;
+import javax.servlet.DispatcherType;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
@@ -53,9 +59,9 @@ public final class UriAuthFilter implements Filter {
         parser.accept(request.getRequestURI(), request.getContextPath());
     final Permission permission = Permission.parse(extracted.permission());
     final Token user = extractToken(request);
-    final PermissionProxyRequest authorizedRequest =
-        new PermissionProxyRequest(request, user, permission);
     log.debug("authorized {} with permission {} and redirecting to <{}>", user, permission, extracted.tail());
+    final AuthorizedRequestProxy authorizedRequest =
+        AuthorizedRequestProxy.wrap(request, user, permission);
     final RequestDispatcher dispatcher = request.getRequestDispatcher(extracted.tail());
     dispatcher.forward(authorizedRequest, response);
   }
@@ -70,43 +76,12 @@ public final class UriAuthFilter implements Filter {
   public void init(final FilterConfig config) throws ServletException {
     final String contextPath = config.getServletContext().getContextPath();
     parser.cachePrefix(contextPath);
-    log.info(AsioConfiguration.SYSTEM, "initialized on context <{}>", contextPath);
+    log.info(Scope.SYSTEM.marker(), "initialized on context <{}>", contextPath);
   }
 
   @Override
   public void destroy() {
-    log.info(AsioConfiguration.SYSTEM, "shutting down");
+    log.info(Scope.SYSTEM.marker(), "shutting down");
   }
 
-  private static class PermissionProxyRequest extends HttpServletRequestWrapper {
-    private final Token user;
-    private final Permission permission;
-
-    public PermissionProxyRequest(final HttpServletRequest request, final Token user, final Permission permission) {
-      super(request);
-      this.user = user;
-      this.permission = permission;
-    }
-
-    @Override
-    public Token getUserPrincipal() {
-      return user;
-    }
-
-    @Override
-    public String getRemoteUser() {
-      return user.getName();
-    }
-
-    @Override
-    public String getAuthType() {
-      return HttpServletRequest.BASIC_AUTH;
-    }
-
-    @Override
-    public boolean isUserInRole(final String role) {
-      assert role != null : "got null role";
-      return permission.grants(Role.valueOf(role));
-    }
-  }
 }

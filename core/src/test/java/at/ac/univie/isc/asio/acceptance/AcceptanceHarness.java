@@ -2,7 +2,7 @@ package at.ac.univie.isc.asio.acceptance;
 
 import at.ac.univie.isc.asio.jaxrs.ManagedClient;
 import at.ac.univie.isc.asio.sql.Database;
-import at.ac.univie.isc.asio.tool.Rules;
+import at.ac.univie.isc.asio.junit.Rules;
 import com.google.common.collect.ImmutableMap;
 import org.apache.cxf.jaxrs.provider.json.JSONProvider;
 import org.junit.Rule;

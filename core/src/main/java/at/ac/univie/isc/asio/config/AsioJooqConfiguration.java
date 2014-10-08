@@ -3,6 +3,8 @@ package at.ac.univie.isc.asio.config;
 import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.engine.sql.JooqEngine;
 import at.ac.univie.isc.asio.engine.sql.SchemaProvider;
+import at.ac.univie.isc.asio.tool.DatasourceSpec;
+import at.ac.univie.isc.asio.tool.TimeoutSpec;
 import com.google.common.base.Supplier;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -46,7 +48,7 @@ public class AsioJooqConfiguration {
   public DataSource dataSource() {
     final HikariConfig config = new HikariConfig();
     config.setMaximumPoolSize(CONCURRENCY);
-    config.setDriverClassName(dbSpec.driverName());
+    config.setDriverClassName(dbSpec.getJdbcDriver());
     config.setJdbcUrl(dbSpec.getJdbcUrl());
     config.setUsername(dbSpec.getUsername());
     config.setPassword(dbSpec.getPassword());

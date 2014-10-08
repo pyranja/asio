@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.engine.d2rq;
 
-import at.ac.univie.isc.asio.config.TimeoutSpec;
+import at.ac.univie.isc.asio.tool.TimeoutSpec;
 import com.google.common.collect.Iterators;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ResIterator;

@@ -1,7 +1,7 @@
 package at.ac.univie.isc.asio.acceptance;
 
+import at.ac.univie.isc.asio.Classpath;
 import at.ac.univie.isc.asio.sql.Database;
-import at.ac.univie.isc.asio.tool.ClasspathResource;
 import com.google.common.base.Throwables;
 
 import java.io.IOException;
@@ -29,8 +29,7 @@ public final class TestContext {
 
   public static KeyStore keyStore() {
     final String path = System.getProperty(PROP_KEYSTORE_PATH, "ssl/keystore");
-    final ClasspathResource keystoreFile = ClasspathResource.fromRoot(path);
-    try (final InputStream keyStream = keystoreFile.get().openStream()) {
+    try (final InputStream keyStream = Classpath.load(path).openStream()) {
       final KeyStore keyStore = KeyStore.getInstance("JKS");
       final String password = System.getProperty(PROP_KEYSTORE_PASSWORD, "asio-jetty");
       keyStore.load(keyStream, password.toCharArray());

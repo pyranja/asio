@@ -1,7 +1,10 @@
 package at.ac.univie.isc.asio.config;
 
+import at.ac.univie.isc.asio.Scope;
 import at.ac.univie.isc.asio.engine.d2rq.D2rqLoader;
 import at.ac.univie.isc.asio.engine.sparql.JenaEngine;
+import at.ac.univie.isc.asio.tool.DatasourceSpec;
+import at.ac.univie.isc.asio.tool.TimeoutSpec;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -36,7 +39,7 @@ public class AsioJenaConfiguration {
   @Bean
   public JenaEngine sparqlEngine() {
     final Model model = d2rModel();
-    log.info(AsioConfiguration.SYSTEM, "using model {}", model);
+    log.info(Scope.SYSTEM.marker(), "using model {}", model);
     final boolean allowFederated =
         env.getProperty("asio.sparql.allowFederated", Boolean.class, Boolean.FALSE);
     return new JenaEngine(model, globalTimeout, allowFederated);
@@ -46,7 +49,7 @@ public class AsioJenaConfiguration {
   public DatasourceSpec datasource() {
     final DatasourceSpec spec = d2rLoader().datasourceSpec();
     if (spec.getPassword() == null) {
-      AsioJenaConfiguration.log.warn(AsioConfiguration.SYSTEM, "no password set for JDBC connection {}", spec.getJdbcUrl());
+      AsioJenaConfiguration.log.warn(Scope.SYSTEM.marker(), "no password set for JDBC connection {}", spec.getJdbcUrl());
     }
     return spec;
   }
@@ -70,10 +73,10 @@ public class AsioJenaConfiguration {
   public Supplier<String> mappingDatasetIdResolver() {
     final String maybeId = d2rLoader().baseUri();
     if (emptyToNull(maybeId) == null) {
-      log.warn(AsioConfiguration.SYSTEM, "no valid baseURI defined in d2r mapping");
+      log.warn(Scope.SYSTEM.marker(), "no valid baseURI defined in d2r mapping");
       return Suppliers.ofInstance("unknown");
     } else {
-      log.info(AsioConfiguration.SYSTEM, "using d2r baseURI <{}> as dataset id", maybeId);
+      log.info(Scope.SYSTEM.marker(), "using d2r baseURI <{}> as dataset id", maybeId);
       return Suppliers.ofInstance(maybeId);
     }
   }

@@ -12,4 +12,4 @@ target/
 
 # vagrant exec
 .vagrant
-vm/shared/
+dev/shared/

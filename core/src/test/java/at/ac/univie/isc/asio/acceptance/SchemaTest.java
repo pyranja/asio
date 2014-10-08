@@ -4,7 +4,7 @@ import at.ac.univie.isc.asio.Column;
 import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.Table;
 import at.ac.univie.isc.asio.jaxrs.Mime;
-import at.ac.univie.isc.asio.tool.FunctionalTest;
+import at.ac.univie.isc.asio.FunctionalTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 

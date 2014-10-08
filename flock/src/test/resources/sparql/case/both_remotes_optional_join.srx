@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<sparql xmlns="http://www.w3.org/2005/sparql-results#">
+  <head>
+    <variable name="person"/>
+    <variable name="name"/>
+    <variable name="email"/>
+  </head>
+  <results>
+    <result>
+      <binding name="person">
+        <uri>http://example.org/a</uri>
+      </binding>
+      <binding name="name">
+        <literal>Alan</literal>
+      </binding>
+      <binding name="email">
+        <literal>alan@example.org</literal>
+      </binding>
+    </result>
+    <result>
+      <binding name="person">
+        <uri>http://example.org/b</uri>
+      </binding>
+      <binding name="name">
+        <literal>Bob</literal>
+      </binding>
+      <binding name="email">
+        <literal>bob@example.org</literal>
+      </binding>
+    </result>
+    <result>
+      <binding name="person">
+        <uri>http://example.org/c</uri>
+      </binding>
+      <binding name="name">
+        <literal>Crystal</literal>
+      </binding>
+    </result>
+  </results>
+</sparql>

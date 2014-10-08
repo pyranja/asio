@@ -4,7 +4,7 @@ import at.ac.univie.isc.asio.Head;
 import at.ac.univie.isc.asio.SqlResult;
 import at.ac.univie.isc.asio.Update;
 import at.ac.univie.isc.asio.jaxrs.Mime;
-import at.ac.univie.isc.asio.tool.FunctionalTest;
+import at.ac.univie.isc.asio.FunctionalTest;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
 import org.junit.After;

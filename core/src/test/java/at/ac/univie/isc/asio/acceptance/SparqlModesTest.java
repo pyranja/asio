@@ -2,7 +2,7 @@ package at.ac.univie.isc.asio.acceptance;
 
 import at.ac.univie.isc.asio.jaxrs.Mime;
 import at.ac.univie.isc.asio.sql.ConvertToTable;
-import at.ac.univie.isc.asio.tool.FunctionalTest;
+import at.ac.univie.isc.asio.FunctionalTest;
 import com.google.common.collect.Table;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -16,7 +16,7 @@ import javax.ws.rs.core.Response.Status;
 import java.io.InputStream;
 import java.net.URI;
 
-import static at.ac.univie.isc.asio.tool.IsIsomorphic.isomorphicWith;
+import static at.ac.univie.isc.asio.junit.IsIsomorphic.isomorphicWith;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.equalToIgnoringWhiteSpace;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
