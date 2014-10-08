@@ -77,8 +77,9 @@ public class JenaEngineTest {
         .build();
     final byte[] raw = executeCommandWith(params);
     final String result = new String(raw, Charsets.UTF_8);
-    assertThat(result, is(equalToIgnoringWhiteSpace("yes")));
-    // for jena 2.9.4 : assertThat(result, is("_askResulttrue"));
+    assertThat(result, is(equalToIgnoringWhiteSpace("_askResult true")));
+    // for jena 2.9.4 : expect "_askResult true"
+    // pre jena 2.9.4 : expect "yes"
   }
 
   @Test

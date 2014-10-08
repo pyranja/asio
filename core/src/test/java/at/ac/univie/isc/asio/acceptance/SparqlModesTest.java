@@ -46,7 +46,9 @@ public class SparqlModesTest extends AcceptanceHarness {
     final String query = "ASK { ?s rdfs:label ?o }";
     response = client().request(Mime.CSV.type()).post(Entity.entity(query, Mime.QUERY_SPARQL.type()));
     final String result = response.readEntity(String.class);
-    assertThat(result, is(equalToIgnoringWhiteSpace("yes"))); // text format depends on jena version
+    assertThat(result, is(equalToIgnoringWhiteSpace("_askResult true")));
+    // for jena 2.9.4 : expect "_askResult true"
+    // pre jena 2.9.4 : expect "yes"
   }
 
   @Test

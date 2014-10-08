@@ -11,61 +11,49 @@
     <relativePath>../parent/pom.xml</relativePath>
   </parent>
 
+  <!--
+    This build performs full compilation and tests (minus functional ones) of D2RQ, but excludes
+     server specific code from the packaged .jar.
+     All server specific dependencies are declared as optional.
+  -->
+
   <artifactId>asio-d2rq</artifactId>
+  <name>asio d2rq</name>
+  <description>repackaged version of d2rq for embedded use</description>
   <packaging>jar</packaging>
 
   <properties>
     <module.basedir>${project.basedir}/module</module.basedir>
   </properties>
 
-  <!-- FIXME : exclude all CLI tool classes, server package and SystemLoader from compilation and remove corresponding dependencies -->
+  <repositories>
+    <repository>
+      <id>d2rq-local</id>
+      <url>file://${project.basedir}/d2r-repo</url>
+    </repository>
+  </repositories>
 
   <dependencies>
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-core</artifactId>
-      <version>2.7.4</version>
-      <exclusions>  <!-- avoid classpath pollution -->
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-log4j12</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>log4j</groupId>
-          <artifactId>log4j</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-arq</artifactId>
-      <version>2.9.4</version>
-      <exclusions>  <!-- avoid classpath pollution -->
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-log4j12</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>log4j</groupId>
-          <artifactId>log4j</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>jcl-over-slf4j</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
-    <dependency>  <!-- logging impls expected to be provided by container -->
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
-      <version>1.2</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
+    <!-- logging impl and bridges expected to be provided by container -->
+    <dependency> <!-- org.d2rq.Log4jHelper -->
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
       <version>1.2.17</version>
-      <scope>provided</scope>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>1.7.5</version>
+      <scope>test</scope>
     </dependency>
     <!-- optional server dependencies -->
     <dependency>
@@ -92,20 +80,16 @@
       <version>1.7</version>
       <optional>true</optional>
     </dependency>
-    <dependency>  <!-- hacked : there is no joseki maven artifact -->
-      <groupId>org.joseki</groupId>
+    <dependency>
+      <groupId>org.apache.jena</groupId>
       <artifactId>joseki</artifactId>
       <version>3.4.4</version>
       <optional>true</optional>
-      <scope>system</scope>
-      <type>jar</type>
-      <systemPath>${module.basedir}/lib/joseki-3.4.4/joseki-3.4.4.jar</systemPath>
     </dependency>
     <!-- test -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.11</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -128,6 +112,25 @@
       </testResource>
     </testResources>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>org/d2rq/Log4jHelper*</exclude>
+            <!-- CLI tools and examples -->
+            <exclude>d2rq/*</exclude>
+            <exclude>org/d2rq/CommandLineTool*</exclude>
+            <exclude>org/d2rq/examples*</exclude>
+            <!-- SystemLoader and friends -->
+            <exclude>org/d2rq/SystemLoader*</exclude>
+            <exclude>org/d2rq/jena/ModelD2RQ*</exclude>
+            <exclude>org/d2rq/assembler*</exclude>
+            <!-- D2R server -->
+            <exclude>org/d2rq/server/*</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>

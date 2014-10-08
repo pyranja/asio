@@ -17,10 +17,10 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <version.compiler>1.7</version.compiler>
+    <java.version>1.7</java.version>
     <!-- dependency bundle versions -->
-    <version.cxf>3.0.0</version.cxf>
-    <version.tomcat>8.0.11</version.tomcat>
+    <cxf.version>3.0.0</cxf.version>
+    <tomcat.version>8.0.11</tomcat.version>
   </properties>
 
   <organization>
@@ -69,11 +69,6 @@
   </developers>
 
   <repositories>
-    <!-- local copy of d2rq dependency -->
-    <repository>
-      <id>d2rq-local</id>
-      <url>file://${project.basedir}/../d2r-repo</url>
-    </repository>
     <repository>
       <id>isc-release</id>
       <name>ISC release repository</name>
@@ -223,6 +218,11 @@
         <version>1.7.5</version>
       </dependency>
       <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jcl-over-slf4j</artifactId>
+        <version>1.7.5</version>
+      </dependency>
+      <dependency>
         <groupId>org.apache.logging.log4j</groupId>
         <artifactId>log4j-bom</artifactId>
         <version>2.0.2</version>
@@ -240,8 +240,9 @@
       <dependency> <!-- jena -->
         <groupId>org.apache.jena</groupId>
         <artifactId>jena-core</artifactId>
-        <version>2.7.1</version>
-        <exclusions>  <!-- exclude log4j from jena to avoid cp pollution -->
+        <version>2.7.4</version>
+        <!-- avoid classpath pollution -->
+        <exclusions>
           <exclusion>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
@@ -255,8 +256,9 @@
       <dependency>
         <groupId>org.apache.jena</groupId>
         <artifactId>jena-arq</artifactId>
-        <version>2.9.1</version>
-        <exclusions>  <!-- exclude log4j from jena to avoid cp pollution -->
+        <version>2.9.4</version>
+        <!-- avoid classpath pollution -->
+        <exclusions>
           <exclusion>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
@@ -270,47 +272,47 @@
       <dependency> <!-- CXF -->
         <groupId>org.apache.cxf</groupId>
         <artifactId>cxf-core</artifactId>
-        <version>${version.cxf}</version>
+        <version>${cxf.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.cxf</groupId>
         <artifactId>cxf-rt-frontend-jaxrs</artifactId>
-        <version>${version.cxf}</version>
+        <version>${cxf.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.cxf</groupId>
         <artifactId>cxf-rt-rs-client</artifactId>
-        <version>${version.cxf}</version>
+        <version>${cxf.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.cxf</groupId>
         <artifactId>cxf-rt-rs-extension-providers</artifactId>
-        <version>${version.cxf}</version>
+        <version>${cxf.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.cxf</groupId>
         <artifactId>cxf-rt-transports-http</artifactId>
-        <version>${version.cxf}</version>
+        <version>${cxf.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.cxf</groupId>
         <artifactId>cxf-rt-transports-http-jetty</artifactId>
-        <version>${version.cxf}</version>
+        <version>${cxf.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.cxf</groupId>
         <artifactId>cxf-rt-transports-local</artifactId>
-        <version>${version.cxf}</version>
+        <version>${cxf.version}</version>
       </dependency>
       <dependency>  <!-- embedded tomcat -->
         <groupId>org.apache.tomcat.embed</groupId>
         <artifactId>tomcat-embed-core</artifactId>
-        <version>${version.tomcat}</version>
+        <version>${tomcat.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.tomcat.embed</groupId>
         <artifactId>tomcat-embed-logging-juli</artifactId>
-        <version>${version.tomcat}</version>
+        <version>${tomcat.version}</version>
       </dependency>
       <dependency>  <!-- memory leak prevention -->
         <groupId>se.jiderhamn</groupId>
@@ -335,9 +337,14 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.1</version>
           <configuration>
-            <source>${version.compiler}</source>
-            <target>${version.compiler}</target>
+            <source>${java.version}</source>
+            <target>${java.version}</target>
           </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>2.5</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
