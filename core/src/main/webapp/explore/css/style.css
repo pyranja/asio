@@ -71,6 +71,17 @@
 	text-overflow: ellipsis;
 }
 
+/*.textcrop_result_rows {
+	width:auto;
+	height:18px;
+	line-height:15px;
+	overflow:hidden;
+	display: inline-block;
+	vertical-align: middle;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}*/
+
 html, body {
     height: 100%;
 }

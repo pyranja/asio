@@ -23,10 +23,26 @@ var ExplorerView = new function () {
 var ResultView = new function () {
   this.update = function (model) {
     var content = ich.template_result(model.result);
-    $('#sql-result').empty().append(content);
+	var fieldArray = new Object();
+	var andor = ($("#zebra-table input[type=checkbox]").prop('checked'));	
+	$("#zebra-table input[type=text]").each(function(){
+		fieldArray[$(this).attr('id')] = $(this).val();
+	});
+	
+	$('#sql-result').empty().append(content);	
 	$('#zebra-table').dataTable({
         aoColumns: columnWidths()
     });
+	$('#zebra-table > tbody  > tr').each(function() {
+		$(this).linkify();
+	});
+	
+	addColumnFilterUI();
+	for (var key in fieldArray) {
+		$("#"+key).val(fieldArray[key]);
+	}
+	$("#zebra-table input[type=checkbox]").prop('checked', andor);
+	setAndOrOperator();
   };
 };
 
@@ -44,7 +60,6 @@ var Controller = new function () {
         result : null,
       };
 	  
-	  /*******TODO**************/
   this.fetchRowCount = function (table) {
     var query = "SELECT COUNT(*) FROM `" + table +"`";
 	asio.executeQuery(query, function (error, xml) {
@@ -57,18 +72,22 @@ var Controller = new function () {
     });
   };  
   
-  this.fetchTable = function (table, limit) {
-	if($("#cbinput").prop('checked'))
+  this.fetchTable = function (table) {
+    if($("#cbinput").prop('checked'))
 		this.executeQuery("SELECT * FROM `" + table +"` LIMIT 1000");
 	else
 		this.executeQuery("SELECT * FROM `" + table +"`");
+	
+	$("#selectedTable").val(table);
   };
   
-  this.fetchTableField = function (table, field, limit) {
+  this.fetchTableField = function (table, field) {
 	if($("#cbinput").prop('checked'))
 		this.executeQuery("SELECT DISTINCT COUNT(`" + field + "`) AS occurence, `" + field +"` FROM `" + table +"` GROUP BY `"+ field +"` ORDER BY occurence DESC LIMIT 1000");
 	else
 		this.executeQuery("SELECT DISTINCT COUNT(`" + field + "`) AS occurence, `" + field +"` FROM `" + table +"` GROUP BY `"+ field +"` ORDER BY occurence DESC");
+	
+	$("#selectedTable").val(table);
   };
   
   this.onCheckLimitBox = function () {
@@ -96,7 +115,7 @@ var Controller = new function () {
 	}
   }
   
-  this.executeQuery = function (query) {
+  this.executeQuery = function (query, callback) {
     var $self = this;
     $self.state.command = query;
     asio.executeQuery(query, function (error, xml) {
@@ -118,7 +137,7 @@ var Controller = new function () {
 		$('#sql-download-form').attr('action', asio.endpoint());
 		return true;
     });
-}; 
+  }; 
   
   this.sync = function () {
     var $self = this;
@@ -152,13 +171,29 @@ function onCheckLimitBox() {
   Controller.onCheckLimitBox();
 };
 
-/*function onSelectLimit(){ // set limit according to select box 'limitselect'
-	var query = $('#sql-command').val();
-	//edit query to set limit
-	//+6 due to the key word limit and the following space
-	query = query.substring(0,query.toUpperCase().lastIndexOf("LIMIT")+6) + $("#limitselect").val();
-    Controller.executeQuery(query);
-};*/
+function onFilterByColumns(table) {
+	var fieldArray = new Object();
+	$($("#zebra-table thead tr th").get().reverse()).each(function(){
+		if($("#f"+$(this).text()).val() != "")
+			fieldArray[$(this).text()] = $("#f"+$(this).text()).val();
+	});
+	
+	var query = "SELECT * FROM "+$("#selectedTable").val()+" WHERE ";
+	var index = 0;
+	for (var key in fieldArray) {
+		if(index < 1)
+			query = query + key +" LIKE '%"+fieldArray[key]+"%'";
+		else
+			query = query + " "+$("#filterOperator").val()+" " +  key +" LIKE '%"+fieldArray[key]+"%'";
+		
+		index++;
+	};
+	query = query + ";"
+	
+	if(index > 0){
+		Controller.executeQuery(query);
+	}
+};
 
 function onSelectField(event, fieldName, limit) {
   event.preventDefault();
@@ -177,11 +212,11 @@ function overrideForm() {
 }; 
 
 function downloadTable() {
-	/*$('#sql-download-form').submit(function(event){ //listen for submit event
+	$('#sql-download-form').submit(function(event){ //listen for submit event
 		$('#sql-download-command').val($('#sql-command').val());
 		$('#sql-download-form').attr('action', asio.endpoint());
 		return true;
-    });*/
+    });
 	return Controller.downloadTable();
 }; 
 
@@ -244,6 +279,34 @@ function columnWidths() {
         }
     });
     return ao;
+}
+
+function addColumnFilterUI(){
+	var buttonCell = document.getElementById("zebra-table").createTFoot().insertRow(0).insertCell(0);
+	buttonCell.colSpan = 999;
+	buttonCell.innerHTML = '<table><tr><td id="andoropcell"><input id="andor" type="checkbox" name="andor" value="limit" onchange="setAndOrOperator()" checked> OR operator</td><td><button id="columnfilter" title="Column filter" type="submit" class="btn btn-default btn-lg" onclick="onFilterByColumns();" value="Column filter"><span class="glyphicon glyphicon-download"></span> Column filter</button></td><td><button title="Reset table" type="submit" class="btn btn-default btn-lg" onclick="resetTable();" value="Reset table"><span class="glyphicon glyphicon-download"></span> Reset table</button></td></tr></table>';
+	
+	var searchRow = document.getElementById("zebra-table").tFoot.insertRow(0);	
+	$($("#zebra-table thead tr th").get().reverse()).each(function(){	
+		var cell = searchRow.insertCell(0);
+		cell.innerHTML = '<input style="width:90%" type="text" class="form-control" id="f'+$(this).text()+'" placeholder="'+$(this).text()+'" value="">';
+	});
+}
+
+function setAndOrOperator(){
+	var isChecked = $("#andor").prop('checked');
+	if(isChecked) {
+		$("#andoropcell").html('<input id="andor" type="checkbox" name="andor" onchange="setAndOrOperator()" checked> OR operator');
+		$("#filterOperator").val("OR");
+	} else {
+		$("#andoropcell").html('<input id="andor" type="checkbox" name="andor" onchange="setAndOrOperator()"> AND operator');
+		$("#filterOperator").val("AND");
+	}
+}
+
+function resetTable() {
+	document.getElementById("zebra-table").deleteTFoot();
+	Controller.fetchTable($("#selectedTable").val());
 }
 
 //==============================================================>
