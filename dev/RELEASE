@@ -8,6 +8,10 @@ release steps :
   scp -q target/asio-version.tar.gz borckhc8@login.univie.ac.at:html/asio/archive
  - deploy site
 
+ - checkout release branch "release-version"
+ - do site fixes version bumps etc.
+ - merge with master and tag (git tag -a vx.y.z ... message is vx.y.z "release-name")
+
 ## d2rq submodule :
 all commands in /d2rq directory!
 
