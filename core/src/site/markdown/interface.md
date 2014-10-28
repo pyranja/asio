@@ -6,9 +6,9 @@
 Each dataset instance provides a HTML/JavaScript based client, which runs in the browser. Use the
   following URLs to access the
   
-  * SQL view    : `http://host:port/[dataset-name]/explore/sql.html`
+  * SQL view    : `http://host:port/[dataset-name]/read/explore/sql.html`
   
-  * SPARQL view : `http://host:port/[dataset-name]/explore/sparql.html`
+  * SPARQL view : `http://host:port/[dataset-name]/read/explore/sparql.html`
    
 The client should work in every modern browser and is tested to work with the latest versions of 
 Internet Explorer, Google Chrome and Mozilla Firefox. Note: JavaScript must be enabled.
@@ -50,7 +50,7 @@ The request and response format is described [here](protocol.html)
 
 ### Metadata
 
-> `http://host:port/[dataset-name]/permission/meta`
+> `http://host:port/[dataset-name]/[permission]/meta`
 
 serves metadata about this instance from the [VPH repository](http://vphshare.atosresearch.eu/). Both
 XML and JSON representations are available.
