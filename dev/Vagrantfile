@@ -1,0 +1,10 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = "hansode/centos-6.5-x86_64"
+  config.vm.network "forwarded_port", guest: 8080, host: 7080
+  config.vm.synced_folder "shared", "/usr/local/src"
+end

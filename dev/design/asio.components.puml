@@ -1,0 +1,49 @@
+@startuml
+skinparam componentStyle uml2
+
+title asio - components
+
+interface JDBC
+database MySQL
+JDBC - MySQL
+
+interface HTTP
+
+frame "asio" {
+  [Spring]
+  [Apache CXF]
+  interface "Connector"
+  interface "Operation"
+  [Engine]
+  [Hystrix]
+  [RxJava]
+  Operation -- [Engine]
+  Operation ..> [Hystrix] : execution
+  [Engine] .> Connector
+  Connector .> [RxJava] : execution
+
+  frame "frontend" {
+    HTTP - [Metadata]
+    HTTP - [Protocol]
+    HTTP - [Monitor]
+  }
+  [Protocol] .> Operation : use
+  [Monitor] <-- [Hystrix] : measures
+  [Monitor] <-- [Engine] : events
+  [Metadata] ..> [Hystrix] : execution
+
+  frame "sql" {
+    [OgsadaiConnector] ..> JDBC : use
+    [JooqConnector] ..> JDBC : use
+  }
+
+  frame "sparql" {
+    [JenaConnector] --> [D2RQ]
+    [D2RQ] ..> JDBC : use
+  }
+  Connector -- [JenaConnector]
+  Connector -- [OgsadaiConnector]
+  Connector -- [JooqConnector]
+}
+
+@enduml

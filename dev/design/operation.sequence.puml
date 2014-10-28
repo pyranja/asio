@@ -1,0 +1,81 @@
+@startuml
+
+title asio - operation processing
+
+actor client
+box "asio" #lightgrey
+  boundary frontend
+  control engine
+  control connector
+end box
+database db
+
+client -> frontend: receive http request
+activate frontend
+
+group request handling
+  frontend -> engine: find language handler
+  activate engine
+  create connector
+  engine --> connector: select connector
+  engine --> frontend: return connector
+  deactivate engine
+
+  frontend -> connector: parse request
+  activate connector
+  frontend <-- connector: return operation
+  deactivate connector
+
+  frontend -> engine: submit operation
+  activate engine
+  engine -> connector: create task
+  activate connector
+  engine <-- connector: return task
+  deactivate connector
+  engine --> frontend: return future<task>
+
+  break failure
+    frontend -> client: send error response
+  end
+  
+  deactivate frontend
+end
+
+group execution
+  engine -> connector: enqueue task
+  deactivate engine
+  activate connector
+  connector ->o db: execute command
+  connector <-o db: result stream
+  connector --> frontend: complete future
+  activate frontend
+end
+
+group response delivery
+  break failure
+    frontend -> client: send error response
+  end
+
+  frontend -> client: send success headers
+  frontend -> connector: subscribe to results
+  
+  loop until no more rows
+    connector --> connector: serialize row
+    connector --> frontend: next chunk
+    frontend --> client: send chunk
+    break any failure
+      connector -> frontend: error
+    end
+  end
+  
+  connector ->o db: close result stream
+  opt success
+    connector -> frontend: complete
+  end
+  deactivate connector
+  frontend -> client: send EOF
+  
+  deactivate frontend
+end
+
+@enduml

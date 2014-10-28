@@ -1,0 +1,16 @@
+release steps :
+
+ - test browser with checklist
+ - bump version
+
+ - add release notes                    @/src/site/markdown/index.md
+ - upload assembly artifacts            @login.univie.ac.at:/html/asio/archive
+  scp -q target/asio-version.tar.gz borckhc8@login.univie.ac.at:html/asio/archive
+ - deploy site
+
+## d2rq submodule :
+all commands in /d2rq directory!
+
+# sync fork with upstream :
+ git checkout master ; git pull --rebase upstream master ; git push
+ git checkout develop ; git pull --rebase upstream develop ; git push

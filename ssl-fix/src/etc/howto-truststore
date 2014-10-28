@@ -1,0 +1,3 @@
+# create a truststore with atos certificate
+
+keytool -importcert -alias vph-atos -file .\atos.cer -keystore vph-truststore -storepass changeit

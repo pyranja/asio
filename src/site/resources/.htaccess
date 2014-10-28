@@ -1,3 +1,0 @@
-RewriteEngine On
-RewriteBase /chris.borckholder/asio/
-RewriteRule ^latest$ archive/asio-0.4.4.tar.gz [R=307,L]

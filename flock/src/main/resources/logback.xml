@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="30 seconds">
+  <include resource="org/springframework/boot/logging/logback/base.xml"/>
+
+  <turboFilter class="ch.qos.logback.classic.turbo.MarkerFilter">
+    <Marker>SYSTEM</Marker>
+    <OnMatch>ACCEPT</OnMatch>
+  </turboFilter>
+
+  <logger name="at.ac.univie.isc.asio" level="warn" />
+  <logger name="at.ac.univie.isc.asio.events" level="off" />
+  <!-- 3rd party -->
+  <logger name="com.hp.hpl.jena" level="error"/>
+  <logger name="org.apache.cxf" level="warn"/>
+</configuration>

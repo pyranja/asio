@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>at.ac.univie.isc</groupId>
+    <artifactId>asio-parent</artifactId>
+    <version>0.5.0</version>
+    <relativePath>../parent/pom.xml</relativePath>
+  </parent>
+
+  <!--
+    This build performs full compilation and tests (minus functional ones) of D2RQ, but excludes
+     server specific code from the packaged .jar.
+     All server specific dependencies are declared as optional.
+  -->
+
+  <artifactId>asio-d2rq</artifactId>
+  <name>asio d2rq</name>
+  <description>repackaged version of d2rq for embedded use</description>
+  <packaging>jar</packaging>
+
+  <properties>
+    <module.basedir>${project.basedir}/module</module.basedir>
+  </properties>
+
+  <repositories>
+    <repository>
+      <id>d2rq-local</id>
+      <url>file://${project.basedir}/d2r-repo</url>
+    </repository>
+  </repositories>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-arq</artifactId>
+    </dependency>
+    <!-- logging impl and bridges expected to be provided by container -->
+    <dependency> <!-- org.d2rq.Log4jHelper -->
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>1.2.17</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>1.7.5</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- optional server dependencies -->
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-server</artifactId>
+      <version>8.1.8.v20121106</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-security</artifactId>
+      <version>8.1.8.v20121106</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-webapp</artifactId>
+      <version>8.1.8.v20121106</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.velocity</groupId>
+      <artifactId>velocity</artifactId>
+      <version>1.7</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>joseki</artifactId>
+      <version>3.4.4</version>
+      <optional>true</optional>
+    </dependency>
+    <!-- test -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hsqldb</groupId>
+      <artifactId>hsqldb</artifactId>
+      <version>2.2.9</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <sourceDirectory>${module.basedir}/src</sourceDirectory>
+    <testSourceDirectory>${module.basedir}/test</testSourceDirectory>
+    <testResources>
+      <testResource>
+        <directory>${module.basedir}/test</directory>
+        <excludes>
+          <exclude>**/*.java</exclude>
+        </excludes>
+      </testResource>
+    </testResources>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>org/d2rq/Log4jHelper*</exclude>
+            <!-- CLI tools and examples -->
+            <exclude>d2rq/*</exclude>
+            <exclude>org/d2rq/CommandLineTool*</exclude>
+            <exclude>org/d2rq/examples*</exclude>
+            <!-- SystemLoader and friends -->
+            <exclude>org/d2rq/SystemLoader*</exclude>
+            <exclude>org/d2rq/jena/ModelD2RQ*</exclude>
+            <exclude>org/d2rq/assembler*</exclude>
+            <!-- D2R server -->
+            <exclude>org/d2rq/server/*</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <!-- d2rq loads files from relative locations -->
+          <workingDirectory>${module.basedir}</workingDirectory>
+          <excludes>
+            <exclude>**/functional_tests/*.java</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

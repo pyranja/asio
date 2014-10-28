@@ -1,0 +1,60 @@
+@startuml
+
+title asio - reactive query processing
+
+boundary request
+control engine
+entity "task\ncompletion" as outer_observable
+entity "result\ndata" as inner_observable
+entity task
+
+autonumber
+activate request
+request -> engine : invoke operation
+activate engine
+
+create task
+engine -> task : submit
+activate task
+task --> engine
+
+create outer_observable
+engine -> outer_observable : create
+engine --> request
+deactivate engine
+
+request -> outer_observable : subscribe
+activate outer_observable
+outer_observable -> task : addCallback
+outer_observable --> request
+deactivate outer_observable
+deactivate request
+
+||100||
+
+task --> outer_observable
+destroy task
+activate outer_observable
+create inner_observable
+outer_observable -> inner_observable : create
+outer_observable --> request
+destroy outer_observable
+activate request
+
+request -> inner_observable : subscribe
+activate inner_observable
+loop
+  inner_observable -> inner_observable : serialize row
+  activate inner_observable
+  inner_observable -> request : next
+  activate request
+  [<- request : send chunk
+  deactivate request
+  deactivate inner_observable
+end
+inner_observable -> request : complete
+destroy inner_observable
+[<- request : commit response
+destroy request
+
+@enduml

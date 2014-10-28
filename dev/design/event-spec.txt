@@ -1,0 +1,41 @@
+event {
+  category        : (request|container)
+  correlation?    : UUID
+  timestamp       : LONG
+  type            : STRING # from class name?
+  message         : STRING # brief and human readable
+  details         : include (error|parameters|command) = flat JSON object
+}
+
+Types :
+request
+  received
+  accepted
+  executed
+  completed
+  rejected
+  failed
+
+container # e.g. configuration changes, catalogue creation/destruction, metadata fetching, internal errors
+  subscribed  # to event stream
+  TBC
+
+Context is catured as Map<String, String> :
+
+error {
+  cause           : EXCEPTION
+  root            : EXCEPTION
+  trace?          : STRING  # verbose
+}
+
+parameters {
+  *?              : STRING  # dynamic
+}
+
+command {
+  action          : STRING
+  role            : ROLE
+  format          : MEDIA-TYPE
+  engine          : STRING
+  *?              : STRING # dynamic
+}

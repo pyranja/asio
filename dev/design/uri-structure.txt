@@ -1,0 +1,18 @@
+# asio uri structure
+
+# lair
+/{dataset-name}/{permission}/                     => asio browser || service descriptor
+/{dataset-name}/{permission}/index.html           => asio browser
+/{dataset-name}/{permission}/{sparql|sql}         => query endpoint
+/{dataset-name}/{permission}/meta                 => meta data
+/{dataset-name}/{permission}/meta/{sparql|sql}    => schema descriptor
+/insight/{permission}/events                      => event stream
+/                                                 => service descriptor || asio browser
+
+# flock
+/                                                 => snorql
+/index.html                                       => snorql
+/static/*                                         => js/css resources
+/sparql                                           => query endpoint
+/meta                                             => meta data
+/insight/events                                   => event stream

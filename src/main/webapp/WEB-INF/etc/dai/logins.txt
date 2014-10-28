@@ -1,6 +1,0 @@
-id=asio_resource
-userID=*
-username=root
-password=change
-LOGIN-END
-END
