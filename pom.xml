@@ -19,13 +19,13 @@
   <modules>
     <module>parent</module>
     <module>test</module>
-    <module>base</module>
     <module>core</module>
     <module>d2rq</module>
+    <module>ssl-fix</module>
+    <module>lair</module>
+    <module>lair-distribution</module>
     <module>flock</module>
     <module>flock-distribution</module>
-    <module>distribution</module>
-    <module>ssl-fix</module>
   </modules>
 
   <build>
