@@ -1,4 +1,4 @@
-# asio v${project.version}
+# asio v@@project.version@@
 
 # setup
 

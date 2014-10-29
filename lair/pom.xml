@@ -257,7 +257,6 @@
   </dependencies>
 
   <build>
-    <finalName>asio-${project.version}</finalName>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

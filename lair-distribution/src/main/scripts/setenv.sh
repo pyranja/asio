@@ -14,5 +14,5 @@
 #ASIO_OWNER=apache
 #CATALINA_HOME=/usr/share/tomcat
 
-ASIO_VERSION="v${project.version}" # !filtered by maven!
+ASIO_VERSION="v@@project.version@@" # !filtered by maven!
 
