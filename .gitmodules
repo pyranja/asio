@@ -1,3 +1,4 @@
 [submodule "d2rq/module"]
 	path = d2rq/module
 	url = git@github.com:Pyranja/d2rq.git
+	branch = asio
