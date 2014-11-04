@@ -84,9 +84,7 @@ function compare_version () {
 function initialize () {
   mkdir -p "${MIGRATED_STORE}"
   mkdir -p "${ACTIVE_STORE}"
-  log "ASIO_BASE=${ASIO_BASE}"
-  log "ASIO_HOME=${ASIO_HOME}"
-  log "CATALINA_HOME=${CATALINA_HOME}"
+  log "ASIO_BASE=${ASIO_BASE}; ASIO_HOME=${ASIO_HOME}; CATALINA_HOME=${CATALINA_HOME}"
 }
 
 # ********************************* actions ********************************************************
@@ -114,7 +112,6 @@ function create () {
   ln -s "${source_webapp}/WEB-INF/classes/" "${target_webapp}/WEB-INF/"
   ln -s "${source_webapp}/WEB-INF/lib/" "${target_webapp}/WEB-INF/"
   ln -s "${source_webapp}/explore/" "${target_webapp}/"
-  cp -r "${source_webapp}/WEB-INF/etc" "${target_webapp}/WEB-INF/"  # copy as ogsadai writes to it
   cp "${mapping_file}" "${target_webapp}/WEB-INF/config.ttl"
   cp "${source_webapp}/WEB-INF/web.xml" "${target_webapp}/WEB-INF/web.xml"
   # marks this web application as an asio instance
@@ -122,8 +119,6 @@ function create () {
   # sets (group-)ownership of instance [fix-16]
   chgrp -R "${ASIO_OWNER}" "${target_webapp}"
   chown -R "${ASIO_OWNER}" "${target_webapp}"
-  # allow rw for all -> asio executed by root, but tomcat may run as other user
-  chmod -R a+rwX "${target_webapp}/WEB-INF/etc"
 
   # add to active set
   cp "${mapping_file}" "${ACTIVE_STORE}/${dataset_name}.ttl"
