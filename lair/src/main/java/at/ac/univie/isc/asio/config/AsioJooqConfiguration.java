@@ -2,7 +2,8 @@ package at.ac.univie.isc.asio.config;
 
 import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.engine.sql.JooqEngine;
-import at.ac.univie.isc.asio.engine.sql.SchemaProvider;
+import at.ac.univie.isc.asio.engine.sql.MySqlSchemaProvider;
+import at.ac.univie.isc.asio.engine.sql.H2SchemaProvider;
 import at.ac.univie.isc.asio.tool.DatasourceSpec;
 import at.ac.univie.isc.asio.tool.TimeoutSpec;
 import com.google.common.base.Supplier;
@@ -17,6 +18,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
+import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
@@ -32,8 +34,12 @@ public class AsioJooqConfiguration {
 
   @Bean
   @Qualifier("asio.meta.schema")
-  public Supplier<SqlSchema> schemaSupplier(final DataSource pool) {
-    return new SchemaProvider(pool, SchemaProvider.H2_INTERNAL_SCHEMA);
+  public Supplier<SqlSchema> schemaSupplier(final DataSource pool) throws SQLException {
+    final SQLDialect dialect = JDBCUtils.dialect(pool.getConnection());
+    switch (dialect) {
+      case MYSQL: return new MySqlSchemaProvider(pool);
+      default : return new H2SchemaProvider(pool);
+    }
   }
 
   @Bean(destroyMethod = "close")

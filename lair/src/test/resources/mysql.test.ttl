@@ -1,0 +1,68 @@
+@prefix map: <#> .
+@prefix db: <> .
+@prefix d2r: <http://sites.wiwiss.fu-berlin.de/suhl/bizer/d2r-server/config.rdf#> .
+@prefix vocab: <vocab/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#> .
+@prefix jdbc: <http://d2rq.org/terms/jdbc/> .
+
+<> d2r:baseURI <http://test.com/mysql/local/>;
+  d2r:port 80;
+  rdf:type d2r:Server;
+  rdfs:label "mysql.local"
+  .
+
+map:database a d2rq:Database;
+	d2rq:jdbcDriver "com.mysql.jdbc.Driver";
+	d2rq:jdbcDSN "jdbc:mysql://localhost:3350/test";
+	d2rq:username "root";
+	d2rq:password "change";
+	jdbc:autoReconnect "true";
+	jdbc:zeroDateTimeBehavior "convertToNull";
+	.
+
+# Table person
+map:person a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "person/@@person.id@@";
+	d2rq:class vocab:person;
+	d2rq:classDefinitionLabel "person";
+	.
+map:person__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:person;
+	d2rq:property rdfs:label;
+	d2rq:pattern "person #@@person.id@@";
+	.
+map:person_id a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:person;
+	d2rq:property vocab:person_id;
+	d2rq:propertyDefinitionLabel "person id";
+	d2rq:column "person.id";
+	d2rq:datatype xsd:integer;
+	.
+map:person_firstname a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:person;
+	d2rq:property vocab:person_firstname;
+	d2rq:propertyDefinitionLabel "person firstname";
+	d2rq:column "person.firstname";
+	.
+map:person_lastname a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:person;
+	d2rq:property vocab:person_lastname;
+	d2rq:propertyDefinitionLabel "person lastname";
+	d2rq:column "person.lastname";
+	.
+map:person_age a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:person;
+	d2rq:property vocab:person_age;
+	d2rq:propertyDefinitionLabel "person age";
+	d2rq:column "person.age";
+	.
+map:person_postalcode a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:person;
+	d2rq:property vocab:person_postalcode;
+	d2rq:propertyDefinitionLabel "person postalcode";
+	d2rq:column "person.postalcode";
+	.

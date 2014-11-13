@@ -1,6 +1,6 @@
 --- single table for schema fetching
 
-DROP TABLE IF EXISTS test;
+DROP TABLE IF EXISTS SAMPLE;
 
 CREATE TABLE SAMPLE (
   ID INT PRIMARY KEY NOT NULL,
