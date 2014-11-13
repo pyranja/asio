@@ -30,6 +30,14 @@ public final class Database {
   }
 
   /**
+   * @return pool of connections to the backing database
+   */
+  @Nonnull
+  public DataSource datasource() {
+    return datasource;
+  }
+
+  /**
    * Execute the given {@code SELECT} statement and convert the results to an in-memory representation.
    * The returned {@link com.google.common.collect.Table table's} row keys are the row number of the
    * result set, the column keys are the column names of the result set and the cell values are the
