@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio;
 
+import com.google.common.base.Preconditions;
 import com.google.common.io.ByteSource;
 import com.google.common.io.CharStreams;
 import com.google.common.io.Resources;
@@ -21,6 +22,7 @@ public final class Classpath {
 
   /**
    * Load and stream a classpath resource from the root.
+   *
    * @param name reference to a file
    * @return contents of the resource as a stream
    * @throws IOException if opening the resource fails
@@ -31,6 +33,7 @@ public final class Classpath {
 
   /**
    * Load and read a classpath resource from the root. The resource must be encoded as UTF-8.
+   *
    * @param name reference to the resource
    * @return contents of the resource as a string
    * @throws java.io.IOException if reading the resource fails
@@ -43,12 +46,14 @@ public final class Classpath {
 
   /**
    * Load a resource from the classpath and wrap it as a {@code ByteSource}.
+   *
    * @param name name of the resource
    * @return the wrapped resource
    * @throws java.lang.IllegalArgumentException if the resource is not found
    */
   @Nonnull
   public static ByteSource load(@Nonnull final String name) throws IllegalArgumentException {
+    Preconditions.checkArgument(!name.startsWith("/"), "illegal resource name <%s> - resource names may not have a leading slash, they are implicitly absolute", name);
     final URL url = Resources.getResource(name);
     return Resources.asByteSource(url);
   }
