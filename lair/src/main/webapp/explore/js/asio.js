@@ -48,12 +48,23 @@ var asio = (function() {
   }
   ;
 
+  // attempt to parse an error response (expected to be json)
+  function parseErrorResponse(xhr) {
+    var error = JSON.parse(xhr.responseText).error;
+    return new Error(xhr.statusText + "\n'" + error.message + "'");
+  }
+
   // transform a HTTP status and text message into an Error and
   // forward it to a nodejs style callback
-  // TODO parse exception payload for more detailled error messages
   function escalateTo(callback) {
-    return function(ignored, status, text) {
-      var cause = new Error(status + ":" + text);
+    return function(xhr, textStatus, errorThrown) {
+      var cause = new Error(errorThrown ? errorThrown : textStatus + " (unknown cause)");
+      if (xhr.status >= 400) {
+        try {
+          cause = parseErrorResponse(xhr);
+        } catch (ignored) {
+        }
+      }
       callback(cause, null);
     };
   }

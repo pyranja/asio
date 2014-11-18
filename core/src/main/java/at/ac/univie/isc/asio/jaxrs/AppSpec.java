@@ -5,6 +5,7 @@ import org.apache.cxf.jaxrs.provider.json.JSONProvider;
 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
+import javax.ws.rs.core.MediaType;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -23,6 +24,7 @@ public final class AppSpec extends Application {
   public static AppSpec create(final Class<?>... resources) {
     final JSONProvider json = new JSONProvider();
     json.setNamespaceMap(ImmutableMap.of("http://isc.univie.ac.at/2014/asio", "asio"));
+    json.setProduceMediaTypes(Arrays.asList(MediaType.APPLICATION_JSON, DatasetExceptionMapper.ERROR_TYPE.toString()));
     return new AppSpec(Arrays.asList(resources))
         .singleton(new AcceptTunnelFilter())
         .singleton(new ContentNegotiationDefaultsFilter())
