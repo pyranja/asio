@@ -82,15 +82,10 @@ public class ProtocolResource {
   @Path("/schema")
   @GET
   @Deprecated // use MetadataResource#schema directly.
-  public void serveSchema(@Suspended final AsyncResponse async, @Context final UriInfo uri) {
-    final URI redirect =
-        uri.getBaseUriBuilder()
-            .path(MetadataResource.class)
-            .path(MetadataResource.class, "schema")
-            .build();
-    async.resume(Response
-        .status(Response.Status.MOVED_PERMANENTLY)
-        .header(HttpHeaders.LOCATION, redirect).build());
+  public Response serveSchema(@Context final UriInfo uri) {
+    final URI redirect = uri.getBaseUriBuilder().path(Permission.READ.name()).path("meta/schema").build();
+    return Response.status(Response.Status.MOVED_PERMANENTLY)
+        .header(HttpHeaders.LOCATION, redirect).build();
   }
 
   private void process(final AsyncResponse async, final Parameters params) {
