@@ -30,7 +30,7 @@ function usage () {
   echo "  deploy    ensure a dataset instance with the given name and d2r mapping exists"
   echo "  undeploy  remove the dataset instance with the given name"
   echo "  upgrade   redeploy all existing dataset instances to update their runtime"
-  echo "  migrate   attempt to convert all local webapps into asio instances"
+  echo "  migrate   attempt to convert all local webapps into asio instances (deprecated)"
 }
 
 # print an error message and exit with return code 1
@@ -268,6 +268,7 @@ function convert () {
 #   none
 # return : void
 function migrate () {
+  log "migrate is deprecated and will be removed in a future asio version!"
   verify_directory "${CATALINA_HOME}/webapps"
   local -r candidates=("${CATALINA_HOME}"/webapps/*Service/)
   for each in "${candidates[@]}"; do
