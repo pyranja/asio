@@ -26,6 +26,7 @@
       <lineEnding>unix</lineEnding>
       <filtered>false</filtered>
       <fileMode>755</fileMode>
+      <directoryMode>755</directoryMode>
     </fileSet>
     <fileSet>
       <directory>${project.build.outputDirectory}</directory>
@@ -33,6 +34,7 @@
       <lineEnding>unix</lineEnding>
       <filtered>false</filtered>
       <fileMode>644</fileMode>
+      <directoryMode>755</directoryMode>
     </fileSet>
   </fileSets>
 
