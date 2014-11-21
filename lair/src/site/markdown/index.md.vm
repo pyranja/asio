@@ -23,7 +23,7 @@ $h3 Requirements
 
 $h3 Quick start
 
- * Download the [current release](http://homepage.univie.ac.at/chris.borckholder/asio/archive/asio-${site-version}.tar.gz)
+ * Download the [current release](http://elvira.par.univie.ac.at/archiva/repository/internal/at/ac/univie/isc/asio-lair-distribution/${site-version}/asio-flock-distribution-${site-version}.tar.gz)
   and untar its contents to `/usr/share`.
  * Execute `/usr/share/asio/bin/asio.sh <your_dataset_name> </path/to/d2r-mapping.ttl>` to deploy
   an asio instance and restart the tomcat to let the changes take effect.
@@ -31,6 +31,13 @@ $h3 Quick start
 
 Release notes
 -------------
+
+$h3 v0.5.1 "alpaca"
+
+  * The dataset application is now an asio module called asio-lair
+  * In a multi-tenant setting, other MySQL schemas will now not be exposed
+  * There is now an installation script to aid in upgrading from pre-0.5.x versions
+  * Many minor improvements and fixes
 
 $h3 v0.5.0-RC "alpaca"
 
