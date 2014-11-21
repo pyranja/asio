@@ -21,7 +21,7 @@
 
   <fileSets>
     <fileSet>
-      <directory>${project.build.scriptSourceDirectory}</directory>
+      <directory>${project.build.scriptOutputDirectory}</directory>
       <outputDirectory>/bin</outputDirectory>
       <lineEnding>unix</lineEnding>
       <filtered>false</filtered>
