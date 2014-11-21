@@ -6,7 +6,7 @@
 
   <groupId>at.ac.univie.isc</groupId>
   <artifactId>asio-parent</artifactId>
-  <version>0.5.2</version>
+  <version>0.5.3-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>asio parent</name>
