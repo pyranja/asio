@@ -17,8 +17,8 @@
   <packaging>pom</packaging>
 
   <properties>
-    <path.notes>${project.basedir}/src/main/notes</path.notes>
-    <build.notes>${project.build.directory}/notes</build.notes>
+    <project.build.scriptOutputDirectory>${project.build.directory}/scripts
+    </project.build.scriptOutputDirectory>
   </properties>
 
   <dependencies>
@@ -63,6 +63,12 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
+        <configuration>
+          <useDefaultDelimiters>false</useDefaultDelimiters>
+          <delimiters>
+            <delimiter>@@*@@</delimiter>
+          </delimiters>
+        </configuration>
         <executions>
           <execution>
             <id>process-resources</id>
@@ -70,11 +76,21 @@
             <goals>
               <goal>resources</goal>
             </goals>
+          </execution>
+          <execution>
+            <id>process-scripts</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
             <configuration>
-              <useDefaultDelimiters>false</useDefaultDelimiters>
-              <delimiters>
-                <delimiter>@@*@@</delimiter>
-              </delimiters>
+              <outputDirectory>${project.build.scriptOutputDirectory}</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${project.build.scriptSourceDirectory}</directory>
+                  <filtering>true</filtering>
+                </resource>
+              </resources>
             </configuration>
           </execution>
         </executions>
