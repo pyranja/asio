@@ -23,7 +23,7 @@ $h3 Requirements
 
 $h3 Quick start
 
- * Download the [current release](http://elvira.par.univie.ac.at/archiva/repository/internal/at/ac/univie/isc/asio-lair-distribution/${site-version}/asio-flock-distribution-${site-version}.tar.gz)
+ * Download the [current release](http://elvira.par.univie.ac.at/archiva/repository/internal/at/ac/univie/isc/asio-lair-distribution/${site-version}/asio-lair-distribution-${site-version}.tar.gz)
   and untar its contents to `/usr/share`.
  * Execute `/usr/share/asio/bin/asio.sh <your_dataset_name> </path/to/d2r-mapping.ttl>` to deploy
   an asio instance and restart the tomcat to let the changes take effect.
