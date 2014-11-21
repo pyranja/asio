@@ -1,0 +1,8 @@
+--- single table for schema fetching
+
+DROP TABLE IF EXISTS SAMPLE;
+
+CREATE TABLE SAMPLE (
+  ID INT PRIMARY KEY NOT NULL,
+  DATA VARCHAR(255)
+);

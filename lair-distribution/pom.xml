@@ -11,22 +11,27 @@
     <relativePath>../parent/pom.xml</relativePath>
   </parent>
 
-  <artifactId>asio-flock-distribution</artifactId>
-  <name>asio flock distribution</name>
-  <description>flock release tarball</description>
+  <artifactId>asio-lair-distribution</artifactId>
+  <name>asio lair distribution</name>
+  <description>asio release package</description>
   <packaging>pom</packaging>
+
+  <properties>
+    <project.build.scriptOutputDirectory>${project.build.directory}/scripts
+    </project.build.scriptOutputDirectory>
+  </properties>
 
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>asio-flock</artifactId>
+      <artifactId>asio-lair</artifactId>
       <version>${project.version}</version>
       <type>war</type>
     </dependency>
   </dependencies>
 
   <build>
-    <finalName>flock-${project.version}</finalName>
+    <finalName>lair-${project.version}</finalName>
     <resources>
       <resource>
         <directory>src/main/resources</directory>
@@ -58,6 +63,12 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
+        <configuration>
+          <useDefaultDelimiters>false</useDefaultDelimiters>
+          <delimiters>
+            <delimiter>@@*@@</delimiter>
+          </delimiters>
+        </configuration>
         <executions>
           <execution>
             <id>process-resources</id>
@@ -65,11 +76,21 @@
             <goals>
               <goal>resources</goal>
             </goals>
+          </execution>
+          <execution>
+            <id>process-scripts</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
             <configuration>
-              <useDefaultDelimiters>false</useDefaultDelimiters>
-              <delimiters>
-                <delimiter>@@*@@</delimiter>
-              </delimiters>
+              <outputDirectory>${project.build.scriptOutputDirectory}</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${project.build.scriptSourceDirectory}</directory>
+                  <filtering>true</filtering>
+                </resource>
+              </resources>
             </configuration>
           </execution>
         </executions>
@@ -88,6 +109,33 @@
             <goals>
               <goal>update-project-license</goal>
             </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-thirdparty-licenses</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>at.ac.univie.isc</groupId>
+                  <artifactId>asio-lair</artifactId>
+                  <version>${project.version}</version>
+                  <type>txt</type>
+                  <classifier>thirdparty-licenses</classifier>
+                  <overWrite>true</overWrite>
+                  <destFileName>THIRD-PARTY</destFileName>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
           </execution>
         </executions>
       </plugin>

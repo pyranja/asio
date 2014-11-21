@@ -10,10 +10,10 @@
   <dependencySets>
     <dependencySet>
       <includes>
-        <include>${project.groupId}:asio-flock:war</include>
+        <include>${project.groupId}:asio-lair:war</include>
       </includes>
-      <outputDirectory>lib</outputDirectory>
-      <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+      <outputDirectory>/webapp</outputDirectory>
+      <unpack>true</unpack>
       <useTransitiveDependencies>false</useTransitiveDependencies>
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
@@ -37,4 +37,5 @@
       <directoryMode>755</directoryMode>
     </fileSet>
   </fileSets>
+
 </assembly>

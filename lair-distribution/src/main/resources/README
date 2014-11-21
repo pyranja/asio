@@ -1,0 +1,30 @@
+# asio v@@project.version@@
+
+# setup
+
+Recommendation : Use the install script at bin/install.sh
+
+If you unpacked the release to /usr/src :
+  /usr/src/asio/bin/install.sh /usr/src/asio
+The path given as parameter must point to the root asio folder of the unpacked .tar.
+Set CATALINA_SERVICE if the tomcat service name is not 'tomcat'.
+Set ASIO_BASE to change the installation directory from the default '/usr/share/asio'.
+
+# deployment
+
+  /path/to/asio/bin/asio.sh deploy <name> </path/to/config.ttl>
+
+This command will create the <name> webapp directory, create appropriate soft links of library files
+and copies configuration files, the web.xml and the given config.ttl . Some sanity checks are
+included, for now asio.sh will refuse to overwrite an existing webapp.
+####################################################################################################
+IMPORTANT : asio.sh expects $CATALINA_HOME to be set to the base directory of the target tomcat
+installation. If $CATALINA_HOME is not set, it will default to /usr/share/tomcat .
+####################################################################################################
+
+# undeployment
+
+  /path/to/asio/bin/asio.sh undeploy <name>
+
+This will _DELETE_ the <name> folder in $CATALINA_HOME/webapps . asio.sh will refuse to delete
+web application folders without a .asio marker file.

@@ -1,0 +1,18 @@
+# asio module structure
+
+/aggregator
+  /parent                     # maven parent pom
+  /core                       # implementation and connectors
+  /web                        # TODO explorer frontend and webjars
+  /vph                        # TODO vph specifics (e.g. ssl certificates, sec token, metadata repository)
+  /test                       # test tooling
+  /d2rq                       # fork of d2rq
+  /distribution               # TODO assembly descriptors, shell scripts, rpm tooling
+
+  /ssl-fix                    # XXX fully integrate with core && move parts to vph module
+
+  /lair                       # dataset instance
+  /lair-distribution          # tarball packaging / TODO rpm packaging
+
+  /flock                      # fed sparql processor
+  /flock-distribution         # tarball packaging / TODO rpm packaging
