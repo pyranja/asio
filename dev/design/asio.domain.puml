@@ -1,0 +1,52 @@
+@startuml
+
+hide empty members
+
+title "asio domain model"
+
+class Catalog {
+  + URI identifier()
+  + Schema find(String schema)
+  + Engine find(String schema, Language lang)
+}
+Catalog *-- "*" Schema : "schemas"
+
+class Schema {
+  + String name
+  + URI identifier()
+  + Engine engine(Language lang)
+}
+Schema *-- "+" Engine : "engines"
+Schema --> JdbcSpec : "jdbc"
+Schema --> D2rqSpec : "d2rq"
+
+class SchemaFactory {
+  - Environment env
+  + Schema fromdD2rq(D2rqSpec)
+  + JooqEngine sqlEngine(JdbcSpec)
+  + JenaEngine sparqlEngine(D2rqSpec)
+}
+SchemaFactory .left.> Schema : "creates"
+
+interface Engine {
+  + Language language()
+  + Invocation prepare(Parameters, Principal)
+  + void close()
+}
+
+class JdbcSpec {
+  + String url
+  + String driver
+  + Token credentials
+  + TimeoutSpec sqlTimeout
+}
+
+class D2rqSpec {
+  - Model configuration
+  ..
+  + String baseResourceIri
+  + Mapping mapping
+  + TimeoutSpec sparqlTimeout
+}
+
+@enduml
