@@ -69,7 +69,7 @@ public final class EmbeddedHttpServer extends ExternalResource implements Report
     final String query = URLDecoder.decode(rawQuery, StandardCharsets.UTF_8.name());
     params.putAll(PARAMETER_PARSER.split(query));
     if (isForm(exchange)) {
-      final String rawBody = Payload.asString(ByteStreams.toByteArray(exchange.getRequestBody()));
+      final String rawBody = Payload.decodeUtf8(ByteStreams.toByteArray(exchange.getRequestBody()));
       final String form = URLDecoder.decode(rawBody, StandardCharsets.UTF_8.name());
       params.putAll(PARAMETER_PARSER.split(form));
     }
