@@ -25,13 +25,13 @@ abstract class SqlInvocation implements Invocation {
   }
 
   private Multimap<String, String> captureProperties() {
-    return ImmutableListMultimap.<String, String>builder()
+      return ImmutableListMultimap.<String, String>builder()
         .put("command", Compactor.REMOVE_LINE_BREAKS.apply(sql))
         .put("role", requiredRole.toString())
         .put("format", format.toString())
         .put("engine", "jooq")
         .put("dialect", jdbc.dialect())
-        .put("timeout", jdbc.timeout().asText())
+        .put("timeout", jdbc.timeout().toString())
         .build();
   }
 

@@ -40,4 +40,18 @@ public class TimeoutSpecTest {
     subject = TimeoutSpec.from(100L, TimeUnit.SECONDS);
     assertThat(subject.isDefined(), is(true));
   }
+
+  @Test
+  public void undefined_timeout_transforms_into_default() {
+    subject = TimeoutSpec.undefined();
+    final TimeoutSpec alternative = TimeoutSpec.from(10, TimeUnit.SECONDS);
+    assertThat(subject.orIfUndefined(alternative), is(alternative));
+  }
+
+  @Test
+  public void defined_timeout_remains_as_is() {
+    subject = TimeoutSpec.from(20, TimeUnit.DAYS);
+    final TimeoutSpec alternative = TimeoutSpec.from(10, TimeUnit.SECONDS);
+    assertThat(subject.orIfUndefined(alternative), is(subject));
+  }
 }

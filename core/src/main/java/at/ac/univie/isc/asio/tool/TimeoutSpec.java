@@ -1,17 +1,16 @@
 package at.ac.univie.isc.asio.tool;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Objects;
-
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 import java.util.concurrent.TimeUnit;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * A type-safe, time-unit aware container for timeout configuration.
  */
 @Immutable
-public class TimeoutSpec {
+public /* final */ class TimeoutSpec {
   private static final TimeoutSpec UNDEFINED = new TimeoutSpec(-1);
 
   /**
@@ -61,31 +60,42 @@ public class TimeoutSpec {
     return defined;
   }
 
-  @VisibleForTesting
+  /**
+   * @param fallback alternative timeout value
+   * @return this if defined or the given alternative else
+   */
+  @Nonnull
+  public TimeoutSpec orIfUndefined(@Nonnull final TimeoutSpec fallback) {
+    requireNonNull(fallback, "cannot use null as fallback");
+    return this.isDefined() ? this : fallback;
+  }
+
+  /* @VisibleForTesting */
   final long value() {
     return timeoutInNanos;
   }
 
-  /**
-   * @return a human readable representation of this timeout.
-   */
-  @Nonnull
-  public final String asText() {
-    if (defined) {
-      return Long.toString(TimeUnit.NANOSECONDS.toMillis(timeoutInNanos)) + "ms";
+  @Override
+  public String toString() {
+    final StringBuilder sb = new StringBuilder();
+    if (isDefined()) {
+      sb.append(Long.toString(TimeUnit.NANOSECONDS.toMillis(timeoutInNanos))).append("ms");
     } else {
-      return "undefined";
+      sb.append("undefined");
     }
+    return sb.toString();
   }
 
   @Override
-  public String toString() {
-    final Objects.ToStringHelper builder = Objects.toStringHelper(this);
-    if (defined) {
-      builder.add("seconds", TimeUnit.NANOSECONDS.toSeconds(timeoutInNanos));
-    } else {
-      builder.addValue("UNDEFINED");
-    }
-    return builder.toString();
+  public boolean equals(final Object o) {
+    if (this == o) { return true; }
+    if (o == null || getClass() != o.getClass()) { return false; }
+    final TimeoutSpec that = (TimeoutSpec) o;
+    return timeoutInNanos == that.timeoutInNanos;
+  }
+
+  @Override
+  public int hashCode() {
+    return (int) (timeoutInNanos ^ (timeoutInNanos >>> 32));
   }
 }
