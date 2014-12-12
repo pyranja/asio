@@ -1,20 +1,17 @@
 package at.ac.univie.isc.asio.config;
 
 import at.ac.univie.isc.asio.SqlSchema;
-import at.ac.univie.isc.asio.engine.Command;
-import at.ac.univie.isc.asio.engine.Engine;
-import at.ac.univie.isc.asio.engine.EngineRegistry;
-import at.ac.univie.isc.asio.engine.EventReporter;
-import at.ac.univie.isc.asio.engine.EventfulCommandDecorator;
-import at.ac.univie.isc.asio.engine.ProtocolResource;
+import at.ac.univie.isc.asio.database.Schema;
+import at.ac.univie.isc.asio.database.SchemaFactory;
+import at.ac.univie.isc.asio.engine.*;
+import at.ac.univie.isc.asio.engine.d2rq.D2rqSpec;
+import at.ac.univie.isc.asio.engine.d2rq.LoadD2rqModel;
+import at.ac.univie.isc.asio.engine.sql.SqlSchemaBuilder;
 import at.ac.univie.isc.asio.insight.EventLoggerBridge;
 import at.ac.univie.isc.asio.insight.EventStream;
 import at.ac.univie.isc.asio.jaxrs.AppSpec;
-import at.ac.univie.isc.asio.metadata.AtosMetadataService;
-import at.ac.univie.isc.asio.metadata.DatasetMetadata;
-import at.ac.univie.isc.asio.metadata.MetadataResource;
-import at.ac.univie.isc.asio.metadata.RemoteMetadata;
-import at.ac.univie.isc.asio.metadata.StaticMetadata;
+import at.ac.univie.isc.asio.metadata.*;
+import at.ac.univie.isc.asio.spring.SpringByteSource;
 import at.ac.univie.isc.asio.tool.Duration;
 import at.ac.univie.isc.asio.tool.TimeoutSpec;
 import com.google.common.base.Supplier;
@@ -23,6 +20,7 @@ import com.google.common.base.Ticker;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.hp.hpl.jena.rdf.model.Model;
 import org.apache.cxf.Bus;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.endpoint.Server;
@@ -35,34 +33,22 @@ import org.slf4j.Marker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.web.context.WebApplicationContext;
+import rx.Observable;
 import rx.Scheduler;
 import rx.schedulers.Schedulers;
 
+import javax.servlet.ServletContext;
 import javax.ws.rs.ext.RuntimeDelegate;
+import java.io.File;
 import java.net.URI;
-import java.util.Collections;
-import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.net.URISyntaxException;
+import java.util.concurrent.*;
 
-/**
- * Setup the asio endpoint infrastructure.
- *
- * @author Chris Borckholder
- */
 @Configuration
 @PropertySource(value = {"classpath:/asio.properties"})
 public class AsioConfiguration {
@@ -72,17 +58,8 @@ public class AsioConfiguration {
 
   @Autowired
   private Environment env;
-  @Autowired
-  @Qualifier("asio.meta.id")
-  private Supplier<String> datasetIdResolver;
-  @Autowired(required = false)
-  @Qualifier("asio.meta.schema")
-  private Supplier<SqlSchema> schemaSource = Suppliers.ofInstance(new SqlSchema());
 
   // asio backend components
-
-  @Autowired
-  private Set<Engine> engines = Collections.emptySet();
 
   // JAX-RS
   @Bean(destroyMethod = "shutdown")
@@ -117,22 +94,55 @@ public class AsioConfiguration {
 
   @Bean
   @Scope(BeanDefinition.SCOPE_PROTOTYPE)
-  public ProtocolResource protocolResource() {
-    return new ProtocolResource(registry(), globalTimeout(), eventBuilder());
+  public ProtocolResource protocolResource(final Command.Factory registry) {
+    return new ProtocolResource(registry, globalTimeout(), eventBuilder());
   }
 
   @Bean
-  public MetadataResource metadataResource() {
-    return new MetadataResource(metadataSupplier(), schemaSource);
+  public MetadataResource metadataResource(final MetadataService service, final Schema schema) {
+    return new MetadataResource(new Supplier<DatasetMetadata>() {
+      @Override
+      public DatasetMetadata get() {
+        return service.fetch(schema).onExceptionResumeNext(Observable.from(StaticMetadata.NOT_AVAILABLE)).toBlocking().single();
+      }
+    }, new Supplier<SqlSchema>() {
+      @Override
+      public SqlSchema get() {
+        return service.relationalSchema(schema).toBlocking().single();
+      }
+    });
   }
 
   // asio jaxrs components
   @Bean
-  public Command.Factory registry() {
-    log.info(SCOPE_SYSTEM, "using engines {}", engines);
+  public Command.Factory registry(final Schema schema) {
+    log.info(SCOPE_SYSTEM, "using engines {}", schema.engines());
     final Scheduler scheduler = Schedulers.from(workerPool());
-    final EngineRegistry engineRegistry = new EngineRegistry(scheduler, engines);
+    final EngineRegistry engineRegistry = new EngineRegistry(scheduler, schema.engines());
     return new EventfulCommandDecorator(engineRegistry, eventBuilder());
+  }
+
+  @Bean
+  public Schema defaultSchema(final SchemaFactory create, final ResourceLoader loader) {
+    final String mappingLocation = env.getProperty("asio.d2r.mapping", "config.ttl");
+    final Resource resource = loader.getResource(mappingLocation);
+    final SpringByteSource turtle = SpringByteSource.asByteSource(resource);
+    final Model configuration = new LoadD2rqModel().parse(turtle);
+    final D2rqSpec d2rq = D2rqSpec.wrap(configuration);
+    return create.fromD2rq(d2rq);
+  }
+
+  @Bean
+  public MetadataService metadataService() {
+    final boolean contactRemote = env.getProperty("asio.meta.enable", Boolean.class, Boolean.FALSE);
+    final URI repository = URI.create(env.getRequiredProperty("asio.meta.repository"));
+    final AtosMetadataService proxy = new AtosMetadataService(repository);
+    return new MetadataService(proxy, contactRemote);
+  }
+
+  @Bean
+  public SchemaFactory schemaFactory() {
+    return new SchemaFactory(env);
   }
 
   @Bean
@@ -182,39 +192,11 @@ public class AsioConfiguration {
     return new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, queue, factory);
   }
 
-  // default resolver
-  @Bean
-  @Qualifier("asio.meta.id")
-  public Supplier<String> environmentDatasetIdResolver() {
-    return new Supplier<String>() {
-      @Override
-      public String get() {
-        return env.getRequiredProperty("asio.meta.id");
-      }
-    };
-  }
-
   @Bean
   public TimeoutSpec globalTimeout() {
     Long timeout = env.getProperty("asio.timeout", Long.class, -1L);
     TimeoutSpec spec = TimeoutSpec.from(timeout, TimeUnit.SECONDS);
     log.info(SCOPE_SYSTEM, "using timeout {}", spec);
     return spec;
-  }
-
-  // TODO let engine configurations create the metadata supplier
-  @Bean
-  public Supplier<DatasetMetadata> metadataSupplier() {
-    final boolean contactRemote = env.getProperty("asio.meta.enable", Boolean.class, Boolean.FALSE);
-    if (contactRemote) {
-      final URI repository = URI.create(env.getRequiredProperty("asio.meta.repository"));
-      final AtosMetadataService proxy = new AtosMetadataService(repository);
-      final String datasetId = datasetIdResolver.get();
-      log.info(SCOPE_SYSTEM, "using metadata service {} with id {}", proxy, datasetId);
-      return new RemoteMetadata(proxy, datasetId);
-    } else {
-      log.info(SCOPE_SYSTEM, "metadata resolution disabled");
-      return Suppliers.ofInstance(StaticMetadata.NOT_AVAILABLE);
-    }
   }
 }
