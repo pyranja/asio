@@ -74,10 +74,10 @@ public class VphTokenExtractorTest {
   }
 
   @Test
-  public void should_set_dummy_if_username_not_given() throws Exception {
+  public void should_set_empty_name_if_username_not_given() throws Exception {
     final String credentials = base64().encode(":test-password".getBytes());
     final Optional<String> header = Optional.of("Basic "+ credentials);
     final Principal principal = subject.authenticate(header);
-    assertThat(principal.getName(), is(Token.UNKNOWN_PRINCIPAL));
+    assertThat(principal.getName(), is(""));
   }
 }
