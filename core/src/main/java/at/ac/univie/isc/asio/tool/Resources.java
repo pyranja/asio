@@ -1,6 +1,7 @@
 package at.ac.univie.isc.asio.tool;
 
 import at.ac.univie.isc.asio.Scope;
+import com.hp.hpl.jena.rdf.model.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,9 +40,26 @@ public final class Resources {
   /**
    * Close as if it is an {@code AutoCloseable}.
    * @see #close(AutoCloseable)
+   * @param model to be closed
+   */
+  public static void close(@Nullable final Model model) {
+    if (model != null) {
+      try {
+        model.close();
+      } catch (final Exception e) {
+        log.warn(ERROR_MSG, model, e.getMessage(), e);
+      }
+    } else {
+      log.warn(ERROR_MSG, Response.class, "was null");
+    }
+  }
+
+  /**
+   * Close as if it is an {@code AutoCloseable}.
+   * @see #close(AutoCloseable)
    * @param response to be closed
    */
-  public static void close(@Nullable Response response) {
+  public static void close(@Nullable final Response response) {
     if (response != null) {
       try {
         response.close();
