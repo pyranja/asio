@@ -50,6 +50,10 @@
       <artifactId>rxjava-core</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.netflix.rxjava</groupId>
+      <artifactId>rxjava-async-util</artifactId>
+    </dependency>
+    <dependency>
       <groupId>javax.ws.rs</groupId>
       <artifactId>javax.ws.rs-api</artifactId>
     </dependency>

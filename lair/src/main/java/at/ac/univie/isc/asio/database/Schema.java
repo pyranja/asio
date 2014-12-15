@@ -5,12 +5,8 @@ import at.ac.univie.isc.asio.engine.Engine;
 import at.ac.univie.isc.asio.engine.Language;
 import at.ac.univie.isc.asio.engine.d2rq.D2rqSpec;
 import at.ac.univie.isc.asio.engine.sparql.JenaEngine;
-import at.ac.univie.isc.asio.engine.sql.JdbcSpec;
 import at.ac.univie.isc.asio.engine.sql.JooqEngine;
 import at.ac.univie.isc.asio.tool.Resources;
-import com.google.common.collect.ImmutableSet;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.zaxxer.hikari.HikariDataSource;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -20,19 +16,12 @@ import java.util.Set;
 public final class Schema implements AutoCloseable {
   private final D2rqSpec d2rq;
   private final JenaEngine sparqlEngine;
-  private final Model d2rqModel;
-
-  private final JdbcSpec jdbc;
   private final JooqEngine sqlEngine;
-  private final HikariDataSource jdbcPool;
 
-  Schema(final D2rqSpec d2rq, final JenaEngine sparqlEngine, final Model d2rqModel, final JdbcSpec jdbc, final JooqEngine sqlEngine, final HikariDataSource jdbcPool) {
+  Schema(final D2rqSpec d2rq, final JenaEngine sparqlEngine, final JooqEngine sqlEngine) {
     this.d2rq = d2rq;
     this.sparqlEngine = sparqlEngine;
-    this.d2rqModel = d2rqModel;
-    this.jdbc = jdbc;
     this.sqlEngine = sqlEngine;
-    this.jdbcPool = jdbcPool;
   }
 
   public URI identifier() {
@@ -49,18 +38,17 @@ public final class Schema implements AutoCloseable {
     }
   }
 
-  // TODO : rethink ?
-  public HikariDataSource getJdbcPool() {
-    return jdbcPool;
+  public JooqEngine.SchemaProvider relationalModel() {
+    return sqlEngine.schemaProvider();
   }
 
   public Set<Engine> engines() {
-    return new HashSet<>(Arrays.asList(sqlEngine, sparqlEngine));
+    return new HashSet<Engine>(Arrays.asList(sqlEngine, sparqlEngine));
   }
 
   @Override
   public void close() {
-    Resources.close(d2rqModel);
-    Resources.close(jdbcPool);
+    Resources.close(sparqlEngine);
+    Resources.close(sqlEngine);
   }
 }

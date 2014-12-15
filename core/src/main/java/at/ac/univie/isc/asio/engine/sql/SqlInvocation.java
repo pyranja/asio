@@ -13,10 +13,10 @@ abstract class SqlInvocation implements Invocation {
   private final Multimap<String, String> properties;
   private final MediaType format;
   private final Role requiredRole;
-  protected final JdbcContext jdbc;
+  protected final JdbcExecution jdbc;
   protected final String sql;
 
-  public SqlInvocation(final JdbcContext jdbc, final String sql, final MediaType format, final Role requiredRole) {
+  public SqlInvocation(final JdbcExecution jdbc, final String sql, final MediaType format, final Role requiredRole) {
     this.format = format;
     this.sql = sql;
     this.jdbc = jdbc;
@@ -30,8 +30,6 @@ abstract class SqlInvocation implements Invocation {
         .put("role", requiredRole.toString())
         .put("format", format.toString())
         .put("engine", "jooq")
-        .put("dialect", jdbc.dialect())
-        .put("timeout", jdbc.timeout().toString())
         .build();
   }
 

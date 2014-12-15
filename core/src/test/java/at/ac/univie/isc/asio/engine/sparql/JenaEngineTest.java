@@ -50,7 +50,7 @@ public class JenaEngineTest {
     model = ModelFactory.createDefaultModel();
     model.createResource("http://example.com/test").addProperty(RDF.value, "test-value");
     final TimeoutSpec timeout = TimeoutSpec.undefined();
-    subject = new JenaEngine(model, timeout, false);
+    subject = JenaEngine.create(model, timeout, false);
   }
 
   // ========= VALID QUERIES
@@ -144,7 +144,7 @@ public class JenaEngineTest {
 
   @Test
   public void should_set_timeout_on_query() throws Exception {
-    subject = new JenaEngine(model, TimeoutSpec.from(1, TimeUnit.MILLISECONDS), false);
+    subject = JenaEngine.create(model, TimeoutSpec.from(1, TimeUnit.MILLISECONDS), false);
     final SparqlInvocation invocation = subject.prepare(Parameters.builder(Language.SPARQL)
             .single(JenaEngine.KEY_QUERY, WILDCARD_QUERY)
             .accept(MediaType.WILDCARD_TYPE).build(),
@@ -161,8 +161,8 @@ public class JenaEngineTest {
     final SparqlInvocation invocation = subject.prepare(params, Token.from("test-user", "test-token"));
     final Context context = invocation.query().getContext();
     // no username in VPH auth
-    assertThat(context.getAsString(JenaEngine.CONTEXT_AUTH_USERNAME), is(""));
-    assertThat(context.getAsString(JenaEngine.CONTEXT_AUTH_PASSWORD), is("test-token"));
+    assertThat(context.getAsString(DefaultJenaFactory.CONTEXT_AUTH_USERNAME), is(""));
+    assertThat(context.getAsString(DefaultJenaFactory.CONTEXT_AUTH_PASSWORD), is("test-token"));
   }
 
   @Test
@@ -172,8 +172,8 @@ public class JenaEngineTest {
         .accept(MediaType.WILDCARD_TYPE).build();
     final SparqlInvocation invocation = subject.prepare(params, Token.ANONYMOUS);
     final Context context = invocation.query().getContext();
-    assertThat(context.getAsString(JenaEngine.CONTEXT_AUTH_USERNAME), is(nullValue()));
-    assertThat(context.getAsString(JenaEngine.CONTEXT_AUTH_PASSWORD), is(nullValue()));
+    assertThat(context.getAsString(DefaultJenaFactory.CONTEXT_AUTH_USERNAME), is(nullValue()));
+    assertThat(context.getAsString(DefaultJenaFactory.CONTEXT_AUTH_PASSWORD), is(nullValue()));
   }
 
   // ========= ILLEGAL INPUT
@@ -214,7 +214,7 @@ public class JenaEngineTest {
 
   @Test
   public void should_reject_federated_query_if_federated_query_lock_in_place() throws Exception {
-    subject = new JenaEngine(model, TimeoutSpec.undefined(), false);
+    subject = JenaEngine.create(model, TimeoutSpec.undefined(), false);
     final String fedQuery = "SELECT * WHERE { SERVICE <http://example.com> { ?s ?p ?o } }";
     final Parameters params = Parameters.builder(Language.SPARQL)
         .single(JenaEngine.KEY_QUERY, fedQuery)

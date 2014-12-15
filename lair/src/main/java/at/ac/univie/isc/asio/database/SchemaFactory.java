@@ -14,13 +14,8 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.d2rq.jena.GraphD2RQ;
 import org.d2rq.lang.CompiledD2RQMapping;
 import org.d2rq.lang.Mapping;
-import org.jooq.DSLContext;
-import org.jooq.SQLDialect;
-import org.jooq.impl.DSL;
-import org.jooq.tools.jdbc.JDBCUtils;
 import org.springframework.core.env.Environment;
 
-import javax.sql.DataSource;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -43,34 +38,32 @@ public final class SchemaFactory {
         final TimeoutSpec timeout = d2rq.getSparqlTimeout().orIfUndefined(globalTimeout());
         final JdbcSpec jdbc = FindJdbcConfig.using(timeout).findOneIn(d2rq.getMapping());
         final Model d2rqModel = d2rModel(d2rq.getMapping());
-        final JenaEngine sparqlEngine = new JenaEngine(d2rqModel, timeout, isFederationAllowed());
-        final HikariDataSource pool = connectionPool(jdbc, timeout);
-        final JooqEngine sqlEngine = new JooqEngine(DSL.using(pool, JDBCUtils.dialect(jdbc.getUrl())), timeout);
-        return new Schema(d2rq, sparqlEngine, d2rqModel, jdbc, sqlEngine, pool);
+        final JenaEngine sparqlEngine =
+            JenaEngine.create(d2rqModel, timeout, isFederationAllowed());
+        final HikariDataSource pool = connectionPool(jdbc);
+        final JooqEngine sqlEngine = JooqEngine.create(pool, jdbc);
+        return new Schema(d2rq, sparqlEngine, sqlEngine);
     }
 
     /**
      * Create an engine for {@link at.ac.univie.isc.asio.engine.Language#SPARQL}.
      * @param d2rq configuration from d2rq model
-     * @return parameterized engine
+     * @return parametrized engine
      */
     public JenaEngine sparqlEngine(final D2rqSpec d2rq) {
         final Model model = d2rModel(d2rq.getMapping());
         final TimeoutSpec sparqlTimeout = d2rq.getSparqlTimeout().orIfUndefined(globalTimeout());
-        return new JenaEngine(model, sparqlTimeout, isFederationAllowed());
+        return JenaEngine.create(model, sparqlTimeout, isFederationAllowed());
     }
 
     /**
      * Create an engine for {@link at.ac.univie.isc.asio.engine.Language#SQL}.
      * @param jdbc configuration of jdbc connection
-     * @return parameterized engine
+     * @return parametrized engine
      */
     public JooqEngine sqlEngine(final JdbcSpec jdbc) {
-        final TimeoutSpec sqlTimeout = globalTimeout();
-        final DataSource pool = connectionPool(jdbc, sqlTimeout);
-        final SQLDialect dialect = JDBCUtils.dialect(jdbc.getUrl());
-        final DSLContext jooq = DSL.using(pool, dialect);
-        return new JooqEngine(jooq, sqlTimeout);
+        final HikariDataSource pool = connectionPool(jdbc);
+        return JooqEngine.create(pool, jdbc);
     }
 
     private Model d2rModel(final Mapping mapping) {
@@ -81,14 +74,14 @@ public final class SchemaFactory {
         return model;
     }
 
-    private HikariDataSource connectionPool(final JdbcSpec jdbc, final TimeoutSpec timeout) {
+    private HikariDataSource connectionPool(final JdbcSpec jdbc) {
         final HikariConfig config = new HikariConfig();
         config.setMaximumPoolSize(concurrency());
         config.setDriverClassName(jdbc.getDriver());
         config.setJdbcUrl(jdbc.getUrl());
         config.setUsername(jdbc.getUsername());
         config.setPassword(jdbc.getPassword());
-        config.setConnectionTimeout(timeout.getAs(TimeUnit.MILLISECONDS, 0L));
+        config.setConnectionTimeout(jdbc.getTimeout().getAs(TimeUnit.MILLISECONDS, 0L));
         return new HikariDataSource(config);
     }
 

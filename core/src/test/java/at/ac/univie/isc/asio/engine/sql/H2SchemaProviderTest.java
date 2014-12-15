@@ -8,7 +8,6 @@ import at.ac.univie.isc.asio.Table;
 import at.ac.univie.isc.asio.sql.Database;
 import com.google.common.collect.Iterables;
 import org.jooq.impl.SQLDataType;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
@@ -20,15 +19,10 @@ import static org.hamcrest.text.IsEqualIgnoringCase.equalToIgnoringCase;
 import static org.junit.Assert.assertThat;
 
 public class H2SchemaProviderTest {
-  private H2SchemaProvider subject;
-
-  @Before
-  public void setUp() throws Exception {
-    // XXX : DB_CLOSE_DELAY prevents discarding the data - create constant for that?
-    final Database database = Database.create("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1").build();
-    database.execute(Classpath.read("database/SchemaProviderTest-schema.sql"));
-    subject = new H2SchemaProvider(database.datasource());
-  }
+  private final Database db = Database.create("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1").build()
+      .execute(Classpath.read("database/SchemaProviderTest-schema.sql"));
+  private final H2SchemaProvider subject =
+      new H2SchemaProvider(new JdbcFactory<>(db.datasource(), JdbcSpec.connectTo("jdbc:h2:mem:test").complete()));
 
   @Test
   public void fetches_public_table_metadata() throws Exception {

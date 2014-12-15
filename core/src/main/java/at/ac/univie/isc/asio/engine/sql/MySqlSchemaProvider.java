@@ -9,9 +9,9 @@ import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
 import org.jooq.Schema;
+import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
 
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Locale;
@@ -19,30 +19,30 @@ import java.util.Set;
 
 import static org.jooq.impl.DSL.field;
 
-public class MySqlSchemaProvider implements Supplier<SqlSchema> {
+public class MySqlSchemaProvider implements Supplier<SqlSchema>, JooqEngine.SchemaProvider {
   /** MySQL system schemas */
   public static final Set<String> INTERNAL_SCHEMA =
       ImmutableSet.of("mysql", "information_schema", "performance_schema");
   /** {@code SELECT DATABASE()} yields database currently in use */
   private static final Field<String> ACTIVE_DATABASE = field("DATABASE()", String.class).as("schema");
 
-  private final DataSource db;
+  private final JdbcFactory<?> create;
 
-  public MySqlSchemaProvider(final DataSource db) {
-    this.db = db;
+  public MySqlSchemaProvider(final JdbcFactory<?> create) {
+    this.create = create;
   }
 
   @Override
-  public SqlSchema get() {
+  public SqlSchema fetch() {
     final SqlSchemaBuilder builder = SqlSchemaBuilder.create().noCatalog();
-    try (final Connection conn = db.getConnection()) {
-      final DSLContext jooq = DSL.using(conn, SQLDialect.MYSQL);
+    try (final Connection connection = create.connection()) {
+      final DSLContext jooq = DSL.using(connection, SQLDialect.MYSQL);
       final Schema schema = findActiveSchema(jooq);
       builder.switchSchema(schema);
       for (final org.jooq.Table<?> sqlTable : schema.getTables()) {
         builder.add(sqlTable);
       }
-    } catch (SQLException e) {
+    } catch (SQLException | DataAccessException e) {
       throw new H2SchemaProvider.RepositoryFailure(e);
     }
     return builder.build();
@@ -55,5 +55,11 @@ public class MySqlSchemaProvider implements Supplier<SqlSchema> {
     }
     final Catalog dummyCatalog = Iterables.getOnlyElement(jooq.meta().getCatalogs());
     return dummyCatalog.getSchema(activeSchemaName);
+  }
+
+  @Override
+  @Deprecated
+  public SqlSchema get() {
+    return fetch();
   }
 }

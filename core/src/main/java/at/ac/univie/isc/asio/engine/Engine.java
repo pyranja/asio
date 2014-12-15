@@ -6,7 +6,7 @@ import java.security.Principal;
  * An engine capable of creating invocations on a dataset for a specific
  * {@link Language}.
  */
-public interface Engine {
+public interface Engine extends AutoCloseable {
 
   /**
    * @return the {@link Language query language} supported by this engine.

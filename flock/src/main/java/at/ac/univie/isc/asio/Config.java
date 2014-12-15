@@ -44,7 +44,7 @@ public class Config {
   @Bean
   public Command.Factory registry(final Supplier<EventReporter> reporter) {
     final boolean allowFederated = true;
-    final JenaEngine jenaEngine = new JenaEngine(emptyModel(), globalTimeout(), allowFederated);
+    final JenaEngine jenaEngine = JenaEngine.create(emptyModel(), globalTimeout(), allowFederated);
     final Scheduler scheduler = Schedulers.from(workerPool());
     final EngineRegistry registry =
         new EngineRegistry(scheduler, Arrays.<Engine>asList(jenaEngine));

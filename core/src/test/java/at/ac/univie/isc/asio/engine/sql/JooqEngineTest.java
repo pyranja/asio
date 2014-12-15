@@ -1,25 +1,19 @@
 package at.ac.univie.isc.asio.engine.sql;
 
+import at.ac.univie.isc.asio.Classpath;
 import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.DatasetUsageException;
-import at.ac.univie.isc.asio.engine.Language;
 import at.ac.univie.isc.asio.SqlResult;
-import at.ac.univie.isc.asio.tool.TimeoutSpec;
 import at.ac.univie.isc.asio.engine.Invocation;
+import at.ac.univie.isc.asio.engine.Language;
 import at.ac.univie.isc.asio.engine.Parameters;
 import at.ac.univie.isc.asio.security.Role;
 import at.ac.univie.isc.asio.security.Token;
-import at.ac.univie.isc.asio.sql.EmbeddedDb;
 import at.ac.univie.isc.asio.sql.ConvertToTable;
+import at.ac.univie.isc.asio.sql.Database;
 import com.google.common.collect.Table;
 import com.google.common.io.ByteStreams;
-import org.jooq.DSLContext;
-import org.jooq.SQLDialect;
-import org.jooq.conf.Settings;
-import org.jooq.conf.SettingsTools;
-import org.jooq.impl.DSL;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -43,22 +37,17 @@ import static org.junit.Assert.assertThat;
 
 public class JooqEngineTest {
   public static final MediaType SQL_RESULTS_TYPE = MediaType.valueOf("application/sql-results+xml");
-  @ClassRule
-  public static EmbeddedDb DB =
-      EmbeddedDb.memory().schema("/database/JooqEngineTest-schema.sql").create();
-  @Rule
-  public EmbeddedDb.PopulateDb populate = DB.defaultDataset("/database/JooqEngineTest-data.xml");
-  @Rule
-  public ExpectedException error = ExpectedException.none();
 
-  private DSLContext jooqContext;
+  @Rule
+  public final ExpectedException error = ExpectedException.none();
+  private final Database db = Database.create("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1").build()
+      .execute(Classpath.read("database/JooqEngineTest-schema.sql"));
+
   private JooqEngine subject;
 
   @Before
   public void setUp() {
-    final Settings options = SettingsTools.defaultSettings().withExecuteLogging(true);
-    jooqContext = DSL.using(DB.dataSource(), SQLDialect.H2, options);
-    subject = new JooqEngine(jooqContext, TimeoutSpec.undefined());
+    subject = JooqEngine.create(db.datasource(), JdbcSpec.connectTo("jdbc:h2:mem:test").complete());
   }
 
   // ========= VALID QUERIES
@@ -149,7 +138,7 @@ public class JooqEngineTest {
     final byte[] raw = performInvocationWith(params);
     final WebRowSet wrs = parseWebRowSet(raw);
     assertThat(wrs.size(), is(5));
-    final Table<Integer, String, String> expected = DB.reference(REFERENCE_SELECT);
+    final Table<Integer, String, String> expected = db.reference(REFERENCE_SELECT);
     final Table<Integer, String, String> actual = ConvertToTable.fromResultSet(wrs);
     assertThat(actual, is(expected));
   }
@@ -192,7 +181,7 @@ public class JooqEngineTest {
   }
 
   private byte[] performInvocationWith(final Parameters params) throws IOException {
-    try (final Invocation invocation = subject.prepare(params, Token.ANONYMOUS)) {
+    try (final Invocation invocation = subject.prepare(params, Token.undefined())) {
       invocation.execute();
       final ByteArrayOutputStream sink = new ByteArrayOutputStream();
       invocation.write(sink);
@@ -230,7 +219,7 @@ public class JooqEngineTest {
       performInvocationWith(params);
     } catch (final Exception ignored) {
     }
-    assertThat(DB.reference("SELECT * FROM updates").values(), is(empty()));
+    assertThat(db.reference("SELECT * FROM updates").values(), is(empty()));
   }
 
   @Test
@@ -240,7 +229,7 @@ public class JooqEngineTest {
         .single(JooqEngine.PARAM_QUERY, REFERENCE_SELECT)
         .accept(CSV_TYPE)
         .build();
-    final Invocation invocation = subject.prepare(params, Token.ANONYMOUS);
+    final Invocation invocation = subject.prepare(params, Token.undefined());
     error.expect(JooqEngine.Cancelled.class);
     invocation.execute();
     invocation.cancel();
@@ -253,7 +242,7 @@ public class JooqEngineTest {
         .single(JooqEngine.PARAM_QUERY, REFERENCE_SELECT)
         .accept(CSV_TYPE)
         .build();
-    final Invocation invocation = subject.prepare(params, Token.ANONYMOUS);
+    final Invocation invocation = subject.prepare(params, Token.undefined());
     assertThat(invocation.requires(), is(Role.READ));
   }
 
@@ -263,7 +252,7 @@ public class JooqEngineTest {
         .single(JooqEngine.PARAM_UPDATE, REFERENCE_UPDATE)
         .accept(CSV_TYPE)
         .build();
-    final Invocation invocation = subject.prepare(params, Token.ANONYMOUS);
+    final Invocation invocation = subject.prepare(params, Token.undefined());
     assertThat(invocation.requires(), is(Role.WRITE));
   }
 
@@ -274,7 +263,7 @@ public class JooqEngineTest {
     final Parameters params = Parameters.builder(Language.SQL)
         .accept(MediaType.WILDCARD_TYPE).build();
     error.expect(DatasetUsageException.class);
-    subject.prepare(params, Token.ANONYMOUS);
+    subject.prepare(params, Token.undefined());
   }
 
   @Test
@@ -282,7 +271,7 @@ public class JooqEngineTest {
     final Parameters params = Parameters.builder(Language.SPARQL)
         .single(JooqEngine.PARAM_QUERY, REFERENCE_SELECT).build();
     error.expect(DatasetUsageException.class);
-    subject.prepare(params, Token.ANONYMOUS);
+    subject.prepare(params, Token.undefined());
   }
 
   @Test
@@ -291,6 +280,6 @@ public class JooqEngineTest {
         .single(JooqEngine.PARAM_QUERY, REFERENCE_SELECT)
         .accept(MediaType.valueOf("image/jpeg")).build();
     error.expect(DatasetUsageException.class);
-    subject.prepare(params, Token.ANONYMOUS);
+    subject.prepare(params, Token.undefined());
   }
 }

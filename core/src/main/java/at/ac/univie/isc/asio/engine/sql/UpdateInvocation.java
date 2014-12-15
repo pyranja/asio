@@ -23,7 +23,7 @@ final class UpdateInvocation extends SqlInvocation {
 
   private int rowCount = -1;
 
-  public UpdateInvocation(final JdbcContext jdbc, final String sql, final ModCountWriter writer,
+  public UpdateInvocation(final JdbcExecution jdbc, final String sql, final ModCountWriter writer,
                           final MediaType contentType) {
     super(jdbc, sql, contentType, Role.WRITE);
     this.writer = writer;

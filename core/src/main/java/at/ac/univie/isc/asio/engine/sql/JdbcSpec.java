@@ -3,6 +3,8 @@ package at.ac.univie.isc.asio.engine.sql;
 import at.ac.univie.isc.asio.security.Token;
 import at.ac.univie.isc.asio.tool.TimeoutSpec;
 import com.google.common.base.Objects;
+import org.jooq.SQLDialect;
+import org.jooq.tools.jdbc.JDBCUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
@@ -100,11 +102,20 @@ public final class JdbcSpec {
     return credentials;
   }
 
+  /**
+   * Guess sql dialect from jdbc url
+   * @return inferred jooq dialect
+   */
+  public SQLDialect getDialect() {
+    return JDBCUtils.dialect(url);
+  }
+
   @Override
   public String toString() {
     return Objects.toStringHelper(this)
         .add("url", url)
         .add("driver", driver)
+        .add("dialect", getDialect())
         .add("timeout", timeout)
         .add("username", credentials)
         .toString();

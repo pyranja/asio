@@ -19,7 +19,7 @@ final class SelectInvocation extends SqlInvocation {
 
   private Cursor<Record> cursor;
 
-  public SelectInvocation(final JdbcContext jdbc, final String sql, final CursorWriter writer,
+  public SelectInvocation(final JdbcExecution jdbc, final String sql, final CursorWriter writer,
                           final MediaType contentType) {
     super(jdbc, sql, contentType, Role.READ);
     this.writer = writer;
