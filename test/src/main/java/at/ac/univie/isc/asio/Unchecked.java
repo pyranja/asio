@@ -10,6 +10,13 @@ import java.util.concurrent.TimeUnit;
  * Invoke methods and wrap checked exceptions as {@code AssertionError}.
  */
 public class Unchecked {
+  /** Thrown if recovery from an IO error is unlikely or unnecessary */
+  public static class UncheckedIOException extends RuntimeException {
+    public UncheckedIOException(final IOException cause) {
+      super(cause);
+    }
+  }
+
   private Unchecked() {
   }
 

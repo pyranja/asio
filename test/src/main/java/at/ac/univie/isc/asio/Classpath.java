@@ -25,10 +25,14 @@ public final class Classpath {
    *
    * @param name reference to a file
    * @return contents of the resource as a stream
-   * @throws IOException if opening the resource fails
+   * @throws at.ac.univie.isc.asio.Unchecked.UncheckedIOException if opening the resource fails
    */
-  public static InputStream fetch(final String name) throws IOException {
-    return load(name).openStream();
+  public static InputStream fetch(final String name) {
+    try {
+      return load(name).openStream();
+    } catch (IOException e) {
+      throw new Unchecked.UncheckedIOException(e);
+    }
   }
 
   /**
@@ -36,11 +40,13 @@ public final class Classpath {
    *
    * @param name reference to the resource
    * @return contents of the resource as a string
-   * @throws java.io.IOException if reading the resource fails
+   * @throws at.ac.univie.isc.asio.Unchecked.UncheckedIOException if reading the resource fails
    */
-  public static String read(final String name) throws IOException {
+  public static String read(final String name) {
     try (final Reader source = new InputStreamReader(fetch(name), StandardCharsets.UTF_8)) {
       return CharStreams.toString(source);
+    } catch (IOException e) {
+      throw new Unchecked.UncheckedIOException(e);
     }
   }
 
