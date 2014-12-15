@@ -5,7 +5,6 @@ import com.google.common.collect.Table;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,13 +18,13 @@ import static java.util.Objects.requireNonNull;
  */
 @ThreadSafe
 public final class Database {
-  private final DataSource datasource;
+  private final DriverManagerDataSource datasource;
 
   public static Builder create(final String jdbcUrl) {
     return new Builder(jdbcUrl);
   }
 
-  private Database(@Nonnull final DataSource datasource) {
+  private Database(@Nonnull final DriverManagerDataSource datasource) {
     this.datasource = datasource;
   }
 
@@ -33,7 +32,7 @@ public final class Database {
    * @return pool of connections to the backing database
    */
   @Nonnull
-  public DataSource datasource() {
+  public DriverManagerDataSource datasource() {
     return datasource;
   }
 
@@ -67,15 +66,16 @@ public final class Database {
    * @param query any valid SQL statement (including DDL and DML).
    * @throws java.lang.RuntimeException wrapping any error
    */
-  public void execute(@Nonnull final String query) {
+  public Database execute(@Nonnull final String query) {
     requireNonNull(query);
     try (
         final Connection connection = connection();
         final Statement statement = connection.createStatement();
     ) {
       statement.execute(query);
+      return this;
     } catch (SQLException e) {
-      Throwables.propagate(e);
+      throw Throwables.propagate(e);
     }
   }
 
@@ -103,7 +103,7 @@ public final class Database {
     }
 
     public Database build() {
-      final DataSource pool = new DriverManagerDataSource(jdbcUrl, props);
+      final DriverManagerDataSource pool = new DriverManagerDataSource(jdbcUrl, props);
       return new Database(pool);
     }
   }

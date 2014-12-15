@@ -21,7 +21,7 @@ import static java.util.Objects.requireNonNull;
  * @see java.sql.DriverManager
  */
 @ThreadSafe
-public class DriverManagerDataSource implements DataSource {
+public class DriverManagerDataSource implements DataSource, AutoCloseable {
   private final String jdbcUrl;
   private final Properties defaults;
 
@@ -67,6 +67,11 @@ public class DriverManagerDataSource implements DataSource {
     cloned.setProperty("password", password);
     return DriverManager.getConnection(jdbcUrl, cloned);
   }
+
+  // Noop AutoCloseable implementation =============================================================
+
+  @Override
+  public void close() throws Exception { /* noop */ }
 
   // Delegated CommonDataSource implementation =====================================================
 
