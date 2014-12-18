@@ -1,6 +1,5 @@
 --- single table for schema fetching
-
-DROP TABLE IF EXISTS SAMPLE;
+DROP ALL OBJECTS;
 
 CREATE TABLE SAMPLE (
   ID INT PRIMARY KEY NOT NULL,

@@ -1,8 +1,8 @@
 --- table with a column of each major datatype, except binary and temporal
+DROP ALL OBJECTS;
 
 --- ############################################################################################ ---
 --- edge cases for each major datatype, except binary and temporal
-DROP TABLE IF EXISTS test;
 CREATE TABLE test (
   id          INT PRIMARY KEY NOT NULL,
   expect      VARCHAR(255)    NOT NULL,
@@ -22,7 +22,6 @@ VALUES (0, 'default', TRUE, 'default', 0, 0, 0)
 
 --- ############################################################################################ ---
 --- empty table for update
-DROP TABLE IF EXISTS updates;
 CREATE TABLE updates (
   id   INT NOT NULL,
   data VARCHAR(255)
