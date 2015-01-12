@@ -1,19 +1,34 @@
 package at.ac.univie.isc.asio.engine;
 
 import at.ac.univie.isc.asio.DatasetException;
-import at.ac.univie.isc.asio.tool.TimeoutSpec;
-import at.ac.univie.isc.asio.metadata.MetadataResource;
 import at.ac.univie.isc.asio.security.Permission;
-import at.ac.univie.isc.asio.security.Role;
+import at.ac.univie.isc.asio.tool.TimeoutSpec;
 import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Subscription;
 
-import javax.ws.rs.*;
-import javax.ws.rs.container.*;
-import javax.ws.rs.core.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.ServiceUnavailableException;
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.CompletionCallback;
+import javax.ws.rs.container.ConnectionCallback;
+import javax.ws.rs.container.Suspended;
+import javax.ws.rs.container.TimeoutHandler;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Request;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
@@ -99,7 +114,7 @@ public class ProtocolResource {
       report
           .with(executable)
           .event(EventReporter.ACCEPTED);
-      checkAuthorization(executable.requiredRole());
+      CheckCommandAuthorization.with(security, request).check(executable);
       final Subscription subscription = executable
           .observe()
           .subscribe(CommandObserver.bridgeTo(async));
@@ -112,16 +127,6 @@ public class ProtocolResource {
           .with(error)
           .event(EventReporter.REJECTED);
       resumeWithError(async, error);
-    }
-  }
-
-  private void checkAuthorization(final Role required) {
-    boolean authorized = security.isUserInRole(required.name());
-    if (HttpMethod.GET.equalsIgnoreCase(request.getMethod())) { // restrict to READ permission
-      authorized = Permission.READ.grants(required) && authorized;
-    }
-    if (!authorized) {
-      throw new ForbiddenException();
     }
   }
 
