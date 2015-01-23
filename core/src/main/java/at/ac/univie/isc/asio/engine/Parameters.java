@@ -5,15 +5,10 @@ import com.google.common.base.Objects;
 import com.google.common.collect.*;
 
 import javax.annotation.concurrent.Immutable;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.NotSupportedException;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
+import java.security.Principal;
 import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Optional;
 
 /**
  * Hold properties extracted from a protocol request.
@@ -21,10 +16,6 @@ import java.util.regex.Pattern;
 @Immutable
 public final class Parameters {
   public static final String KEY_LANGUAGE = "language";
-
-  public static ParametersBuilder builder(Language language) {
-    return new ParametersBuilder(language);
-  }
 
   public static final class MissingParameter extends DatasetUsageException {
     public MissingParameter(final String key) {
@@ -46,16 +37,17 @@ public final class Parameters {
 
   private final ListMultimap<String, String> parameters;
   private final List<MediaType> acceptableTypes;
+  private final Optional<Principal> owner;
   private final RuntimeException cause;
 
-  private Parameters(
-      final ListMultimap<String, String> parameters,
-      final List<MediaType> acceptableTypes,
-      final RuntimeException cause) {
+  public Parameters(final ListMultimap<String, String> parameters,
+                    final List<MediaType> acceptableTypes, final Principal owner,
+                    final RuntimeException cause) {
     assert ((parameters != null && acceptableTypes != null) || cause != null)
         : "invalid params but no cause given";
     this.parameters = parameters;
     this.acceptableTypes = acceptableTypes;
+    this.owner = Optional.ofNullable(owner);
     this.cause = cause;
   }
 
@@ -97,6 +89,13 @@ public final class Parameters {
   }
 
   /**
+   * @return initiator of the request if known
+   */
+  public Optional<Principal> owner() {
+    return owner;
+  }
+
+  /**
    * @return all accepted mime types sorted by preference
    */
   public List<MediaType> acceptable() {
@@ -119,110 +118,8 @@ public final class Parameters {
         .omitNullValues()
         .add("error", cause)
         .add("properties", parameters)
+        .add("owner", owner.orElse(null))
         .toString();
   }
 
-  public static class ParametersBuilder {
-    private final Language language;
-    private final ImmutableListMultimap.Builder<String, String> params = ImmutableListMultimap.builder();
-    private final ImmutableList.Builder<MediaType> acceptedTypes = ImmutableList.builder();
-
-    private RuntimeException cause;
-
-    private ParametersBuilder(final Language language) {
-      this.language = language;
-    }
-
-    public ParametersBuilder add(final MultivaluedMap<String, String> map) {
-      if (map == null) {
-        cause = new NullPointerException("illegal parameters map");
-      } else {
-        for (Map.Entry<String, List<String>> each : map.entrySet()) {
-          params.putAll(each.getKey(), each.getValue());
-        }
-      }
-      return this;
-    }
-
-    public ParametersBuilder single(final String key, final String value) {
-      if (key == null || value == null) {
-        cause = new NullPointerException("illegal parameter");
-      } else {
-        params.put(key, value);
-      }
-      return this;
-    }
-
-    static final Pattern MEDIA_SUBTYPE_PATTERN = Pattern.compile("^(\\w+)-(\\w+)$");
-
-    public ParametersBuilder body(final String body, final MediaType content) {
-      final String subtype = content != null ? content.getSubtype() : "illegal";
-      final Matcher match = MEDIA_SUBTYPE_PATTERN.matcher(subtype);
-      if (valid(match) && languageMatches(match.group(1)) && exists(body)) {
-        params.put(match.group(2), body);
-      }
-      return this;
-    }
-
-    private boolean valid(Matcher match) {
-      if (match.matches()) {
-        return true;
-      } else {
-        cause =
-            new NotSupportedException("illegal content type for direct operation - use 'application/{language}-{operation}'");
-        return false;
-      }
-    }
-
-    private boolean languageMatches(final String given) {
-      if (language.name().equalsIgnoreCase(given)) {
-        return true;
-      } else {
-        cause = new NotSupportedException(
-            "illegal content type for direct operation - expected language " + language.name());
-        return false;
-      }
-    }
-
-    private boolean exists(final String body) {
-      if (body == null) {
-        cause = new BadRequestException("missing command for direct operation");
-        return false;
-      } else {
-        return true;
-      }
-    }
-
-    public ParametersBuilder accept(MediaType type) {
-      if (isNotNull(type, "accept type")) { acceptedTypes.add(type); }
-      return this;
-    }
-
-    public Parameters build(final HttpHeaders context) {
-      if (isNotNull(context, "http headers")) {
-        if (isNotNull(context.getAcceptableMediaTypes(), "accepted types")) {
-          acceptedTypes.addAll(context.getAcceptableMediaTypes());
-        }
-      }
-      return build();
-    }
-
-    public Parameters build() {
-      params.put(KEY_LANGUAGE, language.name());
-      return new Parameters(
-          params.build(),
-          acceptedTypes.build(),
-          cause
-      );
-    }
-
-    private boolean isNotNull(final Object that, final String message) {
-      if (that == null) {
-        cause = new NullPointerException(message);
-        return false;
-      } else {
-        return true;
-      }
-    }
-  }
 }

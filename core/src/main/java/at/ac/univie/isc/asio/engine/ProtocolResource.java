@@ -65,10 +65,10 @@ public class ProtocolResource {
 
   @GET
   public void acceptQuery(@Context final UriInfo uri, @Suspended final AsyncResponse async) {
-    final Parameters handler = Parameters
-        .builder(language)
-        .add(uri.getQueryParameters())
-        .build(headers);
+    final Parameters handler = ParseJaxrsParameters
+        .with(language)
+        .argumentsFrom(uri.getQueryParameters())
+        .including(headers).collect();
     process(async, handler);
   }
 
@@ -76,10 +76,10 @@ public class ProtocolResource {
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   public void acceptForm(final MultivaluedMap<String, String> formParameters,
                          @Suspended final AsyncResponse async) {
-    final Parameters handler = Parameters
-        .builder(language)
-        .add(formParameters)
-        .build(headers);
+    final Parameters handler = ParseJaxrsParameters
+        .with(language)
+        .argumentsFrom(formParameters)
+        .including(headers).collect();
     process(async, handler);
   }
 
@@ -87,10 +87,10 @@ public class ProtocolResource {
   public void acceptBody(final String body,
                          @HeaderParam(HttpHeaders.CONTENT_TYPE) MediaType contentType,
                          @Suspended final AsyncResponse async) {
-    Parameters handler = Parameters
-        .builder(language)
+    Parameters handler = ParseJaxrsParameters
+        .with(language)
         .body(body, contentType)
-        .build(headers);
+        .including(headers).collect();
     process(async, handler);
   }
 

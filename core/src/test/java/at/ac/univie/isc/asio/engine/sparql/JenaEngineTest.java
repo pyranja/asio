@@ -1,10 +1,8 @@
 package at.ac.univie.isc.asio.engine.sparql;
 
 import at.ac.univie.isc.asio.DatasetUsageException;
-import at.ac.univie.isc.asio.engine.Language;
+import at.ac.univie.isc.asio.engine.*;
 import at.ac.univie.isc.asio.tool.TimeoutSpec;
-import at.ac.univie.isc.asio.engine.Parameters;
-import at.ac.univie.isc.asio.engine.TypeMatchingResolver;
 import at.ac.univie.isc.asio.security.Role;
 import at.ac.univie.isc.asio.security.Token;
 import at.ac.univie.isc.asio.sql.ConvertToTable;
@@ -57,8 +55,8 @@ public class JenaEngineTest {
 
   @Test
   public void valid_sparql_select() throws Exception {
-    final Parameters params = Parameters
-        .builder(Language.SPARQL)
+    final Parameters params = ParametersBuilder
+        .with(Language.SPARQL)
         .single(JenaEngine.KEY_QUERY, "SELECT ?val WHERE { [] ?_ ?val }")
         .accept(CSV_TYPE)
         .build();
@@ -71,7 +69,7 @@ public class JenaEngineTest {
 
   @Test
   public void valid_sparql_ask() throws Exception {
-    final Parameters params = Parameters.builder(Language.SPARQL)
+    final Parameters params = ParametersBuilder.with(Language.SPARQL)
         .single(JenaEngine.KEY_QUERY, "ASK { <http://example.com/test> ?_ 'test-value' }")
         .accept(CSV_TYPE)
         .build();
@@ -84,7 +82,7 @@ public class JenaEngineTest {
 
   @Test
   public void valid_sparql_constuct() throws Exception {
-    final Parameters params = Parameters.builder(Language.SPARQL)
+    final Parameters params = ParametersBuilder.with(Language.SPARQL)
         .single(JenaEngine.KEY_QUERY, "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o }")
         .accept(MediaType.APPLICATION_XML_TYPE)
         .build();
@@ -96,7 +94,7 @@ public class JenaEngineTest {
 
   @Test
   public void valid_sparql_describe() throws Exception {
-    final Parameters params = Parameters.builder(Language.SPARQL)
+    final Parameters params = ParametersBuilder.with(Language.SPARQL)
         .single(JenaEngine.KEY_QUERY, "DESCRIBE <http://example.com/test>")
         .accept(MediaType.TEXT_PLAIN_TYPE)
         .build();
@@ -117,7 +115,7 @@ public class JenaEngineTest {
 
   @Test
   public void should_require_read_role() throws Exception {
-    final Parameters params = Parameters.builder(Language.SPARQL)
+    final Parameters params = ParametersBuilder.with(Language.SPARQL)
         .single(JenaEngine.KEY_QUERY, WILDCARD_QUERY)
         .accept(MediaType.WILDCARD_TYPE).build();
     final SparqlInvocation invocation = subject.prepare(params, Token.ANONYMOUS);
@@ -126,7 +124,7 @@ public class JenaEngineTest {
 
   @Test
   public void should_use_sparql_results_format_if_xml_accepted() throws Exception {
-    final Parameters params = Parameters.builder(Language.SPARQL)
+    final Parameters params = ParametersBuilder.with(Language.SPARQL)
         .single(JenaEngine.KEY_QUERY, WILDCARD_QUERY)
         .accept(MediaType.APPLICATION_XML_TYPE).build();
     final SparqlInvocation invocation = subject.prepare(params, Token.ANONYMOUS);
@@ -135,7 +133,7 @@ public class JenaEngineTest {
 
   @Test
   public void should_use_sparql_results_format_as_default() throws Exception {
-    final Parameters params = Parameters.builder(Language.SPARQL)
+    final Parameters params = ParametersBuilder.with(Language.SPARQL)
         .single(JenaEngine.KEY_QUERY, WILDCARD_QUERY)
         .accept(MediaType.WILDCARD_TYPE).build();
     final SparqlInvocation invocation = subject.prepare(params, Token.ANONYMOUS);
@@ -145,7 +143,7 @@ public class JenaEngineTest {
   @Test
   public void should_set_timeout_on_query() throws Exception {
     subject = JenaEngine.create(model, TimeoutSpec.from(1, TimeUnit.MILLISECONDS), false);
-    final SparqlInvocation invocation = subject.prepare(Parameters.builder(Language.SPARQL)
+    final SparqlInvocation invocation = subject.prepare(ParametersBuilder.with(Language.SPARQL)
             .single(JenaEngine.KEY_QUERY, WILDCARD_QUERY)
             .accept(MediaType.WILDCARD_TYPE).build(),
         Token.ANONYMOUS);
@@ -155,7 +153,7 @@ public class JenaEngineTest {
 
   @Test
   public void should_add_owner_credentials_to_query() throws Exception {
-    final Parameters params = Parameters.builder(Language.SPARQL)
+    final Parameters params = ParametersBuilder.with(Language.SPARQL)
         .single(JenaEngine.KEY_QUERY, WILDCARD_QUERY)
         .accept(MediaType.WILDCARD_TYPE).build();
     final SparqlInvocation invocation = subject.prepare(params, Token.from("test-user", "test-token"));
@@ -167,7 +165,7 @@ public class JenaEngineTest {
 
   @Test
   public void should_skip_credentials_delegation_if_anonymous() throws Exception {
-    final Parameters params = Parameters.builder(Language.SPARQL)
+    final Parameters params = ParametersBuilder.with(Language.SPARQL)
         .single(JenaEngine.KEY_QUERY, WILDCARD_QUERY)
         .accept(MediaType.WILDCARD_TYPE).build();
     final SparqlInvocation invocation = subject.prepare(params, Token.ANONYMOUS);
@@ -181,7 +179,7 @@ public class JenaEngineTest {
   @Test
   public void fail_on_missing_query() throws Exception {
     final Parameters params =
-        Parameters.builder(Language.SPARQL).accept(MediaType.APPLICATION_XML_TYPE).build();
+        ParametersBuilder.with(Language.SPARQL).accept(MediaType.APPLICATION_XML_TYPE).build();
     error.expect(DatasetUsageException.class);
     subject.prepare(params, Token.ANONYMOUS);
   }
@@ -189,7 +187,7 @@ public class JenaEngineTest {
   @Test
   public void fail_on_multiple_queries() throws Exception {
     final Parameters params =
-        Parameters.builder(Language.SPARQL).accept(MediaType.APPLICATION_XML_TYPE)
+        ParametersBuilder.with(Language.SPARQL).accept(MediaType.APPLICATION_XML_TYPE)
             .single(JenaEngine.KEY_QUERY, "one").single(JenaEngine.KEY_QUERY, "two").build();
     error.expect(DatasetUsageException.class);
     subject.prepare(params, Token.ANONYMOUS);
@@ -197,7 +195,7 @@ public class JenaEngineTest {
 
   @Test
   public void should_fail_if_no_acceptable_format_given() throws Exception {
-    final Parameters params = Parameters.builder(Language.SPARQL)
+    final Parameters params = ParametersBuilder.with(Language.SPARQL)
         .single(JenaEngine.KEY_QUERY, WILDCARD_QUERY).build();
     error.expect(TypeMatchingResolver.NoMatchingFormat.class);
     subject.prepare(params, Token.ANONYMOUS);
@@ -205,7 +203,7 @@ public class JenaEngineTest {
 
   @Test
   public void should_fail_if_no_supported_format_is_given() throws Exception {
-    final Parameters params = Parameters.builder(Language.SPARQL)
+    final Parameters params = ParametersBuilder.with(Language.SPARQL)
         .single(JenaEngine.KEY_QUERY, WILDCARD_QUERY)
         .accept(MediaType.valueOf("image/jpg")).build();
     error.expect(TypeMatchingResolver.NoMatchingFormat.class);
@@ -216,7 +214,7 @@ public class JenaEngineTest {
   public void should_reject_federated_query_if_federated_query_lock_in_place() throws Exception {
     subject = JenaEngine.create(model, TimeoutSpec.undefined(), false);
     final String fedQuery = "SELECT * WHERE { SERVICE <http://example.com> { ?s ?p ?o } }";
-    final Parameters params = Parameters.builder(Language.SPARQL)
+    final Parameters params = ParametersBuilder.with(Language.SPARQL)
         .single(JenaEngine.KEY_QUERY, fedQuery)
         .accept(MediaType.WILDCARD_TYPE).build();
     error.expect(DatasetUsageException.class);

@@ -23,7 +23,7 @@ public class EngineRegistryTest {
   public void language_not_registered() throws Exception {
     subject = new EngineRegistry(Schedulers.immediate(), Collections.<Engine>emptySet());
     error.expect(Command.Factory.LanguageNotSupported.class);
-    final Parameters params = Parameters.builder(Language.valueOf("TEST")).build();
+    final Parameters params = ParametersBuilder.with(Language.valueOf("TEST")).build();
     subject.accept(params, Token.ANONYMOUS);
   }
 
@@ -32,7 +32,7 @@ public class EngineRegistryTest {
     final Engine engine = mock(Engine.class);
     when(engine.language()).thenReturn(Language.valueOf("TEST"));
     subject = new EngineRegistry(Schedulers.immediate(), Sets.newHashSet(engine));
-    final Parameters params = Parameters.builder(Language.valueOf("TEST")).build();
+    final Parameters params = ParametersBuilder.with(Language.valueOf("TEST")).build();
     subject.accept(params, Token.ANONYMOUS);
     verify(engine).prepare(params, Token.ANONYMOUS);
   }
