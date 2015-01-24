@@ -4,7 +4,6 @@ import at.ac.univie.isc.asio.Payload;
 import at.ac.univie.isc.asio.tool.Resources;
 import at.ac.univie.isc.asio.junit.Rules;
 import at.ac.univie.isc.asio.Unchecked;
-import com.google.common.io.ByteStreams;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.junit.Before;
 import org.junit.Rule;
@@ -23,7 +22,6 @@ import rx.schedulers.Schedulers;
 
 import javax.ws.rs.core.StreamingOutput;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -43,14 +41,14 @@ public class OnSubscribeExecuteTest {
 
   private final Invocation delegate = mock(Invocation.class);
 
-  private Observable<Command.Results> subject;
-  private TestSubscriber<Command.Results> subscriber;
+  private Observable<StreamedResults> subject;
+  private TestSubscriber<StreamedResults> subscriber;
   private ByteArrayOutputStream sink;
 
   @Before
   public void setUp() throws Exception {
-    subject = Observable.create(new OnSubscribeExecute(delegate));
-    final Observer<Command.Results> consumer = new Observer<Command.Results>() {
+    subject = Observable.create(OnSubscribeExecute.given(delegate));
+    final Observer<StreamedResults> consumer = new Observer<StreamedResults>() {
       @Override
       public void onCompleted() {
       }
@@ -60,11 +58,11 @@ public class OnSubscribeExecuteTest {
       }
 
       @Override
-      public void onNext(final Command.Results results) {
+      public void onNext(final StreamedResults results) {
         Unchecked.write(results, sink);
       }
     };
-    subscriber = new TestSubscriber<>(consumer);
+    subscriber = new TestSubscriber<StreamedResults>(consumer);
     sink = new ByteArrayOutputStream();
   }
 
@@ -222,9 +220,9 @@ public class OnSubscribeExecuteTest {
         return null;
       }
     }).when(delegate).write(any(OutputStream.class));
-    subject.subscribe(new Action1<Command.Results>() {
+    subject.subscribe(new Action1<StreamedResults>() {
       @Override
-      public void call(final Command.Results results) {
+      public void call(final StreamedResults results) {
         Schedulers.newThread().createWorker().schedule(new Action0() {
           @Override
           public void call() {
@@ -261,9 +259,9 @@ public class OnSubscribeExecuteTest {
       }
     }).when(delegate).close();
     subject
-        .subscribe(new Action1<Command.Results>() {
+        .subscribe(new Action1<StreamedResults>() {
           @Override
-          public void call(final Command.Results results) {
+          public void call(final StreamedResults results) {
             Schedulers.newThread().createWorker().schedule(new Action0() {
               @Override
               public void call() {

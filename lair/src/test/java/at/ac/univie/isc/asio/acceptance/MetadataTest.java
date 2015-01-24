@@ -7,14 +7,17 @@ import at.ac.univie.isc.asio.FunctionalTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 
+import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.hasHeader;
 import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.hasStatus;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static javax.ws.rs.core.Response.Status.Family.familyOf;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -24,6 +27,14 @@ public class MetadataTest extends AcceptanceHarness {
   @Override
   protected URI getTargetUrl() {
     return readAccess().resolve("meta");
+  }
+
+  @Test
+  public void should_redirect_to_metadata_path_from_deprecated_protocol_resource_path() throws Exception {
+    response = client(readAccess()).path("sql").path("schema").request().get();
+    assertThat(response, hasStatus(Response.Status.MOVED_PERMANENTLY));
+    final String redirection = readAccess().resolve("meta/schema").toString();
+    assertThat(response, hasHeader(HttpHeaders.LOCATION, equalToIgnoringCase(redirection)));
   }
 
   @Test

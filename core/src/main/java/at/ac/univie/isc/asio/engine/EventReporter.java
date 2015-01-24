@@ -58,11 +58,6 @@ public final class EventReporter {
         .and("accepted", parameters.acceptable());
   }
 
-  public ContextHolder with(final Command command) {
-    return new ContextHolder()
-        .and(command.properties().asMap());
-  }
-
   public ContextHolder with(final Throwable error) {
     //noinspection ThrowableResultOfMethodCallIgnored
     return new ContextHolder()
@@ -70,6 +65,10 @@ public final class EventReporter {
         .and("cause", error.toString())
         .and("root", Throwables.getRootCause(error).toString())
         .and("trace", Throwables.getStackTraceAsString(error)); // FIXME : switch with debug flag
+  }
+
+  public ContextHolder with(final Map<String, ? extends Iterable<?>> properties) {
+    return new ContextHolder().and(properties);
   }
 
   /** fluent interface helper */

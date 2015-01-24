@@ -23,7 +23,9 @@ import org.springframework.core.env.Environment;
 import rx.Scheduler;
 import rx.schedulers.Schedulers;
 
+import javax.inject.Provider;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.*;
 
 @Configuration
@@ -34,21 +36,27 @@ public class Config {
   private Environment env;
 
   @Bean
-  @org.springframework.context.annotation.Scope(BeanDefinition.SCOPE_PROTOTYPE)
-  public ProtocolResource protocolResource(final Command.Factory registry,
-                                           final Supplier<EventReporter> scopedEventReporter,
-                                           final TimeoutSpec timeout) {
-    return new ProtocolResource(registry, timeout, scopedEventReporter);
-  }
-
-  @Bean
-  public Command.Factory registry(final Supplier<EventReporter> reporter) {
+  public FlockResource flockResource(final Supplier<EventReporter> scopedEventReporter,
+                                     final Provider<TimeoutSpec> timeout) {
+    final ProtocolResourceFactory factory = new ProtocolResourceFactory(timeout);
     final boolean allowFederated = true;
     final JenaEngine jenaEngine = JenaEngine.create(emptyModel(), globalTimeout(), allowFederated);
     final Scheduler scheduler = Schedulers.from(workerPool());
-    final EngineRegistry registry =
-        new EngineRegistry(scheduler, Arrays.<Engine>asList(jenaEngine));
-    return new EventfulCommandDecorator(registry, reporter);
+    final Provider<Iterable<Engine>> engineProvider = new Provider<Iterable<Engine>>() {
+      @Override
+      public Iterable<Engine> get() {
+        return Collections.<Engine>singletonList(jenaEngine);
+      }
+    };
+    final Provider<Scheduler> schedulerProvider = new Provider<Scheduler>() {
+      @Override
+      public Scheduler get() {
+        return scheduler;
+      }
+    };
+    final AllInOneConnectorFactory connectorFactory =
+        new AllInOneConnectorFactory(engineProvider, schedulerProvider);
+    return new FlockResource(factory, connectorFactory, scopedEventReporter);
   }
 
   @Bean(destroyMethod = "close")

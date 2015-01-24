@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.engine;
 
+import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.tool.Resources;
 import rx.Observable;
 import rx.Subscriber;
@@ -16,8 +17,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Turn an {@link Invocation} into a reactive sequence yielding the {@link Command.Results results}
- * on completion or an error.
+ * Turn an {@link Invocation} into a reactive sequence yielding the
+ * {@link at.ac.univie.isc.asio.engine.StreamedResults results} on completion or an error.
  * <p>A single execution may only be subscribed to once. Subsequent subscriptions will fail
  * immediately.</p>
  * <p>To properly clean up utilized resources, the results <strong>must</strong>
@@ -25,7 +26,16 @@ import static java.util.Objects.requireNonNull;
  */
 @NotThreadSafe
 @Nonnull
-public class OnSubscribeExecute implements Observable.OnSubscribe<Command.Results> {
+public class OnSubscribeExecute implements Observable.OnSubscribe<StreamedResults> {
+
+  /**
+   * Return an {@code OnSubscribe} function suitable for creating an {@code Observable} from it.
+   * @param delegate invocation to be executed
+   * @return wrapper function
+   */
+  public static OnSubscribeExecute given(final Invocation delegate) {
+    return new OnSubscribeExecute(delegate);
+  }
 
   private static enum State {EXECUTE, STREAM, COMPLETE, ABORT, DONE}
   /* null      => initial - not started
@@ -38,13 +48,13 @@ public class OnSubscribeExecute implements Observable.OnSubscribe<Command.Result
   private final AtomicReference<State> state;
   private final Invocation delegate;
 
-  public OnSubscribeExecute(final Invocation delegate) {
+  private OnSubscribeExecute(final Invocation delegate) {
     this.delegate = requireNonNull(delegate);
     this.state = new AtomicReference<>();
   }
 
   @Override
-  public void call(final Subscriber<? super Command.Results> subscriber) {
+  public void call(final Subscriber<? super StreamedResults> subscriber) {
     try {
       prepare(subscriber);
       execute();
@@ -75,11 +85,11 @@ public class OnSubscribeExecute implements Observable.OnSubscribe<Command.Result
     delegate.execute();
   }
 
-  private void stream(final Subscriber<? super Command.Results> subscriber) {
+  private void stream(final Subscriber<? super StreamedResults> subscriber) {
     if (state.get() != State.EXECUTE) { return; }
-    subscriber.onNext(new Command.Results() {
+    subscriber.onNext(new StreamedResults(delegate.produces()) {
       @Override
-      public void write(final OutputStream output) throws IOException {
+      protected void doWrite(final OutputStream output) throws IOException {
         state.compareAndSet(State.EXECUTE, State.STREAM);
         try {
           delegate.write(output);
@@ -90,12 +100,7 @@ public class OnSubscribeExecute implements Observable.OnSubscribe<Command.Result
       }
 
       @Override
-      public MediaType format() {
-        return delegate.produces();
-      }
-
-      @Override
-      public void close() {
+      public void close() throws DatasetException {
         try {
           cancel(State.STREAM);
         } finally {

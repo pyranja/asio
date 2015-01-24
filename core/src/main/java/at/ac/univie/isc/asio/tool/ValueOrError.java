@@ -16,7 +16,7 @@ public final class ValueOrError<VALUE> {
    * @return value bearing ValueOrError
    */
   public static <T> ValueOrError<T> valid(@Nonnull final T value) {
-    Objects.nonNull(value);
+    Objects.requireNonNull(value);
     return new ValueOrError<>(value, null);
   }
 
@@ -27,7 +27,7 @@ public final class ValueOrError<VALUE> {
    * @return error bearing ValueOrError
    */
   public static <T> ValueOrError<T> invalid(@Nonnull final RuntimeException error) {
-    Objects.nonNull(error);
+    Objects.requireNonNull(error);
     return new ValueOrError<>(null, error);
   }
 

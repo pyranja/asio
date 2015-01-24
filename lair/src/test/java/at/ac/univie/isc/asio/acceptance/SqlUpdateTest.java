@@ -15,6 +15,7 @@ import org.junit.experimental.categories.Category;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXB;
 import java.io.InputStream;
 import java.net.URI;
@@ -22,6 +23,7 @@ import java.sql.SQLException;
 
 import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.compatibleTo;
 import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.hasFamily;
+import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.hasStatus;
 import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.hamcrest.core.Is.is;
@@ -79,8 +81,14 @@ public class SqlUpdateTest extends AcceptanceHarness {
   @Test
   public void unacceptable_media_type() throws Exception {
     response = client().request(MediaType.valueOf("test/not-existing"))
-        .post(Entity.entity("ignored", Mime.UPDATE_SQL.type()));
+        .post(Entity.entity(INSERT_SQL_COMMAND, Mime.UPDATE_SQL.type()));
     assertThat(response, hasFamily(CLIENT_ERROR));
+  }
+
+  @Test
+  public void cannot_insert_via_get_operation() throws Exception {
+    response = client().queryParam("update", INSERT_SQL_COMMAND).request().get();
+    assertThat(response, hasStatus(Response.Status.FORBIDDEN));
   }
 
   private void verifyResponse() {

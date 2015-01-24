@@ -2,7 +2,7 @@ package at.ac.univie.isc.asio.jaxrs;
 
 import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.DatasetUsageException;
-import at.ac.univie.isc.asio.engine.Command;
+import at.ac.univie.isc.asio.engine.Language;
 import at.ac.univie.isc.asio.engine.TypeMatchingResolver;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
@@ -55,7 +55,7 @@ public class DatasetExceptionMapper implements ExceptionMapper<DatasetException>
 
   private static final Map<Class<?>, Response.Status> ERROR_CODE_LOOKUP = ImmutableMap
       .<Class<?>, Response.Status>builder()
-      .put(Command.Factory.LanguageNotSupported.class, Response.Status.NOT_FOUND)
+      .put(Language.NotSupported.class, Response.Status.NOT_FOUND)
       .put(TypeMatchingResolver.NoMatchingFormat.class, Response.Status.NOT_ACCEPTABLE)
       .build();
 

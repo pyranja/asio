@@ -25,15 +25,29 @@ import static java.util.Objects.requireNonNull;
 public final class Reactive {
 
   /**
+   * Create an {@link rx.functions.Action0 action}, which does nothing.
+   * @return An empty {@code Action0}, that does nothing.
+   */
+  @Nonnull
+  public static Action0 noop() {
+    return EMPTY_ACTION_0;
+  }
+
+  private static final Action0 EMPTY_ACTION_0 = new Action0() {
+    @Override
+    public void call() { /* noop */ }
+  };
+
+  /**
    * Create an {@link rx.functions.Action1 error handler}, which ignores errors.
    * @return An empty {@code Action1<Throwable>}, that does nothing.
    */
   @Nonnull
   public static Action1<Throwable> ignoreErrors() {
-    return EMPTY_ACTION;
+    return EMPTY_ACTION_1;
   }
 
-  private static final Action1<Throwable> EMPTY_ACTION = new Action1<Throwable>() {
+  private static final Action1<Throwable> EMPTY_ACTION_1 = new Action1<Throwable>() {
     @Override
     public void call(final Throwable o) {}
   };

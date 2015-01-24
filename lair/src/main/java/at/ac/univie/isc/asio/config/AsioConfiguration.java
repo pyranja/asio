@@ -1,12 +1,15 @@
 package at.ac.univie.isc.asio.config;
 
+import at.ac.univie.isc.asio.SchemaResource;
 import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.database.Schema;
 import at.ac.univie.isc.asio.database.SchemaFactory;
-import at.ac.univie.isc.asio.engine.*;
+import at.ac.univie.isc.asio.engine.AllInOneConnectorFactory;
+import at.ac.univie.isc.asio.engine.Engine;
+import at.ac.univie.isc.asio.engine.EventReporter;
+import at.ac.univie.isc.asio.engine.ProtocolResourceFactory;
 import at.ac.univie.isc.asio.engine.d2rq.D2rqSpec;
 import at.ac.univie.isc.asio.engine.d2rq.LoadD2rqModel;
-import at.ac.univie.isc.asio.engine.sql.SqlSchemaBuilder;
 import at.ac.univie.isc.asio.insight.EventLoggerBridge;
 import at.ac.univie.isc.asio.insight.EventStream;
 import at.ac.univie.isc.asio.jaxrs.AppSpec;
@@ -31,8 +34,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
@@ -42,11 +43,9 @@ import rx.Observable;
 import rx.Scheduler;
 import rx.schedulers.Schedulers;
 
-import javax.servlet.ServletContext;
+import javax.inject.Provider;
 import javax.ws.rs.ext.RuntimeDelegate;
-import java.io.File;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.concurrent.*;
 
 @Configuration
@@ -71,20 +70,20 @@ public class AsioConfiguration {
   @DependsOn("cxf")
   public Server jaxrsServer() {
     final JAXRSServerFactoryBean factory = RuntimeDelegate.getInstance().createEndpoint(
-        AppSpec.create(ProtocolResource.class, MetadataResource.class),
+        AppSpec.create(SchemaResource.class, MetadataResource.class),
         JAXRSServerFactoryBean.class
     );
     log.info(SCOPE_SYSTEM, "publishing jaxrs endpoint at <{}>", factory.getAddress());
     // Use spring managed resource instances
-    factory.setResourceProvider(ProtocolResource.class, protocolResourceProvider());
+    factory.setResourceProvider(SchemaResource.class, schemaResourceProvider());
     factory.setResourceProvider(MetadataResource.class, metadataResourceProvider());
     factory.getFeatures().add(new LoggingFeature());  // TODO make configurable
     return factory.create();
   }
 
   @Bean
-  public SpringResourceFactory protocolResourceProvider() {
-    return new SpringResourceFactory("protocolResource");
+  public SpringResourceFactory schemaResourceProvider() {
+    return new SpringResourceFactory("schemaResource");
   }
 
   @Bean
@@ -93,9 +92,24 @@ public class AsioConfiguration {
   }
 
   @Bean
-  @Scope(BeanDefinition.SCOPE_PROTOTYPE)
-  public ProtocolResource protocolResource(final Command.Factory registry) {
-    return new ProtocolResource(registry, globalTimeout(), eventBuilder());
+  public SchemaResource schemaResource(final Schema schema, final Provider<TimeoutSpec> timeout) {
+    final ProtocolResourceFactory factory = new ProtocolResourceFactory(timeout);
+    final Scheduler scheduler = Schedulers.from(workerPool());
+    final Provider<Iterable<Engine>> engineProvider = new Provider<Iterable<Engine>>() {
+      @Override
+      public Iterable<Engine> get() {
+        return schema.engines();
+      }
+    };
+    final Provider<Scheduler> schedulerProvider = new Provider<Scheduler>() {
+      @Override
+      public Scheduler get() {
+        return scheduler;
+      }
+    };
+    final AllInOneConnectorFactory connectorFactory =
+        new AllInOneConnectorFactory(engineProvider, schedulerProvider);
+    return new SchemaResource(factory, connectorFactory, eventBuilder());
   }
 
   @Bean
@@ -114,13 +128,6 @@ public class AsioConfiguration {
   }
 
   // asio jaxrs components
-  @Bean
-  public Command.Factory registry(final Schema schema) {
-    log.info(SCOPE_SYSTEM, "using engines {}", schema.engines());
-    final Scheduler scheduler = Schedulers.from(workerPool());
-    final EngineRegistry engineRegistry = new EngineRegistry(scheduler, schema.engines());
-    return new EventfulCommandDecorator(engineRegistry, eventBuilder());
-  }
 
   @Bean
   public Schema defaultSchema(final SchemaFactory create, final ResourceLoader loader) {

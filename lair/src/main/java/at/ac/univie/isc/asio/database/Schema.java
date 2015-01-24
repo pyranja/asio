@@ -1,6 +1,5 @@
 package at.ac.univie.isc.asio.database;
 
-import at.ac.univie.isc.asio.engine.Command;
 import at.ac.univie.isc.asio.engine.Engine;
 import at.ac.univie.isc.asio.engine.Language;
 import at.ac.univie.isc.asio.engine.d2rq.D2rqSpec;
@@ -34,7 +33,7 @@ public final class Schema implements AutoCloseable {
     } else if (Language.SPARQL == language) {
       return sparqlEngine;
     } else {
-      throw new Command.Factory.LanguageNotSupported(language);
+      throw new Language.NotSupported(language);
     }
   }
 

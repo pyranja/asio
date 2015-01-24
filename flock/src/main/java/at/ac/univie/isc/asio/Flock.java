@@ -1,12 +1,12 @@
 package at.ac.univie.isc.asio;
 
-import at.ac.univie.isc.asio.engine.ProtocolResource;
 import at.ac.univie.isc.asio.insight.EventStreamServlet;
 import at.ac.univie.isc.asio.jaxrs.AppSpec;
 import at.ac.univie.isc.asio.security.FixedPermissionAuthFilter;
 import at.ac.univie.isc.asio.security.Permission;
 import at.ac.univie.isc.asio.security.VphTokenExtractor;
 import at.ac.univie.isc.asio.web.SslFixListener;
+import com.sun.jndi.toolkit.url.Uri;
 import org.apache.cxf.Bus;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.endpoint.Server;
@@ -28,6 +28,7 @@ import org.springframework.context.annotation.Import;
 import javax.servlet.DispatcherType;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.ext.RuntimeDelegate;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -59,18 +60,16 @@ public class Flock {
   @Bean(destroyMethod = "stop")
   @DependsOn("cxf")
   public Server jaxrsServer() {
-    final JAXRSServerFactoryBean factory = RuntimeDelegate.getInstance().createEndpoint(
-        AppSpec.create(ProtocolResource.class),
-        JAXRSServerFactoryBean.class
-    );
-    factory.setResourceProvider(ProtocolResource.class, protocolResourceProvider());
+    final JAXRSServerFactoryBean factory = RuntimeDelegate.getInstance()
+        .createEndpoint(AppSpec.create(FlockResource.class), JAXRSServerFactoryBean.class);
+    factory.setResourceProvider(FlockResource.class, flockResourceProvider());
     factory.getFeatures().add(new LoggingFeature());  // TODO make configurable
     return factory.create();
   }
 
   @Bean
-  public ResourceProvider protocolResourceProvider() {
-    return new SpringResourceFactory("protocolResource");
+  public ResourceProvider flockResourceProvider() {
+    return new SpringResourceFactory("flockResource");
   }
 
   @Bean

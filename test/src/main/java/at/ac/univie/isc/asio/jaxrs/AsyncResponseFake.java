@@ -1,7 +1,5 @@
 package at.ac.univie.isc.asio.jaxrs;
 
-import com.google.common.base.Objects;
-
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.TimeoutHandler;
@@ -9,15 +7,13 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Date;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Simulate JAX-RS async response handling, cache response object or collect streamed response.
- *
- * @author pyranja
  */
-public class AsyncResponseFake implements AsyncResponse {
+public final class AsyncResponseFake implements AsyncResponse {
   // caches
   private Response response = null;
   private Object entity = null;
@@ -27,32 +23,74 @@ public class AsyncResponseFake implements AsyncResponse {
   private boolean cancelled = false;
   private boolean suspended = true;
 
-  private TimeoutHandler onTimeout = null;
+  // verification
+  private final List<Object> callbacks = new ArrayList<>();
+  private TimeoutHandler timeoutHandler;
+  private int resumeCount = 0;
 
-  @Override
-  public String toString() {
-    return Objects.toStringHelper(this)
-        .add("cancelled", cancelled)
-        .add("suspended", suspended)
-        .toString();
+  private AsyncResponseFake(final boolean startSuspended) {
+    this.suspended = startSuspended;
   }
 
+  /** Create fake in initial state */
+  public static AsyncResponseFake create() {
+    return new AsyncResponseFake(true);
+  }
+
+  /** Create fake that has been already resumed */
+  public static AsyncResponseFake completed() {
+    return new AsyncResponseFake(false);
+  }
+
+  /**
+   * @return captured response if available
+   */
   public Response response() {
     failIfNotCompleted();
     checkCachedAvailable(this.response);
     return response;
   }
 
+  /**
+   * @param clazz expected class of entity
+   * @param <T> expected type of entity
+   * @return captured response entity if available
+   */
   public <T> T entity(final Class<T> clazz) {
     failIfNotCompleted();
     checkCachedAvailable(this.entity);
     return clazz.cast(entity);
   }
 
+  /**
+   * @return captured error if available
+   */
   public Throwable error() {
     failIfNotCompleted();
     checkCachedAvailable(this.error);
     return error;
+  }
+
+  /**
+   * All callbacks registered on this.
+   * @return list of callbacks in registration order
+   */
+  public List<Object> callbacks() {
+    return callbacks;
+  }
+
+  /**
+   * @return the set timeout handler or null
+   */
+  public TimeoutHandler timeoutHandler() {
+    return timeoutHandler;
+  }
+
+  /**
+   * @return number of invocations of {@link at.ac.univie.isc.asio.jaxrs.AsyncResponseFake#resume}
+   */
+  public int timesResumed() {
+    return resumeCount;
   }
 
   private void failIfNotCompleted() {
@@ -62,9 +100,12 @@ public class AsyncResponseFake implements AsyncResponse {
   private void checkCachedAvailable(final Object cached) {
     if (cached == null) { throw new AssertionError("not available"); }
   }
+  
+  // faked implementation
 
   @Override
   public boolean resume(final Object given) throws IllegalStateException {
+    resumeCount++;
     if (notSuspended()) { return false; }
     Object entity = given;
     if (given instanceof Response) {
@@ -94,6 +135,7 @@ public class AsyncResponseFake implements AsyncResponse {
 
   @Override
   public boolean resume(final Throwable response) throws IllegalStateException {
+    resumeCount++;
     if (notSuspended()) { return false; }
     error = response;
     suspended = false;
@@ -137,39 +179,38 @@ public class AsyncResponseFake implements AsyncResponse {
     return !suspended;
   }
 
-  public void timeout() {
-    if (onTimeout == null) { throw new AssertionError("no handler"); }
-
-  }
-
   @Override
   public void setTimeoutHandler(final TimeoutHandler handler) {
-    onTimeout = handler;
+    assert handler != null : "null as TimeoutHandler registered";
+    this.timeoutHandler = handler;
   }
 
-  // ignored
   @Override
   public boolean setTimeout(final long time, final TimeUnit unit) throws IllegalStateException {
-    throw new UnsupportedOperationException("fake");
+    return notSuspended();
   }
 
   @Override
   public java.util.Collection<Class<?>> register(final Class<?> callback) throws NullPointerException {
-    throw new UnsupportedOperationException("fake");
+    Objects.requireNonNull(callback);
+    return Collections.emptyList();
   }
 
   @Override
   public java.util.Map<Class<?>, java.util.Collection<Class<?>>> register(final Class<?> callback, final Class<?>... callbacks) throws NullPointerException {
-    throw new UnsupportedOperationException("fake");
+    return Collections.emptyMap();
   }
 
   @Override
   public java.util.Collection<Class<?>> register(final Object callback) throws NullPointerException {
-    throw new UnsupportedOperationException("fake");
+    this.callbacks.add(callback);
+    return Collections.emptyList();
   }
 
   @Override
   public java.util.Map<Class<?>, java.util.Collection<Class<?>>> register(final Object callback, final Object... callbacks) throws NullPointerException {
-    throw new UnsupportedOperationException("fake");
+    this.callbacks.add(callback);
+    this.callbacks.addAll(Arrays.asList(callbacks));
+    return Collections.emptyMap();
   }
 }

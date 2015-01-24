@@ -2,13 +2,15 @@ package at.ac.univie.isc.asio.engine;
 
 import at.ac.univie.isc.asio.DatasetUsageException;
 import com.google.common.base.Objects;
-import com.google.common.collect.*;
+import com.google.common.base.Optional;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimap;
 
 import javax.annotation.concurrent.Immutable;
 import javax.ws.rs.core.MediaType;
 import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Hold properties extracted from a protocol request.
@@ -47,7 +49,7 @@ public final class Parameters {
         : "invalid params but no cause given";
     this.parameters = parameters;
     this.acceptableTypes = acceptableTypes;
-    this.owner = Optional.ofNullable(owner);
+    this.owner = Optional.fromNullable(owner);
     this.cause = cause;
   }
 
@@ -118,7 +120,7 @@ public final class Parameters {
         .omitNullValues()
         .add("error", cause)
         .add("properties", parameters)
-        .add("owner", owner.orElse(null))
+        .add("owner", owner.orNull())
         .toString();
   }
 

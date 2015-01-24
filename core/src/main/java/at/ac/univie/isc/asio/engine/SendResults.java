@@ -10,19 +10,23 @@ import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.core.Response;
 
 /**
- * Bridge an observable stream to an {@link javax.ws.rs.container.AsyncResponse}
+ * Send observed {@link at.ac.univie.isc.asio.engine.StreamedResults} as asynchronous response.
  */
-class CommandObserver extends Subscriber<Command.Results> {
-  private static final Logger log = LoggerFactory.getLogger(CommandObserver.class);
+final class SendResults extends Subscriber<StreamedResults> {
+  private static final Logger log = LoggerFactory.getLogger(SendResults.class);
 
-  public static CommandObserver bridgeTo(final AsyncResponse async) {
-    return new CommandObserver(async);
+  /**
+   * Create an instance sending result to the given {@code AsyncResponse}.
+   * @param async response continuation
+   * @return created subscriber
+   */
+  public static SendResults to(final AsyncResponse async) {
+    return new SendResults(async);
   }
 
   private final AsyncResponse async;
 
-  @VisibleForTesting
-  CommandObserver(final AsyncResponse async) {
+  private SendResults(final AsyncResponse async) {
     this.async = async;
   }
 
@@ -45,7 +49,7 @@ class CommandObserver extends Subscriber<Command.Results> {
   }
 
   @Override
-  public void onNext(final Command.Results results) {
+  public void onNext(final StreamedResults results) {
     if (async.isSuspended()) {
       log.debug("resuming response on thread {}", Thread.currentThread());
       final Response response = Response
