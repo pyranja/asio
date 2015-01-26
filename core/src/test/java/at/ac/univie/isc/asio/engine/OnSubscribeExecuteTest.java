@@ -4,6 +4,7 @@ import at.ac.univie.isc.asio.Payload;
 import at.ac.univie.isc.asio.tool.Resources;
 import at.ac.univie.isc.asio.junit.Rules;
 import at.ac.univie.isc.asio.Unchecked;
+import com.google.common.io.ByteStreams;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.junit.Before;
 import org.junit.Rule;
@@ -22,6 +23,7 @@ import rx.schedulers.Schedulers;
 
 import javax.ws.rs.core.StreamingOutput;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -150,6 +152,7 @@ public class OnSubscribeExecuteTest {
         .subscribe(new Action1<StreamingOutput>() {
           @Override
           public void call(final StreamingOutput streamingOutput) {
+            Unchecked.write(streamingOutput, sink);
             streamReceived.countDown();
           }
         });

@@ -49,6 +49,7 @@ public class OnSubscribeExecute implements Observable.OnSubscribe<Command.Result
       prepare(subscriber);
       execute();
       stream(subscriber);
+      subscriber.onCompleted();
     } catch (final Exception e) {
       subscriber.onError(e);
     } finally {
@@ -56,7 +57,6 @@ public class OnSubscribeExecute implements Observable.OnSubscribe<Command.Result
         cleanUp();  // if aborted/failed before subscriber consumed results
       }
     }
-    subscriber.onCompleted();
   }
 
   private void prepare(final Subscriber<?> subscriber) {
