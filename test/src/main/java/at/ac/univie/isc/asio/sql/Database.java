@@ -37,6 +37,19 @@ public final class Database {
   }
 
   /**
+   * Tests whether a valid connection can be obtained from the backing datasource.
+   *
+   * @return true if database seems to be reachable
+   */
+  public boolean isAvailable() {
+    try (final Connection connection = datasource.getConnection()) {
+      return connection.isValid(5);
+    } catch (SQLException ignored) {
+      return false;
+    }
+  }
+
+  /**
    * Execute the given {@code SELECT} statement and convert the results to an in-memory representation.
    * The returned {@link com.google.common.collect.Table table's} row keys are the row number of the
    * result set, the column keys are the column names of the result set and the cell values are the
@@ -50,7 +63,7 @@ public final class Database {
   public Table<Integer, String, String> reference(@Nonnull final String query) {
     requireNonNull(query);
     try (
-        final Connection connection = connection();
+        final Connection connection = datasource.getConnection();
         final Statement statement = connection.createStatement();
         final ResultSet resultSet = statement.executeQuery(query)
     ) {
@@ -69,19 +82,11 @@ public final class Database {
   public Database execute(@Nonnull final String query) {
     requireNonNull(query);
     try (
-        final Connection connection = connection();
+        final Connection connection = datasource.getConnection();
         final Statement statement = connection.createStatement();
     ) {
       statement.execute(query);
       return this;
-    } catch (SQLException e) {
-      throw Throwables.propagate(e);
-    }
-  }
-
-  private Connection connection() {
-    try {
-      return datasource.getConnection();
     } catch (SQLException e) {
       throw Throwables.propagate(e);
     }
