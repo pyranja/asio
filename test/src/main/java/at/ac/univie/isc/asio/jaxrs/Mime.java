@@ -26,4 +26,9 @@ public enum Mime {
   public MediaType type() {
     return type;
   }
+
+  @Override
+  public String toString() {
+    return type.toString();
+  }
 }
