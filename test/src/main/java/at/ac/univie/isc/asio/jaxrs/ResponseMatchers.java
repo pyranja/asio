@@ -66,6 +66,11 @@ public final class ResponseMatchers {
     return new ResponseHeaderMatcher(equalToIgnoringCase(key), containsInAnyOrder(values));
   }
 
+  @Factory
+  public static ResponseHeaderMatcher hasHeader(final String key, final Matcher<String> valueMatcher) {
+    return new ResponseHeaderMatcher(equalToIgnoringCase(key), hasItem(valueMatcher));
+  }
+
   // ********************************** response status
 
   static class ResponseStatusMatcher extends TypeSafeMatcher<Response> {
