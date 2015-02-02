@@ -9,7 +9,6 @@ import at.ac.univie.isc.asio.engine.Language;
 import at.ac.univie.isc.asio.engine.Parameters;
 import at.ac.univie.isc.asio.engine.ParametersBuilder;
 import at.ac.univie.isc.asio.security.Role;
-import at.ac.univie.isc.asio.security.Token;
 import at.ac.univie.isc.asio.sql.ConvertToTable;
 import at.ac.univie.isc.asio.sql.Database;
 import com.google.common.collect.Table;
@@ -182,7 +181,7 @@ public class JooqEngineTest {
   }
 
   private byte[] performInvocationWith(final Parameters params) throws IOException {
-    try (final Invocation invocation = subject.prepare(params, Token.undefined())) {
+    try (final Invocation invocation = subject.prepare(params)) {
       invocation.execute();
       final ByteArrayOutputStream sink = new ByteArrayOutputStream();
       invocation.write(sink);
@@ -230,7 +229,7 @@ public class JooqEngineTest {
         .single(JooqEngine.PARAM_QUERY, REFERENCE_SELECT)
         .accept(CSV_TYPE)
         .build();
-    final Invocation invocation = subject.prepare(params, Token.undefined());
+    final Invocation invocation = subject.prepare(params);
     error.expect(JooqEngine.Cancelled.class);
     invocation.execute();
     invocation.cancel();
@@ -243,7 +242,7 @@ public class JooqEngineTest {
         .single(JooqEngine.PARAM_QUERY, REFERENCE_SELECT)
         .accept(CSV_TYPE)
         .build();
-    final Invocation invocation = subject.prepare(params, Token.undefined());
+    final Invocation invocation = subject.prepare(params);
     assertThat(invocation.requires(), is(Role.READ));
   }
 
@@ -253,7 +252,7 @@ public class JooqEngineTest {
         .single(JooqEngine.PARAM_UPDATE, REFERENCE_UPDATE)
         .accept(CSV_TYPE)
         .build();
-    final Invocation invocation = subject.prepare(params, Token.undefined());
+    final Invocation invocation = subject.prepare(params);
     assertThat(invocation.requires(), is(Role.WRITE));
   }
 
@@ -264,7 +263,7 @@ public class JooqEngineTest {
     final Parameters params = ParametersBuilder.with(Language.SQL)
         .accept(MediaType.WILDCARD_TYPE).build();
     error.expect(DatasetUsageException.class);
-    subject.prepare(params, Token.undefined());
+    subject.prepare(params);
   }
 
   @Test
@@ -272,7 +271,7 @@ public class JooqEngineTest {
     final Parameters params = ParametersBuilder.with(Language.SPARQL)
         .single(JooqEngine.PARAM_QUERY, REFERENCE_SELECT).build();
     error.expect(DatasetUsageException.class);
-    subject.prepare(params, Token.undefined());
+    subject.prepare(params);
   }
 
   @Test
@@ -281,6 +280,6 @@ public class JooqEngineTest {
         .single(JooqEngine.PARAM_QUERY, REFERENCE_SELECT)
         .accept(MediaType.valueOf("image/jpeg")).build();
     error.expect(DatasetUsageException.class);
-    subject.prepare(params, Token.undefined());
+    subject.prepare(params);
   }
 }

@@ -16,8 +16,7 @@ public interface Engine extends AutoCloseable {
   /**
    * Create a new, single-use invocation.
    * @param parameters description of operation to perform
-   * @param owner initiating user
    * @return ready to be executed Invocation.
    */
-  Invocation prepare(Parameters parameters, Principal owner);
+  Invocation prepare(Parameters parameters);
 }

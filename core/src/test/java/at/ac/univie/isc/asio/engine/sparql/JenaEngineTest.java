@@ -2,9 +2,9 @@ package at.ac.univie.isc.asio.engine.sparql;
 
 import at.ac.univie.isc.asio.DatasetUsageException;
 import at.ac.univie.isc.asio.engine.*;
+import at.ac.univie.isc.asio.security.Token;
 import at.ac.univie.isc.asio.tool.TimeoutSpec;
 import at.ac.univie.isc.asio.security.Role;
-import at.ac.univie.isc.asio.security.Token;
 import at.ac.univie.isc.asio.sql.ConvertToTable;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Table;
@@ -104,7 +104,7 @@ public class JenaEngineTest {
   }
 
   private byte[] executeCommandWith(final Parameters params) throws IOException {
-    final SparqlInvocation invocation = subject.prepare(params, Token.ANONYMOUS);
+    final SparqlInvocation invocation = subject.prepare(params);
     invocation.execute();
     final ByteArrayOutputStream sink = new ByteArrayOutputStream();
     invocation.write(sink);
@@ -118,7 +118,7 @@ public class JenaEngineTest {
     final Parameters params = ParametersBuilder.with(Language.SPARQL)
         .single(JenaEngine.KEY_QUERY, WILDCARD_QUERY)
         .accept(MediaType.WILDCARD_TYPE).build();
-    final SparqlInvocation invocation = subject.prepare(params, Token.ANONYMOUS);
+    final SparqlInvocation invocation = subject.prepare(params);
     assertThat(invocation.requires(), is(Role.READ));
   }
 
@@ -127,7 +127,7 @@ public class JenaEngineTest {
     final Parameters params = ParametersBuilder.with(Language.SPARQL)
         .single(JenaEngine.KEY_QUERY, WILDCARD_QUERY)
         .accept(MediaType.APPLICATION_XML_TYPE).build();
-    final SparqlInvocation invocation = subject.prepare(params, Token.ANONYMOUS);
+    final SparqlInvocation invocation = subject.prepare(params);
     assertThat(invocation.produces(), is(MediaType.valueOf("application/sparql-results+xml")));
   }
 
@@ -136,7 +136,7 @@ public class JenaEngineTest {
     final Parameters params = ParametersBuilder.with(Language.SPARQL)
         .single(JenaEngine.KEY_QUERY, WILDCARD_QUERY)
         .accept(MediaType.WILDCARD_TYPE).build();
-    final SparqlInvocation invocation = subject.prepare(params, Token.ANONYMOUS);
+    final SparqlInvocation invocation = subject.prepare(params);
     assertThat(invocation.produces(), is(MediaType.valueOf("application/sparql-results+xml")));
   }
 
@@ -145,8 +145,8 @@ public class JenaEngineTest {
     subject = JenaEngine.create(model, TimeoutSpec.from(1, TimeUnit.MILLISECONDS), false);
     final SparqlInvocation invocation = subject.prepare(ParametersBuilder.with(Language.SPARQL)
             .single(JenaEngine.KEY_QUERY, WILDCARD_QUERY)
-            .accept(MediaType.WILDCARD_TYPE).build(),
-        Token.ANONYMOUS);
+            .accept(MediaType.WILDCARD_TYPE).build()
+    );
     error.expect(QueryCancelledException.class);
     invocation.execute();
   }
@@ -155,8 +155,9 @@ public class JenaEngineTest {
   public void should_add_owner_credentials_to_query() throws Exception {
     final Parameters params = ParametersBuilder.with(Language.SPARQL)
         .single(JenaEngine.KEY_QUERY, WILDCARD_QUERY)
-        .accept(MediaType.WILDCARD_TYPE).build();
-    final SparqlInvocation invocation = subject.prepare(params, Token.from("test-user", "test-token"));
+        .accept(MediaType.WILDCARD_TYPE)
+        .owner(Token.from("test-user", "test-token")).build();
+    final SparqlInvocation invocation = subject.prepare(params);
     final Context context = invocation.query().getContext();
     // no username in VPH auth
     assertThat(context.getAsString(DefaultJenaFactory.CONTEXT_AUTH_USERNAME), is(""));
@@ -167,8 +168,9 @@ public class JenaEngineTest {
   public void should_skip_credentials_delegation_if_anonymous() throws Exception {
     final Parameters params = ParametersBuilder.with(Language.SPARQL)
         .single(JenaEngine.KEY_QUERY, WILDCARD_QUERY)
-        .accept(MediaType.WILDCARD_TYPE).build();
-    final SparqlInvocation invocation = subject.prepare(params, Token.ANONYMOUS);
+        .accept(MediaType.WILDCARD_TYPE)
+        .owner(Token.undefined()).build();
+    final SparqlInvocation invocation = subject.prepare(params);
     final Context context = invocation.query().getContext();
     assertThat(context.getAsString(DefaultJenaFactory.CONTEXT_AUTH_USERNAME), is(nullValue()));
     assertThat(context.getAsString(DefaultJenaFactory.CONTEXT_AUTH_PASSWORD), is(nullValue()));
@@ -181,7 +183,7 @@ public class JenaEngineTest {
     final Parameters params =
         ParametersBuilder.with(Language.SPARQL).accept(MediaType.APPLICATION_XML_TYPE).build();
     error.expect(DatasetUsageException.class);
-    subject.prepare(params, Token.ANONYMOUS);
+    subject.prepare(params);
   }
 
   @Test
@@ -190,7 +192,7 @@ public class JenaEngineTest {
         ParametersBuilder.with(Language.SPARQL).accept(MediaType.APPLICATION_XML_TYPE)
             .single(JenaEngine.KEY_QUERY, "one").single(JenaEngine.KEY_QUERY, "two").build();
     error.expect(DatasetUsageException.class);
-    subject.prepare(params, Token.ANONYMOUS);
+    subject.prepare(params);
   }
 
   @Test
@@ -198,7 +200,7 @@ public class JenaEngineTest {
     final Parameters params = ParametersBuilder.with(Language.SPARQL)
         .single(JenaEngine.KEY_QUERY, WILDCARD_QUERY).build();
     error.expect(TypeMatchingResolver.NoMatchingFormat.class);
-    subject.prepare(params, Token.ANONYMOUS);
+    subject.prepare(params);
   }
 
   @Test
@@ -207,7 +209,7 @@ public class JenaEngineTest {
         .single(JenaEngine.KEY_QUERY, WILDCARD_QUERY)
         .accept(MediaType.valueOf("image/jpg")).build();
     error.expect(TypeMatchingResolver.NoMatchingFormat.class);
-    subject.prepare(params, Token.ANONYMOUS);
+    subject.prepare(params);
   }
 
   @Test
@@ -218,6 +220,6 @@ public class JenaEngineTest {
         .single(JenaEngine.KEY_QUERY, fedQuery)
         .accept(MediaType.WILDCARD_TYPE).build();
     error.expect(DatasetUsageException.class);
-    subject.prepare(params, Token.ANONYMOUS);
+    subject.prepare(params);
   }
 }

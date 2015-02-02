@@ -11,7 +11,6 @@ import com.google.common.base.Supplier;
 
 import javax.sql.DataSource;
 import javax.ws.rs.core.MediaType;
-import java.security.Principal;
 
 /**
  * SQL query engine using JOOQ.
@@ -111,7 +110,7 @@ public final class JooqEngine implements Engine {
   }
 
   @Override
-  public Invocation prepare(final Parameters parameters, final Principal ignored) {
+  public Invocation prepare(final Parameters parameters) {
     final JdbcExecution execution = new JdbcExecution(state);
     final Invocation invocation;
     if (parameters.properties().containsKey(PARAM_QUERY)) {

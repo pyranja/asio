@@ -4,14 +4,13 @@ import at.ac.univie.isc.asio.DatasetUsageException;
 import at.ac.univie.isc.asio.engine.Engine;
 import at.ac.univie.isc.asio.engine.Language;
 import at.ac.univie.isc.asio.engine.Parameters;
+import at.ac.univie.isc.asio.security.Token;
 import at.ac.univie.isc.asio.tool.TimeoutSpec;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.rdf.model.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.security.Principal;
 
 public final class JenaEngine implements Engine {
   private static final Logger log = LoggerFactory.getLogger(JenaEngine.class);
@@ -36,11 +35,11 @@ public final class JenaEngine implements Engine {
   }
 
   @Override
-  public SparqlInvocation<?> prepare(final Parameters params, final Principal owner) {
+  public SparqlInvocation<?> prepare(final Parameters params) {
     final Query query = state.parse(params.require(KEY_QUERY));
     log.debug("parsed ARQ query\n{}", query);
     final SparqlInvocation<?> handler = handlers.select(query.getQueryType(), params.acceptable());
-    final QueryExecution execution = state.execution(query, owner);
+    final QueryExecution execution = state.execution(query, params.owner().or(Token.undefined()));
     handler.init(execution);
     log.debug("using handler {}", handler);
     return handler;

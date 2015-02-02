@@ -1,6 +1,5 @@
 package at.ac.univie.isc.asio.engine;
 
-import at.ac.univie.isc.asio.security.Token;
 import com.google.auto.factory.AutoFactory;
 import com.google.auto.factory.Provided;
 import com.google.common.base.Function;
@@ -62,7 +61,7 @@ public class AllInOneConnector implements Connector {
       throw new Language.NotSupported(parameters.language());
     }
     final Invocation invocation =
-        delegate.prepare(parameters, parameters.owner().or(Token.undefined()));
+        delegate.prepare(parameters);
     authorizer.check(invocation.requires());
     return invocation;
   }
