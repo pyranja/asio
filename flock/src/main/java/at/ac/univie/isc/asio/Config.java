@@ -54,9 +54,8 @@ public class Config {
         return scheduler;
       }
     };
-    final AllInOneConnectorFactory connectorFactory =
-        new AllInOneConnectorFactory(engineProvider, schedulerProvider);
-    return new FlockResource(factory, connectorFactory, scopedEventReporter);
+    final ConnectorChain chain = new ConnectorChain(engineProvider, schedulerProvider);
+    return new FlockResource(factory, chain, scopedEventReporter);
   }
 
   @Bean(destroyMethod = "close")

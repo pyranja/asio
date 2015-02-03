@@ -67,8 +67,8 @@ public class EventStreamTest extends AcceptanceHarness {
       }
     });
     final List<String> received =
-        monitor.events().skip(1).take(4).map(EXTRACT_DATA).toList().toBlocking().single();
-    assertThat(received, both(contains(message("received"), message("accepted"), message("executed"), message("completed"))).and(is(correlated()))
+        monitor.events().skip(1).take(3).map(EXTRACT_DATA).toList().toBlocking().single();
+    assertThat(received, both(contains(message("received"), message("executed"), message("completed"))).and(is(correlated()))
     );
   }
 
@@ -81,8 +81,8 @@ public class EventStreamTest extends AcceptanceHarness {
       }
     });
     final List<String> received =
-        monitor.events().skip(1).take(3).map(EXTRACT_DATA).toList().toBlocking().single();
-    assertThat(received, both(contains(message("received"), message("accepted"), message("failed"))).and(is(correlated())));
+        monitor.events().skip(1).take(2).map(EXTRACT_DATA).toList().toBlocking().single();
+    assertThat(received, both(contains(message("received"), message("failed"))).and(is(correlated())));
   }
 
   @Test
@@ -95,7 +95,7 @@ public class EventStreamTest extends AcceptanceHarness {
     });
     final List<String> received =
         monitor.events().skip(1).take(2).map(EXTRACT_DATA).toList().toBlocking().single();
-    assertThat(received, both(contains(message("received"), message("rejected"))).and(is(correlated())));
+    assertThat(received, both(contains(message("received"), message("failed"))).and(is(correlated())));
   }
 
   private Matcher<String> message(final String message) {

@@ -3,22 +3,28 @@ package at.ac.univie.isc.asio.tool;
 import at.ac.univie.isc.asio.insight.Event;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Queues;
-import org.hamcrest.Description;
-import org.hamcrest.Factory;
-import org.hamcrest.Matcher;
-import org.hamcrest.TypeSafeMatcher;
+import org.hamcrest.*;
 
 import java.util.Arrays;
 import java.util.Queue;
 
 import static java.util.Objects.requireNonNull;
+import static org.hamcrest.CoreMatchers.both;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.any;
 
 public final class EventMatchers {
   private EventMatchers() { /* no instances  */ }
 
+  @Deprecated
   @Factory
-  public static EventTypeMatcher event(final String type) {
-    return new EventTypeMatcher(type);
+  public static EventContentMatcher event(final String type) {
+    return new EventContentMatcher(any(String.class), equalTo(type));
+  }
+
+  @Factory
+  public static EventContentMatcher event(final String scope, final String type) {
+    return new EventContentMatcher(equalTo(scope), equalTo(type));
   }
 
   @Factory
@@ -31,24 +37,35 @@ public final class EventMatchers {
     return new SingleCorrelationMatcher();
   }
 
-  static class EventTypeMatcher extends TypeSafeMatcher<Event> {
-    private final String expected;
+  /**
+   * match event type and message
+   */
+  static class EventContentMatcher extends TypeSafeMatcher<Event> {
+    private final Matcher<String> expectedScope;
+    private final Matcher<String> expectedType;
 
-    EventTypeMatcher(final String expected) {
-      this.expected = requireNonNull(expected);
+    EventContentMatcher(final Matcher<String> expectedScope, final Matcher<String> expectedType) {
+      this.expectedScope = expectedScope;
+      this.expectedType = expectedType;
     }
 
     @Override
     protected boolean matchesSafely(final Event item) {
-      return item.message().equals(expected);
+      return expectedScope.matches(item.type()) && expectedType.matches(item.message());
     }
 
     @Override
     public void describeTo(final Description description) {
-      description.appendText("event of type [").appendValue(expected).appendText("]");
+      description
+          .appendText("event of scope [").appendDescriptionOf(expectedScope).appendText("]")
+          .appendText(" and of type [").appendDescriptionOf(expectedType).appendText("]");
     }
   }
 
+
+  /**
+   * match on all events sharing a correlation id
+   */
   static class SingleCorrelationMatcher extends TypeSafeMatcher<Iterable<Event>> {
     @Override
     protected boolean matchesSafely(final Iterable<Event> item) {
@@ -74,6 +91,10 @@ public final class EventMatchers {
     }
   }
 
+
+  /**
+   * match against a sequence of expected events
+   */
   static class OrderedEventStreamMatcher extends TypeSafeMatcher<Iterable<Event>> {
     private final Iterable<Matcher<Event>> expected;
 

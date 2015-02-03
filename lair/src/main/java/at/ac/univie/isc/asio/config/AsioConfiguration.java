@@ -4,10 +4,7 @@ import at.ac.univie.isc.asio.SchemaResource;
 import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.database.Schema;
 import at.ac.univie.isc.asio.database.SchemaFactory;
-import at.ac.univie.isc.asio.engine.AllInOneConnectorFactory;
-import at.ac.univie.isc.asio.engine.Engine;
-import at.ac.univie.isc.asio.engine.EventReporter;
-import at.ac.univie.isc.asio.engine.ProtocolResourceFactory;
+import at.ac.univie.isc.asio.engine.*;
 import at.ac.univie.isc.asio.engine.d2rq.D2rqSpec;
 import at.ac.univie.isc.asio.engine.d2rq.LoadD2rqModel;
 import at.ac.univie.isc.asio.insight.EventLoggerBridge;
@@ -107,9 +104,8 @@ public class AsioConfiguration {
         return scheduler;
       }
     };
-    final AllInOneConnectorFactory connectorFactory =
-        new AllInOneConnectorFactory(engineProvider, schedulerProvider);
-    return new SchemaResource(factory, connectorFactory, eventBuilder());
+    final ConnectorChain chain = new ConnectorChain(engineProvider, schedulerProvider);
+    return new SchemaResource(factory, chain, eventBuilder());
   }
 
   @Bean

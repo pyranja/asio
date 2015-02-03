@@ -15,7 +15,7 @@ import java.net.URI;
  */
 public class SchemaResource {
   private final ProtocolResourceFactory protocolBuilder;
-  private final AllInOneConnectorFactory connectorBuilder;
+  private final ConnectorChain chain;
   private final Supplier<EventReporter> scopedEvents;
 
   @Deprecated
@@ -23,9 +23,9 @@ public class SchemaResource {
     throw new AssertionError("attempt to use non-managed resource");
   }
 
-  public SchemaResource(final ProtocolResourceFactory protocolBuilder, final AllInOneConnectorFactory connectorBuilder, final Supplier<EventReporter> scopedEvents) {
+  public SchemaResource(final ProtocolResourceFactory protocolBuilder, final ConnectorChain chain, final Supplier<EventReporter> scopedEvents) {
     this.protocolBuilder = protocolBuilder;
-    this.connectorBuilder = connectorBuilder;
+    this.chain = chain;
     this.scopedEvents = scopedEvents;
   }
 
@@ -44,7 +44,7 @@ public class SchemaResource {
                                    @Context HttpHeaders headers,
                                    @Context SecurityContext security) {
     final IsAuthorized authorizer = IsAuthorized.given(security, request);
-    final AllInOneConnector connector = this.connectorBuilder.create(authorizer, scopedEvents.get());
+    final Connector connector = this.chain.create(authorizer, scopedEvents.get());
     return protocolBuilder.create(ParseJaxrsParameters.with(language).including(headers).initiatedBy(security.getUserPrincipal()), connector);
   }
 }
