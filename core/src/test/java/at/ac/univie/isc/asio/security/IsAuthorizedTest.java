@@ -1,5 +1,6 @@
-package at.ac.univie.isc.asio.engine;
+package at.ac.univie.isc.asio.security;
 
+import at.ac.univie.isc.asio.security.IsAuthorized;
 import at.ac.univie.isc.asio.security.Role;
 import org.junit.Before;
 import org.junit.Rule;

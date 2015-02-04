@@ -1,7 +1,5 @@
-package at.ac.univie.isc.asio.engine;
+package at.ac.univie.isc.asio.security;
 
-import at.ac.univie.isc.asio.security.Permission;
-import at.ac.univie.isc.asio.security.Role;
 import at.ac.univie.isc.asio.tool.Pretty;
 import com.google.common.base.Predicate;
 

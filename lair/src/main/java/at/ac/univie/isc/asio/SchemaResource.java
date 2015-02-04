@@ -1,6 +1,7 @@
 package at.ac.univie.isc.asio;
 
 import at.ac.univie.isc.asio.engine.*;
+import at.ac.univie.isc.asio.security.IsAuthorized;
 import at.ac.univie.isc.asio.security.Permission;
 import com.google.common.base.Supplier;
 

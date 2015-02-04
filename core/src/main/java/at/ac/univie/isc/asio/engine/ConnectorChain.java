@@ -1,5 +1,7 @@
 package at.ac.univie.isc.asio.engine;
 
+import at.ac.univie.isc.asio.security.IsAuthorized;
+
 import javax.inject.Inject;
 import javax.inject.Provider;
 
