@@ -77,6 +77,10 @@
       <groupId>com.google.auto.factory</groupId>
       <artifactId>auto-factory</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.google.auto.value</groupId>
+      <artifactId>auto-value</artifactId>
+    </dependency>
     <!-- logging -->
     <dependency>
       <groupId>org.slf4j</groupId>
