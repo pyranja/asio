@@ -1,12 +1,12 @@
 package at.ac.univie.isc.asio.security;
 
-import at.ac.univie.isc.asio.tool.Pretty;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableSet;
 
-import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.SecurityContext;
+import java.util.Locale;
 
 /**
  * Determine whether a client is authorized to invoke operation which may require special permissions.
@@ -32,24 +32,21 @@ public final class IsAuthorized implements Predicate<Role> {
    */
   @Override
   public boolean apply(final Role required) {
-    return security.isUserInRole(required.name()) && (!isReadOnlyRequest()
-        || Permission.READ.grants(required));
+    return satisfies(required) && (methodAllowsModifications() || onlyReadPermission(required));
   }
 
-  private boolean isReadOnlyRequest() {
-    return HttpMethod.GET.equalsIgnoreCase(request.getMethod());
+  private boolean satisfies(final Role required) {
+    return security.isUserInRole(required.name());
   }
 
-  /**
-   * Determine whether the given {@code Role} requirement is satisfied by the current context. This
-   * will fail fast if the client is not authorized for the given role.
-   *
-   * @param required role required for an action
-   * @return true if the given role is satisfied by the context
-   * @throws javax.ws.rs.ForbiddenException if not authorized
-   */
-  public boolean check(final Role required) {
-    if (!apply(required)) { throw new ForbiddenException(Pretty.format("requires %s rights", required)); }
-    return true;
+  private static final ImmutableSet<String> MODIFYING_METHODS =
+      ImmutableSet.of(HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE);
+
+  private boolean methodAllowsModifications() {
+    return MODIFYING_METHODS.contains(request.getMethod().toUpperCase(Locale.ENGLISH));
+  }
+
+  private boolean onlyReadPermission(final Role required) {
+    return Permission.READ.grants(required);
   }
 }
