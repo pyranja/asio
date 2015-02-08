@@ -1,7 +1,5 @@
 package at.ac.univie.isc.asio.engine;
 
-import at.ac.univie.isc.asio.security.IsAuthorized;
-
 import javax.inject.Inject;
 import javax.inject.Provider;
 
@@ -15,12 +13,8 @@ public final class ConnectorChain {
     this.schedulerProvider = schedulerProvider;
   }
 
-  public Connector create(final IsAuthorized authorizer, final EventReporter report) {
-    return SchedulingConnector.around(schedulerProvider.get(),
-        EventfulConnector.around(report,
-            ObservableInvoker.adapt(
-                ValidatingInvoker.around(authorizer,
-                    SelectByLanguage.from(enginesProvider.get())))));
+  public Connector create(final EventReporter report) {
+    return EventfulConnector.around(report,
+        new ReactiveConnector(SelectByLanguage.from(enginesProvider.get()), schedulerProvider.get()));
   }
-
 }

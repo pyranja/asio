@@ -1,7 +1,8 @@
 package at.ac.univie.isc.asio;
 
 import at.ac.univie.isc.asio.engine.*;
-import at.ac.univie.isc.asio.security.IsAuthorized;
+import at.ac.univie.isc.asio.security.IncludeRequestMethodSecurityContext;
+import at.ac.univie.isc.asio.security.SecurityContextHolder;
 import com.google.common.base.Supplier;
 
 import javax.ws.rs.Path;
@@ -29,8 +30,8 @@ public class FlockResource {
   @Path("/sparql")
   public ProtocolResource protocol(@Context Request request, @Context HttpHeaders headers,
                                    @Context SecurityContext security) {
-    final IsAuthorized authorizer = IsAuthorized.given(security, request);
-    final Connector connector = this.chain.create(authorizer, scopedEvents.get());
+    SecurityContextHolder.set(IncludeRequestMethodSecurityContext.wrap(security, request));
+    final Connector connector = this.chain.create(scopedEvents.get());
     return protocolBuilder.create(ParseJaxrsParameters.with(Language.SPARQL).including(headers).initiatedBy(security.getUserPrincipal()), connector);
   }
 }

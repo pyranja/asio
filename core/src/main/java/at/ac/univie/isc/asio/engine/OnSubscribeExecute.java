@@ -5,11 +5,11 @@ import at.ac.univie.isc.asio.tool.Resources;
 import rx.Observable;
 import rx.Subscriber;
 import rx.functions.Action0;
+import rx.functions.Func1;
 import rx.subscriptions.Subscriptions;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.NotThreadSafe;
-import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicReference;
@@ -27,6 +27,22 @@ import static java.util.Objects.requireNonNull;
 @NotThreadSafe
 @Nonnull
 public class OnSubscribeExecute implements Observable.OnSubscribe<StreamedResults> {
+  private static class MapOnSubscribeExecute implements Func1<Invocation, Observable<StreamedResults>> {
+    @Override
+    public Observable<StreamedResults> call(final Invocation invocation) {
+      return Observable.create(OnSubscribeExecute.given(invocation));
+    }
+  }
+
+  /**
+   * Yield a function, that transforms an {@code Invocation} into a sequence of {@code StreamedResults}.
+   * Execution of the {@code Invocation} is delayed until subscription to the result {@code Observable}.
+   *
+   * @return transformation function
+   */
+  public static Func1<Invocation, Observable<StreamedResults>> fromInvocation() {
+    return new MapOnSubscribeExecute();
+  }
 
   /**
    * Return an {@code OnSubscribe} function suitable for creating an {@code Observable} from it.

@@ -41,14 +41,14 @@ public final class EventfulConnector implements Connector {
         .map(ConvertToEventfulResults.with(report));
   }
 
-  private static class ConvertToEventfulResults implements Func1<StreamedResults, StreamedResults> {
+  static class ConvertToEventfulResults implements Func1<StreamedResults, StreamedResults> {
     private final EventReporter report;
 
     private ConvertToEventfulResults(final EventReporter report) {
       this.report = report;
     }
 
-    private static ConvertToEventfulResults with(final EventReporter report) {
+    static ConvertToEventfulResults with(final EventReporter report) {
       return new ConvertToEventfulResults(report);
     }
 
@@ -73,14 +73,14 @@ public final class EventfulConnector implements Connector {
   }
 
 
-  private static class EmitExecuted implements Action1<StreamedResults> {
+  static class EmitExecuted implements Action1<StreamedResults> {
     private final EventReporter report;
 
     private EmitExecuted(final EventReporter report) {
       this.report = report;
     }
 
-    private static EmitExecuted to(final EventReporter report) {
+    static EmitExecuted to(final EventReporter report) {
       return new EmitExecuted(report);
     }
 
@@ -90,14 +90,14 @@ public final class EventfulConnector implements Connector {
     }
   }
 
-  private static class EmitError implements Action1<Throwable> {
+  static class EmitError implements Action1<Throwable> {
     private final EventReporter report;
 
     private EmitError(final EventReporter report) {
       this.report = report;
     }
 
-    private static EmitError to(final EventReporter report) {
+    static EmitError to(final EventReporter report) {
       return new EmitError(report);
     }
 

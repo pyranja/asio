@@ -1,10 +1,12 @@
 package at.ac.univie.isc.asio.engine;
 
 import at.ac.univie.isc.asio.security.Role;
+import at.ac.univie.isc.asio.security.SecurityContextHolder;
 import at.ac.univie.isc.asio.tool.Pretty;
-import com.google.common.base.Predicate;
+import com.google.common.base.Optional;
 
 import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.core.SecurityContext;
 
 /**
  * Devorate an invoker and perform generic validation of input {@code Parameters} and the resulting
@@ -12,15 +14,13 @@ import javax.ws.rs.ForbiddenException;
  */
 public final class ValidatingInvoker implements Invoker {
   private final Invoker delegate;
-  private final Predicate<Role> authorized;
 
-  private ValidatingInvoker(final Invoker delegate, final Predicate<Role> authorized) {
+  private ValidatingInvoker(final Invoker delegate) {
     this.delegate = delegate;
-    this.authorized = authorized;
   }
 
-  public static ValidatingInvoker around(final Predicate<Role> authorized, final Invoker delegate) {
-    return new ValidatingInvoker(delegate, authorized);
+  public static ValidatingInvoker around(final Invoker delegate) {
+    return new ValidatingInvoker(delegate);
   }
 
   @Override
@@ -32,8 +32,12 @@ public final class ValidatingInvoker implements Invoker {
   }
 
   private void ensureAuthorized(final Role required) {
-    if (!authorized.apply(required)) {
+    final Optional<SecurityContext> security = SecurityContextHolder.get();
+    if (!security.isPresent()) {
+      throw new IllegalStateException("no security context available");
+    } else if (!security.get().isUserInRole(required.name())) {
       throw new ForbiddenException(Pretty.format("requires %s rights", required));
     }
+    // authorized
   }
 }
