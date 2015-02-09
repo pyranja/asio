@@ -12,9 +12,9 @@ public interface Connector {
    * Attempt to invoke the operation specified by the given arguments. This method will not throw
    * exceptions, but will instead yield an error through the returned {@code Observable}.
    *
-   * @param parameters arguments of operation
+   * @param command requested operation
    * @return An observable sequence of {@code StreamedResults}
    */
   @Nonnull
-  Observable<StreamedResults> accept(@Nonnull Parameters parameters);
+  Observable<StreamedResults> accept(@Nonnull Command command);
 }

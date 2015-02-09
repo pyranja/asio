@@ -20,14 +20,14 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ParseJaxrsParametersTest {
+public class ParseJaxrsCommandTest {
   private final HttpHeaders headers = mock(HttpHeaders.class);
 
   @Rule
   public ExpectedException error = ExpectedException.none();
 
-  private final ParseJaxrsParameters parser = ParseJaxrsParameters.with(Language.valueOf("TEST"));
-  private Parameters params;
+  private final ParseJaxrsCommand parser = ParseJaxrsCommand.with(Language.valueOf("TEST"));
+  private Command params;
 
   @Before
   public void setup() {

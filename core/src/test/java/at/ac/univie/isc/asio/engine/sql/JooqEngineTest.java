@@ -6,8 +6,8 @@ import at.ac.univie.isc.asio.DatasetUsageException;
 import at.ac.univie.isc.asio.SqlResult;
 import at.ac.univie.isc.asio.engine.Invocation;
 import at.ac.univie.isc.asio.engine.Language;
-import at.ac.univie.isc.asio.engine.Parameters;
-import at.ac.univie.isc.asio.engine.ParametersBuilder;
+import at.ac.univie.isc.asio.engine.Command;
+import at.ac.univie.isc.asio.engine.CommandBuilder;
 import at.ac.univie.isc.asio.security.Role;
 import at.ac.univie.isc.asio.sql.ConvertToTable;
 import at.ac.univie.isc.asio.sql.Database;
@@ -64,7 +64,7 @@ public class JooqEngineTest {
 
   @Test
   public void empty_sql_select_to_csv_header() throws Exception {
-    final Parameters params = ParametersBuilder
+    final Command params = CommandBuilder
         .with(Language.SQL)
         .single(JooqEngine.PARAM_QUERY,
             REFERENCE_EMPTY)
@@ -76,7 +76,7 @@ public class JooqEngineTest {
 
   @Test
   public void valid_sql_select_to_csv_header() throws Exception {
-    final Parameters params = ParametersBuilder
+    final Command params = CommandBuilder
         .with(Language.SQL)
         .single(JooqEngine.PARAM_QUERY, REFERENCE_SELECT)
         .accept(CSV_TYPE)
@@ -97,7 +97,7 @@ public class JooqEngineTest {
 
   @Test
   public void valid_sql_select_to_csv_values() throws Exception {
-    final Parameters params = ParametersBuilder
+    final Command params = CommandBuilder
         .with(Language.SQL)
         .single(JooqEngine.PARAM_QUERY, REFERENCE_SELECT)
         .accept(CSV_TYPE)
@@ -114,7 +114,7 @@ public class JooqEngineTest {
 
   @Test
   public void empty_select_to_webrowset_header() throws Exception {
-    final Parameters params = ParametersBuilder
+    final Command params = CommandBuilder
         .with(Language.SQL)
         .single(JooqEngine.PARAM_QUERY, REFERENCE_EMPTY)
         .accept(WEBROWSET_TYPE)
@@ -130,7 +130,7 @@ public class JooqEngineTest {
 
   @Test
   public void valid_select_to_webrowset_content() throws Exception {
-    final Parameters params = ParametersBuilder
+    final Command params = CommandBuilder
         .with(Language.SQL)
         .single(JooqEngine.PARAM_QUERY, REFERENCE_SELECT)
         .accept(WEBROWSET_TYPE)
@@ -156,7 +156,7 @@ public class JooqEngineTest {
 
   @Test
   public void update_to_xml() throws Exception {
-    final Parameters params = ParametersBuilder.with(Language.SQL)
+    final Command params = CommandBuilder.with(Language.SQL)
         .single(JooqEngine.PARAM_UPDATE, REFERENCE_UPDATE)
         .accept(SQL_RESULTS_TYPE)
         .build();
@@ -168,7 +168,7 @@ public class JooqEngineTest {
 
   @Test
   public void update_to_csv() throws Exception {
-    final Parameters params = ParametersBuilder.with(Language.SQL)
+    final Command params = CommandBuilder.with(Language.SQL)
         .single(JooqEngine.PARAM_UPDATE, REFERENCE_UPDATE)
         .accept(CSV_TYPE)
         .build();
@@ -180,7 +180,7 @@ public class JooqEngineTest {
     assertThat(result.get(0, "affected"), is("1"));
   }
 
-  private byte[] performInvocationWith(final Parameters params) throws IOException {
+  private byte[] performInvocationWith(final Command params) throws IOException {
     try (final Invocation invocation = subject.prepare(params)) {
       invocation.execute();
       final ByteArrayOutputStream sink = new ByteArrayOutputStream();
@@ -193,7 +193,7 @@ public class JooqEngineTest {
 
   @Test
   public void query_invocation_with_dml_fails() throws Exception {
-    final Parameters params = ParametersBuilder.with(Language.SQL)
+    final Command params = CommandBuilder.with(Language.SQL)
         .single(JooqEngine.PARAM_QUERY, REFERENCE_UPDATE)
         .accept(MediaType.WILDCARD_TYPE)
         .build();
@@ -203,7 +203,7 @@ public class JooqEngineTest {
 
   @Test
   public void update_invocation_with_select_fails() throws Exception {
-    final Parameters params = ParametersBuilder.with(Language.SQL)
+    final Command params = CommandBuilder.with(Language.SQL)
         .single(JooqEngine.PARAM_UPDATE, REFERENCE_SELECT)
         .accept(SQL_RESULTS_TYPE).build();
     error.expect(DatasetException.class);
@@ -212,7 +212,7 @@ public class JooqEngineTest {
 
   @Test
   public void query_invocation_must_not_alter_db() throws Exception {
-    final Parameters params = ParametersBuilder.with(Language.SQL)
+    final Command params = CommandBuilder.with(Language.SQL)
         .single(JooqEngine.PARAM_QUERY, "INSERT INTO updates(id, data) VALUES (0, 'test');")
         .accept(MediaType.WILDCARD_TYPE).build();
     try {
@@ -224,7 +224,7 @@ public class JooqEngineTest {
 
   @Test
   public void cancel_interrupts_query() throws Exception {
-    final Parameters params = ParametersBuilder
+    final Command params = CommandBuilder
         .with(Language.SQL)
         .single(JooqEngine.PARAM_QUERY, REFERENCE_SELECT)
         .accept(CSV_TYPE)
@@ -238,7 +238,7 @@ public class JooqEngineTest {
 
   @Test
   public void query_invocation_requires_read_role() throws Exception {
-    final Parameters params = ParametersBuilder.with(Language.SQL)
+    final Command params = CommandBuilder.with(Language.SQL)
         .single(JooqEngine.PARAM_QUERY, REFERENCE_SELECT)
         .accept(CSV_TYPE)
         .build();
@@ -248,7 +248,7 @@ public class JooqEngineTest {
 
   @Test
   public void update_invocation_requires_write_role() throws Exception {
-    final Parameters params = ParametersBuilder.with(Language.SQL)
+    final Command params = CommandBuilder.with(Language.SQL)
         .single(JooqEngine.PARAM_UPDATE, REFERENCE_UPDATE)
         .accept(CSV_TYPE)
         .build();
@@ -260,7 +260,7 @@ public class JooqEngineTest {
 
   @Test
   public void missing_query() throws Exception {
-    final Parameters params = ParametersBuilder.with(Language.SQL)
+    final Command params = CommandBuilder.with(Language.SQL)
         .accept(MediaType.WILDCARD_TYPE).build();
     error.expect(DatasetUsageException.class);
     subject.prepare(params);
@@ -268,7 +268,7 @@ public class JooqEngineTest {
 
   @Test
   public void no_format_accepted() throws Exception {
-    final Parameters params = ParametersBuilder.with(Language.SPARQL)
+    final Command params = CommandBuilder.with(Language.SPARQL)
         .single(JooqEngine.PARAM_QUERY, REFERENCE_SELECT).build();
     error.expect(DatasetUsageException.class);
     subject.prepare(params);
@@ -276,7 +276,7 @@ public class JooqEngineTest {
 
   @Test
   public void no_supported_format() throws Exception {
-    final Parameters params = ParametersBuilder.with(Language.SPARQL)
+    final Command params = CommandBuilder.with(Language.SPARQL)
         .single(JooqEngine.PARAM_QUERY, REFERENCE_SELECT)
         .accept(MediaType.valueOf("image/jpeg")).build();
     error.expect(DatasetUsageException.class);

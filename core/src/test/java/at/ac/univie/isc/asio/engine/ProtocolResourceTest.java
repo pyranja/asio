@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 public class ProtocolResourceTest {
   private final Connector connector = Mockito.mock(Connector.class);
   private final ProtocolResource subject =
-      new ProtocolResource(ParseJaxrsParameters.with(Language.valueOf("sql")), connector, TimeoutSpec.undefined());
+      new ProtocolResource(ParseJaxrsCommand.with(Language.valueOf("sql")), connector, TimeoutSpec.undefined());
 
   private final AsyncResponseFake async = AsyncResponseFake.create();
   private final MultivaluedMap<String, String> requestParameters = new MultivaluedHashMap<>();
@@ -38,7 +38,7 @@ public class ProtocolResourceTest {
 
   @Before
   public void setUp() throws Exception {
-    when(connector.accept(any(Parameters.class))).thenReturn(streamedResultsFrom(payload));
+    when(connector.accept(any(Command.class))).thenReturn(streamedResultsFrom(payload));
   }
 
   // ===============================================================================================
@@ -75,7 +75,7 @@ public class ProtocolResourceTest {
   // ===============================================================================================
   // INVOKING CONNECTOR
 
-  private final ArgumentCaptor<Parameters> params = ArgumentCaptor.forClass(Parameters.class);
+  private final ArgumentCaptor<Command> params = ArgumentCaptor.forClass(Command.class);
 
   @Test
   public void forward_all_query_parameters() throws Exception {
@@ -112,7 +112,7 @@ public class ProtocolResourceTest {
   @Test
   public void send_error_if_connector_fails_fatally() throws Exception {
     final Throwable failure = new DatasetFailureException(new IllegalStateException());
-    when(connector.accept(any(Parameters.class))).thenThrow(failure);
+    when(connector.accept(any(Command.class))).thenThrow(failure);
     try {
       subject.acceptBody("command", Mime.QUERY_SQL.type(), async);
     } catch (Exception ignored) {
@@ -123,7 +123,7 @@ public class ProtocolResourceTest {
   @Test
   public void send_error_if_observable_fails() throws Exception {
     final Throwable failure = new DatasetFailureException(new IllegalStateException());
-    when(connector.accept(any(Parameters.class))).thenReturn(Observable.<StreamedResults>error(failure));
+    when(connector.accept(any(Command.class))).thenReturn(Observable.<StreamedResults>error(failure));
     subject.acceptBody("command", Mime.QUERY_SQL.type(), async);
     assertThat(async.error(), is(failure));
   }

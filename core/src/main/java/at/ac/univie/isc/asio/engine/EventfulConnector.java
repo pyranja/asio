@@ -33,9 +33,9 @@ public final class EventfulConnector implements Connector {
 
   @Nonnull
   @Override
-  public Observable<StreamedResults> accept(@Nonnull final Parameters parameters) {
-    report.with(parameters).event("received");
-    return delegate.accept(parameters)
+  public Observable<StreamedResults> accept(@Nonnull final Command command) {
+    report.with(command).event("received");
+    return delegate.accept(command)
         .doOnError(EmitError.to(report))
         .doOnNext(EmitExecuted.to(report))
         .map(ConvertToEventfulResults.with(report));

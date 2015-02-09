@@ -32,6 +32,6 @@ public class FlockResource {
                                    @Context SecurityContext security) {
     SecurityContextHolder.set(IncludeRequestMethodSecurityContext.wrap(security, request));
     final Connector connector = this.chain.create(scopedEvents.get());
-    return protocolBuilder.create(ParseJaxrsParameters.with(Language.SPARQL).including(headers).initiatedBy(security.getUserPrincipal()), connector);
+    return protocolBuilder.create(ParseJaxrsCommand.with(Language.SPARQL).including(headers).initiatedBy(security.getUserPrincipal()), connector);
   }
 }

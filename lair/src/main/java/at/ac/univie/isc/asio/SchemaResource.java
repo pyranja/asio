@@ -47,6 +47,6 @@ public class SchemaResource {
                                    @Context SecurityContext security) {
     SecurityContextHolder.set(IncludeRequestMethodSecurityContext.wrap(security, request));
     final Connector connector = this.chain.create(scopedEvents.get());
-    return protocolBuilder.create(ParseJaxrsParameters.with(language).including(headers).initiatedBy(security.getUserPrincipal()), connector);
+    return protocolBuilder.create(ParseJaxrsCommand.with(language).including(headers).initiatedBy(security.getUserPrincipal()), connector);
   }
 }

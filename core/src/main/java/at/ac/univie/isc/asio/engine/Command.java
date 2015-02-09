@@ -16,7 +16,7 @@ import java.util.List;
  * Hold properties extracted from a protocol request.
  */
 @Immutable
-public final class Parameters {
+public final class Command {
   public static final String KEY_LANGUAGE = "language";
 
   public static final class MissingParameter extends DatasetUsageException {
@@ -42,9 +42,9 @@ public final class Parameters {
   private final Optional<Principal> owner;
   private final RuntimeException cause;
 
-  public Parameters(final ListMultimap<String, String> parameters,
-                    final List<MediaType> acceptableTypes, final Principal owner,
-                    final RuntimeException cause) {
+  public Command(final ListMultimap<String, String> parameters,
+                 final List<MediaType> acceptableTypes, final Principal owner,
+                 final RuntimeException cause) {
     assert ((parameters != null && acceptableTypes != null) || cause != null)
         : "invalid params but no cause given";
     this.parameters = parameters;
@@ -63,9 +63,9 @@ public final class Parameters {
   /**
    * @param key of required parameter
    * @return the single value of the parameter
-   * @throws Parameters.MissingParameter if no value is given
-   * @throws Parameters.DuplicatedParameter if multiple values are given
-   * @throws Parameters.IllegalParameter if found value is an empty string
+   * @throws Command.MissingParameter if no value is given
+   * @throws Command.DuplicatedParameter if multiple values are given
+   * @throws Command.IllegalParameter if found value is an empty string
    */
   public String require(final String key) {
     final List<String> values = parameters.get(key);

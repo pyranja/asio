@@ -2,13 +2,11 @@ package at.ac.univie.isc.asio.engine;
 
 import at.ac.univie.isc.asio.DatasetException;
 
-import java.security.Principal;
-
 /**
  * An engine capable of creating invocations on a dataset for a specific
  * {@link Language}.
  */
-public interface Engine extends AutoCloseable, Invoker {
+public interface Engine extends AutoCloseable {
 
   /**
    * @return the {@link Language query language} supported by this engine.
@@ -18,8 +16,7 @@ public interface Engine extends AutoCloseable, Invoker {
   /**
    * {@inheritDoc}
    */
-  @Override
-  Invocation prepare(Parameters parameters);
+  Invocation prepare(Command command);
 
   /**
    * Dispose used resources. Preparing new {@code Invocations} will not be possible afterwards and

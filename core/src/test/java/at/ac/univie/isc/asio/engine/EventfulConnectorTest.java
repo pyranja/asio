@@ -20,7 +20,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
 public class EventfulConnectorTest {
-  public static final Parameters NULL_PARAMS = ParametersBuilder.with(Language.SQL).build();
+  public static final Command NULL_PARAMS = CommandBuilder.with(Language.SQL).build();
   public static final StreamedResults DUMMY_RESULTS = new StreamedResults(MediaType.WILDCARD_TYPE) {
     @Override
     protected void doWrite(final OutputStream output) throws IOException {

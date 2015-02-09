@@ -52,10 +52,10 @@ public final class EventReporter {
   }
 
   // fluent interface
-  public ContextHolder with(final Parameters parameters) {
+  public ContextHolder with(final Command command) {
     return new ContextHolder()
-        .and(parameters.properties().asMap())
-        .and("accepted", parameters.acceptable());
+        .and(command.properties().asMap())
+        .and("accepted", command.acceptable());
   }
 
   public ContextHolder with(final Throwable error) {

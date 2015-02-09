@@ -5,7 +5,7 @@ import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.engine.Engine;
 import at.ac.univie.isc.asio.engine.Invocation;
 import at.ac.univie.isc.asio.engine.Language;
-import at.ac.univie.isc.asio.engine.Parameters;
+import at.ac.univie.isc.asio.engine.Command;
 import at.ac.univie.isc.asio.engine.TypeMatchingResolver;
 import com.google.common.base.Supplier;
 
@@ -110,30 +110,30 @@ public final class JooqEngine implements Engine {
   }
 
   @Override
-  public Invocation prepare(final Parameters parameters) {
+  public Invocation prepare(final Command command) {
     final JdbcExecution execution = new JdbcExecution(state);
     final Invocation invocation;
-    if (parameters.properties().containsKey(PARAM_QUERY)) {
-      invocation = createSelect(parameters, execution);
-    } else if (parameters.properties().containsKey(PARAM_UPDATE)) {
-      invocation = createUpdate(parameters, execution);
+    if (command.properties().containsKey(PARAM_QUERY)) {
+      invocation = createSelect(command, execution);
+    } else if (command.properties().containsKey(PARAM_UPDATE)) {
+      invocation = createUpdate(command, execution);
     } else {
-      throw new Parameters.MissingParameter(PARAM_QUERY + " or " + PARAM_UPDATE);
+      throw new Command.MissingParameter(PARAM_QUERY + " or " + PARAM_UPDATE);
     }
     return invocation;
   }
 
-  private Invocation createUpdate(final Parameters parameters, final JdbcExecution execution) {
-    final String sql = parameters.require(PARAM_UPDATE);
+  private Invocation createUpdate(final Command command, final JdbcExecution execution) {
+    final String sql = command.require(PARAM_UPDATE);
     final TypeMatchingResolver.Selection<UpdateInvocation.ModCountWriter> selection
-        = updateRegistry.select(parameters.acceptable());
+        = updateRegistry.select(command.acceptable());
     return new UpdateInvocation(execution, sql, selection.value(), selection.type());
   }
 
-  private Invocation createSelect(final Parameters parameters, final JdbcExecution execution) {
-    final String sql = parameters.require(PARAM_QUERY);
+  private Invocation createSelect(final Command command, final JdbcExecution execution) {
+    final String sql = command.require(PARAM_QUERY);
     final TypeMatchingResolver.Selection<SelectInvocation.CursorWriter> selection
-        = queryRegistry.select(parameters.acceptable());
+        = queryRegistry.select(command.acceptable());
     return new SelectInvocation(execution, sql, selection.value(), selection.type());
   }
 }

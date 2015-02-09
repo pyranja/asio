@@ -15,6 +15,11 @@ public final class ConnectorChain {
 
   public Connector create(final EventReporter report) {
     return EventfulConnector.around(report,
-        new ReactiveConnector(SelectByLanguage.from(enginesProvider.get()), schedulerProvider.get()));
+        ReactiveInvoker.from(
+            FixedSelection.from(enginesProvider.get()),
+            schedulerProvider.get(),
+            JaxrsAuthorizer.create()
+        )
+    );
   }
 }

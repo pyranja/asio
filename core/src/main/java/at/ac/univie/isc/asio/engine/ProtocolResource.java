@@ -22,9 +22,9 @@ public class ProtocolResource {
 
   private final Connector connector;
   private final TimeoutSpec timeout;
-  private final ParseJaxrsParameters parser;
+  private final ParseJaxrsCommand parser;
 
-  ProtocolResource(final ParseJaxrsParameters parser, final Connector connector, @Provided final TimeoutSpec timeout) {
+  ProtocolResource(final ParseJaxrsCommand parser, final Connector connector, @Provided final TimeoutSpec timeout) {
     this.connector = connector;
     this.parser = parser;
     this.timeout = timeout;
@@ -67,11 +67,11 @@ public class ProtocolResource {
   /**
    * Invoke request processing and observe the results.
    * @param async response continuation
-   * @param params parsed request
+   * @param command parsed request
    */
-  private void process(final AsyncResponse async, final Parameters params) {
+  private void process(final AsyncResponse async, final Command command) {
     try {
-      final Subscription subscription = connector.accept(params).subscribe(SendResults.to(async));
+      final Subscription subscription = connector.accept(command).subscribe(SendResults.to(async));
       AsyncListener.cleanUp(subscription).listenTo(async);
       async.setTimeout(timeout.getAs(TimeUnit.NANOSECONDS, 0L), TimeUnit.NANOSECONDS);
     } catch (final Throwable error) {

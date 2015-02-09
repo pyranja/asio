@@ -15,7 +15,7 @@ import java.util.Map;
 /**
  * Build protocol request parameters from JAX-RS request elements.
  */
-public class ParseJaxrsParameters {
+public class ParseJaxrsCommand {
   private final Language language;
   private final ImmutableListMultimap.Builder<String, String> params =
       ImmutableListMultimap.builder();
@@ -23,15 +23,15 @@ public class ParseJaxrsParameters {
   private Principal owner;
   private RuntimeException cause;
 
-  private ParseJaxrsParameters(final Language language) {
+  private ParseJaxrsCommand(final Language language) {
     this.language = language;
   }
 
-  public static ParseJaxrsParameters with(Language language) {
-    return new ParseJaxrsParameters(language);
+  public static ParseJaxrsCommand with(Language language) {
+    return new ParseJaxrsCommand(language);
   }
 
-  public ParseJaxrsParameters argumentsFrom(final MultivaluedMap<String, String> map) {
+  public ParseJaxrsCommand argumentsFrom(final MultivaluedMap<String, String> map) {
     if (isNotNull(map, "parameters map")) {
       for (Map.Entry<String, List<String>> each : map.entrySet()) {
         params.putAll(each.getKey(), each.getValue());
@@ -40,7 +40,7 @@ public class ParseJaxrsParameters {
     return this;
   }
 
-  public ParseJaxrsParameters body(final String body, final MediaType content) {
+  public ParseJaxrsCommand body(final String body, final MediaType content) {
     if (body == null) {
       cause = new BadRequestException("missing command for direct operation");
       return this;
@@ -54,14 +54,14 @@ public class ParseJaxrsParameters {
     return this;
   }
 
-  public ParseJaxrsParameters initiatedBy(final Principal owner) {
+  public ParseJaxrsCommand initiatedBy(final Principal owner) {
     if (isNotNull(owner, "owner")) {
       this.owner = owner;
     }
     return this;
   }
 
-  public ParseJaxrsParameters including(final HttpHeaders context) {
+  public ParseJaxrsCommand including(final HttpHeaders context) {
     if (isNotNull(context, "http headers")) {
       if (isNotNull(context.getAcceptableMediaTypes(), "accepted types")) {
         acceptedTypes.addAll(context.getAcceptableMediaTypes());
@@ -70,9 +70,9 @@ public class ParseJaxrsParameters {
     return this;
   }
 
-  public Parameters collect() {
-    params.put(Parameters.KEY_LANGUAGE, language.name());
-    return new Parameters(params.build(), acceptedTypes.build(), owner, cause);
+  public Command collect() {
+    params.put(Command.KEY_LANGUAGE, language.name());
+    return new Command(params.build(), acceptedTypes.build(), owner, cause);
   }
 
   private boolean isNotNull(final Object that, final String message) {
