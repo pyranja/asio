@@ -1,6 +1,8 @@
 package at.ac.univie.isc.asio.tool;
 
+import at.ac.univie.isc.asio.insight.Correlation;
 import at.ac.univie.isc.asio.insight.Event;
+import at.ac.univie.isc.asio.insight.Message;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Queues;
 import org.hamcrest.*;
@@ -9,22 +11,30 @@ import java.util.Arrays;
 import java.util.Queue;
 
 import static java.util.Objects.requireNonNull;
-import static org.hamcrest.CoreMatchers.both;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.any;
+import static org.hamcrest.Matchers.equalToIgnoringCase;
 
 public final class EventMatchers {
   private EventMatchers() { /* no instances  */ }
 
-  @Deprecated
   @Factory
-  public static EventContentMatcher event(final String type) {
-    return new EventContentMatcher(any(String.class), equalTo(type));
+  public static Matcher<Event> event(final String scope, final String subject) {
+    return Matchers.both(withScope(scope)).and(withSubject(subject));
   }
 
   @Factory
-  public static EventContentMatcher event(final String scope, final String type) {
-    return new EventContentMatcher(equalTo(scope), equalTo(type));
+  public static Matcher<Event> withScope(final String scope) {
+    return new EventScopeMatcher(equalToIgnoringCase(scope));
+  }
+
+  @Factory
+  public static Matcher<Event> withSubject(final String subject) {
+    return new EventSubjectMatcher(equalTo(subject));
+  }
+
+  @Factory
+  public static Matcher<Event> withMessage(final Message message) {
+    return new EventMessageMatcher(equalTo(message));
   }
 
   @Factory
@@ -37,28 +47,62 @@ public final class EventMatchers {
     return new SingleCorrelationMatcher();
   }
 
-  /**
-   * match event type and message
-   */
-  static class EventContentMatcher extends TypeSafeMatcher<Event> {
-    private final Matcher<String> expectedScope;
-    private final Matcher<String> expectedType;
+  static class EventMessageMatcher extends TypeSafeMatcher<Event> {
+    private final Matcher<Message> expected;
 
-    EventContentMatcher(final Matcher<String> expectedScope, final Matcher<String> expectedType) {
-      this.expectedScope = expectedScope;
-      this.expectedType = expectedType;
+    EventMessageMatcher(final Matcher<Message> expected) {
+      this.expected = expected;
     }
 
     @Override
     protected boolean matchesSafely(final Event item) {
-      return expectedScope.matches(item.type()) && expectedType.matches(item.message());
+      return expected.matches(item.message());
     }
 
     @Override
     public void describeTo(final Description description) {
-      description
-          .appendText("event of scope [").appendDescriptionOf(expectedScope).appendText("]")
-          .appendText(" and of type [").appendDescriptionOf(expectedType).appendText("]");
+      description.appendText("event with message ").appendDescriptionOf(expected);
+    }
+  }
+
+
+  static class EventScopeMatcher extends TypeSafeMatcher<Event> {
+    private final Matcher<String> expected;
+
+    EventScopeMatcher(final Matcher<String> expected) {
+      this.expected = expected;
+    }
+
+    @Override
+    protected boolean matchesSafely(final Event item) {
+      return expected.matches(item.scope().toString());
+    }
+
+    @Override
+    public void describeTo(final Description description) {
+      description.appendText("event with scope ").appendDescriptionOf(expected);
+    }
+  }
+
+
+  /**
+   * match event scope and message
+   */
+  static class EventSubjectMatcher extends TypeSafeMatcher<Event> {
+    private final Matcher<String> expectedSubject;
+
+    EventSubjectMatcher(final Matcher<String> expectedSubject) {
+      this.expectedSubject = expectedSubject;
+    }
+
+    @Override
+    protected boolean matchesSafely(final Event item) {
+      return expectedSubject.matches(item.message().subject());
+    }
+
+    @Override
+    public void describeTo(final Description description) {
+      description.appendText("event with subject ").appendDescriptionOf(expectedSubject);
     }
   }
 
@@ -71,9 +115,9 @@ public final class EventMatchers {
     protected boolean matchesSafely(final Iterable<Event> item) {
       final Event first = Iterables.getFirst(item, null);
       if (first == null) { return false; }
-      final Event.Correlation expected = first.correlation();
-      for (Event event : item) {
-        if (!expected.equals(event.correlation())) {
+      final Correlation expected = first.correlation();
+      for (Event legacyEvent : item) {
+        if (!expected.equals(legacyEvent.correlation())) {
           return false;
         }
       }

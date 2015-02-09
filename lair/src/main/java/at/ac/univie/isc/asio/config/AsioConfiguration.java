@@ -1,21 +1,23 @@
 package at.ac.univie.isc.asio.config;
 
-import at.ac.univie.isc.asio.SchemaResource;
-import at.ac.univie.isc.asio.SqlSchema;
+import at.ac.univie.isc.asio.*;
 import at.ac.univie.isc.asio.database.Schema;
 import at.ac.univie.isc.asio.database.SchemaFactory;
-import at.ac.univie.isc.asio.engine.*;
+import at.ac.univie.isc.asio.engine.ConnectorChain;
+import at.ac.univie.isc.asio.engine.Engine;
+import at.ac.univie.isc.asio.engine.ProtocolResourceFactory;
 import at.ac.univie.isc.asio.engine.d2rq.D2rqSpec;
 import at.ac.univie.isc.asio.engine.d2rq.LoadD2rqModel;
+import at.ac.univie.isc.asio.insight.EventBusEmitter;
 import at.ac.univie.isc.asio.insight.EventLoggerBridge;
 import at.ac.univie.isc.asio.insight.EventStream;
+import at.ac.univie.isc.asio.insight.EventSystem;
 import at.ac.univie.isc.asio.jaxrs.AppSpec;
 import at.ac.univie.isc.asio.metadata.*;
 import at.ac.univie.isc.asio.spring.SpringByteSource;
 import at.ac.univie.isc.asio.tool.Duration;
 import at.ac.univie.isc.asio.tool.TimeoutSpec;
 import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.base.Ticker;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
@@ -32,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Scope;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -104,8 +107,8 @@ public class AsioConfiguration {
         return scheduler;
       }
     };
-    final ConnectorChain chain = new ConnectorChain(engineProvider, schedulerProvider);
-    return new SchemaResource(factory, chain, eventBuilder());
+    final ConnectorChain chain = new ConnectorChain(engineProvider, schedulerProvider, eventEmitter());
+    return new SchemaResource(factory, chain);
   }
 
   @Bean
@@ -148,11 +151,19 @@ public class AsioConfiguration {
     return new SchemaFactory(env);
   }
 
+  // FIXME : this is so ugly ...
   @Bean
   @Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.INTERFACES)
-  public Supplier<EventReporter> eventBuilder() {
-    final EventReporter eventReporter = new EventReporter(eventBus(), Ticker.systemTicker());
-    return Suppliers.ofInstance(eventReporter);
+  public Provider<EventSystem> eventEmitter() {
+    return new Provider<EventSystem>() {
+      private final EventBusEmitter instance =
+          new EventBusEmitter(eventBus(), Ticker.systemTicker(), at.ac.univie.isc.asio.Scope.REQUEST);
+
+      @Override
+      public EventSystem get() {
+        return instance;
+      }
+    };
   }
 
   @Bean

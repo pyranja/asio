@@ -4,7 +4,6 @@ import at.ac.univie.isc.asio.engine.*;
 import at.ac.univie.isc.asio.security.IncludeRequestMethodSecurityContext;
 import at.ac.univie.isc.asio.security.Permission;
 import at.ac.univie.isc.asio.security.SecurityContextHolder;
-import com.google.common.base.Supplier;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -18,17 +17,15 @@ import java.net.URI;
 public class SchemaResource {
   private final ProtocolResourceFactory protocolBuilder;
   private final ConnectorChain chain;
-  private final Supplier<EventReporter> scopedEvents;
 
   @Deprecated
   public SchemaResource() {
     throw new AssertionError("attempt to use non-managed resource");
   }
 
-  public SchemaResource(final ProtocolResourceFactory protocolBuilder, final ConnectorChain chain, final Supplier<EventReporter> scopedEvents) {
+  public SchemaResource(final ProtocolResourceFactory protocolBuilder, final ConnectorChain chain) {
     this.protocolBuilder = protocolBuilder;
     this.chain = chain;
-    this.scopedEvents = scopedEvents;
   }
 
   @Path("/sql/schema")
@@ -46,7 +43,7 @@ public class SchemaResource {
                                    @Context HttpHeaders headers,
                                    @Context SecurityContext security) {
     SecurityContextHolder.set(IncludeRequestMethodSecurityContext.wrap(security, request));
-    final Connector connector = this.chain.create(scopedEvents.get());
+    final Connector connector = this.chain.create();
     return protocolBuilder.create(ParseJaxrsCommand.with(language).including(headers).initiatedBy(security.getUserPrincipal()), connector);
   }
 }

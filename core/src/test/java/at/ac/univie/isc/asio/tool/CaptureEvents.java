@@ -1,21 +1,24 @@
 package at.ac.univie.isc.asio.tool;
 
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
 import java.util.List;
 
-public class CaptureEvents {
-  public static CaptureEvents create() {
-    return new CaptureEvents();
+public class CaptureEvents<EVENT> {
+  public static <TYPE> CaptureEvents<TYPE> create(final Class<TYPE> type) {
+    return new CaptureEvents<>(type);
   }
-  private final EventBus eventBus;
 
+  private final EventBus eventBus;
+  private final Class<EVENT> type;
   private final List<Object> captured;
 
-  private CaptureEvents() {
+  private CaptureEvents(final Class<EVENT> type) {
+    this.type = type;
     this.eventBus = new EventBus("test");
     this.captured = Lists.newArrayList();
     eventBus.register(new CaptureSubscriber());
@@ -25,12 +28,21 @@ public class CaptureEvents {
     return eventBus;
   }
 
-  public Iterable<Object> captured() {
+  public Iterable<Object> all() {
     return captured;
   }
 
-  public <EXPECTED> Iterable<EXPECTED> captured(final Class<EXPECTED> expected) {
-    return Iterables.filter(captured, expected);
+  public Iterable<EVENT> captured() {
+    return Iterables.filter(captured, type);
+  }
+
+  public EVENT single() {
+    return Iterables.getOnlyElement(captured());
+  }
+
+  public EVENT get(final int index) {
+    assert index < captured.size();
+    return Iterators.get(captured().iterator(), index);
   }
 
   private class CaptureSubscriber {

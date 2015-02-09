@@ -1,5 +1,7 @@
 package at.ac.univie.isc.asio.engine;
 
+import at.ac.univie.isc.asio.insight.EventSystem;
+import at.ac.univie.isc.asio.insight.Message;
 import rx.Observable;
 import rx.functions.Action0;
 import rx.functions.Action1;
@@ -14,42 +16,42 @@ import javax.annotation.Nonnull;
  */
 public final class EventfulConnector implements Connector {
   private final Connector delegate;
-  private final EventReporter report;
+  private final EventSystem event;
 
-  private EventfulConnector(final Connector delegate, final EventReporter report) {
+  private EventfulConnector(final Connector delegate, final EventSystem event) {
     this.delegate = delegate;
-    this.report = report;
+    this.event = event;
   }
 
   /**
    * Wrap a given {@code Connector} by emitting request events to the set event sink.
-   * @param report event sink
+   * @param eventSystem event sink
    * @param delegate wrapped original connector
    * @return decorated connector
    */
-  public static EventfulConnector around(final EventReporter report, final Connector delegate) {
-    return new EventfulConnector(delegate, report);
+  public static EventfulConnector around(final EventSystem eventSystem, final Connector delegate) {
+    return new EventfulConnector(delegate, eventSystem);
   }
 
   @Nonnull
   @Override
   public Observable<StreamedResults> accept(@Nonnull final Command command) {
-    report.with(command).event("received");
+    event.emit(Message.create("received").with(command));
     return delegate.accept(command)
-        .doOnError(EmitError.to(report))
-        .doOnNext(EmitExecuted.to(report))
-        .map(ConvertToEventfulResults.with(report));
+        .doOnError(EmitError.to(event))
+        .doOnNext(EmitExecuted.to(event))
+        .map(ConvertToEventfulResults.with(event));
   }
 
   static class ConvertToEventfulResults implements Func1<StreamedResults, StreamedResults> {
-    private final EventReporter report;
+    private final EventSystem event;
 
-    private ConvertToEventfulResults(final EventReporter report) {
-      this.report = report;
+    private ConvertToEventfulResults(final EventSystem event) {
+      this.event = event;
     }
 
-    static ConvertToEventfulResults with(final EventReporter report) {
-      return new ConvertToEventfulResults(report);
+    static ConvertToEventfulResults with(final EventSystem event) {
+      return new ConvertToEventfulResults(event);
     }
 
     @Override
@@ -59,13 +61,13 @@ public final class EventfulConnector implements Connector {
               new Action1<Throwable>() {
                 @Override
                 public void call(final Throwable throwable) {
-                  report.with(throwable).event("failed");
+                  event.emit(Message.create("failed").with(throwable));
                 }
               },
               new Action0() {
                 @Override
                 public void call() {
-                  report.event("completed");
+                  event.emit(Message.empty("completed"));
                 }
               });
       return results;
@@ -74,36 +76,36 @@ public final class EventfulConnector implements Connector {
 
 
   static class EmitExecuted implements Action1<StreamedResults> {
-    private final EventReporter report;
+    private final EventSystem event;
 
-    private EmitExecuted(final EventReporter report) {
-      this.report = report;
+    private EmitExecuted(final EventSystem event) {
+      this.event = event;
     }
 
-    static EmitExecuted to(final EventReporter report) {
-      return new EmitExecuted(report);
+    static EmitExecuted to(final EventSystem event) {
+      return new EmitExecuted(event);
     }
 
     @Override
     public void call(final StreamedResults ignored) {
-      report.event("executed");
+      event.emit(Message.empty("executed"));
     }
   }
 
   static class EmitError implements Action1<Throwable> {
-    private final EventReporter report;
+    private final EventSystem event;
 
-    private EmitError(final EventReporter report) {
-      this.report = report;
+    private EmitError(final EventSystem event) {
+      this.event = event;
     }
 
-    static EmitError to(final EventReporter report) {
-      return new EmitError(report);
+    static EmitError to(final EventSystem event) {
+      return new EmitError(event);
     }
 
     @Override
     public void call(final Throwable throwable) {
-      report.with(throwable).event("failed");
+      event.emit(Message.create("failed").with(throwable));
     }
   }
 }

@@ -8,13 +8,13 @@ import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
 /**
- * Log {@link ServerSentEvent server} and
- * {@link com.google.common.eventbus.DeadEvent unhandled} events
+ * Log {@link Event internal} and {@link com.google.common.eventbus.DeadEvent unhandled} events
  * to a {@link #LOGGER_NAME SLF4J logger}.
  */
-public class EventLoggerBridge {
+public final class EventLoggerBridge {
   /** special logger name for events */
   public static final String LOGGER_NAME = "at.ac.univie.isc.asio.events";
+
   private static final Logger eventLog = LoggerFactory.getLogger(LOGGER_NAME);
   private static final Marker EVENT_MARKER = MarkerFactory.getMarker("EVENT");
 

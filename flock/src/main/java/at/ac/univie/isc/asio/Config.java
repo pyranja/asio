@@ -1,13 +1,15 @@
 package at.ac.univie.isc.asio;
 
-import at.ac.univie.isc.asio.engine.*;
+import at.ac.univie.isc.asio.engine.ConnectorChain;
+import at.ac.univie.isc.asio.engine.Engine;
+import at.ac.univie.isc.asio.engine.ProtocolResourceFactory;
 import at.ac.univie.isc.asio.engine.sparql.JenaEngine;
+import at.ac.univie.isc.asio.insight.EventBusEmitter;
 import at.ac.univie.isc.asio.insight.EventLoggerBridge;
 import at.ac.univie.isc.asio.insight.EventStream;
+import at.ac.univie.isc.asio.insight.EventSystem;
 import at.ac.univie.isc.asio.tool.Duration;
 import at.ac.univie.isc.asio.tool.TimeoutSpec;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.base.Ticker;
 import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -16,7 +18,6 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -24,7 +25,6 @@ import rx.Scheduler;
 import rx.schedulers.Schedulers;
 
 import javax.inject.Provider;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.*;
 
@@ -36,7 +36,7 @@ public class Config {
   private Environment env;
 
   @Bean
-  public FlockResource flockResource(final Supplier<EventReporter> scopedEventReporter,
+  public FlockResource flockResource(final EventSystem events,
                                      final Provider<TimeoutSpec> timeout) {
     final ProtocolResourceFactory factory = new ProtocolResourceFactory(timeout);
     final boolean allowFederated = true;
@@ -54,8 +54,14 @@ public class Config {
         return scheduler;
       }
     };
-    final ConnectorChain chain = new ConnectorChain(engineProvider, schedulerProvider);
-    return new FlockResource(factory, chain, scopedEventReporter);
+    final Provider<EventSystem> eventingProvider = new Provider<EventSystem>() {
+      @Override
+      public EventSystem get() {
+        return events;
+      }
+    };
+    final ConnectorChain chain = new ConnectorChain(engineProvider, schedulerProvider, eventingProvider);
+    return new FlockResource(factory, chain);
   }
 
   @Bean(destroyMethod = "close")
@@ -83,10 +89,11 @@ public class Config {
     return spec;
   }
 
+  // FIXME : use request scope
   @Bean
-  public Supplier<EventReporter> eventBuilder(final EventBus bus) {
+  public EventSystem eventBuilder(final EventBus bus) {
     bus.register(new EventLoggerBridge());
-    return Suppliers.ofInstance(new EventReporter(bus, Ticker.systemTicker()));
+    return new EventBusEmitter(bus, Ticker.systemTicker(), Scope.REQUEST);
   }
 
   @Bean

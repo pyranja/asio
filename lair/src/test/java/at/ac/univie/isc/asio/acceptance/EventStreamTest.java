@@ -68,7 +68,7 @@ public class EventStreamTest extends AcceptanceHarness {
     });
     final List<String> received =
         monitor.events().skip(1).take(3).map(EXTRACT_DATA).toList().toBlocking().single();
-    assertThat(received, both(contains(message("received"), message("executed"), message("completed"))).and(is(correlated()))
+    assertThat(received, both(contains(subject("received"), subject("executed"), subject("completed"))).and(is(correlated()))
     );
   }
 
@@ -82,7 +82,7 @@ public class EventStreamTest extends AcceptanceHarness {
     });
     final List<String> received =
         monitor.events().skip(1).take(2).map(EXTRACT_DATA).toList().toBlocking().single();
-    assertThat(received, both(contains(message("received"), message("failed"))).and(is(correlated())));
+    assertThat(received, both(contains(subject("received"), subject("failed"))).and(is(correlated())));
   }
 
   @Test
@@ -95,11 +95,11 @@ public class EventStreamTest extends AcceptanceHarness {
     });
     final List<String> received =
         monitor.events().skip(1).take(2).map(EXTRACT_DATA).toList().toBlocking().single();
-    assertThat(received, both(contains(message("received"), message("failed"))).and(is(correlated())));
+    assertThat(received, both(contains(subject("received"), subject("failed"))).and(is(correlated())));
   }
 
-  private Matcher<String> message(final String message) {
-    return containsString("\"message\":\"" + message + "\"");
+  private Matcher<String> subject(final String subject) {
+    return containsString("\"subject\":\"" + subject + "\"");
   }
 
   private static String extractCorrelation(final String message) {

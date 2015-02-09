@@ -1,124 +1,81 @@
 package at.ac.univie.isc.asio.insight;
 
-import at.ac.univie.isc.asio.tool.TypedValue;
-import com.google.common.base.Objects;
+import at.ac.univie.isc.asio.Scope;
+import com.google.auto.value.AutoValue;
 
 import javax.annotation.concurrent.Immutable;
 import javax.json.Json;
 import javax.json.stream.JsonGenerator;
 import java.io.StringWriter;
-import java.util.Collections;
 import java.util.Map;
 
-import static java.util.Objects.requireNonNull;
-
+/**
+ * Captures an asio event.
+ */
+@AutoValue
 @Immutable
-public final class Event implements ServerSentEvent {
-  private final String type;
-  private final String message;
-  private final Correlation correlation;
-  private final long timestamp;
-  private final Map<String, String> context;
-
-  Event(final String type, final String message, final Correlation correlation, final long timestamp, final Map<String, String> context) {
-    this.type = requireNonNull(type);
-    this.correlation = requireNonNull(correlation);
-    this.message = requireNonNull(message);
-    this.timestamp = requireNonNull(timestamp);
-    this.context = requireNonNull(context);
+public abstract class Event implements ServerSentEvent {
+  static Event create(final Correlation correlation, final long timestamp, final Scope scope, final Message message) {
+    return new AutoValue_Event(correlation, timestamp, scope, message);
   }
 
-  public Correlation correlation() {
-    return correlation;
-  }
+  // auto-value properties
 
-  public long timestamp() {
-    return timestamp;
-  }
+  /**
+   * Related event will share a correlation id.
+   * @return correlation id of this event
+   */
+  public abstract Correlation correlation();
 
+  /**
+   * Wall clock time, when this event was recorded.
+   * @return creation time as milliseconds since epoch
+   */
+  public abstract long timestamp();
+
+  /**
+   * The scope in which this event occurred, e.g. in the context of a single request.
+   * @return event scope
+   */
+  public abstract Scope scope();
+
+  /**
+   * @return internal container of event context
+   */
+  public abstract Message message();
+
+  // end of auto-value properties
+
+  // SSE implementation
+
+  /**
+   * This uses the event's {@link #scope()} as event type.
+   * @return event type as specified by SSE spec
+   */
   @Override
   public String type() {
-    return type;
+    return scope().toString();
   }
 
-  public String message() {
-    return message;
-  }
-
-  public Map<String, String> context() {
-    return context;
-  }
-
+  /**
+   * A JSON representation of the event.
+   * @return event data as specified by SSE spec
+   */
   @Override
   public String data() {
     final StringWriter sink = new StringWriter();
     final JsonGenerator json = Json.createGenerator(sink);
     json.writeStartObject()
-        .write("type", type)
-        .write("message", message)
-        .write("correlation", correlation.toString())
-        .write("timestamp", timestamp);
+        .write("correlation", correlation().toString())
+        .write("timestamp", timestamp())
+        .write("scope", scope().toString())
+        .write("subject", message().subject())
+        ;
     json.writeStartObject("context");
-    for (Map.Entry<String, String> each : context.entrySet()) {
+    for (Map.Entry<String, String> each : message().content().entrySet()) {
       json.write(each.getKey(), each.getValue());
     }
     json.writeEnd().writeEnd().flush();
     return sink.toString();
-  }
-
-  @Override
-  public String toString() {
-    return Objects.toStringHelper(this)
-        .add("type", type)
-        .add("message", message)
-        .add("correlation", correlation)
-        .add("timestamp", timestamp)
-        .add("context", context)
-        .toString();
-  }
-
-  public static class Correlation extends TypedValue<String> {
-    public static Correlation valueOf(final String val) {
-      return new Correlation(val);
-    }
-
-    private Correlation(final String val) {
-      super(val);
-    }
-  }
-
-  public static Builder make(final String type) {
-    return new Builder(type);
-  }
-
-  public static class Builder {
-    private final String type;
-    private Correlation correlation;
-    private long timestamp;
-
-    private Map<String, String> context = Collections.emptyMap();
-
-    public Builder(final String type) {
-      this.type = type;
-    }
-
-    public Builder correlation(final Correlation correlation) {
-      this.correlation = correlation;
-      return this;
-    }
-
-    public Builder timestamp(final long timestamp) {
-      this.timestamp = timestamp;
-      return this;
-    }
-
-    public Builder context(final Map<String, String> context) {
-      this.context = context;
-      return this;
-    }
-
-    public Event create(final String message) {
-      return new Event(type, message, correlation, timestamp, context);
-    }
   }
 }
