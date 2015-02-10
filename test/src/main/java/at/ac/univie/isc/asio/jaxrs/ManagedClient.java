@@ -1,6 +1,7 @@
 package at.ac.univie.isc.asio.jaxrs;
 
 import at.ac.univie.isc.asio.io.TeeOutputStream;
+import at.ac.univie.isc.asio.junit.CompositeReport;
 import at.ac.univie.isc.asio.junit.Interactions;
 import at.ac.univie.isc.asio.web.HttpExchangeReport;
 import com.google.common.base.Charsets;
@@ -53,13 +54,13 @@ public final class ManagedClient extends ExternalResource implements Interaction
 
   private final ClientBuilder builder;
   private final URI serviceAddress;
-  private final HttpExchangeReport capturedExchanges;
+  private final CompositeReport capturedExchanges;
   private Client client;
 
   private ManagedClient(final ClientBuilder builder, final URI serviceAddress) {
     this.builder = requireNonNull(builder);
     this.serviceAddress = requireNonNull(serviceAddress);
-    this.capturedExchanges = HttpExchangeReport.create();
+    this.capturedExchanges = CompositeReport.create();
     this.builder.register(new MonitoringFilter(capturedExchanges));
   }
 
@@ -96,20 +97,25 @@ public final class ManagedClient extends ExternalResource implements Interaction
   @Provider
   @NotThreadSafe
   private static final class MonitoringFilter implements ClientRequestFilter, ClientResponseFilter, WriterInterceptor {
+    private static final String REPORT_PROPERTY = "http.exchange.report";
 
-    private final HttpExchangeReport reporter;
+    private final CompositeReport reporter;
 
-    private MonitoringFilter(final HttpExchangeReport reporter) {
+    private MonitoringFilter(final CompositeReport reporter) {
       this.reporter = reporter;
     }
 
     @Override
     public void filter(final ClientRequestContext request) throws IOException {
-      reporter.captureRequest(request.getMethod(), request.getUri(), request.getStringHeaders());
+      final HttpExchangeReport current = HttpExchangeReport.create();
+      reporter.attach(current);
+      request.setProperty("http.exchange.report", current);
+      current.captureRequest(request.getMethod(), request.getUri(), request.getStringHeaders());
     }
 
     @Override
     public void filter(final ClientRequestContext request, final ClientResponseContext response) throws IOException {
+      final HttpExchangeReport current = (HttpExchangeReport) request.getProperty(REPORT_PROPERTY);
       final InputStream entityStream = response.getEntityStream();
       final byte[] data;
       if (entityStream != null) {
@@ -118,16 +124,17 @@ public final class ManagedClient extends ExternalResource implements Interaction
       } else {
         data = "NONE".getBytes(Charsets.UTF_8);
       }
-      reporter.captureResponse(response.getStatus(), response.getHeaders()).withResponseBody(data);
+      current.captureResponse(response.getStatus(), response.getHeaders()).withResponseBody(data);
     }
 
     @Override
     public void aroundWriteTo(final WriterInterceptorContext context) throws IOException, WebApplicationException {
+      final HttpExchangeReport current = (HttpExchangeReport) context.getProperty(REPORT_PROPERTY);
       final OutputStream out = context.getOutputStream();
       final TeeOutputStream interceptor = TeeOutputStream.wrap(out);
       context.setOutputStream(interceptor);
       context.proceed();
-      reporter.withRequestBody(interceptor.captured());
+      current.withRequestBody(interceptor.captured());
     }
   }
 

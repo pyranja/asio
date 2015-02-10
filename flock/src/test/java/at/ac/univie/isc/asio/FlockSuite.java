@@ -1,5 +1,7 @@
 package at.ac.univie.isc.asio;
 
+import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.config.SSLConfig;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -13,7 +15,13 @@ import java.net.URI;
 import static org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({SparqlProtocolTest.class, SparqlFederationTest.class})
+@SuiteClasses({
+    FeatureProtocol.class,
+//    FeatureEvents.class,  // listens to wrong endpoint /meta instead of /insight
+    FeatureSparql.class,
+    FeatureSparqlFederation.class,
+    FeatureCredentialDelegation.class,
+})
 public class FlockSuite {
   private static ApplicationContext asio;
 
@@ -24,9 +32,10 @@ public class FlockSuite {
     // FIXME : move init code to a rule ?
     final int port =
         ((AnnotationConfigEmbeddedWebApplicationContext) asio).getEmbeddedServletContainer().getPort();
-    EnvironmentSpec
-        .create(URI.create("http://localhost:" + port + "/"))
-        .sparql(URI.create("sparql"));
+    IntegrationTest.asio =
+        AsioSpec.withoutAuthorization(URI.create("http://localhost:" + port + "/"));
+    RestAssured.config =
+        RestAssured.config().sslConfig(SSLConfig.sslConfig().relaxedHTTPSValidation());
   }
 
   @AfterClass

@@ -65,6 +65,17 @@ public final class Interactions implements TestRule {
     return this;
   }
 
+  /**
+   * Transparently add a collaborator's report.
+   * @param component the collaborator
+   * @param <COMPONENT> type of the collaborator
+   * @return the collaborator
+   */
+  public <COMPONENT extends Report> COMPONENT attached(final COMPONENT component) {
+    this.reports.add(component);
+    return component;
+  }
+
   private String collectReports() {
     final StringBuilder collector = new StringBuilder();
     collector.append(Pretty.justify(" RECORDED INTERACTIONS ", 75, '#')).append(System.lineSeparator());

@@ -1,0 +1,67 @@
+package at.ac.univie.isc.asio;
+
+import at.ac.univie.isc.asio.web.HttpCode;
+import com.google.common.net.HttpHeaders;
+import org.apache.http.HttpStatus;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import static at.ac.univie.isc.asio.web.HttpMatchers.indicates;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
+
+@Category(FunctionalTest.class)
+public class FeatureMetadata extends IntegrationTest {
+
+  // @formatter:off
+
+  public class DatasetMetadata {
+
+    @Test
+    public void deliver_xml() throws Exception {
+      givenPermission("read")
+        .header(HttpHeaders.ACCEPT, "application/xml")
+      .when()
+        .get("/meta")
+      .then()
+        .statusCode(indicates(HttpCode.SUCCESSFUL))
+        .contentType(is("application/xml"))
+        .root("dataset")
+        .body("globalID", not(isEmptyOrNullString()))
+        .body("localID", not(isEmptyOrNullString()))
+        .body("sparqlEndPoint", not(isEmptyOrNullString()))
+        .body("name", not(isEmptyOrNullString()))
+        .body("type", is("Dataset"))
+        .body("status", not(isEmptyOrNullString()));
+    }
+
+    @Test
+    public void deliver_json() throws Exception {
+      givenPermission("read")
+        .header(HttpHeaders.ACCEPT, "application/json")
+      .when()
+        .get("/meta")
+      .then()
+        .statusCode(indicates(HttpCode.SUCCESSFUL))
+        .contentType(is("application/json"))
+        .root("dataset")
+        .body("globalID", not(isEmptyOrNullString()))
+        .body("localID", not(isEmptyOrNullString()))
+        .body("sparqlEndPoint", not(isEmptyOrNullString()))
+        .body("name", not(isEmptyOrNullString()))
+        .body("type", is("Dataset"))
+        .body("status", not(isEmptyOrNullString()));
+    }
+
+    @Test
+    public void reject_unauthorized_access() throws Exception {
+      ensureSecured();
+      givenPermission("none")
+      .when()
+        .get("/meta")
+      .then()
+        .statusCode(is(HttpStatus.SC_FORBIDDEN));
+    }
+  }
+}

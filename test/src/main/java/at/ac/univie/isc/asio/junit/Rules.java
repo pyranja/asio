@@ -31,10 +31,9 @@ public final class Rules {
   /**
    * Enrich failure descriptions with reports from test collaborators.
    *
-   * @param report a collaborator that may contribute failure information
-   * @return A new {@link Interactions} rule collecting from set source
+   * @return A new empty {@link Interactions} rule
    */
-  public static Interactions addReport(final Interactions.Report report) {
-    return Interactions.empty().and(report);
+  public static Interactions interactions() {
+    return Interactions.empty();
   }
 }

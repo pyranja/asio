@@ -1,0 +1,7 @@
+SELECT ?person ?property ?value
+WHERE {
+  ?person
+    a <http://test.com/integration/vocab/PUBLIC_PERSON> ;
+    ?property ?value .
+  FILTER (?property != rdf:type)
+}

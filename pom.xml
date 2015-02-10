@@ -26,6 +26,7 @@
     <module>lair-distribution</module>
     <module>flock</module>
     <module>flock-distribution</module>
+    <module>integration</module>
   </modules>
 
   <build>

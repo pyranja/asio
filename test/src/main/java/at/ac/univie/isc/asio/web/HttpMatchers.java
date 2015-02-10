@@ -1,6 +1,5 @@
 package at.ac.univie.isc.asio.web;
 
-import at.ac.univie.isc.asio.web.HttpCode;
 import org.hamcrest.Description;
 import org.hamcrest.Factory;
 import org.hamcrest.Matcher;

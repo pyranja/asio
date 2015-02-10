@@ -179,6 +179,11 @@
         <version>4.11</version>
         <scope>test</scope>
       </dependency>
+      <dependency>  <!-- this must be kept in sync with junit -->
+        <groupId>de.bechte.junit</groupId>
+        <artifactId>junit-hierarchicalcontextrunner</artifactId>
+        <version>4.11.3</version>
+      </dependency>
       <dependency>
         <groupId>org.hamcrest</groupId>
         <artifactId>hamcrest-core</artifactId>

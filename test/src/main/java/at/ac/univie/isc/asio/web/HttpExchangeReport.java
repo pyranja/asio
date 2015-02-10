@@ -17,7 +17,11 @@ import static java.util.Objects.requireNonNull;
  */
 public final class HttpExchangeReport implements Interactions.Report {
   public static HttpExchangeReport create() {
-    return new HttpExchangeReport();
+    return new HttpExchangeReport("unknown");
+  }
+
+  public static HttpExchangeReport named(final String name) {
+    return new HttpExchangeReport(name);
   }
 
   private static final Joiner.MapJoiner HEADER_JOINER =
@@ -29,13 +33,19 @@ public final class HttpExchangeReport implements Interactions.Report {
 
   private final StringBuilder requestReport =
       new StringBuilder(" NO REQUEST CAPTURED").append(System.lineSeparator());
-
   private final StringBuilder responseReport =
       new StringBuilder(" NO RESPONSE CAPTURED").append(System.lineSeparator());
 
   private Throwable error = null;
+  private final String label;
 
-  private HttpExchangeReport() {
+  private HttpExchangeReport(final String label) {
+    this.label = label;
+  }
+
+  @Override
+  public String toString() {
+    return "HttpExchangeReport{" + label + '}';
   }
 
   /**

@@ -1,0 +1,7 @@
+SELECT ?id ?date 
+WHERE {
+  []
+    <http://test.com/integration/vocab/PUBLIC_DATETIMES_MOMENT> ?date;
+    <http://test.com/integration/vocab/PUBLIC_DATETIMES_ID> ?id.
+  FILTER (?date < '1984-11-28T13:00:00'^^xsd:dateTime)
+}
