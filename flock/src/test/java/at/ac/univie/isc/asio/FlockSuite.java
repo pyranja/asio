@@ -1,6 +1,5 @@
-package at.ac.unvie.isc.asio;
+package at.ac.univie.isc.asio;
 
-import at.ac.univie.isc.asio.Flock;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -26,7 +25,7 @@ public class FlockSuite {
     final int port =
         ((AnnotationConfigEmbeddedWebApplicationContext) asio).getEmbeddedServletContainer().getPort();
     EnvironmentSpec
-        .create(URI.create("http://localhost:"+ port + "/"))
+        .create(URI.create("http://localhost:" + port + "/"))
         .sparql(URI.create("sparql"));
   }
 

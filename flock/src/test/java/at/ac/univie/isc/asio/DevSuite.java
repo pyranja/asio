@@ -1,4 +1,4 @@
-package at.ac.unvie.isc.asio;
+package at.ac.univie.isc.asio;
 
 import org.junit.BeforeClass;
 import org.junit.Ignore;

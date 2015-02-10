@@ -1,5 +1,6 @@
-package at.ac.unvie.isc.asio;
+package at.ac.univie.isc.asio;
 
+import at.ac.univie.isc.asio.EnvironmentSpec;
 import at.ac.univie.isc.asio.FunctionalTest;
 import at.ac.univie.isc.asio.web.HttpCode;
 import com.google.common.base.Charsets;
