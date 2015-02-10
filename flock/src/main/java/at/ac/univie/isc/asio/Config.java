@@ -7,7 +7,7 @@ import at.ac.univie.isc.asio.engine.sparql.JenaEngine;
 import at.ac.univie.isc.asio.insight.EventBusEmitter;
 import at.ac.univie.isc.asio.insight.EventLoggerBridge;
 import at.ac.univie.isc.asio.insight.EventStream;
-import at.ac.univie.isc.asio.insight.EventSystem;
+import at.ac.univie.isc.asio.insight.Emitter;
 import at.ac.univie.isc.asio.tool.Duration;
 import at.ac.univie.isc.asio.tool.TimeoutSpec;
 import com.google.common.base.Ticker;
@@ -36,7 +36,7 @@ public class Config {
   private Environment env;
 
   @Bean
-  public FlockResource flockResource(final EventSystem events,
+  public FlockResource flockResource(final Emitter events,
                                      final Provider<TimeoutSpec> timeout) {
     final ProtocolResourceFactory factory = new ProtocolResourceFactory(timeout);
     final boolean allowFederated = true;
@@ -54,9 +54,9 @@ public class Config {
         return scheduler;
       }
     };
-    final Provider<EventSystem> eventingProvider = new Provider<EventSystem>() {
+    final Provider<Emitter> eventingProvider = new Provider<Emitter>() {
       @Override
-      public EventSystem get() {
+      public Emitter get() {
         return events;
       }
     };
@@ -91,7 +91,7 @@ public class Config {
 
   // FIXME : use request scope
   @Bean
-  public EventSystem eventBuilder(final EventBus bus) {
+  public Emitter eventBuilder(final EventBus bus) {
     bus.register(new EventLoggerBridge());
     return new EventBusEmitter(bus, Ticker.systemTicker(), Scope.REQUEST);
   }

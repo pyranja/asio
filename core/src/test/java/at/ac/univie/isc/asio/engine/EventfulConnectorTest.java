@@ -4,7 +4,7 @@ import at.ac.univie.isc.asio.Scope;
 import at.ac.univie.isc.asio.TestTicker;
 import at.ac.univie.isc.asio.insight.Event;
 import at.ac.univie.isc.asio.insight.EventBusEmitter;
-import at.ac.univie.isc.asio.insight.EventSystem;
+import at.ac.univie.isc.asio.insight.Emitter;
 import at.ac.univie.isc.asio.tool.CaptureEvents;
 import at.ac.univie.isc.asio.tool.Reactive;
 import com.google.common.io.ByteStreams;
@@ -33,10 +33,10 @@ public class EventfulConnectorTest {
   };
 
   private final CaptureEvents<Event> events = CaptureEvents.create(Event.class);
-  private final EventSystem eventSystem = EventBusEmitter.create(events.bus(), TestTicker.create(1L), Scope.REQUEST);
+  private final Emitter emitter = EventBusEmitter.create(events.bus(), TestTicker.create(1L), Scope.REQUEST);
   private final Connector delegate = Mockito.mock(Connector.class);
 
-  private final EventfulConnector subject = EventfulConnector.around(eventSystem, delegate);
+  private final EventfulConnector subject = EventfulConnector.around(emitter, delegate);
 
   @Test
   public void wrapped_results_should_not_be_altered() throws Exception {

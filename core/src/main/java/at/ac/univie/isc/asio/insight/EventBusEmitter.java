@@ -10,7 +10,7 @@ import java.util.UUID;
  * Enrich {@code Messages} with context information and post them to an
  * {@link com.google.common.eventbus.EventBus}.
  */
-public final class EventBusEmitter implements EventSystem {
+public final class EventBusEmitter implements Emitter {
   private final EventBus bus;
   private final Ticker time;
   private final Correlation correlation;

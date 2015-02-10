@@ -3,7 +3,7 @@ package at.ac.univie.isc.asio.insight;
 /**
  * Enrich simple events and emit them through the event system.
  */
-public interface EventSystem {
+public interface Emitter {
   /**
    * Emit an event containing the given message
    *

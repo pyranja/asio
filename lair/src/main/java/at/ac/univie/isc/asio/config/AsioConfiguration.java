@@ -11,7 +11,7 @@ import at.ac.univie.isc.asio.engine.d2rq.LoadD2rqModel;
 import at.ac.univie.isc.asio.insight.EventBusEmitter;
 import at.ac.univie.isc.asio.insight.EventLoggerBridge;
 import at.ac.univie.isc.asio.insight.EventStream;
-import at.ac.univie.isc.asio.insight.EventSystem;
+import at.ac.univie.isc.asio.insight.Emitter;
 import at.ac.univie.isc.asio.jaxrs.AppSpec;
 import at.ac.univie.isc.asio.metadata.*;
 import at.ac.univie.isc.asio.spring.SpringByteSource;
@@ -92,7 +92,7 @@ public class AsioConfiguration {
   }
 
   @Bean
-  public SchemaResource schemaResource(final Schema schema, final Provider<TimeoutSpec> timeout, final Provider<EventSystem> events) {
+  public SchemaResource schemaResource(final Schema schema, final Provider<TimeoutSpec> timeout, final Provider<Emitter> events) {
     final ProtocolResourceFactory factory = new ProtocolResourceFactory(timeout);
     final Scheduler scheduler = Schedulers.from(workerPool());
     final Provider<Iterable<Engine>> engineProvider = new Provider<Iterable<Engine>>() {
@@ -153,7 +153,7 @@ public class AsioConfiguration {
 
   @Bean
   @Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.NO)
-  public EventSystem eventEmitter() {
+  public Emitter eventEmitter() {
     return new EventBusEmitter(eventBus(), Ticker.systemTicker(), at.ac.univie.isc.asio.Scope.REQUEST);
   }
 

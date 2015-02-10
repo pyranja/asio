@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.engine;
 
-import at.ac.univie.isc.asio.insight.EventSystem;
+import at.ac.univie.isc.asio.insight.Emitter;
 import at.ac.univie.isc.asio.insight.Message;
 import rx.Observable;
 import rx.functions.Action0;
@@ -16,21 +16,21 @@ import javax.annotation.Nonnull;
  */
 public final class EventfulConnector implements Connector {
   private final Connector delegate;
-  private final EventSystem event;
+  private final Emitter event;
 
-  private EventfulConnector(final Connector delegate, final EventSystem event) {
+  private EventfulConnector(final Connector delegate, final Emitter event) {
     this.delegate = delegate;
     this.event = event;
   }
 
   /**
    * Wrap a given {@code Connector} by emitting request events to the set event sink.
-   * @param eventSystem event sink
+   * @param emitter event sink
    * @param delegate wrapped original connector
    * @return decorated connector
    */
-  public static EventfulConnector around(final EventSystem eventSystem, final Connector delegate) {
-    return new EventfulConnector(delegate, eventSystem);
+  public static EventfulConnector around(final Emitter emitter, final Connector delegate) {
+    return new EventfulConnector(delegate, emitter);
   }
 
   @Nonnull
@@ -44,13 +44,13 @@ public final class EventfulConnector implements Connector {
   }
 
   static class ConvertToEventfulResults implements Func1<StreamedResults, StreamedResults> {
-    private final EventSystem event;
+    private final Emitter event;
 
-    private ConvertToEventfulResults(final EventSystem event) {
+    private ConvertToEventfulResults(final Emitter event) {
       this.event = event;
     }
 
-    static ConvertToEventfulResults with(final EventSystem event) {
+    static ConvertToEventfulResults with(final Emitter event) {
       return new ConvertToEventfulResults(event);
     }
 
@@ -76,13 +76,13 @@ public final class EventfulConnector implements Connector {
 
 
   static class EmitExecuted implements Action1<StreamedResults> {
-    private final EventSystem event;
+    private final Emitter event;
 
-    private EmitExecuted(final EventSystem event) {
+    private EmitExecuted(final Emitter event) {
       this.event = event;
     }
 
-    static EmitExecuted to(final EventSystem event) {
+    static EmitExecuted to(final Emitter event) {
       return new EmitExecuted(event);
     }
 
@@ -93,13 +93,13 @@ public final class EventfulConnector implements Connector {
   }
 
   static class EmitError implements Action1<Throwable> {
-    private final EventSystem event;
+    private final Emitter event;
 
-    private EmitError(final EventSystem event) {
+    private EmitError(final Emitter event) {
       this.event = event;
     }
 
-    static EmitError to(final EventSystem event) {
+    static EmitError to(final Emitter event) {
       return new EmitError(event);
     }
 
