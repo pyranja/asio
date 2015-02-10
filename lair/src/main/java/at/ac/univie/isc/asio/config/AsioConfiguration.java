@@ -92,7 +92,7 @@ public class AsioConfiguration {
   }
 
   @Bean
-  public SchemaResource schemaResource(final Schema schema, final Provider<TimeoutSpec> timeout) {
+  public SchemaResource schemaResource(final Schema schema, final Provider<TimeoutSpec> timeout, final Provider<EventSystem> events) {
     final ProtocolResourceFactory factory = new ProtocolResourceFactory(timeout);
     final Scheduler scheduler = Schedulers.from(workerPool());
     final Provider<Iterable<Engine>> engineProvider = new Provider<Iterable<Engine>>() {
@@ -107,7 +107,7 @@ public class AsioConfiguration {
         return scheduler;
       }
     };
-    final ConnectorChain chain = new ConnectorChain(engineProvider, schedulerProvider, eventEmitter());
+    final ConnectorChain chain = new ConnectorChain(engineProvider, schedulerProvider, events);
     return new SchemaResource(factory, chain);
   }
 
@@ -151,19 +151,10 @@ public class AsioConfiguration {
     return new SchemaFactory(env);
   }
 
-  // FIXME : this is so ugly ...
   @Bean
-  @Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.INTERFACES)
-  public Provider<EventSystem> eventEmitter() {
-    return new Provider<EventSystem>() {
-      private final EventBusEmitter instance =
-          new EventBusEmitter(eventBus(), Ticker.systemTicker(), at.ac.univie.isc.asio.Scope.REQUEST);
-
-      @Override
-      public EventSystem get() {
-        return instance;
-      }
-    };
+  @Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.NO)
+  public EventSystem eventEmitter() {
+    return new EventBusEmitter(eventBus(), Ticker.systemTicker(), at.ac.univie.isc.asio.Scope.REQUEST);
   }
 
   @Bean
