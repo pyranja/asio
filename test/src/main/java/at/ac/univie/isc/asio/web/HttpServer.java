@@ -1,11 +1,9 @@
-package at.ac.unvie.isc.asio.web;
+package at.ac.univie.isc.asio.web;
 
-import at.ac.univie.isc.asio.Payload;
-import at.ac.univie.isc.asio.jaxrs.CachedInputStream;
-import at.ac.univie.isc.asio.jaxrs.TeeOutputStream;
-import at.ac.univie.isc.asio.tool.Pretty;
-import at.ac.unvie.isc.asio.junit.ReportCollector;
-import com.google.common.base.Objects;
+import at.ac.univie.isc.asio.io.CachedInputStream;
+import at.ac.univie.isc.asio.io.Payload;
+import at.ac.univie.isc.asio.io.TeeOutputStream;
+import at.ac.univie.isc.asio.junit.Interactions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
@@ -14,11 +12,11 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.sun.net.httpserver.Filter;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.junit.rules.ExternalResource;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -32,22 +30,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
-import static at.ac.univie.isc.asio.tool.Pretty.justify;
 import static java.lang.String.format;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Provide a lightweight, embedded {@link com.sun.net.httpserver.HttpServer http server} listening
  * to a random, free port on localhost.
  */
-public final class EmbeddedHttpServer extends ExternalResource implements ReportCollector.Report {
-
-  /**
-   * @param label describing this server
-   * @return the server
-   */
-  public static EmbeddedHttpServer create(final String label) {
-    return new EmbeddedHttpServer(label);
-  }
+public final class HttpServer extends ExternalResource implements Interactions.Report {
 
   private static final Splitter.MapSplitter PARAMETER_PARSER =
       Splitter.on('&').trimResults().omitEmptyStrings().withKeyValueSeparator('=');
@@ -87,19 +77,24 @@ public final class EmbeddedHttpServer extends ExternalResource implements Report
         && "application/x-www-form-urlencoded".equalsIgnoreCase(contentType);
   }
 
-  private final HttpServer server;
+  private final com.sun.net.httpserver.HttpServer server;
   private final String label;
   private final ExecutorService exec = Executors.newCachedThreadPool(THREAD_FACTORY);
-  private final StringBuilder reporter = new StringBuilder();
+  private final StringBuilder capturedExchanges = new StringBuilder();
   private boolean logging = false;
 
-  private EmbeddedHttpServer(final String label) {
+  private HttpServer(final String label) {
     this.label = label;
     try {
-      server = HttpServer.create();
+      server = com.sun.net.httpserver.HttpServer.create();
     } catch (IOException e) {
       throw Throwables.propagate(e);
     }
+  }
+
+  /** factory method */
+  public static HttpServer create(final String label) {
+    return new HttpServer(label);
   }
 
   /**
@@ -108,7 +103,7 @@ public final class EmbeddedHttpServer extends ExternalResource implements Report
    *
    * @return this server
    */
-  public EmbeddedHttpServer enableLogging() {
+  public HttpServer enableLogging() {
     this.logging = true;
     return this;
   }
@@ -127,21 +122,17 @@ public final class EmbeddedHttpServer extends ExternalResource implements Report
    * @param handler request handling delegate
    * @return this server instance
    */
-  public EmbeddedHttpServer with(final String path, final HttpHandler handler) {
+  public HttpServer with(final String path, final HttpHandler handler) {
     final List<Filter> filters = server.createContext(path, handler).getFilters();
     if (logging) { filters.add(new LogFilter(System.out)); }
-    filters.add(new LogFilter(reporter));
+    filters.add(new LogFilter(capturedExchanges));
     filters.add(new ErrorFilter());
     return this;
   }
 
   @Override
   public Appendable appendTo(final Appendable sink) throws IOException {
-    final String labelLine = justify(Pretty.format(" <%s> ", label), 75, '#');
-    return sink
-        .append(labelLine).append(System.lineSeparator())
-        .append(reporter)
-        .append(labelLine).append(System.lineSeparator());
+    return sink.append(capturedExchanges);
   }
 
   @Override
@@ -162,10 +153,7 @@ public final class EmbeddedHttpServer extends ExternalResource implements Report
 
   @Override
   public String toString() {
-    return Objects.toStringHelper(this)
-        .add("logging", logging)
-        .add("label", label)
-        .toString();
+    return "HttpServer{" + label + '}';
   }
 
   /**
@@ -186,11 +174,11 @@ public final class EmbeddedHttpServer extends ExternalResource implements Report
         final CachedInputStream requestBody = CachedInputStream.cache(exchange.getRequestBody());
         exchange.setStreams(requestBody, responseBody);
         report
-            .received(exchange.getRequestMethod(), exchange.getRequestURI(), exchange.getRequestHeaders())
+            .captureRequest(exchange.getRequestMethod(), exchange.getRequestURI(), exchange.getRequestHeaders())
             .withRequestBody(requestBody.cached());
         chain.doFilter(exchange);
         report
-            .sent(exchange.getResponseCode(), exchange.getResponseHeaders())
+            .captureResponse(exchange.getResponseCode(), exchange.getResponseHeaders())
             .withResponseBody(responseBody.captured());
       } catch (Exception e) {
         report.failure(e);
@@ -227,5 +215,32 @@ public final class EmbeddedHttpServer extends ExternalResource implements Report
     public String description() {
       return "error filter";
     }
+  }
+
+  /**
+   * Ported from {@code at.ac.univie.isc.tool.Pretty#justfiy} due to dependency conflicts.
+   *
+   * Pad the given string to justify it.
+   *
+   * @param text to be justified
+   * @param minLength pad until this length is reached
+   * @param pad char to use as padding
+   * @return justified string
+   */
+  @Nonnull
+  private static String justify(@Nonnull final String text, final int minLength, final char pad) {
+    requireNonNull(text);
+    if (minLength < 0) { throw new IllegalArgumentException("minLength must be positive"); }
+    if (text.length() >= minLength) { return text; }
+    final StringBuilder buffer = new StringBuilder(minLength);
+    final int padLength = minLength - text.length();
+    for (int i = padLength / 2; i > 0; i--) {
+      buffer.append(pad);
+    }
+    buffer.append(text);
+    for (int i = padLength / 2 + padLength % 2; i > 0; i--) {
+      buffer.append(pad);
+    }
+    return buffer.toString();
   }
 }

@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.engine;
 
-import at.ac.univie.isc.asio.Payload;
+import at.ac.univie.isc.asio.io.Payload;
 import at.ac.univie.isc.asio.tool.Resources;
 import at.ac.univie.isc.asio.junit.Rules;
 import at.ac.univie.isc.asio.Unchecked;

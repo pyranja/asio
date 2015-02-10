@@ -67,6 +67,12 @@
     </dependency>
     <!-- test dependencies -->
     <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>asio-test</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>com.jayway.restassured</groupId>
       <artifactId>rest-assured</artifactId>
       <version>2.3.4</version>

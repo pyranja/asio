@@ -1,6 +1,6 @@
-package at.ac.unvie.isc.asio.junit;
+package at.ac.univie.isc.asio.web;
 
-import at.ac.unvie.isc.asio.web.HttpCode;
+import at.ac.univie.isc.asio.web.HttpCode;
 import org.hamcrest.Description;
 import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
@@ -13,7 +13,7 @@ public final class HttpMatchers {
 
   /**
    * Creates a matcher for HTTP status codes matching if the given status code belongs to the
-   * expected {@link at.ac.unvie.isc.asio.web.HttpCode family} of HTTP status codes.
+   * expected {@link at.ac.univie.isc.asio.web.HttpCode family} of HTTP status codes.
    * @param expected family of HTTP status codes
    */
   @Factory

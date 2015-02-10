@@ -1,4 +1,4 @@
-package at.ac.unvie.isc.asio.web;
+package at.ac.univie.isc.asio.web;
 
 /**
  * The five HTTP status code families. Ported from {@code javax.ws.rs.core.Response.Status.Family}.

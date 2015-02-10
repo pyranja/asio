@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.tool;
 
-import at.ac.univie.isc.asio.Payload;
+import at.ac.univie.isc.asio.io.Payload;
 import com.google.common.base.Charsets;
 import org.junit.Rule;
 import org.junit.Test;

@@ -1,4 +1,4 @@
-package at.ac.univie.isc.asio;
+package at.ac.univie.isc.asio.io;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Random;

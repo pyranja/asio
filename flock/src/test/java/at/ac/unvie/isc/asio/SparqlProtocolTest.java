@@ -1,7 +1,7 @@
 package at.ac.unvie.isc.asio;
 
 import at.ac.univie.isc.asio.FunctionalTest;
-import at.ac.unvie.isc.asio.web.HttpCode;
+import at.ac.univie.isc.asio.web.HttpCode;
 import com.google.common.base.Charsets;
 import com.google.common.net.HttpHeaders;
 import org.junit.BeforeClass;
@@ -11,7 +11,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 
-import static at.ac.unvie.isc.asio.junit.HttpMatchers.indicates;
+import static at.ac.univie.isc.asio.web.HttpMatchers.indicates;
 import static com.jayway.restassured.RestAssured.*;
 import static com.jayway.restassured.config.EncoderConfig.encoderConfig;
 import static com.jayway.restassured.config.LogConfig.logConfig;

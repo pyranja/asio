@@ -1,5 +1,6 @@
-package at.ac.unvie.isc.asio.junit;
+package at.ac.univie.isc.asio.junit;
 
+import at.ac.univie.isc.asio.Pretty;
 import org.junit.internal.AssumptionViolatedException;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -7,20 +8,16 @@ import org.junit.runners.model.Statement;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Set;
 
 /**
  * Collect reports from registered components and add them to the failure description if a test fails.
  */
-public final class ReportCollector implements TestRule {
-  /**
-   * @return a new ReportCollector
-   */
-  public static ReportCollector register(final Report... reports) {
-    final ReportCollector instance = new ReportCollector();
-    for (final Report each : reports) { instance.and(each); }
-    return instance;
+public final class Interactions implements TestRule {
+
+  /** factory method */
+  public static Interactions empty() {
+    return new Interactions();
   }
 
   /**
@@ -39,7 +36,7 @@ public final class ReportCollector implements TestRule {
 
   private final Set<Report> reports = new HashSet<>();
 
-  private ReportCollector() {}
+  private Interactions() {}
 
   @Override
   public Statement apply(final Statement base, final Description description) {
@@ -63,20 +60,24 @@ public final class ReportCollector implements TestRule {
    * @param report to be collected
    * @return this
    */
-  public ReportCollector and(final Report report) {
+  public Interactions and(final Report report) {
     this.reports.add(report);
     return this;
   }
 
   private String collectReports() {
     final StringBuilder collector = new StringBuilder();
+    collector.append(Pretty.justify(" RECORDED INTERACTIONS ", 75, '#')).append(System.lineSeparator());
     for (Report report : reports) {
       try {
+        collector.append(Pretty.justify(' ' + report.toString() + ' ', 75, '#')).append(System.lineSeparator());
         report.appendTo(collector);
+        collector.append(System.lineSeparator());
       } catch (IOException impossible) {
         throw new AssertionError(impossible);
       }
     }
+    collector.append(Pretty.justify(" END OF INTERACTIONS ", 75, '#')).append(System.lineSeparator());
     return collector.toString();
   }
 
@@ -104,6 +105,6 @@ public final class ReportCollector implements TestRule {
   }
 
   private static String merge(final String message, final Throwable error) {
-    return String.format(Locale.ENGLISH, "%s%n%s", error.getMessage(), message);
+    return Pretty.format("%n%s%s", message, error.getMessage());
   }
 }

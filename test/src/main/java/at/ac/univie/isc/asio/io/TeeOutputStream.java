@@ -1,4 +1,4 @@
-package at.ac.univie.isc.asio.jaxrs;
+package at.ac.univie.isc.asio.io;
 
 import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;

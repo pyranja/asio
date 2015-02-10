@@ -1,7 +1,7 @@
 package at.ac.univie.isc.asio.engine;
 
 import at.ac.univie.isc.asio.DatasetFailureException;
-import at.ac.univie.isc.asio.Payload;
+import at.ac.univie.isc.asio.io.Payload;
 import at.ac.univie.isc.asio.jaxrs.AsyncResponseFake;
 import at.ac.univie.isc.asio.jaxrs.Mime;
 import at.ac.univie.isc.asio.tool.TimeoutSpec;

@@ -1,11 +1,12 @@
 package at.ac.unvie.isc.asio;
 
-import at.ac.univie.isc.asio.Classpath;
+import at.ac.univie.isc.asio.io.Classpath;
 import at.ac.univie.isc.asio.FunctionalTest;
+import at.ac.univie.isc.asio.junit.Rules;
 import at.ac.univie.isc.asio.tool.Pretty;
-import at.ac.unvie.isc.asio.junit.ReportCollector;
-import at.ac.unvie.isc.asio.web.EmbeddedHttpServer;
-import at.ac.unvie.isc.asio.web.HttpCode;
+import at.ac.univie.isc.asio.junit.Interactions;
+import at.ac.univie.isc.asio.web.HttpServer;
+import at.ac.univie.isc.asio.web.HttpCode;
 import com.google.common.base.Charsets;
 import com.hp.hpl.jena.query.*;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -32,7 +33,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static at.ac.unvie.isc.asio.junit.HttpMatchers.indicates;
+import static at.ac.univie.isc.asio.web.HttpMatchers.indicates;
 import static com.jayway.restassured.RestAssured.*;
 import static com.jayway.restassured.config.EncoderConfig.encoderConfig;
 import static com.jayway.restassured.config.LogConfig.logConfig;
@@ -68,9 +69,9 @@ public class SparqlFederationTest {
   }
 
   @Rule
-  public final EmbeddedHttpServer http = EmbeddedHttpServer.create("sparql-endpoints");
+  public final HttpServer http = Rules.httpServer("sparql-endpoints");
   @Rule
-  public final ReportCollector collector = ReportCollector.register(http);
+  public final Interactions collector = Rules.addReport(http);
   private Map<String, URI> endpoints = new HashMap<>();
 
   private final String label;
@@ -132,7 +133,7 @@ public class SparqlFederationTest {
 
     @Override
     public void handle(final HttpExchange exchange) throws IOException {
-      final String query = EmbeddedHttpServer.parseParameters(exchange).get("query");
+      final String query = HttpServer.parseParameters(exchange).get("query");
       final QueryExecution execution = QueryExecutionFactory.create(query, model);
       switch (execution.getQuery().getQueryType()) {
         case Query.QueryTypeAsk:

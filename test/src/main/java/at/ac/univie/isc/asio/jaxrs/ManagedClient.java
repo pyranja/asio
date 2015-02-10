@@ -1,12 +1,12 @@
 package at.ac.univie.isc.asio.jaxrs;
 
+import at.ac.univie.isc.asio.io.TeeOutputStream;
+import at.ac.univie.isc.asio.junit.Interactions;
+import at.ac.univie.isc.asio.web.HttpExchangeReport;
 import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
 import com.google.common.io.ByteStreams;
-import org.junit.internal.AssumptionViolatedException;
-import org.junit.rules.TestRule;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
+import org.junit.rules.ExternalResource;
 
 import javax.annotation.concurrent.NotThreadSafe;
 import javax.net.ssl.HostnameVerifier;
@@ -32,7 +32,6 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
-import java.util.Locale;
 
 import static java.util.Objects.requireNonNull;
 
@@ -40,7 +39,7 @@ import static java.util.Objects.requireNonNull;
  * Manage a WebTarget instance for a set service endpoint.
  */
 @NotThreadSafe
-public final class ManagedClient implements TestRule {
+public final class ManagedClient extends ExternalResource implements Interactions.Report {
   private static final HostnameVerifier ALLOW_ALL = new HostnameVerifier() {
     @Override
     public boolean verify(final String host, final SSLSession ssl) {
@@ -54,12 +53,14 @@ public final class ManagedClient implements TestRule {
 
   private final ClientBuilder builder;
   private final URI serviceAddress;
+  private final HttpExchangeReport capturedExchanges;
   private Client client;
 
   private ManagedClient(final ClientBuilder builder, final URI serviceAddress) {
     this.builder = requireNonNull(builder);
     this.serviceAddress = requireNonNull(serviceAddress);
-    this.builder.register(new MonitoringFilter());
+    this.capturedExchanges = HttpExchangeReport.create();
+    this.builder.register(new MonitoringFilter(capturedExchanges));
   }
 
   public WebTarget endpoint() {
@@ -72,88 +73,52 @@ public final class ManagedClient implements TestRule {
   }
 
   @Override
-  public Statement apply(final Statement base, final Description description) {
-    return new Statement() {
-      @Override
-      public void evaluate() throws Throwable {
-        before();
-        try {
-          base.evaluate();
-        } catch (AssumptionViolatedException skipMe) {
-          throw skipMe;
-        } catch (AssertionError failure) {
-          throw new TestFailedReport(messageWithExchangeReport(failure), failure);
-        } catch (Throwable error) {
-          throw new TestInErrorReport(messageWithExchangeReport(error), error);
-        } finally {
-          after();
-        }
-      }
-    };
-  }
-
-  private String messageWithExchangeReport(final Throwable error) {
-    final String report = MonitoringFilter.findReport(client);
-    return String.format(Locale.ENGLISH, "%s%n%s", error.getMessage(), report);
-  }
-
-  private static class TestInErrorReport extends RuntimeException {
-    TestInErrorReport(final String message, final Throwable error) {
-      super(error.getClass().getName() +": " + message);
-      this.setStackTrace(error.getStackTrace());
-      this.addSuppressed(error);
-    }
-  }
-
-  private static class TestFailedReport extends AssertionError {
-    TestFailedReport(final String message, final Throwable failure) {
-      super(message);
-      this.setStackTrace(failure.getStackTrace());
-      this.addSuppressed(failure);
-    }
-  }
-
-  private void before() {
+  protected void before() {
     client = builder.build();
   }
 
-  private void after() {
+  @Override
+  protected void after() {
     client.close();
+  }
+
+  @Override
+  public Appendable appendTo(final Appendable sink) throws IOException {
+    capturedExchanges.appendTo(sink);
+    return sink;
+  }
+
+  @Override
+  public String toString() {
+    return "ManagedClient{" + serviceAddress + '}';
   }
 
   @Provider
   @NotThreadSafe
   private static final class MonitoringFilter implements ClientRequestFilter, ClientResponseFilter, WriterInterceptor {
-    public static final String REPORT_KEY = "at.ac.univie.isc.asio.exchange.report";
 
-    private final ExchangeReporter reporter = ExchangeReporter.create();
+    private final HttpExchangeReport reporter;
 
-    public static String findReport(Client client) {
-      final Object reporter = client.getConfiguration().getProperty(REPORT_KEY);
-      if (reporter != null && reporter instanceof ExchangeReporter) {
-        return ((ExchangeReporter) reporter).format();
-      } else {
-        return "NO EXCHANGE CAPTURED";
-      }
+    private MonitoringFilter(final HttpExchangeReport reporter) {
+      this.reporter = reporter;
     }
 
     @Override
-    public void filter(final ClientRequestContext requestContext) throws IOException {
-      requestContext.getClient().property(REPORT_KEY, reporter);
-      reporter.update(requestContext);
+    public void filter(final ClientRequestContext request) throws IOException {
+      reporter.captureRequest(request.getMethod(), request.getUri(), request.getStringHeaders());
     }
 
     @Override
-    public void filter(final ClientRequestContext requestContext, final ClientResponseContext responseContext) throws IOException {
-      final InputStream entityStream = responseContext.getEntityStream();
-      final byte[] body;
+    public void filter(final ClientRequestContext request, final ClientResponseContext response) throws IOException {
+      final InputStream entityStream = response.getEntityStream();
+      final byte[] data;
       if (entityStream != null) {
-        body = ByteStreams.toByteArray(entityStream);
-        responseContext.setEntityStream(new ByteArrayInputStream(body));
+        data = ByteStreams.toByteArray(entityStream);
+        response.setEntityStream(new ByteArrayInputStream(data));
       } else {
-        body = "NONE".getBytes(Charsets.UTF_8);
+        data = "NONE".getBytes(Charsets.UTF_8);
       }
-      reporter.update(responseContext).responseBody(body);
+      reporter.captureResponse(response.getStatus(), response.getHeaders()).withResponseBody(data);
     }
 
     @Override
@@ -162,7 +127,7 @@ public final class ManagedClient implements TestRule {
       final TeeOutputStream interceptor = TeeOutputStream.wrap(out);
       context.setOutputStream(interceptor);
       context.proceed();
-      reporter.requestBody(interceptor.captured());
+      reporter.withRequestBody(interceptor.captured());
     }
   }
 

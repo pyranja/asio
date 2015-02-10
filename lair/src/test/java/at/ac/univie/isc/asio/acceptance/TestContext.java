@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.acceptance;
 
-import at.ac.univie.isc.asio.Classpath;
+import at.ac.univie.isc.asio.io.Classpath;
 import at.ac.univie.isc.asio.sql.Database;
 import com.google.common.base.Throwables;
 

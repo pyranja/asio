@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.engine.sql;
 
-import at.ac.univie.isc.asio.Classpath;
+import at.ac.univie.isc.asio.io.Classpath;
 import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.DatasetUsageException;
 import at.ac.univie.isc.asio.SqlResult;

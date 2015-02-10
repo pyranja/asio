@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.engine.d2rq;
 
-import at.ac.univie.isc.asio.Payload;
+import at.ac.univie.isc.asio.io.Payload;
 import com.google.common.io.ByteSource;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;

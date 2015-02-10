@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.engine.sql;
 
-import at.ac.univie.isc.asio.Classpath;
+import at.ac.univie.isc.asio.io.Classpath;
 import at.ac.univie.isc.asio.Column;
 import at.ac.univie.isc.asio.ObjectFactory;
 import at.ac.univie.isc.asio.SqlSchema;

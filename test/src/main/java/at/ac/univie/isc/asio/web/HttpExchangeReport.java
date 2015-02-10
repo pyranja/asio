@@ -1,7 +1,7 @@
-package at.ac.unvie.isc.asio.web;
+package at.ac.univie.isc.asio.web;
 
-import at.ac.univie.isc.asio.tool.Pretty;
-import at.ac.unvie.isc.asio.junit.ReportCollector;
+import at.ac.univie.isc.asio.Pretty;
+import at.ac.univie.isc.asio.junit.Interactions;
 import com.google.common.base.Joiner;
 
 import java.io.IOException;
@@ -10,13 +10,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Objects;
 
-import static at.ac.univie.isc.asio.tool.Pretty.justify;
 import static java.util.Objects.requireNonNull;
 
 /**
  * Capture and format details of a HTTP request/response exchange.
  */
-public final class HttpExchangeReport implements ReportCollector.Report {
+public final class HttpExchangeReport implements Interactions.Report {
   public static HttpExchangeReport create() {
     return new HttpExchangeReport();
   }
@@ -24,15 +23,15 @@ public final class HttpExchangeReport implements ReportCollector.Report {
   private static final Joiner.MapJoiner HEADER_JOINER =
       Joiner.on(',').withKeyValueSeparator("=").useForNull(Objects.toString(null));
 
-  private static final String INTRO = justify("START HTTP EXCHANGE", 75, '=');
-  private static final String HLINE = justify("", 75, '-');
-  private static final String OUTRO = justify("END HTTP EXCHANGE", 75, '=');
+  private static final String INTRO = Pretty.justify(" START HTTP EXCHANGE ", 75, '=');
+  private static final String HLINE = Pretty.justify("", 75, '-');
+  private static final String OUTRO = Pretty.justify(" END HTTP EXCHANGE ", 75, '=');
 
   private final StringBuilder requestReport =
-      new StringBuilder("NO REQUEST CAPTURED").append(System.lineSeparator());
+      new StringBuilder(" NO REQUEST CAPTURED").append(System.lineSeparator());
 
   private final StringBuilder responseReport =
-      new StringBuilder("NO RESPONSE CAPTURED").append(System.lineSeparator());
+      new StringBuilder(" NO RESPONSE CAPTURED").append(System.lineSeparator());
 
   private Throwable error = null;
 
@@ -76,7 +75,7 @@ public final class HttpExchangeReport implements ReportCollector.Report {
    * @param headers request headers
    * @return this report
    */
-  public HttpExchangeReport received(final String method, final URI uri, final Map<?, ?> headers) {
+  public HttpExchangeReport captureRequest(final String method, final URI uri, final Map<?, ?> headers) {
     requestReport.setLength(0);
     requestReport
         .append(Pretty.format(" REQUEST %s %s%n", method, uri))
@@ -102,7 +101,7 @@ public final class HttpExchangeReport implements ReportCollector.Report {
    * @param headers response headers
    * @return this report
    */
-  public HttpExchangeReport sent(final int code, final Map<?, ?> headers) {
+  public HttpExchangeReport captureResponse(final int code, final Map<?, ?> headers) {
     responseReport.setLength(0);
     responseReport
         .append(Pretty.format(" RESPONSE %s %d%n", HttpCode.valueOf(code), code))

@@ -1,6 +1,7 @@
 package at.ac.univie.isc.asio.acceptance;
 
 import at.ac.univie.isc.asio.jaxrs.ManagedClient;
+import at.ac.univie.isc.asio.junit.Interactions;
 import at.ac.univie.isc.asio.sql.Database;
 import at.ac.univie.isc.asio.junit.Rules;
 import com.google.common.collect.ImmutableMap;
@@ -23,6 +24,8 @@ public abstract class AcceptanceHarness {
 
   @Rule
   public final Timeout timeout = Rules.timeout(TestContext.timeout(), TimeUnit.SECONDS);
+  @Rule
+  public final Interactions interactions = Interactions.empty();
 
   @Rule
   public final TestRule clientProvider() {
@@ -34,6 +37,7 @@ public abstract class AcceptanceHarness {
         .use(jsonSerializer)
         .secured(keyStore)
         .build(getTargetUrl());
+    interactions.and(provider);
     return provider;
   }
 

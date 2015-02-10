@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.junit;
 
+import at.ac.univie.isc.asio.web.HttpServer;
 import com.google.common.primitives.Ints;
 import org.junit.rules.Timeout;
 
@@ -15,5 +16,25 @@ public final class Rules {
    */
   public static Timeout timeout(final int value, final TimeUnit unit) {
     return new Timeout(Ints.checkedCast(unit.toMillis(value)));
+  }
+
+  /**
+   * A light-weight, in-process http server.
+   *
+   * @param label describing this server
+   * @return A new {@link at.ac.univie.isc.asio.web.HttpServer} rule
+   */
+  public static HttpServer httpServer(final String label) {
+    return HttpServer.create(label);
+  }
+
+  /**
+   * Enrich failure descriptions with reports from test collaborators.
+   *
+   * @param report a collaborator that may contribute failure information
+   * @return A new {@link Interactions} rule collecting from set source
+   */
+  public static Interactions addReport(final Interactions.Report report) {
+    return Interactions.empty().and(report);
   }
 }
