@@ -10,6 +10,8 @@ import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.openjena.riot.Lang;
 
+import java.util.Locale;
+
 import static org.hamcrest.Matchers.*;
 
 public final class AsioMatchers {
@@ -48,11 +50,11 @@ public final class AsioMatchers {
 
   // web
 
+  /**
+   * handles 'type/subtype+extension' format
+   */
   public static Matcher<String> compatibleTo(final String rawExpectedType) {
-    // handles 'type/subtype+extension' format
-    final MediaType expected = MediaType.parse(rawExpectedType);
-    return either(equalToIgnoringCase(rawExpectedType))
-        .or(both(startsWith(expected.type() + "/")).and(endsWith("+" + expected.subtype())));
+    return new MimeMatcher(MediaType.parse(rawExpectedType.toLowerCase(Locale.ENGLISH)));
   }
 
   // mock http server
