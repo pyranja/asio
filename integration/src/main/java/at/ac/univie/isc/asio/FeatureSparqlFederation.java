@@ -27,7 +27,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static at.ac.univie.isc.asio.matcher.AsioMatchers.*;
+import static at.ac.univie.isc.asio.matcher.RestAssuredMatchers.*;
 import static at.ac.univie.isc.asio.web.HttpMatchers.indicates;
 import static org.hamcrest.CoreMatchers.is;
 

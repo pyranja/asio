@@ -18,7 +18,6 @@ import org.junit.runners.Parameterized;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
-import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -96,7 +95,7 @@ public class FeatureEvents extends IntegrationTest {
       @Override
       public void call(final HttpResponse aVoid) {
         final String commandWithInvalidSyntax = Hashing.md5().hashString(noop, Charsets.UTF_8).toString();
-        withPermission("admin").param(operation, commandWithInvalidSyntax).post("/{language}", language);;
+        withPermission("admin").param(operation, commandWithInvalidSyntax).post("/{language}", language);
       }
     });
     final List<EventSource.MessageEvent> received =
@@ -134,9 +133,8 @@ public class FeatureEvents extends IntegrationTest {
     protected boolean matchesSafely(final Iterable<? extends EventSource.MessageEvent> item) {
       final Iterable<String> ids =
           Iterables.transform(item, new Function<EventSource.MessageEvent, String>() {
-            @Nullable
             @Override
-            public String apply(@Nullable final EventSource.MessageEvent input) {
+            public String apply(final EventSource.MessageEvent input) {
               return extractCorrelation(input.data());
             }
           });

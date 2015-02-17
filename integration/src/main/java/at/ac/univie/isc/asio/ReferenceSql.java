@@ -3,13 +3,13 @@ package at.ac.univie.isc.asio;
 import at.ac.univie.isc.asio.io.Classpath;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
-import com.google.common.net.HttpHeaders;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static at.ac.univie.isc.asio.matcher.AsioMatchers.*;
+import static at.ac.univie.isc.asio.matcher.RestAssuredMatchers.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 

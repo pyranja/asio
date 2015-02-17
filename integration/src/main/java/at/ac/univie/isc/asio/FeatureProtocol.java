@@ -16,7 +16,7 @@ import org.junit.runners.Parameterized;
 import java.net.URLEncoder;
 import java.util.Arrays;
 
-import static at.ac.univie.isc.asio.matcher.AsioMatchers.compatibleTo;
+import static at.ac.univie.isc.asio.matcher.RestAssuredMatchers.compatibleTo;
 import static at.ac.univie.isc.asio.web.HttpMatchers.indicates;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;

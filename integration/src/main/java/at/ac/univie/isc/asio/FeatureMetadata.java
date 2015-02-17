@@ -1,7 +1,7 @@
 package at.ac.univie.isc.asio;
 
 import at.ac.univie.isc.asio.web.HttpCode;
-import com.google.common.net.HttpHeaders;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

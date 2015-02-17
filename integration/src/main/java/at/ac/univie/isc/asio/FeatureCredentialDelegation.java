@@ -11,8 +11,8 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static at.ac.univie.isc.asio.matcher.AsioMatchers.basicAuthPassword;
-import static at.ac.univie.isc.asio.matcher.AsioMatchers.basicAuthUsername;
+import static at.ac.univie.isc.asio.matcher.RestAssuredMatchers.basicAuthPassword;
+import static at.ac.univie.isc.asio.matcher.RestAssuredMatchers.basicAuthUsername;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;

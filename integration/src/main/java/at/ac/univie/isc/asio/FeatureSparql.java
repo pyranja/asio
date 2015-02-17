@@ -1,17 +1,17 @@
 package at.ac.univie.isc.asio;
 
 import at.ac.univie.isc.asio.web.HttpCode;
-import com.google.common.net.HttpHeaders;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.sparql.vocabulary.FOAF;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.hamcrest.CoreMatchers;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static at.ac.univie.isc.asio.matcher.AsioMatchers.rdfXmlEqualTo;
+import static at.ac.univie.isc.asio.matcher.RestAssuredMatchers.rdfXmlEqualTo;
 import static at.ac.univie.isc.asio.web.HttpMatchers.indicates;
 import static org.hamcrest.Matchers.is;
 

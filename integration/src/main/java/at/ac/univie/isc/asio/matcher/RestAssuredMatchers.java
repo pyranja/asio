@@ -14,7 +14,7 @@ import java.util.Locale;
 
 import static org.hamcrest.Matchers.*;
 
-public final class AsioMatchers {
+public final class RestAssuredMatchers {
 
   // sql
 
@@ -67,5 +67,5 @@ public final class AsioMatchers {
     return new ExpectCredentials(Matchers.any(String.class), equalTo(password));
   }
 
-  private AsioMatchers() { /* factory class */ }
+  private RestAssuredMatchers() { /* factory class */ }
 }

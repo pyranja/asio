@@ -13,7 +13,7 @@ import org.junit.runners.Parameterized;
 import java.io.IOException;
 import java.util.Arrays;
 
-import static at.ac.univie.isc.asio.matcher.AsioMatchers.*;
+import static at.ac.univie.isc.asio.matcher.RestAssuredMatchers.*;
 import static org.hamcrest.CoreMatchers.is;
 
 @Category(Integration.class)
