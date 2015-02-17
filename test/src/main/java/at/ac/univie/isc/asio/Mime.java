@@ -1,4 +1,4 @@
-package at.ac.univie.isc.asio.jaxrs;
+package at.ac.univie.isc.asio;
 
 import javax.ws.rs.core.MediaType;
 
