@@ -1,6 +1,5 @@
 package at.ac.univie.isc.asio;
 
-import at.ac.univie.isc.asio.web.HttpCode;
 import com.google.common.collect.ImmutableTable;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
@@ -8,8 +7,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import static at.ac.univie.isc.asio.matcher.RestAssuredMatchers.compatibleTo;
 import static at.ac.univie.isc.asio.matcher.RestAssuredMatchers.sqlCsvEqualTo;
-import static at.ac.univie.isc.asio.web.HttpMatchers.indicates;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
 
@@ -81,8 +80,8 @@ public class FeatureSql extends IntegrationTest {
       .when()
         .get("/meta/schema")
       .then()
-        .statusCode(indicates(HttpCode.SUCCESSFUL))
-        .contentType(is("application/xml"));
+        .statusCode(is(HttpStatus.SC_OK))
+        .contentType(compatibleTo("application/xml"));
     }
 
     @Test
@@ -92,8 +91,8 @@ public class FeatureSql extends IntegrationTest {
       .when()
         .get("/meta/schema")
       .then()
-        .statusCode(indicates(HttpCode.SUCCESSFUL))
-        .contentType(is("application/json"));
+        .statusCode(is(HttpStatus.SC_OK))
+        .contentType(compatibleTo("application/json"));
     }
 
     @Test
@@ -116,8 +115,8 @@ public class FeatureSql extends IntegrationTest {
       .when()
         .post("/sql")
       .then()
-        .statusCode(indicates(HttpCode.SUCCESSFUL))
-        .contentType(is("application/webrowset+xml"));
+        .statusCode(is(HttpStatus.SC_OK))
+        .contentType(compatibleTo("application/webrowset+xml"));
     }
   
     @Ignore("sql-results+xml not implemented")
@@ -129,8 +128,8 @@ public class FeatureSql extends IntegrationTest {
       .when()
         .post("/sql")
       .then()
-        .statusCode(indicates(HttpCode.SUCCESSFUL))
-        .contentType(is("application/sql-results+xml"));
+        .statusCode(is(HttpStatus.SC_OK))
+        .contentType(compatibleTo("application/sql-results+xml"));
     }
   
     @Ignore("sql-results+json not implemented")
@@ -142,8 +141,8 @@ public class FeatureSql extends IntegrationTest {
       .when()
         .post("/sql")
       .then()
-        .statusCode(indicates(HttpCode.SUCCESSFUL))
-        .contentType(is("application/sql-results+json"));
+        .statusCode(is(HttpStatus.SC_OK))
+        .contentType(compatibleTo("application/sql-results+json"));
     }
 
     @Test
@@ -154,8 +153,8 @@ public class FeatureSql extends IntegrationTest {
       .when()
         .post("/sql")
       .then()
-        .statusCode(indicates(HttpCode.SUCCESSFUL))
-        .contentType(is("application/sql-results+xml"));
+        .statusCode(is(HttpStatus.SC_OK))
+        .contentType(compatibleTo("application/sql-results+xml"));
     }
   
     @Ignore("sql-results+json not implemented")
@@ -167,8 +166,8 @@ public class FeatureSql extends IntegrationTest {
       .when()
         .post("/sql")
       .then()
-        .statusCode(indicates(HttpCode.SUCCESSFUL))
-        .contentType(is("application/sql-results+json"));
+        .statusCode(is(HttpStatus.SC_OK))
+        .contentType(compatibleTo("application/sql-results+json"));
     }
   }
 }

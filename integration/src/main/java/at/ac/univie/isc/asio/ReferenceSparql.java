@@ -60,7 +60,7 @@ public class ReferenceSparql extends IntegrationTest {
       .post("/sparql")
     .then()
       .statusCode(is(HttpStatus.SC_OK))
-      .contentType(is("application/sparql-results+xml"))
+      .contentType(compatibleTo("application/sparql-results+xml"))
       .body(is(sparqlXmlEqualTo(expected())));
   }
 
@@ -73,7 +73,7 @@ public class ReferenceSparql extends IntegrationTest {
       .post("/sparql")
     .then()
       .statusCode(is(HttpStatus.SC_OK))
-      .contentType(is("application/sparql-results+json"))
+      .contentType(compatibleTo("application/sparql-results+json"))
       .body(is(sparqlJsonEqualTo(expected())));
   }
 
@@ -86,7 +86,7 @@ public class ReferenceSparql extends IntegrationTest {
       .post("/sparql")
     .then()
       .statusCode(is(HttpStatus.SC_OK))
-      .contentType(is("text/csv"))
+      .contentType(compatibleTo("text/csv"))
       .body(is(sparqlCsvEqualTo(expected())));
   }
 }

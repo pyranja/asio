@@ -1,18 +1,16 @@
 package at.ac.univie.isc.asio;
 
-import at.ac.univie.isc.asio.web.HttpCode;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.sparql.vocabulary.FOAF;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
-import org.hamcrest.CoreMatchers;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import static at.ac.univie.isc.asio.matcher.RestAssuredMatchers.compatibleTo;
 import static at.ac.univie.isc.asio.matcher.RestAssuredMatchers.rdfXmlEqualTo;
-import static at.ac.univie.isc.asio.web.HttpMatchers.indicates;
 import static org.hamcrest.Matchers.is;
 
 /**
@@ -46,10 +44,10 @@ public class FeatureSparql extends IntegrationTest {
         .post("/sparql")
       .then()
         .statusCode(is(HttpStatus.SC_OK))
-        .body("sparql.head.variable.size()", CoreMatchers.is(1))
-        .body("sparql.head.variable[0].@name", CoreMatchers.is("value"))
-        .body("sparql.results.result.size()", CoreMatchers.is(1))
-        .body("sparql.results.result[0].binding.literal", CoreMatchers.is("1"));
+        .body("sparql.head.variable.size()", is(1))
+        .body("sparql.head.variable[0].@name", is("value"))
+        .body("sparql.results.result.size()", is(1))
+        .body("sparql.results.result[0].binding.literal", is("1"));
     }
 
     @Test
@@ -79,7 +77,7 @@ public class FeatureSparql extends IntegrationTest {
       .when()
         .post("/sparql")
       .then()
-        .statusCode(indicates(HttpCode.SUCCESSFUL));
+        .statusCode(is(HttpStatus.SC_OK));
     }
   }
   
@@ -93,7 +91,7 @@ public class FeatureSparql extends IntegrationTest {
         .post("/sparql")
       .then()
         .statusCode(is(HttpStatus.SC_OK))
-        .contentType(CoreMatchers.is("application/sparql-results+xml"));
+        .contentType(compatibleTo("application/sparql-results+xml"));
     }
 
     @Test
@@ -105,7 +103,7 @@ public class FeatureSparql extends IntegrationTest {
         .post("/sparql")
       .then()
         .statusCode(is(HttpStatus.SC_OK))
-        .contentType(CoreMatchers.is("application/sparql-results+json"));
+        .contentType(compatibleTo("application/sparql-results+json"));
     }
 
     @Test
@@ -117,7 +115,7 @@ public class FeatureSparql extends IntegrationTest {
         .post("/sparql")
       .then()
         .statusCode(is(HttpStatus.SC_OK))
-        .contentType(CoreMatchers.is("text/csv"));
+        .contentType(compatibleTo("text/csv"));
     }
 
     @Test
@@ -129,7 +127,7 @@ public class FeatureSparql extends IntegrationTest {
         .post("/sparql")
       .then()
         .statusCode(is(HttpStatus.SC_OK))
-        .contentType(CoreMatchers.is("application/sparql-results+xml"));
+        .contentType(compatibleTo("application/sparql-results+xml"));
     }
 
     @Test
@@ -141,7 +139,7 @@ public class FeatureSparql extends IntegrationTest {
         .post("/sparql")
       .then()
         .statusCode(is(HttpStatus.SC_OK))
-        .contentType(CoreMatchers.is("application/sparql-results+json"));
+        .contentType(compatibleTo("application/sparql-results+json"));
     }
 
     @Test
@@ -153,7 +151,7 @@ public class FeatureSparql extends IntegrationTest {
         .post("/sparql")
       .then()
         .statusCode(is(HttpStatus.SC_OK))
-        .contentType(CoreMatchers.is("application/rdf+xml"));
+        .contentType(compatibleTo("application/rdf+xml"));
     }
 
     @Test
@@ -165,7 +163,7 @@ public class FeatureSparql extends IntegrationTest {
         .post("/sparql")
       .then()
         .statusCode(is(HttpStatus.SC_OK))
-        .contentType(CoreMatchers.is("application/rdf+json"));
+        .contentType(compatibleTo("application/rdf+json"));
     }
 
     @Test
@@ -177,7 +175,7 @@ public class FeatureSparql extends IntegrationTest {
         .post("/sparql")
       .then()
         .statusCode(is(HttpStatus.SC_OK))
-        .contentType(CoreMatchers.is("text/turtle"));
+        .contentType(compatibleTo("text/turtle"));
     }
 
     @Test
@@ -189,7 +187,7 @@ public class FeatureSparql extends IntegrationTest {
         .post("/sparql")
       .then()
         .statusCode(is(HttpStatus.SC_OK))
-        .contentType(CoreMatchers.is("application/rdf+xml"));
+        .contentType(compatibleTo("application/rdf+xml"));
     }
 
     @Test
@@ -201,7 +199,7 @@ public class FeatureSparql extends IntegrationTest {
         .post("/sparql")
       .then()
         .statusCode(is(HttpStatus.SC_OK))
-        .contentType(CoreMatchers.is("application/rdf+json"));
+        .contentType(compatibleTo("application/rdf+json"));
     }
 
     @Test
@@ -213,7 +211,7 @@ public class FeatureSparql extends IntegrationTest {
         .post("/sparql")
       .then()
         .statusCode(is(HttpStatus.SC_OK))
-        .contentType(CoreMatchers.is("text/turtle"));
+        .contentType(compatibleTo("text/turtle"));
     }
   }
   
@@ -229,8 +227,8 @@ public class FeatureSparql extends IntegrationTest {
         .get("/sparql")
       .then()
         .statusCode(is(HttpStatus.SC_OK))
-        .contentType(CoreMatchers.is("application/sparql-results+xml"))
-        .body("sparql.boolean", CoreMatchers.is("true"));
+        .contentType(compatibleTo("application/sparql-results+xml"))
+        .body("sparql.boolean", is("true"));
     }
 
     @Test
@@ -243,8 +241,8 @@ public class FeatureSparql extends IntegrationTest {
         .post("/sparql")
       .then()
         .statusCode(is(HttpStatus.SC_OK))
-        .contentType(CoreMatchers.is("application/sparql-results+xml"))
-        .body("sparql.boolean", CoreMatchers.is("true"));
+        .contentType(compatibleTo("application/sparql-results+xml"))
+        .body("sparql.boolean", is("true"));
     }
 
     @Test
@@ -257,8 +255,8 @@ public class FeatureSparql extends IntegrationTest {
         .get("/sparql")
       .then()
         .statusCode(is(HttpStatus.SC_OK))
-        .contentType(CoreMatchers.is("application/sparql-results+xml"))
-        .body("sparql.boolean", CoreMatchers.is("true"));
+        .contentType(compatibleTo("application/sparql-results+xml"))
+        .body("sparql.boolean", is("true"));
     }
 
     @Test
@@ -271,8 +269,8 @@ public class FeatureSparql extends IntegrationTest {
         .post("/sparql")
       .then()
         .statusCode(is(HttpStatus.SC_OK))
-        .contentType(CoreMatchers.is("application/sparql-results+xml"))
-        .body("sparql.boolean", CoreMatchers.is("true"));
+        .contentType(compatibleTo("application/sparql-results+xml"))
+        .body("sparql.boolean", is("true"));
     }
 
     @Test
@@ -285,8 +283,8 @@ public class FeatureSparql extends IntegrationTest {
         .get("/sparql")
       .then()
         .statusCode(is(HttpStatus.SC_OK))
-        .contentType(CoreMatchers.is("application/sparql-results+xml"))
-        .body("sparql.boolean", CoreMatchers.is("true"));
+        .contentType(compatibleTo("application/sparql-results+xml"))
+        .body("sparql.boolean", is("true"));
     }
 
     @Test
@@ -299,8 +297,8 @@ public class FeatureSparql extends IntegrationTest {
         .post("/sparql")
       .then()
         .statusCode(is(HttpStatus.SC_OK))
-        .contentType(CoreMatchers.is("application/sparql-results+xml"))
-        .body("sparql.boolean", CoreMatchers.is("true"));
+        .contentType(compatibleTo("application/sparql-results+xml"))
+        .body("sparql.boolean", is("true"));
     }
 
     @Test
@@ -314,8 +312,8 @@ public class FeatureSparql extends IntegrationTest {
         .get("/sparql")
       .then()
         .statusCode(is(HttpStatus.SC_OK))
-        .contentType(CoreMatchers.is("application/sparql-results+xml"))
-        .body("sparql.boolean", CoreMatchers.is("true"));
+        .contentType(compatibleTo("application/sparql-results+xml"))
+        .body("sparql.boolean", is("true"));
     }
 
     @Test
@@ -329,8 +327,8 @@ public class FeatureSparql extends IntegrationTest {
         .post("/sparql")
       .then()
         .statusCode(is(HttpStatus.SC_OK))
-        .contentType(CoreMatchers.is("application/sparql-results+xml"))
-        .body("sparql.boolean", CoreMatchers.is("true"));
+        .contentType(compatibleTo("application/sparql-results+xml"))
+        .body("sparql.boolean", is("true"));
     }
 
     @Test
@@ -343,8 +341,8 @@ public class FeatureSparql extends IntegrationTest {
         .post("/sparql")
       .then()
         .statusCode(is(HttpStatus.SC_OK))
-        .contentType(CoreMatchers.is("application/sparql-results+xml"))
-        .body("sparql.boolean", CoreMatchers.is("true"));
+        .contentType(compatibleTo("application/sparql-results+xml"))
+        .body("sparql.boolean", is("true"));
     }
   }
 }

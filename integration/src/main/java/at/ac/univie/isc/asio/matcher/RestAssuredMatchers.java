@@ -12,7 +12,7 @@ import org.openjena.riot.Lang;
 
 import java.util.Locale;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
 
 public final class RestAssuredMatchers {
 

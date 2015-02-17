@@ -1,14 +1,13 @@
 package at.ac.univie.isc.asio.sql;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.collect.AbstractIterator;
 
+import javax.annotation.Nonnull;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-import javax.annotation.Nonnull;
-
-import com.google.common.collect.AbstractIterator;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Turns a ResultSet into an Iterator using a given {@link at.ac.univie.isc.asio.sql.ResultSetIterator.RowConverter} to process each row of the

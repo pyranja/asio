@@ -1,12 +1,11 @@
 package at.ac.univie.isc.asio;
 
-import at.ac.univie.isc.asio.web.HttpCode;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static at.ac.univie.isc.asio.web.HttpMatchers.indicates;
+import static at.ac.univie.isc.asio.matcher.RestAssuredMatchers.compatibleTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
@@ -25,8 +24,8 @@ public class FeatureMetadata extends IntegrationTest {
       .when()
         .get("/meta")
       .then()
-        .statusCode(indicates(HttpCode.SUCCESSFUL))
-        .contentType(is("application/xml"))
+        .statusCode(is(HttpStatus.SC_OK))
+        .contentType(compatibleTo("application/xml"))
         .root("dataset")
         .body("globalID", not(isEmptyOrNullString()))
         .body("localID", not(isEmptyOrNullString()))
@@ -43,8 +42,8 @@ public class FeatureMetadata extends IntegrationTest {
       .when()
         .get("/meta")
       .then()
-        .statusCode(indicates(HttpCode.SUCCESSFUL))
-        .contentType(is("application/json"))
+        .statusCode(is(HttpStatus.SC_OK))
+        .contentType(compatibleTo("application/json"))
         .root("dataset")
         .body("globalID", not(isEmptyOrNullString()))
         .body("localID", not(isEmptyOrNullString()))

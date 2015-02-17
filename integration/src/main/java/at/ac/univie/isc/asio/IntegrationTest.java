@@ -20,9 +20,7 @@ import org.junit.runner.RunWith;
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assume.assumeThat;
 
 /**

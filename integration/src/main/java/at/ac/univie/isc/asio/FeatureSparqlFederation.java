@@ -2,7 +2,6 @@ package at.ac.univie.isc.asio;
 
 import at.ac.univie.isc.asio.io.Classpath;
 import at.ac.univie.isc.asio.junit.Rules;
-import at.ac.univie.isc.asio.web.HttpCode;
 import at.ac.univie.isc.asio.web.HttpServer;
 import com.hp.hpl.jena.query.*;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -28,7 +27,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static at.ac.univie.isc.asio.matcher.RestAssuredMatchers.*;
-import static at.ac.univie.isc.asio.web.HttpMatchers.indicates;
 import static org.hamcrest.CoreMatchers.is;
 
 /**
@@ -95,8 +93,8 @@ public class FeatureSparqlFederation extends IntegrationTest {
     .when()
       .post("/sparql")
     .then()
-      .statusCode(indicates(HttpCode.SUCCESSFUL))
-      .contentType(is("application/sparql-results+xml"))
+      .statusCode(is(HttpStatus.SC_OK))
+      .contentType(compatibleTo("application/sparql-results+xml"))
       .body(is(sparqlXmlEqualTo(expected())));
   }
 
@@ -108,8 +106,8 @@ public class FeatureSparqlFederation extends IntegrationTest {
     .when()
       .post("/sparql")
     .then()
-      .statusCode(indicates(HttpCode.SUCCESSFUL))
-      .contentType(is("application/sparql-results+json"))
+      .statusCode(is(HttpStatus.SC_OK))
+      .contentType(compatibleTo("application/sparql-results+json"))
       .body(is(sparqlJsonEqualTo(expected())));
   }
 
@@ -121,8 +119,8 @@ public class FeatureSparqlFederation extends IntegrationTest {
     .when()
       .post("/sparql")
     .then()
-      .statusCode(indicates(HttpCode.SUCCESSFUL))
-      .contentType(is("text/csv"))
+      .statusCode(is(HttpStatus.SC_OK))
+      .contentType(compatibleTo("text/csv"))
       .body(is(sparqlCsvEqualTo(expected())));
   }
 

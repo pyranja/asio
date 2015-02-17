@@ -114,7 +114,7 @@ public final class HttpExchangeReport implements Interactions.Report {
   public HttpExchangeReport captureResponse(final int code, final Map<?, ?> headers) {
     responseReport.setLength(0);
     responseReport
-        .append(Pretty.format(" RESPONSE %s %d%n", HttpCode.valueOf(code), code))
+        .append(Pretty.format(" RESPONSE %d%n", code))
         .append(Pretty.format(" HEADER {%s}%n", HEADER_JOINER.join(headers)));
     return this;
   }

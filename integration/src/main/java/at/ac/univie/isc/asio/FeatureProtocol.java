@@ -1,7 +1,6 @@
 package at.ac.univie.isc.asio;
 
 import at.ac.univie.isc.asio.io.Payload;
-import at.ac.univie.isc.asio.web.HttpCode;
 import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
 import org.apache.http.HttpHeaders;
@@ -17,7 +16,6 @@ import java.net.URLEncoder;
 import java.util.Arrays;
 
 import static at.ac.univie.isc.asio.matcher.RestAssuredMatchers.compatibleTo;
-import static at.ac.univie.isc.asio.web.HttpMatchers.indicates;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assume.assumeThat;
@@ -69,7 +67,7 @@ public class FeatureProtocol extends IntegrationTest {
     .when()
       .get("/{language}", language)
     .then()
-      .statusCode(indicates(HttpCode.SUCCESSFUL));
+      .statusCode(is(HttpStatus.SC_OK));
   }
 
   @Test
@@ -79,7 +77,7 @@ public class FeatureProtocol extends IntegrationTest {
     .when()
       .post("/{language}", language)
     .then()
-      .statusCode(indicates(HttpCode.SUCCESSFUL));
+      .statusCode(is(HttpStatus.SC_OK));
   }
 
   @Test
@@ -91,7 +89,7 @@ public class FeatureProtocol extends IntegrationTest {
     .when()
       .post("/{language}", language)
     .then()
-      .statusCode(indicates(HttpCode.SUCCESSFUL));
+      .statusCode(is(HttpStatus.SC_OK));
   }
 
 
@@ -105,7 +103,7 @@ public class FeatureProtocol extends IntegrationTest {
     .when()
       .post("/{language}", language)
     .then()
-      .statusCode(indicates(HttpCode.SUCCESSFUL))
+      .statusCode(is(HttpStatus.SC_OK))
       .contentType(compatibleTo("application/xml"));
   }
 
@@ -119,7 +117,7 @@ public class FeatureProtocol extends IntegrationTest {
     .when()
       .post("/{language}", language)
     .then()
-      .statusCode(indicates(HttpCode.SUCCESSFUL))
+      .statusCode(is(HttpStatus.SC_OK))
       .contentType(compatibleTo("application/json"));
   }
 
@@ -131,7 +129,7 @@ public class FeatureProtocol extends IntegrationTest {
     .when()
       .post("/{language}", language)
     .then()
-      .statusCode(indicates(HttpCode.SUCCESSFUL))
+      .statusCode(is(HttpStatus.SC_OK))
       .contentType(compatibleTo("text/csv"));
   }
 
@@ -264,7 +262,7 @@ public class FeatureProtocol extends IntegrationTest {
     .when()
       .get("/{language}", language)
     .then()
-      .statusCode(indicates(HttpCode.CLIENT_ERROR));
+      .statusCode(is(HttpStatus.SC_BAD_REQUEST));
   }
 
   @Test
@@ -274,7 +272,7 @@ public class FeatureProtocol extends IntegrationTest {
     .when()
       .post("/{language}", language)
     .then()
-      .statusCode(indicates(HttpCode.CLIENT_ERROR));
+      .statusCode(is(HttpStatus.SC_BAD_REQUEST));
   }
 
   @Test
@@ -286,7 +284,7 @@ public class FeatureProtocol extends IntegrationTest {
     .when()
       .post("/{language}", language)
     .then()
-      .statusCode(indicates(HttpCode.CLIENT_ERROR));
+      .statusCode(is(HttpStatus.SC_BAD_REQUEST));
   }
 
   @Test
@@ -368,6 +366,6 @@ public class FeatureProtocol extends IntegrationTest {
     .when()
       .post("/{language}", language)
     .then()
-      .statusCode(indicates(HttpCode.CLIENT_ERROR));
+      .statusCode(is(HttpStatus.SC_BAD_REQUEST));
   }
 }
