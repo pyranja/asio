@@ -16,18 +16,6 @@
   <description>federated sparql processor</description>
   <packaging>war</packaging>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-dependencies</artifactId>
-        <version>1.1.7.RELEASE</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
   <dependencies>
     <dependency>
       <groupId>at.ac.univie.isc</groupId>
@@ -51,7 +39,6 @@
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>akuma</artifactId>
-      <version>1.9</version>
     </dependency>
     <dependency>
       <groupId>javax.ws.rs</groupId>
@@ -65,36 +52,12 @@
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-frontend-jaxrs</artifactId>
     </dependency>
-    <!-- test dependencies -->
-    <dependency>
-      <groupId>at.ac.univie.isc</groupId>
-      <artifactId>asio-test</artifactId>
-      <version>0.5.3-SNAPSHOT</version>
-      <scope>test</scope>
-    </dependency>
+
     <dependency>
       <groupId>at.ac.univie.isc</groupId>
       <artifactId>asio-integration</artifactId>
       <version>0.5.3-SNAPSHOT</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.jayway.restassured</groupId>
-      <artifactId>rest-assured</artifactId>
-      <version>2.3.4</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-library</artifactId>
     </dependency>
   </dependencies>
 
