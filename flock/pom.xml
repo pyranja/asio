@@ -30,14 +30,14 @@
 
   <dependencies>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>at.ac.univie.isc</groupId>
       <artifactId>asio-core</artifactId>
-      <version>${project.version}</version>
+      <version>0.5.3-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>at.ac.univie.isc</groupId>
       <artifactId>asio-ssl-fix</artifactId>
-      <version>${project.version}</version>
+      <version>0.5.3-SNAPSHOT</version>
       <classifier>classes</classifier>
     </dependency>
     <dependency>
@@ -67,15 +67,15 @@
     </dependency>
     <!-- test dependencies -->
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>at.ac.univie.isc</groupId>
       <artifactId>asio-test</artifactId>
-      <version>${project.version}</version>
+      <version>0.5.3-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>at.ac.univie.isc</groupId>
       <artifactId>asio-integration</artifactId>
-      <version>${project.version}</version>
+      <version>0.5.3-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>

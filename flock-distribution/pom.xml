@@ -18,9 +18,9 @@
 
   <dependencies>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>at.ac.univie.isc</groupId>
       <artifactId>asio-flock</artifactId>
-      <version>${project.version}</version>
+      <version>0.5.3-SNAPSHOT</version>
       <type>war</type>
     </dependency>
   </dependencies>

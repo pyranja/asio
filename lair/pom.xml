@@ -23,14 +23,14 @@
 
   <dependencies>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>at.ac.univie.isc</groupId>
       <artifactId>asio-core</artifactId>
-      <version>${project.version}</version>
+      <version>0.5.3-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>at.ac.univie.isc</groupId>
       <artifactId>asio-d2rq</artifactId>
-      <version>${project.version}</version>
+      <version>0.5.3-SNAPSHOT</version>
     </dependency>
     <!-- API and commons -->
     <dependency>
@@ -99,15 +99,15 @@
     </dependency>
     <!-- test -->
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>at.ac.univie.isc</groupId>
       <artifactId>asio-test</artifactId>
-      <version>${project.version}</version>
+      <version>0.5.3-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>at.ac.univie.isc</groupId>
       <artifactId>asio-integration</artifactId>
-      <version>${project.version}</version>
+      <version>0.5.3-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
