@@ -30,7 +30,7 @@ import static org.junit.Assume.assumeThat;
  * deployment specific configuration by setting {@link at.ac.univie.isc.asio.IntegrationTest#asio}
  * and {@link at.ac.univie.isc.asio.IntegrationTest#database}.
  */
-@Category(FunctionalTest.class)
+@Category(Integration.class)
 @RunWith(HierarchicalContextRunner.class)
 public abstract class IntegrationTest {
 

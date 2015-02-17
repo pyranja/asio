@@ -129,7 +129,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <excludedGroups>at.ac.univie.isc.asio.FunctionalTest</excludedGroups>
+          <excludedGroups>at.ac.univie.isc.asio.Integration</excludedGroups>
         </configuration>
       </plugin>
       <plugin>
@@ -140,7 +140,7 @@
           <includes>
             <include>**/*.java</include>
           </includes>
-          <groups>at.ac.univie.isc.asio.FunctionalTest</groups>
+          <groups>at.ac.univie.isc.asio.Integration</groups>
         </configuration>
         <executions>
           <execution>

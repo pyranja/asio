@@ -11,7 +11,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 
-@Category(FunctionalTest.class)
+@Category(Integration.class)
 public class FeatureMetadata extends IntegrationTest {
 
   // @formatter:off

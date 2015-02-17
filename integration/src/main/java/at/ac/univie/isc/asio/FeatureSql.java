@@ -16,7 +16,7 @@ import static org.hamcrest.Matchers.equalToIgnoringCase;
 /**
  * Extended functionality of SQL protocol endpoints.
  */
-@Category(FunctionalTest.class)
+@Category(Integration.class)
 public class FeatureSql extends IntegrationTest {
   
   private static final String NOOP_UPDATE = "DROP TABLE IF EXISTS test_table_gaga";

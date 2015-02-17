@@ -34,7 +34,7 @@ import static org.junit.Assert.assertThat;
  * Emitting events from protocol operations.
  */
 @SuppressWarnings("unchecked")
-@Category(FunctionalTest.class)
+@Category(Integration.class)
 @RunWith(Parameterized.class)
 public class FeatureEvents extends IntegrationTest {
 

@@ -16,7 +16,7 @@ import java.util.Arrays;
 import static at.ac.univie.isc.asio.matcher.AsioMatchers.*;
 import static org.hamcrest.CoreMatchers.is;
 
-@Category(FunctionalTest.class)
+@Category(Integration.class)
 @RunWith(Parameterized.class)
 public class ReferenceSparql extends IntegrationTest {
 

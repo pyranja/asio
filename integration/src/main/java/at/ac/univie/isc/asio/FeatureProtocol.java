@@ -25,7 +25,7 @@ import static org.junit.Assume.assumeThat;
 /**
  * Verify compliance of an endpoint with the generalized protocol specification.
  */
-@Category(FunctionalTest.class)
+@Category(Integration.class)
 @RunWith(Parameterized.class)
 public class FeatureProtocol extends IntegrationTest {
 

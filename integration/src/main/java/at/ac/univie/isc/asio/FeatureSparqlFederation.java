@@ -37,7 +37,7 @@ import static org.hamcrest.CoreMatchers.is;
  * Test cases use federated queries against mock servers on {@code localhost}.
  * </p>
  */
-@Category(FunctionalTest.class)
+@Category(Integration.class)
 @RunWith(Parameterized.class)
 public class FeatureSparqlFederation extends IntegrationTest {
 

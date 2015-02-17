@@ -16,7 +16,7 @@ import static org.junit.Assert.assertThat;
 /**
  * Perform sql queries via asio and compare results to direct jdbc queries on the backing database.
  */
-@Category(FunctionalTest.class)
+@Category(Integration.class)
 public class ReferenceSql extends IntegrationTest {
 
   @Before

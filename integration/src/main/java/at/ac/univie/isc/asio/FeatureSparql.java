@@ -21,7 +21,7 @@ import static org.hamcrest.Matchers.is;
  * @see <a href="http://www.w3.org/TR/sparql11-protocol/">SPARQL Protocol</a>
  * @see <a href="https://github.com/kasei/sparql11-protocolvalidator">protocol validator</a>
  */
-@Category(FunctionalTest.class)
+@Category(Integration.class)
 public class FeatureSparql extends IntegrationTest {
   
   // @formatter:off
