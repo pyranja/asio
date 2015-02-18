@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * Select an {@code Engine} from a fixed set of candidates, matching by supported language.
  */
-final class FixedSelection implements EngineRouter {
+public final class FixedSelection implements EngineRouter {
   private static final Function<Engine, Language> GET_LANGUAGE =
       new Function<Engine, Language>() {
         @Nullable

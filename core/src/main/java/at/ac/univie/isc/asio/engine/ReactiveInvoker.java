@@ -16,7 +16,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  * {@link at.ac.univie.isc.asio.security.Authorizer} checks if the client is permitted to execute
  * the requested operation.
  */
-final class ReactiveInvoker implements Connector {
+public final class ReactiveInvoker implements Connector {
   private static final Logger log = getLogger(ReactiveInvoker.class);
 
   private final EngineRouter router;
@@ -29,7 +29,7 @@ final class ReactiveInvoker implements Connector {
     this.scheduler = scheduler;
   }
 
-  static ReactiveInvoker from(final EngineRouter router, final Scheduler scheduler, final Authorizer authorizer) {
+  public static ReactiveInvoker from(final EngineRouter router, final Scheduler scheduler, final Authorizer authorizer) {
     return new ReactiveInvoker(router, scheduler, authorizer);
   }
 
