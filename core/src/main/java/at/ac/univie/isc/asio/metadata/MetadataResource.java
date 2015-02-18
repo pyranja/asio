@@ -1,7 +1,7 @@
 package at.ac.univie.isc.asio.metadata;
 
 import at.ac.univie.isc.asio.SqlSchema;
-import at.ac.univie.isc.asio.security.Role;
+import at.ac.univie.isc.asio.security.Permission;
 import com.google.common.base.Supplier;
 
 import javax.ws.rs.ForbiddenException;
@@ -45,7 +45,7 @@ public final class MetadataResource {
   }
 
   private void checkPermission() {
-    if (!security.isUserInRole(Role.READ.name())) {
+    if (!security.isUserInRole(Permission.READ.name())) {
       throw new ForbiddenException();
     }
   }

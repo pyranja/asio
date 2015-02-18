@@ -1,7 +1,7 @@
 package at.ac.univie.isc.asio.database;
 
 import at.ac.univie.isc.asio.io.Classpath;
-import at.ac.univie.isc.asio.security.Token;
+import at.ac.univie.isc.asio.security.Identity;
 import at.ac.univie.isc.asio.sql.Database;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
@@ -66,51 +66,51 @@ public class MysqlUserRepositoryTest {
 
   @Test
   public void should_create_user_for_database() throws Exception {
-    final Token credentials = subject.createUserFor(TEST_SCHEMA_NAME);
+    final Identity credentials = subject.createUserFor(TEST_SCHEMA_NAME);
     assertThat(usersWith(credentials), hasSize(1));
   }
 
   @Test
   public void should_yield_same_credentials_if_schema_name_is_same() throws Exception {
-    final Token first = subject.createUserFor(TEST_SCHEMA_NAME);
-    final Token second = subject.createUserFor(TEST_SCHEMA_NAME);
+    final Identity first = subject.createUserFor(TEST_SCHEMA_NAME);
+    final Identity second = subject.createUserFor(TEST_SCHEMA_NAME);
     assertThat(first, is(second));
   }
 
   @Test
   public void should_not_use_schema_name_as_password() throws Exception {
-    final Token credentials = subject.createUserFor(TEST_SCHEMA_NAME);
+    final Identity credentials = subject.createUserFor(TEST_SCHEMA_NAME);
     assertThat(credentials.getToken(), is(not(equalToIgnoringCase(TEST_SCHEMA_NAME))));
   }
 
   @Test
   public void should_use_a_long_password() throws Exception {
-    final Token credentials = subject.createUserFor(TEST_SCHEMA_NAME);
+    final Identity credentials = subject.createUserFor(TEST_SCHEMA_NAME);
     assertThat(credentials.getToken().length(), greaterThan(10));
   }
 
   @Test
   public void should_assign_privileges_on_given_schema_only() throws Exception {
-    final Token user = subject.createUserFor(TEST_SCHEMA_NAME);
+    final Identity user = subject.createUserFor(TEST_SCHEMA_NAME);
     assertThat(findSingleGrantFor(user), matchesPattern(
         "(?i)^GRANT .* ON `" + TEST_SCHEMA_NAME + "`\\.\\* TO .*$"));
   }
 
   @Test
   public void should_assign_read_privilege() throws Exception {
-    final Token user = subject.createUserFor(TEST_SCHEMA_NAME);
+    final Identity user = subject.createUserFor(TEST_SCHEMA_NAME);
     assertThat(findPrivilegesOf(user), hasItem("SELECT"));
   }
 
   @Test
   public void should_assign_write_privilege() throws Exception {
-    final Token user = subject.createUserFor(TEST_SCHEMA_NAME);
+    final Identity user = subject.createUserFor(TEST_SCHEMA_NAME);
     assertThat(findPrivilegesOf(user), hasItems("INSERT", "UPDATE", "DELETE"));
   }
 
   @Test
   public void should_remove_user() throws Exception {
-    final Token credentials = subject.createUserFor(TEST_SCHEMA_NAME);
+    final Identity credentials = subject.createUserFor(TEST_SCHEMA_NAME);
     subject.dropUserOf(TEST_SCHEMA_NAME);
     assertThat(usersWith(credentials), is(empty()));
   }
@@ -120,7 +120,7 @@ public class MysqlUserRepositoryTest {
     subject.dropUserOf(TEST_SCHEMA_NAME);
   }
 
-  private List<String> findPrivilegesOf(final Token user) {
+  private List<String> findPrivilegesOf(final Identity user) {
     final String grant = findSingleGrantFor(user);
     assertThat(grant, matchesPattern(Pattern.compile("(?i)^GRANT\\b(.*)\\bON .*$")));
     final Matcher matcher = Pattern.compile("(?i)^GRANT\\b(.*)\\bON .*$").matcher(grant);
@@ -130,7 +130,7 @@ public class MysqlUserRepositoryTest {
     return Arrays.asList(privileges);
   }
 
-  private String findSingleGrantFor(final Token credentials) {
+  private String findSingleGrantFor(final Identity credentials) {
     final String query = "SHOW GRANTS FOR `${username}`@localhost";
     final Map<String, String> bindings =
         Collections.singletonMap("username", credentials.getName());
@@ -139,7 +139,7 @@ public class MysqlUserRepositoryTest {
     return getOnlyElement(filter(permissions.values(), Predicates.not(containsPattern("(?i)^GRANT USAGE ON *.* TO .*$"))));
   }
 
-  private Collection<String> usersWith(final Token credentials) {
+  private Collection<String> usersWith(final Identity credentials) {
     final String query =
         "SELECT User FROM mysql.user WHERE User = '${username}' AND Password = PASSWORD('${password}')";
     final Map<String, String> bindings =

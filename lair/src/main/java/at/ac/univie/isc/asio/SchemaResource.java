@@ -2,7 +2,7 @@ package at.ac.univie.isc.asio;
 
 import at.ac.univie.isc.asio.engine.*;
 import at.ac.univie.isc.asio.security.IncludeRequestMethodSecurityContext;
-import at.ac.univie.isc.asio.security.Permission;
+import at.ac.univie.isc.asio.security.Role;
 import at.ac.univie.isc.asio.security.SecurityContextHolder;
 
 import javax.ws.rs.GET;
@@ -32,7 +32,7 @@ public class SchemaResource {
   @GET
   @Deprecated // use MetadataResource#schema directly.
   public Response serveSchema(@Context final UriInfo uri) {
-    final URI redirect = uri.getBaseUriBuilder().path(Permission.READ.name()).path("meta/schema").build();
+    final URI redirect = uri.getBaseUriBuilder().path(Role.READ.name()).path("meta/schema").build();
     return Response.status(Response.Status.MOVED_PERMANENTLY)
         .header(HttpHeaders.LOCATION, redirect).build();
   }

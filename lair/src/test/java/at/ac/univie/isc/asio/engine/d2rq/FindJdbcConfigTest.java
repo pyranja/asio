@@ -1,9 +1,8 @@
 package at.ac.univie.isc.asio.engine.d2rq;
 
-import at.ac.univie.isc.asio.security.Token;
+import at.ac.univie.isc.asio.security.Identity;
 import at.ac.univie.isc.asio.tool.TimeoutSpec;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
-import junit.framework.TestCase;
 import org.d2rq.lang.Database;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,6 +44,6 @@ public class FindJdbcConfigTest {
     db.setUsername("test-user");
     db.setPassword("test-password");
     subject.visit(db);
-    assertThat(subject.single().getCredentials(), is(Token.from("test-user", "test-password")));
+    assertThat(subject.single().getCredentials(), is(Identity.from("test-user", "test-password")));
   }
 }

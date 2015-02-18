@@ -4,7 +4,7 @@ import at.ac.univie.isc.asio.DatasetUsageException;
 import at.ac.univie.isc.asio.engine.Engine;
 import at.ac.univie.isc.asio.engine.Language;
 import at.ac.univie.isc.asio.engine.Command;
-import at.ac.univie.isc.asio.security.Token;
+import at.ac.univie.isc.asio.security.Identity;
 import at.ac.univie.isc.asio.tool.TimeoutSpec;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryExecution;
@@ -39,7 +39,7 @@ public final class JenaEngine implements Engine {
     final Query query = state.parse(command.require(KEY_QUERY));
     log.debug("parsed ARQ query\n{}", query);
     final SparqlInvocation<?> handler = handlers.select(query.getQueryType(), command.acceptable());
-    final QueryExecution execution = state.execution(query, command.owner().or(Token.undefined()));
+    final QueryExecution execution = state.execution(query, command.owner().or(Identity.undefined()));
     handler.init(execution);
     log.debug("using handler {}", handler);
     return handler;

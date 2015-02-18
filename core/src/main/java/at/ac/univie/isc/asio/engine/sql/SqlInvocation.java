@@ -1,7 +1,7 @@
 package at.ac.univie.isc.asio.engine.sql;
 
 import at.ac.univie.isc.asio.engine.Invocation;
-import at.ac.univie.isc.asio.security.Role;
+import at.ac.univie.isc.asio.security.Permission;
 import at.ac.univie.isc.asio.tool.Compactor;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableListMultimap;
@@ -12,22 +12,22 @@ import javax.ws.rs.core.MediaType;
 abstract class SqlInvocation implements Invocation {
   private final Multimap<String, String> properties;
   private final MediaType format;
-  private final Role requiredRole;
+  private final Permission requiredPermission;
   protected final JdbcExecution jdbc;
   protected final String sql;
 
-  public SqlInvocation(final JdbcExecution jdbc, final String sql, final MediaType format, final Role requiredRole) {
+  public SqlInvocation(final JdbcExecution jdbc, final String sql, final MediaType format, final Permission requiredPermission) {
     this.format = format;
     this.sql = sql;
     this.jdbc = jdbc;
-    this.requiredRole = requiredRole;
+    this.requiredPermission = requiredPermission;
     properties = captureProperties();
   }
 
   private Multimap<String, String> captureProperties() {
       return ImmutableListMultimap.<String, String>builder()
         .put("command", Compactor.REMOVE_LINE_BREAKS.apply(sql))
-        .put("role", requiredRole.toString())
+        .put("permission", requiredPermission.toString())
         .put("format", format.toString())
         .put("engine", "jooq")
         .build();
@@ -39,8 +39,8 @@ abstract class SqlInvocation implements Invocation {
   }
 
   @Override
-  public final Role requires() {
-    return requiredRole;
+  public final Permission requires() {
+    return requiredPermission;
   }
 
   @Override

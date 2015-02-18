@@ -1,56 +1,67 @@
 package at.ac.univie.isc.asio.security;
 
-import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
+import at.ac.univie.isc.asio.tool.TypedValue;
+import org.springframework.security.core.GrantedAuthority;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
+import javax.annotation.concurrent.Immutable;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-
-import static java.util.Objects.requireNonNull;
 
 /**
- * A Permission represents a bundle of granted Roles.
+ * Capabilities, which may be granted to a user.
  */
-public enum Permission {
+@Immutable
+public final class Permission extends TypedValue<String> implements GrantedAuthority {
+  public static final Permission ANY = new Permission("*");
+  public static final Permission READ = new Permission("READ");
+  public static final Permission WRITE = new Permission("WRITE");
+  public static final Permission ADMIN = new Permission("ADMIN");
+  public static final Permission INVOKE_QUERY = new Permission("INVOKE_QUERY");
+  public static final Permission INVOKE_UPDATE = new Permission("INVOKE_UPDATE");
 
-  NONE(ImmutableSet.<Role>of()),
-  READ(ImmutableSet.of(Role.READ)),
-  FULL(ImmutableSet.of(Role.READ, Role.WRITE)),
-  ADMIN(ImmutableSet.of(Role.READ, Role.WRITE, Role.ADMIN));
+  /** Shared prefix of all Permissions */
+  public static final String PREFIX = "PERMISSION_";
 
-  private static final Map<String, Permission> LOOKUP;
-  static {
-    final ImmutableMap.Builder<String, Permission> builder = ImmutableMap.builder();
-    for (Permission each : Permission.values()) {
-      builder.put(each.name(), each);
-    }
-    LOOKUP = builder.build();
+  /**
+   * Create a permission from given plain name. If not already present,
+   * the {@link at.ac.univie.isc.asio.security.Permission#PREFIX shared prefix} is added to it.
+   *
+   * @param permission the raw name of the permission
+   * @return the permission with given name
+   */
+  public static Permission valueOf(final String permission) {
+    return new Permission(permission);
   }
 
-  public static Permission parse(@Nullable final String name) {
-    if (name == null) { return Permission.NONE; }
-    final Permission found = LOOKUP.get(name.toUpperCase(Locale.ENGLISH));
-    return found != null ? found : Permission.NONE;
+  private Permission(final String name) {
+    super(name);
   }
 
-  private final Set<Role> roles;
-
-  private Permission(final Set<Role> roles) {
-    this.roles = roles;
-  }
-
-  public boolean grants(final Role role) {
-    requireNonNull(role);
-    return roles.contains(role) || Role.ANY.equals(role);
-  }
-
+  @Nonnull
   @Override
-  public String toString() {
-    return Objects.toStringHelper(this.name())
-        .add("roles", roles)
-        .toString();
+  protected String normalize(@Nonnull final String val) {
+    final String upped = val.toUpperCase(Locale.ENGLISH);
+    if (upped.startsWith(PREFIX)) {
+      return upped;
+    } else {
+      return PREFIX + upped;
+    }
+  }
+
+  /**
+   * The name of this permission. Alias to {@link #getAuthority()}.
+   * @return permission name
+   */
+  public String name() {
+    return value();
+  }
+
+  /**
+   * The name of this permission.
+   * @return permission name
+   */
+  @Override
+  public String getAuthority() {
+    return value();
   }
 }

@@ -8,7 +8,7 @@ import org.junit.rules.ExpectedException;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-public class UriPermissionExtractorTest {
+public class UriRoleExtractorTest {
   @Rule
   public ExpectedException error = ExpectedException.none();
 

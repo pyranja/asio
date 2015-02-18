@@ -2,9 +2,9 @@ package at.ac.univie.isc.asio.engine.sparql;
 
 import at.ac.univie.isc.asio.DatasetUsageException;
 import at.ac.univie.isc.asio.engine.*;
-import at.ac.univie.isc.asio.security.Token;
+import at.ac.univie.isc.asio.security.Identity;
 import at.ac.univie.isc.asio.tool.TimeoutSpec;
-import at.ac.univie.isc.asio.security.Role;
+import at.ac.univie.isc.asio.security.Permission;
 import at.ac.univie.isc.asio.sql.ConvertToTable;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Table;
@@ -119,7 +119,7 @@ public class JenaEngineTest {
         .single(JenaEngine.KEY_QUERY, WILDCARD_QUERY)
         .accept(MediaType.WILDCARD_TYPE).build();
     final SparqlInvocation invocation = subject.prepare(params);
-    assertThat(invocation.requires(), is(Role.READ));
+    assertThat(invocation.requires(), is(Permission.READ));
   }
 
   @Test
@@ -156,7 +156,7 @@ public class JenaEngineTest {
     final Command params = CommandBuilder.with(Language.SPARQL)
         .single(JenaEngine.KEY_QUERY, WILDCARD_QUERY)
         .accept(MediaType.WILDCARD_TYPE)
-        .owner(Token.from("test-user", "test-token")).build();
+        .owner(Identity.from("test-user", "test-token")).build();
     final SparqlInvocation invocation = subject.prepare(params);
     final Context context = invocation.query().getContext();
     // no username in VPH auth
@@ -169,7 +169,7 @@ public class JenaEngineTest {
     final Command params = CommandBuilder.with(Language.SPARQL)
         .single(JenaEngine.KEY_QUERY, WILDCARD_QUERY)
         .accept(MediaType.WILDCARD_TYPE)
-        .owner(Token.undefined()).build();
+        .owner(Identity.undefined()).build();
     final SparqlInvocation invocation = subject.prepare(params);
     final Context context = invocation.query().getContext();
     assertThat(context.getAsString(DefaultJenaFactory.CONTEXT_AUTH_USERNAME), is(nullValue()));

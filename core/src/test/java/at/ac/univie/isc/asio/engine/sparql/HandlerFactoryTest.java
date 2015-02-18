@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.engine.sparql;
 
-import at.ac.univie.isc.asio.security.Role;
+import at.ac.univie.isc.asio.security.Permission;
 import com.google.common.collect.ImmutableList;
 import com.hp.hpl.jena.query.Query;
 import org.junit.Test;
@@ -78,7 +78,7 @@ public class HandlerFactoryTest {
   @Test
   public void should_have_read_role() throws Exception {
     final SparqlInvocation handler = factory.select(queryType, accepted);
-    assertThat(handler.requires(), is(Role.READ));
+    assertThat(handler.requires(), is(Permission.READ));
   }
 
   private Class<?> matchingHandlerType() {

@@ -29,7 +29,7 @@ public final class IncludeRequestMethodSecurityContext implements SecurityContex
 
   @Override
   public boolean isUserInRole(final String role) {
-    return IsAuthorized.given(delegate, request).apply(Role.valueOf(role));
+    return IsAuthorized.given(delegate, request).apply(Permission.valueOf(role));
   }
 
   @Override

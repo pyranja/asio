@@ -28,8 +28,7 @@ public class JdbcSpecTest {
     spec = JdbcSpec.connectTo("jdbcUrl").with("jdbcDriver").complete();
     assertThat(spec.getUrl(), is("jdbcUrl"));
     assertThat(spec.getDriver(), is("jdbcDriver"));
-    assertThat(spec.getUsername(), isEmptyString());
-    assertThat(spec.getPassword(), isEmptyString());
+    assertThat(spec.getCredentials(), is(JdbcSpec.ANONYMOUS_ACCESS));
     assertThat(spec.getTimeout(), is(TimeoutSpec.undefined()));
   }
 

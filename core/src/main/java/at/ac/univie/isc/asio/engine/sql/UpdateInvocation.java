@@ -2,7 +2,7 @@ package at.ac.univie.isc.asio.engine.sql;
 
 import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.engine.Invocation;
-import at.ac.univie.isc.asio.security.Role;
+import at.ac.univie.isc.asio.security.Permission;
 import at.ac.univie.isc.asio.tool.Resources;
 import com.google.common.base.Charsets;
 
@@ -25,7 +25,7 @@ final class UpdateInvocation extends SqlInvocation {
 
   public UpdateInvocation(final JdbcExecution jdbc, final String sql, final ModCountWriter writer,
                           final MediaType contentType) {
-    super(jdbc, sql, contentType, Role.WRITE);
+    super(jdbc, sql, contentType, Permission.WRITE);
     this.writer = writer;
   }
 

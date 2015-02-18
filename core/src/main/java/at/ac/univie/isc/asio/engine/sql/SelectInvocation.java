@@ -2,7 +2,7 @@ package at.ac.univie.isc.asio.engine.sql;
 
 import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.engine.Invocation;
-import at.ac.univie.isc.asio.security.Role;
+import at.ac.univie.isc.asio.security.Permission;
 import org.jooq.Cursor;
 import org.jooq.Record;
 
@@ -21,7 +21,7 @@ final class SelectInvocation extends SqlInvocation {
 
   public SelectInvocation(final JdbcExecution jdbc, final String sql, final CursorWriter writer,
                           final MediaType contentType) {
-    super(jdbc, sql, contentType, Role.READ);
+    super(jdbc, sql, contentType, Permission.READ);
     this.writer = writer;
   }
 

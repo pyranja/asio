@@ -1,19 +1,11 @@
 package at.ac.univie.isc.asio.security;
 
 import at.ac.univie.isc.asio.Scope;
-import com.google.common.base.Optional;
 import com.google.common.net.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,14 +22,14 @@ public final class UriAuthFilter implements Filter {
   private static final Logger log = LoggerFactory.getLogger(UriAuthFilter.class);
 
   private UriPermissionExtractor parser;
-  private VphTokenExtractor extractor;
+  private BasicAuthIdentityExtractor extractor;
 
   /** servlet container constructor */
   public UriAuthFilter() {
-    this(new UriPermissionExtractor(), new VphTokenExtractor());
+    this(new UriPermissionExtractor(), new BasicAuthIdentityExtractor());
   }
 
-  public UriAuthFilter(final UriPermissionExtractor parser, final VphTokenExtractor extractor) {
+  public UriAuthFilter(final UriPermissionExtractor parser, final BasicAuthIdentityExtractor extractor) {
     this.parser = parser;
     this.extractor = extractor;
   }
@@ -48,7 +40,7 @@ public final class UriAuthFilter implements Filter {
     final HttpServletResponse response = (HttpServletResponse) servletResponse;
     try {
       authorize(request, response);
-    } catch (UriPermissionExtractor.MalformedUri | VphTokenExtractor.MalformedAuthHeader | IllegalArgumentException error) {
+    } catch (UriPermissionExtractor.MalformedUri | IllegalArgumentException error) {
       log.debug("reject request : {}", error.getMessage()); // TODO : log to access.log -> new marker
       response.sendError(HttpServletResponse.SC_UNAUTHORIZED, error.getMessage());
     }
@@ -57,18 +49,17 @@ public final class UriAuthFilter implements Filter {
   private void authorize(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
     final UriPermissionExtractor.Result extracted =
         parser.accept(request.getRequestURI(), request.getContextPath());
-    final Permission permission = Permission.parse(extracted.permission());
-    final Token user = extractToken(request);
-    log.debug("authorized {} with permission {} and redirecting to <{}>", user, permission, extracted.tail());
+    final Role role = Role.parse(extracted.permission());
+    final Identity user = extractToken(request);
+    log.debug("authorized {} with permission {} and redirecting to <{}>", user, role, extracted.tail());
     final AuthorizedRequestProxy authorizedRequest =
-        AuthorizedRequestProxy.wrap(request, user, permission);
+        AuthorizedRequestProxy.wrap(request, user, role);
     final RequestDispatcher dispatcher = request.getRequestDispatcher(extracted.tail());
     dispatcher.forward(authorizedRequest, response);
   }
 
-  private Token extractToken(final HttpServletRequest request) {
-    final Optional<String> authHeader =
-        Optional.fromNullable(request.getHeader(HttpHeaders.AUTHORIZATION));
+  private Identity extractToken(final HttpServletRequest request) {
+    final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
     return extractor.authenticate(authHeader);
   }
 

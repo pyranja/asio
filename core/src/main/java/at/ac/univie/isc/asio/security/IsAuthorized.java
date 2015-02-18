@@ -11,7 +11,7 @@ import java.util.Locale;
 /**
  * Determine whether a client is authorized to invoke operation which may require special permissions.
  */
-public final class IsAuthorized implements Predicate<Role> {
+public final class IsAuthorized implements Predicate<Permission> {
   private final SecurityContext security;
   private final Request request;
 
@@ -31,11 +31,11 @@ public final class IsAuthorized implements Predicate<Role> {
    * @return true if the given role is satisfied by the context
    */
   @Override
-  public boolean apply(final Role required) {
+  public boolean apply(final Permission required) {
     return satisfies(required) && (methodAllowsModifications() || onlyReadPermission(required));
   }
 
-  private boolean satisfies(final Role required) {
+  private boolean satisfies(final Permission required) {
     return security.isUserInRole(required.name());
   }
 
@@ -46,7 +46,7 @@ public final class IsAuthorized implements Predicate<Role> {
     return MODIFYING_METHODS.contains(request.getMethod().toUpperCase(Locale.ENGLISH));
   }
 
-  private boolean onlyReadPermission(final Role required) {
-    return Permission.READ.grants(required);
+  private boolean onlyReadPermission(final Permission required) {
+    return Role.READ.grants(required);
   }
 }

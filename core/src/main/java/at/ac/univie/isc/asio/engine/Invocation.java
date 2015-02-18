@@ -1,7 +1,7 @@
 package at.ac.univie.isc.asio.engine;
 
 import at.ac.univie.isc.asio.DatasetException;
-import at.ac.univie.isc.asio.security.Role;
+import at.ac.univie.isc.asio.security.Permission;
 import com.google.common.collect.Multimap;
 
 import javax.ws.rs.core.MediaType;
@@ -20,7 +20,7 @@ public interface Invocation extends AutoCloseable {
   /**
    * @return role required to execute this.
    */
-  Role requires();
+  Permission requires();
 
   /**
    * @return contextual information

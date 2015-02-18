@@ -12,30 +12,30 @@ final class AuthorizedRequestProxy extends HttpServletRequestWrapper {
    * Override auth methods in given request with given Token and Permission.
    * @param request to be wrapped
    * @param user represent the requester
-   * @param permission bundle of roles assigned to the requester
+   * @param role bundle of permissions assigned to the requester
    * @return wrapped request
    */
-  public static AuthorizedRequestProxy wrap(final HttpServletRequest request, final Token user, final Permission permission) {
-    return new AuthorizedRequestProxy(request, user, permission);
+  public static AuthorizedRequestProxy wrap(final HttpServletRequest request, final Identity user, final Role role) {
+    return new AuthorizedRequestProxy(request, user, role);
   }
 
-  private final Token user;
-  private final Permission permission;
+  private final Identity user;
+  private final Role role;
 
-  private AuthorizedRequestProxy(final HttpServletRequest request, final Token user, final Permission permission) {
+  private AuthorizedRequestProxy(final HttpServletRequest request, final Identity user, final Role role) {
     super(request);
     this.user = user;
-    this.permission = permission;
+    this.role = role;
   }
 
   @Override
-  public Token getUserPrincipal() {
+  public Identity getUserPrincipal() {
     return user;
   }
 
   @Override
   public String getRemoteUser() {
-    return user.getName();
+    return user.nameOrIfUndefined("anonymous");
   }
 
   @Override
@@ -46,6 +46,6 @@ final class AuthorizedRequestProxy extends HttpServletRequestWrapper {
   @Override
   public boolean isUserInRole(final String role) {
     assert role != null : "got null role";
-    return permission.grants(Role.valueOf(role));
+    return this.role.grants(Permission.valueOf(role));
   }
 }

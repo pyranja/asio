@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.engine;
 
-import at.ac.univie.isc.asio.security.Role;
+import at.ac.univie.isc.asio.security.Permission;
 import at.ac.univie.isc.asio.security.SecurityContextHolder;
 import org.junit.After;
 import org.junit.Rule;
@@ -28,16 +28,16 @@ public class JaxrsAuthorizerTest {
 
   @Test
   public void should_pass_if_authorized() throws Exception {
-    when(invocation.requires()).thenReturn(Role.ADMIN);
-    when(security.isUserInRole(Role.ADMIN.name())).thenReturn(true);
+    when(invocation.requires()).thenReturn(Permission.ADMIN);
+    when(security.isUserInRole(Permission.ADMIN.name())).thenReturn(true);
     SecurityContextHolder.set(security);
     subject.check(invocation);
   }
 
   @Test
   public void should_fail_if_not_authorized() throws Exception {
-    when(invocation.requires()).thenReturn(Role.ADMIN);
-    when(security.isUserInRole(Role.ADMIN.name())).thenReturn(false);
+    when(invocation.requires()).thenReturn(Permission.ADMIN);
+    when(security.isUserInRole(Permission.ADMIN.name())).thenReturn(false);
     SecurityContextHolder.set(security);
     error.expect(ForbiddenException.class);
     subject.check(invocation);
@@ -45,7 +45,7 @@ public class JaxrsAuthorizerTest {
 
   @Test
   public void should_fail_if_no_context_available() throws Exception {
-    when(invocation.requires()).thenReturn(Role.ADMIN);
+    when(invocation.requires()).thenReturn(Permission.ADMIN);
     error.expect(IllegalStateException.class);
     subject.check(invocation);
   }

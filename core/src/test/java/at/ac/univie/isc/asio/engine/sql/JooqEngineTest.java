@@ -8,7 +8,7 @@ import at.ac.univie.isc.asio.engine.Invocation;
 import at.ac.univie.isc.asio.engine.Language;
 import at.ac.univie.isc.asio.engine.Command;
 import at.ac.univie.isc.asio.engine.CommandBuilder;
-import at.ac.univie.isc.asio.security.Role;
+import at.ac.univie.isc.asio.security.Permission;
 import at.ac.univie.isc.asio.sql.ConvertToTable;
 import at.ac.univie.isc.asio.sql.Database;
 import com.google.common.collect.Table;
@@ -243,7 +243,7 @@ public class JooqEngineTest {
         .accept(CSV_TYPE)
         .build();
     final Invocation invocation = subject.prepare(params);
-    assertThat(invocation.requires(), is(Role.READ));
+    assertThat(invocation.requires(), is(Permission.READ));
   }
 
   @Test
@@ -253,7 +253,7 @@ public class JooqEngineTest {
         .accept(CSV_TYPE)
         .build();
     final Invocation invocation = subject.prepare(params);
-    assertThat(invocation.requires(), is(Role.WRITE));
+    assertThat(invocation.requires(), is(Permission.WRITE));
   }
 
   // ========= ILLEGAL INPUT

@@ -31,19 +31,19 @@ public class IsAuthorizedTest {
   @Test
   public void should_be_satisfied_if_client_has_permission() throws Exception {
     when(security.isUserInRole(anyString())).thenReturn(true);
-    assertThat(subject.apply(Role.READ), is(true));
+    assertThat(subject.apply(Permission.READ), is(true));
   }
 
   @Test
   public void should_not_be_satisfied_if_client_does_not_have_permission() throws Exception {
     when(security.isUserInRole(anyString())).thenReturn(false);
-    assertThat(subject.apply(Role.READ), is(false));
+    assertThat(subject.apply(Permission.READ), is(false));
   }
 
   @Test
   public void should_not_be_satisfied_if_write_permission_required_on_GET_request() throws Exception {
     when(request.getMethod()).thenReturn(HttpMethod.GET);
     when(security.isUserInRole(anyString())).thenReturn(true);
-    assertThat(subject.apply(Role.WRITE), is(false));
+    assertThat(subject.apply(Permission.WRITE), is(false));
   }
 }

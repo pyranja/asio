@@ -72,6 +72,10 @@
       <version>1.0.4</version>
       <scope>runtime</scope>
     </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-core</artifactId>
+    </dependency>
     <!-- build processors -->
     <dependency>
       <groupId>com.google.auto.factory</groupId>

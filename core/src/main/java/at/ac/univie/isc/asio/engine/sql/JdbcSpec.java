@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.engine.sql;
 
-import at.ac.univie.isc.asio.security.Token;
+import at.ac.univie.isc.asio.security.Identity;
 import at.ac.univie.isc.asio.tool.TimeoutSpec;
 import com.google.common.base.Objects;
 import org.jooq.SQLDialect;
@@ -21,6 +21,7 @@ import static com.google.common.base.Strings.emptyToNull;
 public final class JdbcSpec {
   /**
    * Start building a spec with given JDBC URL.
+   *
    * @param jdbcUrl connection URL
    * @return fluent-interface builder
    */
@@ -28,18 +29,20 @@ public final class JdbcSpec {
     return new Builder(jdbcUrl);
   }
 
+  static final Identity ANONYMOUS_ACCESS = Identity.from("", "");
+
   private final String url;
   private final String driver;
+  private final Identity credentials;
   private final TimeoutSpec timeout;
-  private final Token credentials;
 
   private JdbcSpec(@Nonnull final String url, @Nonnull final String driver,
-                   @Nonnull final TimeoutSpec timeout, @Nonnull final Token credentials) {
+                   @Nonnull final TimeoutSpec timeout, @Nonnull final Identity credentials) {
     checkNotNull(emptyToNull(url), "no JDBC connection URL given");
     this.url = addDefaultOptions(url);
     this.driver = checkNotNull(emptyToNull(driver), "missing driver class for %s", url);
     this.timeout = checkNotNull(timeout, "missing timeout for %s", url);
-    this.credentials = checkNotNull(credentials, "missing credentials for %s", url);
+    this.credentials = checkNotNull(credentials, "missing credentials for %s", url).orIfUndefined(ANONYMOUS_ACCESS);
   }
 
   private static final Pattern MYSQL_JDBC = Pattern.compile("^jdbc:mysql://.*$");
@@ -56,6 +59,7 @@ public final class JdbcSpec {
 
   /**
    * The JDBC connection url.
+   *
    * @return jdbc url
    */
   public String getUrl() {
@@ -64,6 +68,7 @@ public final class JdbcSpec {
 
   /**
    * The jdbc driver class name.
+   *
    * @return class name
    */
   public String getDriver() {
@@ -72,6 +77,7 @@ public final class JdbcSpec {
 
   /**
    * The timeout of jdbc requests.
+   *
    * @return timeout value
    */
   public TimeoutSpec getTimeout() {
@@ -80,6 +86,7 @@ public final class JdbcSpec {
 
   /**
    * default username for jdbc connections.
+   *
    * @return username
    */
   public String getUsername() {
@@ -88,22 +95,25 @@ public final class JdbcSpec {
 
   /**
    * default password for jdbc connections.
+   *
    * @return password
    */
   public String getPassword() {
-    return credentials.getToken();
+    return credentials.getSecret();
   }
 
   /**
    * default jdbc connection credentials.
+   *
    * @return credentials
    */
-  public Token getCredentials() {
+  public Identity getCredentials() {
     return credentials;
   }
 
   /**
    * Guess sql dialect from jdbc url
+   *
    * @return inferred jooq dialect
    */
   public SQLDialect getDialect() {
@@ -121,14 +131,16 @@ public final class JdbcSpec {
         .toString();
   }
 
-  /** Determine driver class from well known JDBC URLs */
+  /**
+   * Determine driver class from well known JDBC URLs
+   */
   static String jdbcDriverFor(final String url) {
     if (url.startsWith("jdbc:mysql")) {
       return "com.mysql.jdbc.Driver";
     } else if (url.startsWith("jdbc:h2")) {
       return "org.h2.Driver";
     } else {
-      throw new IllegalArgumentException("cannot infer driver class for <"+ url +">");
+      throw new IllegalArgumentException("cannot infer driver class for <" + url + ">");
     }
   }
 
@@ -137,7 +149,7 @@ public final class JdbcSpec {
   public static final class Builder {
     private final String jdbcUrl;
     private String jdbcDriver;
-    private Token credentials = Token.undefined();
+    private Identity credentials = Identity.undefined();
     private TimeoutSpec timeout = TimeoutSpec.undefined();
 
     private Builder(final String jdbcUrl) {
@@ -150,7 +162,7 @@ public final class JdbcSpec {
     }
 
     public Builder authenticateAs(final String username, final String password) {
-      this.credentials = Token.from(username, password);
+      this.credentials = Identity.from(username, password);
       return this;
     }
 

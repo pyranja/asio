@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.engine.sparql;
 
-import at.ac.univie.isc.asio.security.Token;
+import at.ac.univie.isc.asio.security.Identity;
 import at.ac.univie.isc.asio.tool.Resources;
 import at.ac.univie.isc.asio.tool.TimeoutSpec;
 import com.hp.hpl.jena.query.ARQ;
@@ -70,11 +70,11 @@ public final class DefaultJenaFactory implements AutoCloseable {
     final Context context = new Context();
     // FIXME disable || parameterize || set global context value
     context.set(ARQ.symLogExec, Explain.InfoLevel.ALL);
-    if (owner instanceof Token && ((Token) owner).isDefined()) {
+    if (owner instanceof Identity && ((Identity) owner).isDefined()) {
       log.debug("delegating credentials from {}", owner);
-      final Token token = (Token) owner;
+      final Identity identity = (Identity) owner;
       context.set(CONTEXT_AUTH_USERNAME, "");
-      context.set(CONTEXT_AUTH_PASSWORD, token.getToken());
+      context.set(CONTEXT_AUTH_PASSWORD, identity.getToken());
     } else {
       log.debug("skipping credentials delegation - not a valid auth token {}", owner);
     }

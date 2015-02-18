@@ -3,8 +3,8 @@ package at.ac.univie.isc.asio;
 import at.ac.univie.isc.asio.insight.EventStreamServlet;
 import at.ac.univie.isc.asio.jaxrs.AppSpec;
 import at.ac.univie.isc.asio.security.FixedPermissionAuthFilter;
-import at.ac.univie.isc.asio.security.Permission;
-import at.ac.univie.isc.asio.security.VphTokenExtractor;
+import at.ac.univie.isc.asio.security.Role;
+import at.ac.univie.isc.asio.security.BasicAuthIdentityExtractor;
 import at.ac.univie.isc.asio.web.SslFixListener;
 import org.apache.cxf.Bus;
 import org.apache.cxf.bus.spring.SpringBus;
@@ -100,7 +100,7 @@ public class Flock {
   @Bean
   public FilterRegistrationBean authFilter() {
     final FilterRegistrationBean auth =
-        new FilterRegistrationBean(new FixedPermissionAuthFilter(Permission.READ, new VphTokenExtractor()));
+        new FilterRegistrationBean(new FixedPermissionAuthFilter(Role.READ, new BasicAuthIdentityExtractor()));
     auth.setDispatcherTypes(DispatcherType.REQUEST);
     auth.setUrlPatterns(Arrays.asList("/*"));
     auth.setAsyncSupported(true);

@@ -1,7 +1,7 @@
 package at.ac.univie.isc.asio.engine;
 
 import at.ac.univie.isc.asio.security.Authorizer;
-import at.ac.univie.isc.asio.security.Role;
+import at.ac.univie.isc.asio.security.Permission;
 import at.ac.univie.isc.asio.security.SecurityContextHolder;
 import at.ac.univie.isc.asio.tool.Pretty;
 import com.google.common.base.Optional;
@@ -23,7 +23,7 @@ public final class JaxrsAuthorizer implements Authorizer {
   @Override
   public void check(final Invocation invocation) throws RuntimeException {
     final Optional<SecurityContext> security = SecurityContextHolder.get();
-    final Role required = invocation.requires();
+    final Permission required = invocation.requires();
     if (!security.isPresent()) {
       throw new IllegalStateException("no security context available");
     } else if (!security.get().isUserInRole(required.name())) {

@@ -1,7 +1,7 @@
 package at.ac.univie.isc.asio.engine.sparql;
 
 import at.ac.univie.isc.asio.engine.Invocation;
-import at.ac.univie.isc.asio.security.Role;
+import at.ac.univie.isc.asio.security.Permission;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMultimap;
@@ -41,7 +41,7 @@ public abstract class SparqlInvocation<RESULT> implements Invocation {
     final Context context = query.getContext();
     properties = ImmutableMultimap.<String, String>builder()
         .put("command", format(query.getQuery()))
-        .put("role", Role.READ.toString())
+        .put("permission", Permission.READ.toString())
         .put("format", format.toString())
         .put("engine", "jena")
         .put("timeout", context.getAsString(ARQ.queryTimeout, "undefined"))
@@ -59,8 +59,8 @@ public abstract class SparqlInvocation<RESULT> implements Invocation {
   }
 
   @Override
-  public final Role requires() {
-    return Role.READ;
+  public final Permission requires() {
+    return Permission.READ;
   }
 
   @Override

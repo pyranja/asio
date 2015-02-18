@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.database;
 
-import at.ac.univie.isc.asio.security.Token;
+import at.ac.univie.isc.asio.security.Identity;
 import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
 import com.google.common.io.BaseEncoding;
@@ -35,8 +35,8 @@ public final class MysqlUserRepository {
    * @param schema name of mysql database
    * @return access credentials
    */
-  public Token createUserFor(final String schema) {
-    final Token user = translateToCredentials(schema);
+  public Identity createUserFor(final String schema) {
+    final Identity user = translateToCredentials(schema);
     create.execute("GRANT SELECT, INSERT, UPDATE, DELETE ON {0}.* TO {1}@{2} IDENTIFIED BY {3}",
         name(schema), name(user.getName()), name(USER_HOST), inline(user.getToken()));
     return user;
@@ -48,7 +48,7 @@ public final class MysqlUserRepository {
    * @param schema name of mysql database
    */
   public void dropUserOf(final String schema) {
-    final Token user = translateToCredentials(schema);
+    final Identity user = translateToCredentials(schema);
     try {
       create.execute("DROP USER {0}@{1}", name(user.getName()), name(USER_HOST));
     } catch (DataAccessException e) {
@@ -83,7 +83,7 @@ public final class MysqlUserRepository {
    * @param schema name of a mysql database
    * @return derived, unique credentials
    */
-  private Token translateToCredentials(final String schema) {
+  private Identity translateToCredentials(final String schema) {
     final String hashedSchemaName = BaseEncoding.base64().encode(
         Hashing.sha256().hashString(schema, Charsets.UTF_8).asBytes()
     );
@@ -91,6 +91,6 @@ public final class MysqlUserRepository {
     final String password = BaseEncoding.base64().encode(
         Hashing.sha256().hashString(PASSWORD_SALT + schema, Charsets.UTF_8).asBytes()
     );
-    return Token.from(username, password);
+    return Identity.from(username, password);
   }
 }
