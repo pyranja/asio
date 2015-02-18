@@ -4,6 +4,7 @@ import at.ac.univie.isc.asio.junit.CompositeReport;
 import at.ac.univie.isc.asio.junit.Interactions;
 import at.ac.univie.isc.asio.web.HttpExchangeReport;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.io.ByteStreams;
 import com.jayway.restassured.filter.Filter;
 import com.jayway.restassured.filter.FilterContext;
@@ -18,7 +19,7 @@ import org.apache.http.protocol.HttpContext;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Map;
+import java.util.Collection;
 
 /**
  * Intercept rest-assured exchanges and format them as Interaction.Report
@@ -89,12 +90,12 @@ public final class ReportingFilter implements Filter, Interactions.Report {
       }
     }
 
-    private Map<String, String> asMap(final org.apache.http.Header[] rawHeaders) {
-      final ImmutableMap.Builder<String, String> headers = ImmutableMap.builder();
+    private ImmutableMap<String, Collection<String>> asMap(final Header[] rawHeaders) {
+      final ImmutableMultimap.Builder<String, String> headers = ImmutableMultimap.builder();
       for (final org.apache.http.Header each : rawHeaders) {
         headers.put(each.getName(), each.getValue());
       }
-      return headers.build();
+      return headers.build().asMap();
     }
   }
 }
