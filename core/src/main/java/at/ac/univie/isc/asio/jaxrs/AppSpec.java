@@ -26,7 +26,7 @@ public final class AppSpec extends Application {
     json.setNamespaceMap(ImmutableMap.of("http://isc.univie.ac.at/2014/asio", "asio"));
     json.setProduceMediaTypes(Arrays.asList(MediaType.APPLICATION_JSON, DatasetExceptionMapper.ERROR_TYPE.toString()));
     return new AppSpec(Arrays.asList(resources))
-        .singleton(new AcceptTunnelFilter())
+        .singleton(new ContentNegotiationOverrideFilter())
         .singleton(new ContentNegotiationDefaultsFilter())
         .singleton(new DatasetExceptionMapper())
         .singleton(json);
