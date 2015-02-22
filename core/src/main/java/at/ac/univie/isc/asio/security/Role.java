@@ -1,8 +1,8 @@
 package at.ac.univie.isc.asio.security;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.GrantedAuthoritiesContainer;
 
@@ -18,10 +18,14 @@ import static java.util.Objects.requireNonNull;
  */
 public enum Role implements GrantedAuthority, GrantedAuthoritiesContainer {
 
-  NONE(ImmutableSet.<Permission>of()),
-  READ(ImmutableSet.of(Permission.READ, Permission.INVOKE_QUERY)),
-  FULL(ImmutableSet.of(Permission.READ, Permission.INVOKE_QUERY, Permission.WRITE, Permission.INVOKE_UPDATE)),
-  ADMIN(ImmutableSet.of(Permission.READ, Permission.INVOKE_QUERY, Permission.WRITE, Permission.INVOKE_UPDATE, Permission.ADMIN));
+  NONE(null)
+  , USER(Role.NONE, Permission.ACCESS_METADATA, Permission.INVOKE_QUERY)
+  , OWNER(Role.USER, Permission.ACCESS_INTERNALS, Permission.INVOKE_UPDATE)
+  , ADMIN(Role.OWNER, Permission.ADMINISTRATE)
+  // alias for legacy compatibility
+  , READ(Role.USER)
+  , FULL(Role.OWNER)
+  ;
 
   public static final String PREFIX = "ROLE_";
 
@@ -31,7 +35,7 @@ public enum Role implements GrantedAuthority, GrantedAuthoritiesContainer {
    * @param name name of the role
    * @return parsed role or {@link Role#NONE} if there is no role with that name
    */
-  public static Role parse(@Nullable final String name) {
+  public static Role fromString(@Nullable final String name) {
     if (name == null) { return Role.NONE; }
     final Role found = LOOKUP.get(normalize(name));
     return found != null ? found : Role.NONE;
@@ -57,8 +61,13 @@ public enum Role implements GrantedAuthority, GrantedAuthoritiesContainer {
   private final Set<Permission> permissions;
   private final String authority;
 
-  private Role(final Set<Permission> permissions) {
-    this.permissions = permissions;
+  private Role(final Role parent, final Permission... permissions) {
+    final ImmutableSet<Permission> exclusive = ImmutableSet.copyOf(permissions);
+    if (parent == null) {
+      this.permissions = exclusive;
+    } else {  // include parent's permissions
+      this.permissions = ImmutableSet.copyOf(Sets.union(exclusive, parent.getGrantedAuthorities()));
+    }
     authority = PREFIX + name();
   }
 
@@ -91,8 +100,6 @@ public enum Role implements GrantedAuthority, GrantedAuthoritiesContainer {
 
   @Override
   public String toString() {
-    return Objects.toStringHelper(this.name())
-        .add("permissions", permissions)
-        .toString();
+    return authority + "{permissions=" + permissions + '}';
   }
 }

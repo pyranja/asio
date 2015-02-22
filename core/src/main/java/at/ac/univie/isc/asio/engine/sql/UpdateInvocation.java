@@ -25,7 +25,7 @@ final class UpdateInvocation extends SqlInvocation {
 
   public UpdateInvocation(final JdbcExecution jdbc, final String sql, final ModCountWriter writer,
                           final MediaType contentType) {
-    super(jdbc, sql, contentType, Permission.WRITE);
+    super(jdbc, sql, contentType, Permission.INVOKE_UPDATE);
     this.writer = writer;
   }
 

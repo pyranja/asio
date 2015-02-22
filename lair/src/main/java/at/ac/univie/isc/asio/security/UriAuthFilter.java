@@ -49,7 +49,7 @@ public final class UriAuthFilter implements Filter {
   private void authorize(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
     final UriPermissionExtractor.Result extracted =
         parser.accept(request.getRequestURI(), request.getContextPath());
-    final Role role = Role.parse(extracted.permission());
+    final Role role = Role.fromString(extracted.permission());
     final Identity user = extractToken(request);
     log.debug("authorized {} with permission {} and redirecting to <{}>", user, role, extracted.tail());
     final AuthorizedRequestProxy authorizedRequest =

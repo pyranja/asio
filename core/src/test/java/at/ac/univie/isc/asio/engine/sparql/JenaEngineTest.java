@@ -119,7 +119,7 @@ public class JenaEngineTest {
         .single(JenaEngine.KEY_QUERY, WILDCARD_QUERY)
         .accept(MediaType.WILDCARD_TYPE).build();
     final SparqlInvocation invocation = subject.prepare(params);
-    assertThat(invocation.requires(), is(Permission.READ));
+    assertThat(invocation.requires(), is(Permission.INVOKE_QUERY));
   }
 
   @Test

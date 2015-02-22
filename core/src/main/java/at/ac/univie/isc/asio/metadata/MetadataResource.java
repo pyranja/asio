@@ -45,7 +45,7 @@ public final class MetadataResource {
   }
 
   private void checkPermission() {
-    if (!security.isUserInRole(Permission.READ.name())) {
+    if (!security.isUserInRole(Permission.ACCESS_METADATA.name())) {
       throw new ForbiddenException();
     }
   }

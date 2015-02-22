@@ -12,12 +12,24 @@ import java.util.Locale;
  */
 @Immutable
 public final class Permission extends TypedValue<String> implements GrantedAuthority {
+  /** matches any permission */
   public static final Permission ANY = new Permission("*");
+
+  // DEPRECATED role like, generic permissions
+  @Deprecated
   public static final Permission READ = new Permission("READ");
+  @Deprecated
   public static final Permission WRITE = new Permission("WRITE");
+  @Deprecated
   public static final Permission ADMIN = new Permission("ADMIN");
+
+  // specific permissions
+  public static final Permission ACCESS_METADATA = new Permission("ACCESS_METADATA");
   public static final Permission INVOKE_QUERY = new Permission("INVOKE_QUERY");
   public static final Permission INVOKE_UPDATE = new Permission("INVOKE_UPDATE");
+  // super user rights
+  public static final Permission ACCESS_INTERNALS = new Permission("ACCESS_INTERNALS");
+  public static final Permission ADMINISTRATE = new Permission("ADMINISTRATE");
 
   /** Shared prefix of all Permissions */
   public static final String PREFIX = "PERMISSION_";

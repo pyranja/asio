@@ -27,6 +27,7 @@
     <module>flock</module>
     <module>flock-distribution</module>
     <module>integration</module>
+    <module>nest</module>
   </modules>
 
   <build>

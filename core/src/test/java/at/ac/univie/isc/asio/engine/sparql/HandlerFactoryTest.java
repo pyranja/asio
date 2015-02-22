@@ -78,7 +78,7 @@ public class HandlerFactoryTest {
   @Test
   public void should_have_read_role() throws Exception {
     final SparqlInvocation handler = factory.select(queryType, accepted);
-    assertThat(handler.requires(), is(Permission.READ));
+    assertThat(handler.requires(), is(Permission.INVOKE_QUERY));
   }
 
   private Class<?> matchingHandlerType() {

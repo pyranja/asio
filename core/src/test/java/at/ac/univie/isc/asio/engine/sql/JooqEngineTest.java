@@ -243,7 +243,7 @@ public class JooqEngineTest {
         .accept(CSV_TYPE)
         .build();
     final Invocation invocation = subject.prepare(params);
-    assertThat(invocation.requires(), is(Permission.READ));
+    assertThat(invocation.requires(), is(Permission.INVOKE_QUERY));
   }
 
   @Test
@@ -253,7 +253,7 @@ public class JooqEngineTest {
         .accept(CSV_TYPE)
         .build();
     final Invocation invocation = subject.prepare(params);
-    assertThat(invocation.requires(), is(Permission.WRITE));
+    assertThat(invocation.requires(), is(Permission.INVOKE_UPDATE));
   }
 
   // ========= ILLEGAL INPUT

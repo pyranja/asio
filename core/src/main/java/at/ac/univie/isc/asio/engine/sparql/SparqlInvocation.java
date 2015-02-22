@@ -41,7 +41,7 @@ public abstract class SparqlInvocation<RESULT> implements Invocation {
     final Context context = query.getContext();
     properties = ImmutableMultimap.<String, String>builder()
         .put("command", format(query.getQuery()))
-        .put("permission", Permission.READ.toString())
+        .put("permission", Permission.INVOKE_QUERY.toString())
         .put("format", format.toString())
         .put("engine", "jena")
         .put("timeout", context.getAsString(ARQ.queryTimeout, "undefined"))
@@ -60,7 +60,7 @@ public abstract class SparqlInvocation<RESULT> implements Invocation {
 
   @Override
   public final Permission requires() {
-    return Permission.READ;
+    return Permission.INVOKE_QUERY;
   }
 
   @Override

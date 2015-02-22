@@ -1,0 +1,47 @@
+# nest server configuration
+spring.application.name: 'nest'
+server:
+  port: 0
+  address: 0.0.0.0
+  session-timeout: 0
+
+management.context-path: '/insight'
+
+asio.timeout: 3000
+
+nest.configuration: classpath:/nest.properties
+nest.api:
+  override-accept-parameter: '_type'
+  default-media-type: 'application/xml'
+  default-language: 'en'
+nest.meta:
+  enable: false
+  repository: http://vphshare.atosresearch.eu/metadata-extended/rest/
+
+asio.db:
+  jdbc-url: jdbc:h2:mem:test
+  username: root
+  password: change
+
+spring.jackson:
+  serialization:
+    WRITE_DATES_AS_TIMESTAMPS: false
+  deserialization:
+    FAIL_ON_NUMBERS_FOR_ENUMS: true
+    ADJUST_DATES_TO_CONTEXT_TIME_ZONE: false
+
+security.user.name: 'root'
+security.user.password: 'change'
+security.user.role: 'PERMISSION_ACCESS_INTERNALS'
+management.security.role: 'PERMISSION_ADMINISTRATE'
+
+logging.level:
+  at.ac.univie.isc.asio: 'INFO'
+  at.ac.univie.isc.asio.events: 'OFF'
+  at.ac.univie.isc.asio.security: 'INFO'
+  com.hp.hpl.jena.arq.exec: 'OFF'
+  org.d2rq.db.SQLIterator: 'OFF'
+  org.springframework.boot.actuate.audit.listener.AuditListener: 'WARN'
+
+spring.security.debug: off
+spring.jersey.debug: off

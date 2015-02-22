@@ -1,5 +1,7 @@
 package at.ac.univie.isc.asio;
 
+import org.springframework.security.access.AccessDeniedException;
+
 import javax.ws.rs.WebApplicationException;
 import java.util.Locale;
 
@@ -27,7 +29,9 @@ public abstract class DatasetException extends RuntimeException {
   }
 
   public static boolean isRegular(final Throwable error) {
-    return error instanceof DatasetException || error instanceof WebApplicationException;
+    return error instanceof DatasetException
+        || error instanceof WebApplicationException
+        || error instanceof AccessDeniedException;
   }
 
   public static Throwable wrapIfNecessary(final Throwable error) {

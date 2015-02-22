@@ -21,7 +21,7 @@ final class SelectInvocation extends SqlInvocation {
 
   public SelectInvocation(final JdbcExecution jdbc, final String sql, final CursorWriter writer,
                           final MediaType contentType) {
-    super(jdbc, sql, contentType, Permission.READ);
+    super(jdbc, sql, contentType, Permission.INVOKE_QUERY);
     this.writer = writer;
   }
 
