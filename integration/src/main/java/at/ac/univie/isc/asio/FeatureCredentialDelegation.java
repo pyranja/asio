@@ -48,7 +48,7 @@ public class FeatureCredentialDelegation extends IntegrationTest {
   public void federated_queries_delegate_password() throws Exception {
     givenPermission("read")
       .formParam("query", federatedQuery())
-      .auth().preemptive().basic("", "test-password")
+      .auth().preemptive().basic("test-user", "test-password")
     .when()
       .post("/sparql")
     .then();
