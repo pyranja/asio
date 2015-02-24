@@ -53,21 +53,28 @@ public final class EventSource implements AutoCloseable {
    * Create an EventSource connecting in the IO scheduler to given endpoint.
    *
    * @param target URI of event stream endpoint
+   * @param client
    * @return created instance
    */
-  public static EventSource listenTo(final URI target) {
-    return new EventSource(target, Schedulers.io());
+  public static EventSource listenTo(final URI target, final HttpClient client) {
+    return new EventSource(target, client, Schedulers.io());
   }
 
   /**
-   * Create an EventSource connecting on given scheduler to given endpoint.
-   *
-   * @param target    URI of event stream endpoint
-   * @param scheduler to be used for connecting
-   * @return created instance
+   * Create a {@code HttpClient} with lax SSL handling.
+   * @return default http client
    */
-  public static EventSource listenTo(final URI target, final Scheduler scheduler) {
-    return new EventSource(target, scheduler);
+  public static DefaultHttpClient defaultClient() {
+    final DefaultHttpClient client = new DefaultHttpClient();
+    final SSLSocketFactory factory;
+    try {
+      factory =
+          new SSLSocketFactory(new TrustSelfSignedStrategy(), SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+      client.getConnectionManager().getSchemeRegistry().register(new Scheme("https", 443, factory));
+    } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException | UnrecoverableKeyException e) {
+      Throwables.propagate(e);
+    }
+    return client;
   }
 
   /**
@@ -91,12 +98,14 @@ public final class EventSource implements AutoCloseable {
 
   private static final Pattern EVENT_PATTERN = Pattern.compile("^(\\w+):(.*)$");
 
+  private final HttpClient client;
   private final HttpGet request;
   private final Observable<MessageEvent> events;
   private final Subject<HttpResponse, HttpResponse> connection;
   private volatile boolean closed;
 
-  private EventSource(final URI target, final Scheduler scheduler) {
+  private EventSource(final URI target, final HttpClient client, final Scheduler scheduler) {
+    this.client = client;
     request = new HttpGet(target);
     request.setHeader(HttpHeaders.ACCEPT, EVENT_STREAM_MIME.toString());
     request.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
@@ -151,7 +160,6 @@ public final class EventSource implements AutoCloseable {
           request.abort();
         }
       }));
-      final HttpClient client = createClient();
       request.reset();
       try {
         final HttpResponse response = client.execute(request);
@@ -230,20 +238,6 @@ public final class EventSource implements AutoCloseable {
         }
       }
     }
-  }
-
-  private HttpClient createClient() {
-    final DefaultHttpClient client = new DefaultHttpClient();
-    // FIXME : make configurable
-    final SSLSocketFactory factory;
-    try {
-      factory =
-          new SSLSocketFactory(new TrustSelfSignedStrategy(), SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-      client.getConnectionManager().getSchemeRegistry().register(new Scheme("https", 443, factory));
-    } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException | UnrecoverableKeyException e) {
-      Throwables.propagate(e);
-    }
-    return client;
   }
 
   @Immutable

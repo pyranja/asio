@@ -4,6 +4,7 @@ import at.ac.univie.isc.asio.junit.Interactions;
 import at.ac.univie.isc.asio.junit.Rules;
 import at.ac.univie.isc.asio.restassured.ReportingFilter;
 import at.ac.univie.isc.asio.sql.Database;
+import at.ac.univie.isc.asio.web.EventSource;
 import com.google.common.base.Charsets;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.EncoderConfig;
@@ -96,6 +97,15 @@ public abstract class IntegrationTest {
    */
   protected final RequestSpecification withPermission(final String permission) {
     return givenPermission(permission);
+  }
+
+  /**
+   * Create an {@link at.ac.univie.isc.asio.web.EventSource}, listening to the tested asio instance.
+   *
+   * @return configured event source
+   */
+  protected final EventSource eventSource() {
+    return asio.eventSource();
   }
 
   /**

@@ -1,9 +1,19 @@
 package at.ac.univie.isc.asio;
 
+import at.ac.univie.isc.asio.io.Payload;
+import at.ac.univie.isc.asio.web.EventSource;
+import com.google.common.io.BaseEncoding;
 import com.jayway.restassured.authentication.PreemptiveBasicAuthScheme;
 import com.jayway.restassured.builder.RequestSpecBuilder;
 import com.jayway.restassured.specification.RequestSpecification;
+import org.apache.http.HttpException;
+import org.apache.http.HttpHeaders;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpRequestInterceptor;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.protocol.HttpContext;
 
+import java.io.IOException;
 import java.net.URI;
 
 import static java.util.Objects.requireNonNull;
@@ -12,6 +22,9 @@ import static java.util.Objects.requireNonNull;
  * Deployment specific configuration for rest-assured integration tests.
  */
 public abstract class AsioSpec {
+
+  public static final String EVENTS_ENDPOINT = "meta/events";
+
   /**
    * Authorization is applied by sending the permission in the request headers.
    *
@@ -70,6 +83,8 @@ public abstract class AsioSpec {
 
   public abstract URI authorizedAddress(final String permission);
 
+  public abstract EventSource eventSource();
+
   public abstract boolean isAuthorizing();
 
   /**
@@ -79,12 +94,15 @@ public abstract class AsioSpec {
     private final String headerName;
     private final PreemptiveBasicAuthScheme defaultAuth;
 
+    public static final String CREDENTIALS =
+        BaseEncoding.base64().encode(Payload.encodeUtf8("anonymous:none"));
+
     private HeaderBased(final URI root, final String headerName) {
       super(root);
       this.headerName = requireNonNull(headerName, "header name");
       defaultAuth = new PreemptiveBasicAuthScheme();
       defaultAuth.setUserName("anonymous");
-      defaultAuth.setPassword("");
+      defaultAuth.setPassword("none");
     }
 
     @Override
@@ -95,6 +113,19 @@ public abstract class AsioSpec {
     @Override
     public URI authorizedAddress(final String permission) {
       return this.getRoot();
+    }
+
+    @Override
+    public EventSource eventSource() {
+      final DefaultHttpClient httpClient = EventSource.defaultClient();
+      httpClient.addRequestInterceptor(new HttpRequestInterceptor() {
+        @Override
+        public void process(final HttpRequest request, final HttpContext context) throws HttpException, IOException {
+          request.addHeader(headerName, "admin");
+          request.addHeader(HttpHeaders.AUTHORIZATION, "Basic " + CREDENTIALS);
+        }
+      });
+      return EventSource.listenTo(this.getRoot().resolve(EVENTS_ENDPOINT), httpClient);
     }
 
     @Override
@@ -122,6 +153,11 @@ public abstract class AsioSpec {
     }
 
     @Override
+    public EventSource eventSource() {
+      return EventSource.listenTo(authorizedAddress("admin").resolve(EVENTS_ENDPOINT), EventSource.defaultClient());
+    }
+
+    @Override
     public boolean isAuthorizing() {
       return true;
     }
@@ -144,6 +180,11 @@ public abstract class AsioSpec {
     @Override
     public URI authorizedAddress(final String permission) {
       return this.getRoot();
+    }
+
+    @Override
+    public EventSource eventSource() {
+      return EventSource.listenTo(this.getRoot().resolve(EVENTS_ENDPOINT), EventSource.defaultClient());
     }
 
     @Override

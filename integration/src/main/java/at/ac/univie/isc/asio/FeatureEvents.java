@@ -54,7 +54,7 @@ public class FeatureEvents extends IntegrationTest {
   @Parameterized.Parameter(2)
   public String noop;
 
-  private final EventSource monitor = EventSource.listenTo(serviceAddress("admin").resolve("meta/events"));
+  private final EventSource monitor = eventSource();
 
   @Before
   public void ensureLanguageSupported() {
