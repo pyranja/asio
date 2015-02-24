@@ -13,17 +13,17 @@ import static org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
 @SuiteClasses({
-    FeatureMetadata.class,
+//    FeatureMetadata.class,
     FeatureProtocol.class,
-    FeatureEvents.class,
+//    FeatureEvents.class,
     FeatureSql.class,
     FeatureSparql.class,
     FeatureSparqlFederation.class,
     FeatureCredentialDelegation.class,
     ReferenceSparql.class,
-    ReferenceSql.class,
+//    ReferenceSql.class,
 })
-public class NestSuite {
+public class LairSuite {
   @BeforeClass
   public static void start() {
     IntegrationTest.asio =
