@@ -1,6 +1,7 @@
 package at.ac.univie.isc.asio.engine;
 
 import at.ac.univie.isc.asio.DatasetUsageException;
+import at.ac.univie.isc.asio.SchemaIdentifier;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
@@ -18,6 +19,8 @@ import java.util.List;
 @Immutable
 public final class Command {
   public static final String KEY_LANGUAGE = "language";
+  public static final String KEY_SCHEMA = "schema";
+
 
   public static final class MissingParameter extends DatasetUsageException {
     public MissingParameter(final String key) {
@@ -83,11 +86,21 @@ public final class Command {
   }
 
   /**
-   * Identical to
-   * <pre>Language.valueOf(this.require(KEY_LANGUAGE))</pre>
+   * Identical to <pre>Language.valueOf(this.require(KEY_LANGUAGE))</pre>
+   *
+   * @return requested language
    */
   public Language language() {
     return Language.valueOf(require(KEY_LANGUAGE));
+  }
+
+  /**
+   * Identical to <pre>SchemaIdentifier.valueOf(require(KEY_SCHEMA))</pre>
+   *
+   * @return requested schema
+   */
+  public SchemaIdentifier schema() {
+    return SchemaIdentifier.valueOf(require(KEY_SCHEMA));
   }
 
   /**
@@ -119,7 +132,7 @@ public final class Command {
     return Objects.toStringHelper(this)
         .omitNullValues()
         .add("error", cause)
-        .add("properties", parameters)
+        .addValue(parameters)
         .add("owner", owner.orNull())
         .toString();
   }
