@@ -1,13 +1,25 @@
 # asio uri structure
 
-# lair
-/{dataset-name}/{permission}/                     => asio browser || service descriptor
-/{dataset-name}/{permission}/index.html           => asio browser
-/{dataset-name}/{permission}/{sparql|sql}         => query endpoint
-/{dataset-name}/{permission}/meta                 => meta data
-/{dataset-name}/{permission}/meta/{sparql|sql}    => schema descriptor
-/insight/{permission}/events                      => event stream
-/                                                 => service descriptor || asio browser
+# brood
+/catalog
+    /{schema}   -> PUT/DELETE to create/destroy schemas
+        /sql
+        /entity/(tables*)
+        /schema
+        /sparql
+        /resources/(subjects*)
+        /mapping
+        /meta
+    /events
+/explore/(sql|sparql)
+/insight/(spring-endpoints)
+/whoami
+
+# brood rewrites :
+/{schema}/{role}/(.*)
+  -> if {schema} is a deployed schema rewrite to
+  /catalog/{schema}/(.*) and add header "Role={role}"
+  -> else forward as is
 
 # flock
 /                                                 => snorql

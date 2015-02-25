@@ -1,3 +1,53 @@
+# response formats
+
+## sql operation <application/sql-results+json>
+
+### query
+
+{
+  "head" : {
+    "statement" : "@@sql_query@@",
+    "columns" : [
+      { "name" : "@@column_name@@", "type" : "@@xsd_datatype@@" },
+      { .. },
+    ],
+  },
+  "rows" : [
+    [ "@@column_value@@", .. ],
+    [..],
+  ]
+}
+
+### update
+
+{
+  "head" : {
+    "statement" : "@@SQL_QUERY@@",
+  },
+  "update" : {
+    "affected" : @@row_count@@,
+  }
+}
+
+## sql schema <application/sql-schema+json>
+
+{
+  "catalog" : "@@service_url@@",
+  "schema" : "@@schema_name@@",
+  "tables" : [
+    {
+      "name" : "@@table_name@@",
+      "columns" : [
+        "name" : "@@column_name@@",
+        "type" : "@@xsd_type@@",
+        "sql-type" : "@@sql_type@@",
+        "nullable" : @@column_is_nullable@@,
+        "length" : @@column_length@@,
+      ]
+    }
+  ]
+}
+
 sparql-results+xml
 
 <sparql xmlns="http://www.w3.org/2005/sparql-results#">
@@ -23,11 +73,6 @@ application/sql-results+xml
   </rows>
 </sql>
 
-application/sql-results+json
-
-{ "head" :  {  "statement" : "SQL_QUERY", "columns" : [ { "name" : "NAME", "type" : "XSD:TYPE" }, ... ] }
-  , "rows" : [ [ VALUE, ... ], ... ] }
-
 // SQL UPDATE responses
 
 application/sql-results+xml
@@ -36,11 +81,6 @@ application/sql-results+xml
   <head statement="SQL_UPDATE" />
   <update affected="ROW_COUNT" />
 </sql>
-
-application/sql-results+json
-
-{ "head" : { "statement" : "SQL_UPDATE" }
-  , "update" : { "affected" : "ROW_COUNT" } }
 
 text/csv -> update
 
