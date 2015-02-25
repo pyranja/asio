@@ -2,7 +2,7 @@ package at.ac.univie.isc.asio.insight;
 
 import at.ac.univie.isc.asio.Scope;
 import at.ac.univie.isc.asio.TestTicker;
-import at.ac.univie.isc.asio.tool.CaptureEvents;
+import at.ac.univie.isc.asio.CaptureEvents;
 import org.junit.Test;
 
 import java.util.Collections;

@@ -5,7 +5,7 @@ import at.ac.univie.isc.asio.TestTicker;
 import at.ac.univie.isc.asio.insight.Event;
 import at.ac.univie.isc.asio.insight.EventBusEmitter;
 import at.ac.univie.isc.asio.insight.Emitter;
-import at.ac.univie.isc.asio.tool.CaptureEvents;
+import at.ac.univie.isc.asio.CaptureEvents;
 import at.ac.univie.isc.asio.tool.Reactive;
 import com.google.common.io.ByteStreams;
 import org.junit.Test;

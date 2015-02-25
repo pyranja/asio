@@ -1,4 +1,4 @@
-package at.ac.univie.isc.asio.tool;
+package at.ac.univie.isc.asio;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
@@ -8,7 +8,12 @@ import com.google.common.eventbus.Subscribe;
 
 import java.util.List;
 
-public class CaptureEvents<EVENT> {
+/**
+ * Capture events from a guava {@code EventBus}.
+ *
+ * @param <EVENT>
+ */
+public final class CaptureEvents<EVENT> {
   public static <TYPE> CaptureEvents<TYPE> create(final Class<TYPE> type) {
     return new CaptureEvents<>(type);
   }
