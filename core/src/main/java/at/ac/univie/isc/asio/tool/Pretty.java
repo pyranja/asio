@@ -1,6 +1,7 @@
 package at.ac.univie.isc.asio.tool;
 
 import javax.annotation.Nonnull;
+import javax.xml.namespace.QName;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -78,5 +79,17 @@ public final class Pretty {
     }
     matcher.appendTail(buffer);
     return buffer.toString();
+  }
+
+  /**
+   * Expand the given {@link javax.xml.namespace.QName qualified name} by concatenating the
+   * namespace uri and the local part.
+   *
+   * @param qname a qualified name
+   * @return expanded form of the given name
+   */
+  public static String expand(final QName qname) {
+    requireNonNull(qname, "qualified name");
+    return qname.getNamespaceURI() + qname.getLocalPart();
   }
 }

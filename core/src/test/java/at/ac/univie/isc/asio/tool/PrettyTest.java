@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 
+import javax.xml.namespace.QName;
 import java.util.Map;
 
 import static org.hamcrest.Matchers.*;
@@ -88,6 +89,26 @@ public class PrettyTest {
     @Test(expected = IllegalArgumentException.class)
     public void fail_on_empty_token() throws Exception {
       Pretty.substitute("${}", ImmutableMap.of("", "empty"));
+    }
+  }
+
+  public static class Expand {
+    @Test
+    public void local_only_qname() throws Exception {
+      final QName qName = new QName("local-only");
+      assertThat(Pretty.expand(qName), is("local-only"));
+    }
+
+    @Test
+    public void qualified_name() throws Exception {
+      final QName qname = new QName("http://test.com/", "local");
+      assertThat(Pretty.expand(qname), is("http://test.com/local"));
+    }
+
+    @Test
+    public void qualified_name_with_prefix() throws Exception {
+      final QName qname = new QName("http://test.com/", "local", "prefix");
+      assertThat(Pretty.expand(qname), is("http://test.com/local"));
     }
   }
 }
