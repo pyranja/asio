@@ -35,13 +35,14 @@ security.user.password: 'change'
 security.user.role: 'PERMISSION_ACCESS_INTERNALS'
 management.security.role: 'PERMISSION_ADMINISTRATE'
 
+logging.level.: 'WARN'  # root logger
 logging.level:
-  at.ac.univie.isc.asio: 'INFO'
+  at.ac.univie.isc.asio: 'WARN'
   at.ac.univie.isc.asio.events: 'OFF'
-  at.ac.univie.isc.asio.security: 'INFO'
+  at.ac.univie.isc.asio.security: 'OFF'
   com.hp.hpl.jena.arq.exec: 'OFF'
   org.d2rq.db.SQLIterator: 'OFF'
-  org.springframework.boot.actuate.audit.listener.AuditListener: 'WARN'
+  org.springframework.boot.actuate.audit.listener.AuditListener: 'OFF'
 
 spring.security.debug: off
 spring.jersey.debug: off
