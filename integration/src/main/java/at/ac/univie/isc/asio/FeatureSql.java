@@ -10,7 +10,6 @@ import org.junit.experimental.categories.Category;
 import static at.ac.univie.isc.asio.matcher.RestAssuredMatchers.compatibleTo;
 import static at.ac.univie.isc.asio.matcher.RestAssuredMatchers.sqlCsvEqualTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.equalToIgnoringCase;
 
 /**
  * Extended functionality of SQL protocol endpoints.
@@ -62,18 +61,6 @@ public class FeatureSql extends IntegrationTest {
 
   public class Schema {
     @Test
-    public void redirect_to_metadata_resource_for_schema() throws Exception {
-      final String expectedRedirection = serviceAddress("read").resolve("meta/schema").toString();
-      givenPermission("read")
-        .redirects().follow(false)
-      .when()
-        .get("/sql/schema")
-      .then()
-        .statusCode(is(HttpStatus.SC_MOVED_PERMANENTLY))
-        .header(HttpHeaders.LOCATION, equalToIgnoringCase(expectedRedirection));
-    }
-
-    @Test
     public void deliver_xml() throws Exception {
       givenPermission("read")
         .header(HttpHeaders.ACCEPT, "application/xml")
@@ -99,6 +86,7 @@ public class FeatureSql extends IntegrationTest {
     public void reject_unauthorized_access() throws Exception {
       ensureSecured();
       givenPermission("none")
+          .header(HttpHeaders.ACCEPT, "application/json")
       .when()
         .get("/meta/schema")
       .then()

@@ -8,6 +8,7 @@ import org.junit.experimental.categories.Category;
 import static at.ac.univie.isc.asio.matcher.RestAssuredMatchers.compatibleTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 
 @Category(Integration.class)
@@ -31,7 +32,7 @@ public class FeatureMetadata extends IntegrationTest {
         .body("localID", not(isEmptyOrNullString()))
         .body("sparqlEndPoint", not(isEmptyOrNullString()))
         .body("name", not(isEmptyOrNullString()))
-        .body("type", is("Dataset"))
+        .body("type", is(equalToIgnoringCase("Dataset")))
         .body("status", not(isEmptyOrNullString()));
     }
 
@@ -44,12 +45,11 @@ public class FeatureMetadata extends IntegrationTest {
       .then()
         .statusCode(is(HttpStatus.SC_OK))
         .contentType(compatibleTo("application/json"))
-        .root("dataset")
         .body("globalID", not(isEmptyOrNullString()))
         .body("localID", not(isEmptyOrNullString()))
         .body("sparqlEndPoint", not(isEmptyOrNullString()))
         .body("name", not(isEmptyOrNullString()))
-        .body("type", is("Dataset"))
+        .body("type", is(equalToIgnoringCase("Dataset")))
         .body("status", not(isEmptyOrNullString()));
     }
 

@@ -23,7 +23,8 @@ import static java.util.Objects.requireNonNull;
  */
 public abstract class AsioSpec {
 
-  public static final String EVENTS_ENDPOINT = "meta/events";
+  public static final String EVENTS_ENDPOINT = "events";
+  public static final String DEFAULT_SCHEMA = "schema";
 
   /**
    * Authorization is applied by sending the permission in the request headers.
@@ -57,13 +58,19 @@ public abstract class AsioSpec {
   }
 
   private final URI root;
+  private String schema = "";
 
   private AsioSpec(final URI root) {
     this.root = requireNonNull(root);
   }
 
+  public AsioSpec useSchema(final String schema) {
+    this.schema = schema;
+    return this;
+  }
+
   protected URI getRoot() {
-    return root;
+    return root.resolve(schema);
   }
 
   /**
@@ -74,7 +81,7 @@ public abstract class AsioSpec {
    */
   public RequestSpecification requestWith(final String permission) {
     requireNonNull(permission);
-    final RequestSpecBuilder request = new RequestSpecBuilder().setBaseUri(root);
+    final RequestSpecBuilder request = new RequestSpecBuilder().setBaseUri(getRoot());
     final RequestSpecBuilder authorized = authorize(request, permission);
     return authorized.build();
   }
