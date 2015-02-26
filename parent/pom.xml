@@ -131,6 +131,18 @@
         <type>pom</type>
       </dependency>
 
+      <!-- backport of jdk8 date/time api -->
+      <dependency>
+        <groupId>org.threeten</groupId>
+        <artifactId>threetenbp</artifactId>
+        <version>1.2</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.joschi.jackson</groupId>
+        <artifactId>jackson-datatype-threetenbp</artifactId>
+        <version>2.4.4</version>
+      </dependency>
+
       <!-- jax-rs -->
       <dependency>
         <groupId>javax.ws.rs</groupId>
