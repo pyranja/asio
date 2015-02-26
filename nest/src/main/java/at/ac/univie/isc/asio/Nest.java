@@ -19,12 +19,14 @@ import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.zaxxer.hikari.HikariDataSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.Scope;
@@ -46,6 +48,7 @@ import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
 @PropertySource("${nest.configuration}")
+@EnableConfigurationProperties(AsioSettings.class)
 public class Nest {
 
   public static void main(String[] args) {
@@ -61,6 +64,9 @@ public class Nest {
   public static EventBusAutoRegistrator eventBusAutoRegistrator(final EventBus eventBus) {
     return new EventBusAutoRegistrator(eventBus);
   }
+
+  @Autowired
+  private AsioSettings config;
 
   @Bean
   public Schema defaultSchema(final SchemaFactory factory,
@@ -129,8 +135,8 @@ public class Nest {
   }
 
   @Bean
-  public TimeoutSpec timeout(@Value("${asio.timeout:-1}") final long span) {
-    return TimeoutSpec.from(span, TimeUnit.MILLISECONDS);
+  public TimeoutSpec timeout() {
+    return TimeoutSpec.from(config.timeout, TimeUnit.MILLISECONDS);
   }
 
   @Bean
