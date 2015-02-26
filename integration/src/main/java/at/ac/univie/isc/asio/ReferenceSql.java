@@ -41,11 +41,13 @@ public class ReferenceSql extends IntegrationTest {
         .content("@schema", is("PUBLIC"))
         .content("@catalog", is("TEST"))
         .root("schema.table.find { it.@name == 'PATIENT' }.column.find { it.@name == 'ID' }")
-        .content("@type", is("xsi:long"))
+//      namespace prefix is non-deterministic
+//        .content("@type", is("xsi:long"))
         .content("@sqlType", is("integer"))
         .content("@length", is("10"))
         .root("schema.table.find { it.@name == 'PATIENT' }.column.find { it.@name == 'NAME' }")
-        .content("@type", is("xsi:string"))
+//      namespace prefix is non-deterministic
+//        .content("@type", is("xsi:string"))
         .content("@sqlType", is("varchar"))
         .content("@length", is("255"));
     }
@@ -59,17 +61,15 @@ public class ReferenceSql extends IntegrationTest {
       .then()
         .statusCode(is(HttpStatus.SC_OK))
         .contentType(compatibleTo("application/json"))
-// FIXME : expect new json format
-// FIXME : update when datatype namespace fixed
         .root("table.find { it.name == 'PATIENT' }")
         .content("schema", is("PUBLIC"))
         .content("catalog", is("TEST"))
         .root("table.find { it.name == 'PATIENT' }.column.find { it.name == 'ID' }")
-        .content("type", is("http://www.w3.org/2001/XMLSchema-instancelong"))
+        .content("type", is("http://www.w3.org/2001/XMLSchema#long"))
         .content("sqlType", is("integer"))
         .content("length", is(10))
         .root("table.find { it.name == 'PATIENT' }.column.find { it.name == 'NAME' }")
-        .content("type", is("http://www.w3.org/2001/XMLSchema-instancestring"))
+        .content("type", is("http://www.w3.org/2001/XMLSchema#string"))
         .content("sqlType", is("varchar"))
         .content("length", is(255))
         ;
