@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.security;
 
+import com.google.common.testing.EqualsTester;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -11,6 +12,16 @@ import static org.junit.Assert.assertThat;
 public class IdentityTest {
   @Rule
   public ExpectedException error = ExpectedException.none();
+
+  @Test
+  public void equals_hashcode_contract() throws Exception {
+    new EqualsTester()
+        .addEqualityGroup(Identity.undefined(), Identity.from(null, null), Identity.from("name", null))
+        .addEqualityGroup(Identity.from("name", "password"), Identity.from("name", "password"))
+        .addEqualityGroup(Identity.from("other-name", "other-password"))
+        .testEquals()
+    ;
+  }
 
   @Test
   public void holds_given_name() throws Exception {

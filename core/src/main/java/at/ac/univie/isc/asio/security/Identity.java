@@ -139,15 +139,23 @@ public final class Identity implements Principal {
   }
 
   @Override
-  public boolean equals(final Object other) {
-    if (this == other) { return true; }
-    if (other == null || getClass() != other.getClass()) { return false; }
-    final Identity that = (Identity) other;
-    return name.equals(that.name) && secret.equals(that.secret);
+  public boolean equals(final Object o) {
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
+    final Identity identity = (Identity) o;
+    if (name != null ? !name.equals(identity.name) : identity.name != null)
+      return false;
+    if (secret != null ? !secret.equals(identity.secret) : identity.secret != null)
+      return false;
+    return true;
   }
 
   @Override
   public int hashCode() {
-    return 31 * name.hashCode() + secret.hashCode();
+    int result = name != null ? name.hashCode() : 0;
+    result = 31 * result + (secret != null ? secret.hashCode() : 0);
+    return result;
   }
 }
