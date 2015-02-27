@@ -5,41 +5,36 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.authentication.AuthenticationDetailsSource;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configurers.provisioning.InMemoryUserDetailsManagerConfigurer;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedGrantedAuthoritiesUserDetailsService;
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
-import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
 @Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
 class Security extends WebSecurityConfigurerAdapter {
 
-  public static final String ASIO_PERMISSION_HEADER = "Permission";
   public static final String REALM_NAME = "asio-nest";
 
+  @SuppressWarnings("SpringJavaAutowiringInspection")
   @Autowired
-  private ApplicationEventPublisher eventPublisher;
+  private AsioSettings config;
 
   @Value("${spring.security.debug:false}")
   private boolean debug = false;
-  @Autowired  // will be springs global authentication manager
-  private AuthenticationManager springBootManager;
 
   @Bean
   @ConditionalOnProperty("spring.security.debug")
@@ -60,11 +55,10 @@ class Security extends WebSecurityConfigurerAdapter {
       .authorizeRequests().anyRequest().fullyAuthenticated()
         .and()
       .addFilter(basicAuthenticationFilter())
-      .addFilterAfter(preAuthenticationFilter(), BasicAuthenticationFilter.class)
-        .authenticationProvider(preAuthenticationProvider())
       .exceptionHandling().authenticationEntryPoint(basicAuthenticationEntryPoint())
         .and()
-      .anonymous().disable()
+      .anonymous().principal(Identity.undefined()).authorities(Arrays.<GrantedAuthority>asList(Role.NONE))
+        .and()
       .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         .and()
       .csrf().disable()
@@ -80,10 +74,17 @@ class Security extends WebSecurityConfigurerAdapter {
 
   @Override
   protected void configure(final AuthenticationManagerBuilder auth) throws Exception {
-    auth
+    registerUsersForRoles(auth.inMemoryAuthentication())
         .eraseCredentials(false)
-        .parentAuthenticationManager(springBootManager)
+        .authenticationProvider(delegationAwareAuthenticationProvider())
     ;
+  }
+
+  private AuthenticationManagerBuilder registerUsersForRoles(InMemoryUserDetailsManagerConfigurer<AuthenticationManagerBuilder> auth) {
+    for (Role role : Role.values()) {
+      auth = auth.withUser(role.name()).password(config.secret).authorities(role).and();
+    }
+    return auth.and();
   }
 
   @Override
@@ -93,24 +94,9 @@ class Security extends WebSecurityConfigurerAdapter {
 
   private BasicAuthenticationFilter basicAuthenticationFilter() throws Exception {
     final BasicAuthenticationFilter filter = new BasicAuthenticationFilter(authenticationManagerBean());
-    filter.setAuthenticationDetailsSource(preAuthenticatedDetailsSource());
+    filter.setAuthenticationDetailsSource(DelegationDetailsSource.create());
     filter.afterPropertiesSet();
     return filter;
-  }
-
-  private BasicAuthCredentialDelegatingFilter preAuthenticationFilter() throws Exception {
-    final BasicAuthCredentialDelegatingFilter filter =
-        BasicAuthCredentialDelegatingFilter.create(authenticationManagerBean());
-    filter.setAuthenticationDetailsSource(preAuthenticatedDetailsSource());
-    filter.setApplicationEventPublisher(eventPublisher);
-    filter.setContinueFilterChainOnUnsuccessfulAuthentication(true);
-    filter.afterPropertiesSet();
-    return filter;
-  }
-
-  private AuthenticationDetailsSource<HttpServletRequest, ?> preAuthenticatedDetailsSource() {
-    return new HeaderAuthorizationDetailsSource(ASIO_PERMISSION_HEADER,
-        RoleToPermissionMapper.instance(), GetMethodRestriction.exclude(Permission.INVOKE_UPDATE));
   }
 
   private AuthenticationEntryPoint basicAuthenticationEntryPoint() throws Exception {
@@ -120,11 +106,12 @@ class Security extends WebSecurityConfigurerAdapter {
     return entryPoint;
   }
 
-  private PreAuthenticatedAuthenticationProvider preAuthenticationProvider() {
-    final PreAuthenticatedAuthenticationProvider provider = new PreAuthenticatedAuthenticationProvider();
-    provider.setThrowExceptionWhenTokenRejected(true);
-    provider.setPreAuthenticatedUserDetailsService(new PreAuthenticatedGrantedAuthoritiesUserDetailsService());
+  private DelegationAwareAuthenticationProvider delegationAwareAuthenticationProvider() throws Exception {
+    final DelegationAwareAuthenticationProvider provider = new DelegationAwareAuthenticationProvider();
+    provider.setAuthoritiesMapper(ExpandAuthoritiesContainer.instance());
+    provider.setUserDetailsService(userDetailsServiceBean());
     provider.afterPropertiesSet();
     return provider;
   }
+
 }

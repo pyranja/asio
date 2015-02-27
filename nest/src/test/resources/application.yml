@@ -8,6 +8,7 @@ server:
 management.context-path: '/insight'
 
 asio.timeout: 3000
+asio.secret: 'change'
 
 nest.configuration: classpath:/nest.properties
 nest.api:

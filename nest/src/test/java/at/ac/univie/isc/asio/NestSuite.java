@@ -34,7 +34,9 @@ public class NestSuite {
       application.run();
       final URI root = URI.create("http://localhost:" + application.getPort() + "/catalog/");
       IntegrationTest.asio = AsioSpec
-          .withHeaderAuthorization(root, Security.ASIO_PERMISSION_HEADER).useSchema("public");
+          .withBasicAuthorization(root, application.property("asio.secret", String.class))
+          .useDelegateCredentialsHeader("Delegate-Authorization")
+          .useSchema("public");
       IntegrationTest.database = h2;
     }
 }
