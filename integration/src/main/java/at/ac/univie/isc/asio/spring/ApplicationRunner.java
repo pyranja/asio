@@ -43,6 +43,10 @@ public final class ApplicationRunner extends ExternalResource {
     }
   }
 
+  public <T> T property(final String key, final Class<T> clazz) {
+    return context.getEnvironment().getProperty(key, clazz);
+  }
+
   @Override
   protected void after() {
     if (context != null) {
