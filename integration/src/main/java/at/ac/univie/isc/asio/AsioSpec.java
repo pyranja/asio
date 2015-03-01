@@ -27,14 +27,15 @@ public abstract class AsioSpec {
   public static final String DEFAULT_SCHEMA = "schema";
 
   /**
-   * Authorization is applied by sending the permission in the request headers.
+   * Authorization is applied by logging in as a user with the required role, using the supplied
+   * secret for authentication.
    *
    * @param address base service address
-   * @param header name of the auth bearing header
-   * @return header based asio spec
+   * @param secret password granting access to the service
+   * @return basic auth based asio spec
    */
-  public static AsioSpec withHeaderAuthorization(final URI address, final String header) {
-    return new HeaderBased(address, header);
+  public static AsioSpec withBasicAuthorization(final URI address, final String secret) {
+    return new BasicAuthBased(address, secret);
   }
 
   /**
@@ -59,18 +60,31 @@ public abstract class AsioSpec {
 
   private final URI root;
   private String schema = "";
+  private String delegateHeader = HttpHeaders.AUTHORIZATION;
 
   private AsioSpec(final URI root) {
     this.root = requireNonNull(root);
   }
 
   public AsioSpec useSchema(final String schema) {
-    this.schema = schema;
+    this.schema = requireNonNull(schema);
+    return this;
+  }
+
+  public AsioSpec useDelegateCredentialsHeader(final String header) {
+    this.delegateHeader = requireNonNull(header);
     return this;
   }
 
   protected URI getRoot() {
     return root.resolve(schema);
+  }
+
+  /**
+   * @return name of the header used for delegated credentials
+   */
+  public String getDelegateHeader() {
+    return delegateHeader;
   }
 
   /**
@@ -97,24 +111,12 @@ public abstract class AsioSpec {
   /**
    * Send permission as http header and force basic auth.
    */
-  private static class HeaderBased extends AsioSpec {
-    private final String headerName;
-    private final PreemptiveBasicAuthScheme defaultAuth;
+  private static class BasicAuthBased extends AsioSpec {
+    private final String secret;
 
-    public static final String CREDENTIALS =
-        BaseEncoding.base64().encode(Payload.encodeUtf8("anonymous:none"));
-
-    private HeaderBased(final URI root, final String headerName) {
+    private BasicAuthBased(final URI root, final String secret) {
       super(root);
-      this.headerName = requireNonNull(headerName, "header name");
-      defaultAuth = new PreemptiveBasicAuthScheme();
-      defaultAuth.setUserName("anonymous");
-      defaultAuth.setPassword("none");
-    }
-
-    @Override
-    protected RequestSpecBuilder authorize(final RequestSpecBuilder spec, final String permission) {
-      return spec.setAuth(defaultAuth).addHeader(headerName, permission);
+      this.secret = requireNonNull(secret, "secret");
     }
 
     @Override
@@ -123,13 +125,25 @@ public abstract class AsioSpec {
     }
 
     @Override
+    protected RequestSpecBuilder authorize(final RequestSpecBuilder spec, final String permission) {
+      return spec.setAuth(authenticateAs(permission));
+    }
+
+    private PreemptiveBasicAuthScheme authenticateAs(final String user) {
+      final PreemptiveBasicAuthScheme auth = new PreemptiveBasicAuthScheme();
+      auth.setUserName(user);
+      auth.setPassword(this.secret);
+      return auth;
+    }
+
+    @Override
     public EventSource eventSource() {
+      final String credentials = BaseEncoding.base64().encode(Payload.encodeUtf8("admin:" + secret));
       final DefaultHttpClient httpClient = EventSource.defaultClient();
       httpClient.addRequestInterceptor(new HttpRequestInterceptor() {
         @Override
         public void process(final HttpRequest request, final HttpContext context) throws HttpException, IOException {
-          request.addHeader(headerName, "admin");
-          request.addHeader(HttpHeaders.AUTHORIZATION, "Basic " + CREDENTIALS);
+          request.addHeader(HttpHeaders.AUTHORIZATION, "Basic " + credentials);
         }
       });
       return EventSource.listenTo(this.getRoot().resolve(EVENTS_ENDPOINT), httpClient);

@@ -1,8 +1,10 @@
 package at.ac.univie.isc.asio;
 
+import at.ac.univie.isc.asio.io.Payload;
 import at.ac.univie.isc.asio.junit.Rules;
 import at.ac.univie.isc.asio.web.HttpServer;
 import com.google.common.base.Strings;
+import com.google.common.io.BaseEncoding;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import org.junit.Rule;
@@ -47,8 +49,8 @@ public class FeatureCredentialDelegation extends IntegrationTest {
   @Test
   public void federated_queries_delegate_password() throws Exception {
     givenPermission("read")
+      .header(delegateCredentialsHeader(), token("test-user", "test-password"))
       .formParam("query", federatedQuery())
-      .auth().preemptive().basic("test-user", "test-password")
     .when()
       .post("/sparql")
     .then();
@@ -58,8 +60,8 @@ public class FeatureCredentialDelegation extends IntegrationTest {
   @Test
   public void username_is_dropped_in_delegated_credentials() throws Exception {
     givenPermission("read")
+      .header(delegateCredentialsHeader(), token("test-user", "test-password"))
       .formParam("query", federatedQuery())
-      .auth().preemptive().basic("test-user", "test-password")
     .when()
       .post("/sparql")
     .then();
@@ -69,8 +71,8 @@ public class FeatureCredentialDelegation extends IntegrationTest {
   @Test
   public void handles_large_credential_payloads() throws Exception {
     givenPermission("read")
+      .header(delegateCredentialsHeader(), token("test-user", Strings.repeat("test", 1000)))
       .formParam("query", federatedQuery())
-      .auth().preemptive().basic("test-user", Strings.repeat("test", 1000))
     .when()
       .post("/sparql")
     .then();
@@ -79,6 +81,16 @@ public class FeatureCredentialDelegation extends IntegrationTest {
 
   // @formatter:on
 
+  /**
+   * Encode username and password credentials for basic authentication
+   *
+   * @param username principal
+   * @param password secret password
+   * @return encoded header string
+   */
+  private String token(final String username, final String password) {
+    return "Basic " + BaseEncoding.base64().encode(Payload.encodeUtf8(username + ":" + password));
+  }
 
   /**
    * noop handler, that records exchanges

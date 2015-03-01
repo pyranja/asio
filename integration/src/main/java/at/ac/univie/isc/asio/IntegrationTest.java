@@ -47,9 +47,13 @@ public abstract class IntegrationTest {
     ;
   }
 
-  /** service address and authorization mode */
+  /**
+   * service address and authorization mode
+   */
   public static AsioSpec asio = AsioSpec.withoutAuthorization(URI.create("http://localhost:8080/"));
-  /** integration database if available - may be null */
+  /**
+   * integration database if available - may be null
+   */
   public static Database database = null;
 
   @Rule
@@ -69,8 +73,8 @@ public abstract class IntegrationTest {
   }
 
   /**
-   * @return the service address
    * @param permission required access rights
+   * @return the service address
    */
   protected final URI serviceAddress(final String permission) {
     return asio.authorizedAddress(permission);
@@ -109,11 +113,22 @@ public abstract class IntegrationTest {
   }
 
   /**
+   * Test cases should use this HTTP header name to transmit delegated basic auth credentials
+   *
+   * @return name of the delegated credentials header
+   */
+  protected final String delegateCredentialsHeader() {
+    return asio.getDelegateHeader();
+  }
+
+  /**
    * Skip test if no endpoint for the given language exists.
+   *
    * @param language name of required language
    */
   protected final void ensureLanguageSupported(final String language) {
-    final int responseCode = withPermission("admin").get("/{language}", language).then().extract().statusCode();
+    final int responseCode =
+        withPermission("admin").get("/{language}", language).then().extract().statusCode();
     assumeThat(language + " not supported", responseCode, is(not(HttpStatus.SC_NOT_FOUND)));
   }
 
