@@ -1,9 +1,16 @@
 package at.ac.univie.isc.asio.metadata;
 
+import at.ac.univie.isc.asio.tool.Pretty;
+
+import java.net.URI;
+
 /**
- * Created with IntelliJ IDEA. User: borck_000 ; Date: 3/27/2014 ; Time: 2:42 PM
+ * Thrown if the metadata repository cannot be reached or returned illegal responses.
  */
-public class RepositoryFailure extends RuntimeException {
+public final class RepositoryFailure extends RuntimeException {
+  public RepositoryFailure(final String message, final URI endpoint, final Throwable cause) {
+    super(Pretty.format("failed to communicate with metadata repository at %s - %s", endpoint, message), cause);
+  }
 
   public RepositoryFailure(final String message, final Throwable cause) {
     super(message, cause);

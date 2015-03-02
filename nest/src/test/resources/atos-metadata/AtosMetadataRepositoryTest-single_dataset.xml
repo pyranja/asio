@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resource_metadata_list atsCount="0" datasetCount="1" fileCount="0" numCurrentPageMetadata="1" numTotalMetadata="1" page="1" queryTime="0.017" swsCount="0" wfCount="0" wsCount="0">
+  <resource_metadata>
+    <dataset>
+      <author>author</author>
+      <category>category</category>
+      <creationDate>2014-04-14 16:49:54.000</creationDate>
+      <description>description</description>
+      <globalID>44bab742-2c27-4dad-8419-fae8a848358b</globalID>
+      <licence>license</licence>
+      <linkedTo>
+        <link>
+          <linkID>link-id</linkID>
+          <linkType>link-type</linkType>
+          <linkURI>link-uri</linkURI>
+        </link>
+      </linkedTo>
+      <localID>http://example.com/local-id/</localID>
+      <metadataCreationDate>2014-04-14 16:49:54.945</metadataCreationDate>
+      <metadataUpdateDate>2015-02-23 11:41:51.307</metadataUpdateDate>
+      <name>name</name>
+      <provenance>provenance</provenance>
+      <rating>0</rating>
+      <relatedResources>
+        <relatedResource>
+          <description>related-resource-description</description>
+          <resourceID>related-resource-id</resourceID>
+        </relatedResource>
+      </relatedResources>
+      <resourceURL>http://example.com/resource-url/</resourceURL>
+      <semanticAnnotations>
+        <semanticConcept>
+          <conceptURI>concept-uri</conceptURI>
+          <label>concept-label</label>
+        </semanticConcept>
+      </semanticAnnotations>
+      <status>active</status>
+      <tags>tag-one, tag-two</tags>
+      <type>Dataset</type>
+      <updateDate>2014-04-14 17:02:53.000</updateDate>
+      <views>18</views>
+      <sparqlEndpoint>http://example.com/sparql-endpoint</sparqlEndpoint>
+    </dataset>
+  </resource_metadata>
+</resource_metadata_list>

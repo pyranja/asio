@@ -1,10 +1,9 @@
 package at.ac.univie.isc.asio.metadata;
 
 /**
- * Created with IntelliJ IDEA. User: borck_000 ; Date: 3/27/2014 ; Time: 3:54 PM
+ * Thrown if no metadata for a given dataset identifier was found.
  */
-public class MetadataNotFound extends RuntimeException {
-
+public final class MetadataNotFound extends RuntimeException {
   public MetadataNotFound(final String message, final Throwable cause) {
     super(message, cause);
   }

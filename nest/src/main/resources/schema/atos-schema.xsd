@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="2.1"
+           elementFormDefault="qualified" attributeFormDefault="unqualified"
+    >
+
+  <xs:annotation>
+    <xs:documentation>
+      subset of atos metadata service schema required for AtosMetadataRepository
+      (http://vphshare.atosresearch.eu/metadata-extended/schema.xsd)
+    </xs:documentation>
+    <xs:appinfo>
+      <jxb:schemaBindings>
+        <jxb:package name="net.atos"/>
+        <jxb:nameXmlTransform>
+          <jxb:elementName prefix="Atos"/>
+        </jxb:nameXmlTransform>
+      </jxb:schemaBindings>
+    </xs:appinfo>
+  </xs:annotation>
+
+  <!-- service response -->
+
+  <xs:element name="message">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="data" minOccurs="0">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="_global_id" type="xs:string" minOccurs="0"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="state" type="xs:string" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- dataset metadata -->
+
+  <xs:element name="resource_metadata_list">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="resource_metadata" maxOccurs="unbounded" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="atsCount" type="xs:int" use="required"/>
+      <xs:attribute name="datasetCount" type="xs:int" use="required"/>
+      <xs:attribute name="fileCount" type="xs:int" use="required"/>
+      <xs:attribute name="numCurrentPageMetadata" type="xs:int" use="required"/>
+      <xs:attribute name="numTotalMetadata" type="xs:long" use="required"/>
+      <xs:attribute name="page" type="xs:int" use="required"/>
+      <xs:attribute name="queryTime" type="xs:double" use="required"/>
+      <xs:attribute name="swsCount" type="xs:int" use="required"/>
+      <xs:attribute name="wfCount" type="xs:int" use="required"/>
+      <xs:attribute name="wsCount" type="xs:int" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="resource_metadata">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="dataset"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="dataset">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="author" type="xs:string" minOccurs="0"/>
+        <xs:element name="category" type="xs:string" minOccurs="0"/>
+        <xs:element name="creationDate" type="xs:string" minOccurs="0"/>
+        <xs:element name="description" type="xs:string" minOccurs="0"/>
+        <xs:element name="globalID" type="xs:string" minOccurs="0"/>
+        <xs:element name="licence" type="xs:string" minOccurs="0"/>
+        <xs:element name="linkedTo" minOccurs="0">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="link" maxOccurs="unbounded" minOccurs="0"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="localID" type="xs:string" minOccurs="0"/>
+        <xs:element name="metadataCreationDate" type="xs:string" minOccurs="0"/>
+        <xs:element name="metadataUpdateDate" type="xs:string" minOccurs="0"/>
+        <xs:element name="name" type="xs:string" minOccurs="0"/>
+        <xs:element name="provenance" type="xs:string" minOccurs="0"/>
+        <xs:element name="rating" type="xs:string" minOccurs="0"/>
+        <xs:element name="relatedResources" nillable="true">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="relatedResource" maxOccurs="unbounded" minOccurs="0"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="resourceURL" type="xs:string" minOccurs="0"/>
+        <xs:element name="semanticAnnotations" nillable="true">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="semanticConcept" maxOccurs="unbounded" minOccurs="0"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="status" type="xs:string" minOccurs="0"/>
+        <xs:element name="tags" type="xs:string" minOccurs="0"/>
+        <xs:element name="type" type="xs:string" minOccurs="0"/>
+        <xs:element name="updateDate" type="xs:string" minOccurs="0"/>
+        <xs:element name="views" type="xs:string" minOccurs="0"/>
+        <xs:element name="sparqlEndpoint" type="xs:string" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="link">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="linkID" type="xs:string" minOccurs="0"/>
+        <xs:element name="linkType" type="xs:string" minOccurs="0"/>
+        <xs:element name="linkURI" type="xs:string" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="relatedResource">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="description" type="xs:string" minOccurs="0"/>
+        <xs:element name="resourceID" type="xs:string" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="semanticConcept">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="conceptURI" type="xs:string" minOccurs="0"/>
+        <xs:element name="label" type="xs:string" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
+
