@@ -16,7 +16,6 @@ import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.junit.rules.ExternalResource;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -31,7 +30,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 import static java.lang.String.format;
-import static java.util.Objects.requireNonNull;
 
 /**
  * Provide a lightweight, embedded {@link com.sun.net.httpserver.HttpServer http server} listening
@@ -56,8 +54,10 @@ public final class HttpServer extends ExternalResource implements Interactions.R
   public static Map<String, String> parseParameters(final HttpExchange exchange) throws IOException {
     final ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
     final String rawQuery = exchange.getRequestURI().getQuery();
-    final String query = URLDecoder.decode(rawQuery, StandardCharsets.UTF_8.name());
-    params.putAll(PARAMETER_PARSER.split(query));
+    if (rawQuery != null) { // null if no query string present
+      final String query = URLDecoder.decode(rawQuery, StandardCharsets.UTF_8.name());
+      params.putAll(PARAMETER_PARSER.split(query));
+    }
     if (isForm(exchange)) {
       final String rawBody = Payload.decodeUtf8(ByteStreams.toByteArray(exchange.getRequestBody()));
       final String form = URLDecoder.decode(rawBody, StandardCharsets.UTF_8.name());
@@ -92,7 +92,9 @@ public final class HttpServer extends ExternalResource implements Interactions.R
     }
   }
 
-  /** factory method */
+  /**
+   * factory method
+   */
   public static HttpServer create(final String label) {
     return new HttpServer(label);
   }
@@ -215,32 +217,5 @@ public final class HttpServer extends ExternalResource implements Interactions.R
     public String description() {
       return "error filter";
     }
-  }
-
-  /**
-   * Ported from {@code at.ac.univie.isc.tool.Pretty#justfiy} due to dependency conflicts.
-   *
-   * Pad the given string to justify it.
-   *
-   * @param text to be justified
-   * @param minLength pad until this length is reached
-   * @param pad char to use as padding
-   * @return justified string
-   */
-  @Nonnull
-  private static String justify(@Nonnull final String text, final int minLength, final char pad) {
-    requireNonNull(text);
-    if (minLength < 0) { throw new IllegalArgumentException("minLength must be positive"); }
-    if (text.length() >= minLength) { return text; }
-    final StringBuilder buffer = new StringBuilder(minLength);
-    final int padLength = minLength - text.length();
-    for (int i = padLength / 2; i > 0; i--) {
-      buffer.append(pad);
-    }
-    buffer.append(text);
-    for (int i = padLength / 2 + padLength % 2; i > 0; i--) {
-      buffer.append(pad);
-    }
-    return buffer.toString();
   }
 }
