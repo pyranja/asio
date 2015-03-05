@@ -17,6 +17,7 @@ public class IdentityTest {
   public void equals_hashcode_contract() throws Exception {
     new EqualsTester()
         .addEqualityGroup(Identity.undefined(), Identity.from(null, null), Identity.from("name", null))
+        .addEqualityGroup(Identity.from("anonymous", "")) // use special undefined name
         .addEqualityGroup(Identity.from("name", "password"), Identity.from("name", "password"))
         .addEqualityGroup(Identity.from("other-name", "other-password"))
         .testEquals()
@@ -48,9 +49,8 @@ public class IdentityTest {
   }
 
   @Test
-  public void cannot_get_name_from_undefined() throws Exception {
-    error.expect(IllegalStateException.class);
-    Identity.undefined().getName();
+  public void undefined_name_is_special__anonymous__() throws Exception {
+    assertThat(Identity.undefined().getName(), is("anonymous"));
   }
 
   @Test

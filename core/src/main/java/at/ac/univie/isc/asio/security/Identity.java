@@ -11,7 +11,7 @@ import java.security.Principal;
 @Immutable
 public final class Identity implements Principal {
   /** represents the {@code null} identity */
-  private static final Identity UNDEFINED = new Identity(null, null);
+  private static final Identity UNDEFINED = new Identity("anonymous", null);
 
   /** Thrown on illegal access to any property of an undefined identity */
   public static final class UndefinedIdentity extends IllegalStateException {
@@ -70,12 +70,17 @@ public final class Identity implements Principal {
   }
 
   /**
-   * @throws at.ac.univie.isc.asio.security.Identity.UndefinedIdentity if not valid
+   * {@inheritDoc}.
+   * <p>
+   *   Note: For compatibility with the {@link java.security.Principal} contract, {@code getName}
+   *   always returns a non-null {@code String}, even if this identity is undefined.
+   *   If the undefined case must be handled explicitly, use {@link #nameOrIfUndefined(String)}.
+   * </p>
+   * @return name of this identity or the {@code 'anonymous'} if this is undefined.
    */
   @Override
   @Nonnull
   public String getName() {
-    failIfUndefined();
     assert name != null;
     return name;
   }
