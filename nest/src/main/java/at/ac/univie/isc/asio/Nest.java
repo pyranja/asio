@@ -5,8 +5,8 @@ import at.ac.univie.isc.asio.container.SchemaFactory;
 import at.ac.univie.isc.asio.engine.*;
 import at.ac.univie.isc.asio.insight.EventBusEmitter;
 import at.ac.univie.isc.asio.insight.EventLoggerBridge;
-import at.ac.univie.isc.asio.metadata.DatasetDescription;
 import at.ac.univie.isc.asio.metadata.MetadataService;
+import at.ac.univie.isc.asio.metadata.NullMetadataService;
 import at.ac.univie.isc.asio.metadata.sql.H2SchemaService;
 import at.ac.univie.isc.asio.metadata.sql.MysqlSchemaService;
 import at.ac.univie.isc.asio.metadata.sql.RelationalSchemaService;
@@ -33,7 +33,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePropertySource;
-import org.springframework.hateoas.Link;
 import org.springframework.security.concurrent.DelegatingSecurityContextScheduledExecutorService;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -88,14 +87,7 @@ public class Nest {
 
   @Bean
   public MetadataService metadataService() {
-    final DatasetDescription dummy = DatasetDescription.create("unknown", false);
-    dummy.add(new Link("http://localhost:8080/", Link.REL_SELF));
-    return new MetadataService() {
-      @Override
-      public DatasetDescription fetchDescriptor() {
-        return dummy;
-      }
-    };
+    return new NullMetadataService();
   }
 
   @Bean

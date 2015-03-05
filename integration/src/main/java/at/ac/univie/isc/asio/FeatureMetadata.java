@@ -6,9 +6,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import static at.ac.univie.isc.asio.matcher.RestAssuredMatchers.compatibleTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.Matchers.equalToIgnoringCase;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 
 @Category(Integration.class)
@@ -16,25 +14,7 @@ public class FeatureMetadata extends IntegrationTest {
 
   // @formatter:off
 
-  public class DatasetMetadata {
-
-    @Test
-    public void deliver_xml() throws Exception {
-      givenPermission("read")
-        .header(HttpHeaders.ACCEPT, "application/xml")
-      .when()
-        .get("/meta")
-      .then()
-        .statusCode(is(HttpStatus.SC_OK))
-        .contentType(compatibleTo("application/xml"))
-        .root("dataset")
-        .body("globalID", not(isEmptyOrNullString()))
-        .body("localID", not(isEmptyOrNullString()))
-        .body("sparqlEndPoint", not(isEmptyOrNullString()))
-        .body("name", not(isEmptyOrNullString()))
-        .body("type", is(equalToIgnoringCase("Dataset")))
-        .body("status", not(isEmptyOrNullString()));
-    }
+  public class SchemaDescriptor {
 
     @Test
     public void deliver_json() throws Exception {
@@ -45,12 +25,17 @@ public class FeatureMetadata extends IntegrationTest {
       .then()
         .statusCode(is(HttpStatus.SC_OK))
         .contentType(compatibleTo("application/json"))
-        .body("globalID", not(isEmptyOrNullString()))
-        .body("localID", not(isEmptyOrNullString()))
-        .body("sparqlEndPoint", not(isEmptyOrNullString()))
-        .body("name", not(isEmptyOrNullString()))
-        .body("type", is(equalToIgnoringCase("Dataset")))
-        .body("status", not(isEmptyOrNullString()));
+          // must be present with value
+        .body("identifier", not(isEmptyOrNullString()))
+        .body("active", either(is(true)).or(is(false)))
+        .body("label", not(isEmptyOrNullString()))
+        .body("created", not(isEmptyOrNullString()))
+        .body("updated", not(isEmptyOrNullString()))
+          // optionals must be present but may be null
+        .body("collect { it -> it.key }", hasItems("description", "category", "author", "license", "tags", "links"))
+        .body("tags", is(any(Iterable.class)))
+        .body("links", is(any(Iterable.class)))
+      ;
     }
 
     @Test

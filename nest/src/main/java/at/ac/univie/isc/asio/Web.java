@@ -16,7 +16,6 @@ import org.springframework.boot.context.embedded.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.hateoas.hal.Jackson2HalModule;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
 
@@ -71,11 +70,6 @@ class Web {
   @Bean
   public ThreeTenModule threeTenModule() {
     return new ThreeTenModule();
-  }
-
-  @Bean
-  public Jackson2HalModule jackson2HalModule() {
-    return new Jackson2HalModule();
   }
 
   @Bean

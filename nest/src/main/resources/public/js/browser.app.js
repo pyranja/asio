@@ -222,42 +222,39 @@ function downloadTable() {
 
 function printMetadata()
 {
-	asio.fetchMetadata(callback_Metadata);
-	function callback_Metadata(error, data)
-	{
-		if (error != 0)
+  var INCLUDED_PROPERTIES = ['identifier', 'label', 'description', 'author', 'license', 'category', 'created', 'updated'];
+  asio.fetchMetadata(callback_Metadata);
+  function callback_Metadata(error, data)
+  {
+    if (error != 0)
 		{
-			var daten = document.getElementById("daten");
-			var table = document.createElement("table");
-			table.style.width = '100%';
-			var tr = new Array();
-			var j = 0;
-			$.each(data.dataset, function(key, value){
-				tr[j] = document.createElement("tr");
-				tr[j].style.align="justify";
-				var td = document.createElement("td");
-				td.style.width = '50%';
-				td.style.display="left";
-				td.style.fontWeight="500";
-				if (j % 2 == 0)
-					td.style.background = "#E3E7FF";
-				var td2 = document.createElement("td");
-				td2.style.width = '100%';
-				td2.style.display="inline-block";
-				if (j % 2 == 0)
-					td2.style.background = "#E3E7FF";
-				var text = document.createTextNode(key);
-				var text2 = document.createTextNode(value);
-				td.appendChild(text);
-				td2.appendChild(text2);
-				tr[j].appendChild(td);
-				tr[j].appendChild(td2);
-				table.appendChild(tr[j]); 
-				daten.appendChild(table);
-				j++;
-			
-			});
-		}
+      var table = document.getElementById("meta-table");
+      $.each(data, function(key, value){
+        // omit all properties not explicitly included (negative index means not found)
+        // omit properties with null or empty value
+        if ($.inArray(key, INCLUDED_PROPERTIES) < 0 || !value) {
+          return;
+        }
+
+        var row = document.createElement("tr");
+				row.style.align="justify";
+        table.appendChild(row);
+
+        var propertyNameCell = document.createElement("td");
+        propertyNameCell.style.width = '50%';
+        propertyNameCell.style.display="left";
+        propertyNameCell.style.fontWeight="500";
+        propertyNameCell.appendChild(document.createTextNode(key));
+        row.appendChild(propertyNameCell);
+
+        var propertyValueCell = document.createElement("td");
+        propertyValueCell.style.width = '100%';
+        propertyValueCell.style.display="inline-block";
+        propertyValueCell.appendChild(document.createTextNode(value));
+				row.appendChild(propertyValueCell);
+      });
+      container.appendChild(table);
+    }
 		else
 		{
 			alert("Error: printMetadata");

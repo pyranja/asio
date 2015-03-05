@@ -32,15 +32,9 @@ public class MetaResource {
 
   @GET
   @Path("/meta")
-  public DatasetMetadata fetchDatasetMetadata() {
-    return StaticMetadata.NOT_AVAILABLE;
+  public SchemaDescriptor fetchDescriptor(@PathParam("schema") final SchemaIdentifier identifier) {
+    return metadataService.describe(identifier);
   }
-
-//  @GET
-//  @Path("/meta")
-//  public DatasetDescription fetchDatasetDescriptor() {
-//    return metadataService.fetchDescriptor();
-//  }
 
   @GET
   @Path("/schema")

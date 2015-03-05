@@ -1,13 +1,16 @@
 package at.ac.univie.isc.asio.metadata;
 
+import at.ac.univie.isc.asio.SchemaIdentifier;
+
 /**
  * Facade for metadata fetching.
  */
 public interface MetadataService {
   /**
-   * Gather metadata about this dataset.
+   * Gather metadata about a schema.
    *
-   * @return descriptor of this dataset
+   * @param identifier id of the target schema
+   * @return descriptor of the target schema
    */
-  DatasetDescription fetchDescriptor();
+  SchemaDescriptor describe(SchemaIdentifier identifier);
 }
