@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio;
 
+import at.ac.univie.isc.asio.integration.IntegrationTest;
 import at.ac.univie.isc.asio.io.Classpath;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
@@ -30,7 +31,7 @@ public class ReferenceSql extends IntegrationTest {
   public class Schema {
     @Test
     public void includes_patient_table_in_xml() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .header(HttpHeaders.ACCEPT, "application/xml")
       .when()
         .get("/meta/schema")
@@ -54,7 +55,7 @@ public class ReferenceSql extends IntegrationTest {
 
     @Test
     public void includes_patient_table_in_json() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .header(HttpHeaders.ACCEPT, "application/json")
       .when()
         .get("/meta/schema")
@@ -79,7 +80,7 @@ public class ReferenceSql extends IntegrationTest {
   public class Query {
     @Test
     public void select_as_webrowset() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .header(HttpHeaders.ACCEPT, "application/xml")
         .param("query", "SELECT * FROM person")
       .when()
@@ -92,7 +93,7 @@ public class ReferenceSql extends IntegrationTest {
 
     @Test
     public void select_as_csv() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .header(HttpHeaders.ACCEPT, "text/csv")
         .param("query", "SELECT * FROM person")
       .when()
@@ -114,7 +115,7 @@ public class ReferenceSql extends IntegrationTest {
 
     @Test
     public void insert_as_xml() throws Exception {
-      givenPermission("full")
+      given().role("full").and()
         .header(HttpHeaders.ACCEPT, "application/xml")
         .param("update", "INSERT INTO PATIENT VALUES(42, 'test-name')")
       .when()
@@ -135,7 +136,7 @@ public class ReferenceSql extends IntegrationTest {
 
     @Test
     public void insert_as_csv() throws Exception {
-      givenPermission("full")
+      given().role("full").and()
         .header(HttpHeaders.ACCEPT, "text/csv")
         .param("update", "INSERT INTO PATIENT VALUES(42, 'test-name')")
       .when()

@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio;
 
+import at.ac.univie.isc.asio.integration.IntegrationTest;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.junit.Test;
@@ -18,7 +19,7 @@ public class FeatureMetadata extends IntegrationTest {
 
     @Test
     public void deliver_json() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .header(HttpHeaders.ACCEPT, "application/json")
       .when()
         .get("/meta")
@@ -41,7 +42,7 @@ public class FeatureMetadata extends IntegrationTest {
     @Test
     public void reject_unauthorized_access() throws Exception {
       ensureSecured();
-      givenPermission("none")
+      given().role("none").and()
       .when()
         .get("/meta")
       .then()

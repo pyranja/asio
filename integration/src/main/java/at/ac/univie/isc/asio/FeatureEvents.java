@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio;
 
+import at.ac.univie.isc.asio.integration.IntegrationTest;
 import at.ac.univie.isc.asio.web.EventSource;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
@@ -78,7 +79,7 @@ public class FeatureEvents extends IntegrationTest {
     monitor.connection().subscribeOn(Schedulers.io()).subscribe(new Action1<HttpResponse>() {
       @Override
       public void call(final HttpResponse aVoid) {
-        withPermission("admin").param(operation, noop).post("/{language}", language);
+        given().role("admin").and().param(operation, noop).post("/{language}", language);
       }
     });
     final List<EventSource.MessageEvent> received =
@@ -95,7 +96,7 @@ public class FeatureEvents extends IntegrationTest {
       @Override
       public void call(final HttpResponse aVoid) {
         final String commandWithInvalidSyntax = Hashing.md5().hashString(noop, Charsets.UTF_8).toString();
-        withPermission("admin").param(operation, commandWithInvalidSyntax).post("/{language}", language);
+        given().role("admin").and().param(operation, commandWithInvalidSyntax).post("/{language}", language);
       }
     });
     final List<EventSource.MessageEvent> received =
@@ -110,7 +111,7 @@ public class FeatureEvents extends IntegrationTest {
     monitor.connection().subscribeOn(Schedulers.io()).subscribe(new Action1<HttpResponse>() {
       @Override
       public void call(final HttpResponse aVoid) {
-        withPermission("admin").param(operation).post("/{language}", language);
+        given().role("admin").and().param(operation).post("/{language}", language);
       }
     });
     final List<EventSource.MessageEvent> received =

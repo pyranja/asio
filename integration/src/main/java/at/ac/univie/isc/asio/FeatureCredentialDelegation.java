@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio;
 
+import at.ac.univie.isc.asio.integration.IntegrationTest;
 import at.ac.univie.isc.asio.io.Payload;
 import at.ac.univie.isc.asio.junit.Rules;
 import at.ac.univie.isc.asio.web.HttpServer;
@@ -38,7 +39,7 @@ public class FeatureCredentialDelegation extends IntegrationTest {
 
   @Test
   public void ensure_sends_remote_request_on_mock_query() throws Exception {
-    givenPermission("read")
+    given().role("read").and()
       .formParam("query", federatedQuery())
     .when()
       .post("/sparql")
@@ -48,8 +49,11 @@ public class FeatureCredentialDelegation extends IntegrationTest {
 
   @Test
   public void federated_queries_delegate_password() throws Exception {
-    givenPermission("read")
-      .header(delegateCredentialsHeader(), token("test-user", "test-password"))
+//    withDelegated("test-user", "test-password")
+    given()
+      .role("read")
+      .delegate("test-user", "test-password")
+      .and()
       .formParam("query", federatedQuery())
     .when()
       .post("/sparql")
@@ -59,8 +63,10 @@ public class FeatureCredentialDelegation extends IntegrationTest {
 
   @Test
   public void username_is_dropped_in_delegated_credentials() throws Exception {
-    givenPermission("read")
-      .header(delegateCredentialsHeader(), token("test-user", "test-password"))
+    given()
+      .role("read")
+      .delegate("test-user", "test-password")
+      .and()
       .formParam("query", federatedQuery())
     .when()
       .post("/sparql")
@@ -70,8 +76,10 @@ public class FeatureCredentialDelegation extends IntegrationTest {
 
   @Test
   public void handles_large_credential_payloads() throws Exception {
-    givenPermission("read")
-      .header(delegateCredentialsHeader(), token("test-user", Strings.repeat("test", 1000)))
+    given()
+      .role("read")
+      .delegate("test-user", Strings.repeat("test", 1000))
+      .and()
       .formParam("query", federatedQuery())
     .when()
       .post("/sparql")

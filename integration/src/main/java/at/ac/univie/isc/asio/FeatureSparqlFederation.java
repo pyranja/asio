@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio;
 
+import at.ac.univie.isc.asio.integration.IntegrationTest;
 import at.ac.univie.isc.asio.io.Classpath;
 import at.ac.univie.isc.asio.junit.Rules;
 import at.ac.univie.isc.asio.web.HttpServer;
@@ -87,7 +88,7 @@ public class FeatureSparqlFederation extends IntegrationTest {
 
   @Test
   public void query_yields_expected_xml_result() throws Exception {
-    givenPermission("read")
+    given().role("read").and()
       .header(HttpHeaders.ACCEPT, "application/xml")
       .formParam("query", query())
     .when()
@@ -100,7 +101,7 @@ public class FeatureSparqlFederation extends IntegrationTest {
 
   @Test
   public void query_yields_expected_json_result() throws Exception {
-    givenPermission("read")
+    given().role("read").and()
       .header(HttpHeaders.ACCEPT, "application/json")
       .formParam("query", query())
     .when()
@@ -113,7 +114,7 @@ public class FeatureSparqlFederation extends IntegrationTest {
 
   @Test
   public void query_yields_expected_csv_result() throws Exception {
-    givenPermission("read")
+    given().role("read").and()
       .header(HttpHeaders.ACCEPT, "text/csv")
       .formParam("query", query())
     .when()

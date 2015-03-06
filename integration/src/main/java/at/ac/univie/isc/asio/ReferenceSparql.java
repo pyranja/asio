@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio;
 
+import at.ac.univie.isc.asio.integration.IntegrationTest;
 import at.ac.univie.isc.asio.io.Classpath;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.query.ResultSetFactory;
@@ -53,7 +54,7 @@ public class ReferenceSparql extends IntegrationTest {
 
   @Test
   public void query_yields_expected_xml_result() throws Exception {
-    givenPermission("read")
+    given().role("read").and()
       .header(org.apache.http.HttpHeaders.ACCEPT, "application/xml")
       .formParam("query", query())
     .when()
@@ -66,7 +67,7 @@ public class ReferenceSparql extends IntegrationTest {
 
   @Test
   public void query_yields_expected_json_result() throws Exception {
-    givenPermission("read")
+    given().role("read").and()
       .header(org.apache.http.HttpHeaders.ACCEPT, "application/json")
       .formParam("query", query())
     .when()
@@ -79,7 +80,7 @@ public class ReferenceSparql extends IntegrationTest {
 
   @Test
   public void query_yields_expected_csv_result() throws Exception {
-    givenPermission("read")
+    given().role("read").and()
       .header(org.apache.http.HttpHeaders.ACCEPT, "text/csv")
       .formParam("query", query())
     .when()

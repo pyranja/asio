@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio;
 
+import at.ac.univie.isc.asio.integration.IntegrationTest;
 import com.google.common.collect.ImmutableTable;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
@@ -24,7 +25,7 @@ public class FeatureSql extends IntegrationTest {
 
   @Test
   public void deny_update_with_read_permission() throws Exception {
-    givenPermission("read")
+    given().role("read").and()
       .formParam("update", NOOP_UPDATE)
     .when()
       .post("/sql")
@@ -35,7 +36,7 @@ public class FeatureSql extends IntegrationTest {
   public class Execute {
     @Test
     public void select() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .header(HttpHeaders.ACCEPT, "text/csv")
         .param("query", "SELECT 1 AS RESULT")
       .when()
@@ -47,7 +48,7 @@ public class FeatureSql extends IntegrationTest {
 
     @Test
     public void update() throws Exception {
-      givenPermission("full")
+      given().role("full").and()
         .header(HttpHeaders.ACCEPT, "application/xml")
         .param("update", "DROP TABLE IF EXISTS test_table_gaga")
       .when()
@@ -62,7 +63,7 @@ public class FeatureSql extends IntegrationTest {
   public class Schema {
     @Test
     public void deliver_xml() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .header(HttpHeaders.ACCEPT, "application/xml")
       .when()
         .get("/meta/schema")
@@ -73,7 +74,7 @@ public class FeatureSql extends IntegrationTest {
 
     @Test
     public void deliver_json() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .header(HttpHeaders.ACCEPT, "application/json")
       .when()
         .get("/meta/schema")
@@ -85,7 +86,7 @@ public class FeatureSql extends IntegrationTest {
     @Test
     public void reject_unauthorized_access() throws Exception {
       ensureSecured();
-      givenPermission("none")
+      given().role("none").and()
           .header(HttpHeaders.ACCEPT, "application/json")
       .when()
         .get("/meta/schema")
@@ -97,7 +98,7 @@ public class FeatureSql extends IntegrationTest {
   public class MediaType {
     @Test
     public void select_for_webrowset() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .formParam("query", NOOP_SELECT)
         .header(HttpHeaders.ACCEPT, "application/webrowset+xml")
       .when()
@@ -110,7 +111,7 @@ public class FeatureSql extends IntegrationTest {
     @Ignore("sql-results+xml not implemented")
     @Test
     public void select_for_xml() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .formParam("query", NOOP_SELECT)
         .header(HttpHeaders.ACCEPT, "application/xml")
       .when()
@@ -123,7 +124,7 @@ public class FeatureSql extends IntegrationTest {
     @Ignore("sql-results+json not implemented")
     @Test
     public void select_for_json() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .formParam("query", NOOP_SELECT)
         .header(HttpHeaders.ACCEPT, "application/json")
       .when()
@@ -135,7 +136,7 @@ public class FeatureSql extends IntegrationTest {
 
     @Test
     public void update_for_xml() throws Exception {
-      givenPermission("full")
+      given().role("full").and()
         .formParam("update", NOOP_UPDATE)
         .header(HttpHeaders.ACCEPT, "application/xml")
       .when()
@@ -148,7 +149,7 @@ public class FeatureSql extends IntegrationTest {
     @Ignore("sql-results+json not implemented")
     @Test
     public void update_for_json() throws Exception {
-      givenPermission("full")
+      given().role("full").and()
         .formParam("update", NOOP_UPDATE)
         .header(HttpHeaders.ACCEPT, "application/json")
       .when()

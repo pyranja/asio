@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.metadata;
 
-import at.ac.univie.isc.asio.IntegrationTest;
+import at.ac.univie.isc.asio.integration.IntegrationTest;
 import at.ac.univie.isc.asio.tool.Reactive;
 import net.atos.AtosDataset;
 import net.atos.AtosLink;

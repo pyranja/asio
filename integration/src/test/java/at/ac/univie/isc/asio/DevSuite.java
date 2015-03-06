@@ -1,5 +1,7 @@
 package at.ac.univie.isc.asio;
 
+import at.ac.univie.isc.asio.integration.IntegrationTest;
+import at.ac.univie.isc.asio.security.AuthMechanism;
 import at.ac.univie.isc.asio.sql.Database;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.SSLConfig;
@@ -25,10 +27,10 @@ import java.net.URI;
 public class DevSuite {
   @BeforeClass
   public static void init() {
-    IntegrationTest.asio =
-        AsioSpec.withUriAuthorization(URI.create("https://localhost:8443/asio/"));
-    IntegrationTest.database =
-        Database.create("jdbc:h2:tcp://localhost/mem:test").credentials("root", "change").build();
+    IntegrationTest.configure()
+        .baseService(URI.create("https://localhost:8443/asio/"))
+        .auth(AuthMechanism.uri())
+        .database(Database.create("jdbc:h2:tcp://localhost/mem:test").credentials("root", "change").build());
     RestAssured.config =
         RestAssured.config().sslConfig(SSLConfig.sslConfig().relaxedHTTPSValidation());
   }

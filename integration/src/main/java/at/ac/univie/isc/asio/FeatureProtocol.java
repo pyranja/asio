@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio;
 
+import at.ac.univie.isc.asio.integration.IntegrationTest;
 import at.ac.univie.isc.asio.io.Payload;
 import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
@@ -62,7 +63,7 @@ public class FeatureProtocol extends IntegrationTest {
   @Test
   public void valid_via_http_GET() throws Exception {
     ensureReadOnly();
-    givenPermission(permission)
+    given().role(permission).and()
       .param(operation,  noop)
     .when()
       .get("/{language}", language)
@@ -72,7 +73,7 @@ public class FeatureProtocol extends IntegrationTest {
 
   @Test
   public void valid_via_http_form_submission() throws Exception {
-    givenPermission(permission)
+    given().role(permission).and()
       .param(operation, noop)
     .when()
       .post("/{language}", language)
@@ -83,7 +84,7 @@ public class FeatureProtocol extends IntegrationTest {
   @Test
   public void valid_via_http_POST_with_raw_payload() throws Exception {
     final String operationContentType = Pretty.format("application/%s-%s", language, operation);
-    givenPermission(permission)
+    given().role(permission).and()
       .body(Payload.encodeUtf8(noop))
       .contentType(operationContentType)
     .when()
@@ -97,7 +98,7 @@ public class FeatureProtocol extends IntegrationTest {
 
   @Test
   public void support_xml_response_format() throws Exception {
-    givenPermission(permission)
+    given().role(permission).and()
       .param(operation, noop)
       .header(HttpHeaders.ACCEPT, "application/xml")
     .when()
@@ -111,7 +112,7 @@ public class FeatureProtocol extends IntegrationTest {
   public void support_json_response_format() throws Exception {
     // TODO : implement json formats
     assumeThat("sql json formats not implemented", language, is(not("sql")));
-    givenPermission(permission)
+    given().role(permission).and()
       .param(operation, noop)
       .header(HttpHeaders.ACCEPT, "application/json")
     .when()
@@ -123,7 +124,7 @@ public class FeatureProtocol extends IntegrationTest {
 
   @Test
   public void support_csv_response_format() throws Exception {
-    givenPermission(permission)
+    given().role(permission).and()
       .param(operation, noop)
       .header(HttpHeaders.ACCEPT, "text/csv")
     .when()
@@ -135,7 +136,7 @@ public class FeatureProtocol extends IntegrationTest {
 
   @Test
   public void defaults_to_xml_content_if_no_accept_header_given() throws Exception {
-    givenPermission(permission)
+    given().role(permission).and()
       .param(operation, noop)
     .when()
       .post("/{language}", language)
@@ -145,7 +146,7 @@ public class FeatureProtocol extends IntegrationTest {
 
   @Test
   public void defaults_to_xml_content_if_wildcard_accept_header_given() throws Exception {
-    givenPermission(permission)
+    given().role(permission).and()
       .header(HttpHeaders.ACCEPT, "*/*")
       .param(operation, noop)
     .when()
@@ -156,7 +157,7 @@ public class FeatureProtocol extends IntegrationTest {
 
   @Test
   public void override_accepted_header_using_asio_query_parameter() throws Exception {
-    givenPermission(permission)
+    given().role(permission).and()
       .header(HttpHeaders.ACCEPT, "application/json")
       .param(operation, noop)
       .queryParam("x-asio-accept", "text/csv")
@@ -168,7 +169,7 @@ public class FeatureProtocol extends IntegrationTest {
 
   @Test
   public void override_accepted_header_using_cxf_query_parameter() throws Exception {
-    givenPermission(permission)
+    given().role(permission).and()
       .header(HttpHeaders.ACCEPT, "application/json")
       .param(operation, noop)
       .queryParam("_type", "text/csv")
@@ -180,7 +181,7 @@ public class FeatureProtocol extends IntegrationTest {
 
   @Test
   public void reject_unacceptable_media_type() throws Exception {
-    givenPermission(permission)
+    given().role(permission).and()
       .header(HttpHeaders.ACCEPT, "image/jpeg")
       .param(operation, noop)
     .when()
@@ -193,7 +194,7 @@ public class FeatureProtocol extends IntegrationTest {
 
   @Test
   public void reject_unsupported_language() throws Exception {
-    givenPermission(permission)
+    given().role(permission).and()
       .param(operation, noop)
     .when()
       .get("/{permission}/unknown-language", permission)
@@ -205,7 +206,7 @@ public class FeatureProtocol extends IntegrationTest {
   public void reject_insufficient_permission() throws Exception {
     ensureSecured();
     assumeThat("operation requires no permission", permission, is(not("none")));
-    givenPermission("none")
+    given().role("none").and()
       .param(operation, noop)
     .when()
       .get("/{language}", language)
@@ -216,7 +217,7 @@ public class FeatureProtocol extends IntegrationTest {
   @Test
   public void reject_modifying_operation_via_http_GET() throws Exception {
     assumeThat("not a modifying operation", permission, is("update"));
-    givenPermission(permission)
+    given().role(permission).and()
       .param(operation, noop)
     .when()
       .get("/{language}", language)
@@ -227,7 +228,7 @@ public class FeatureProtocol extends IntegrationTest {
   @Test
   @Ignore("FIXME not implemented")
   public void reject_unknown_permission() throws Exception {
-    givenPermission(permission)
+    given().role(permission).and()
       .param(operation, noop)
     .when()
       .get("/unknown/{language}", language)
@@ -237,7 +238,7 @@ public class FeatureProtocol extends IntegrationTest {
 
   @Test
   public void reject_operation_via_http_PUT() throws Exception {
-    givenPermission(permission)
+    given().role(permission).and()
       .param(operation, noop)
     .when()
       .put("/{language}", language)
@@ -247,7 +248,7 @@ public class FeatureProtocol extends IntegrationTest {
 
   @Test
   public void reject_operation_via_http_DELETE() throws Exception {
-    givenPermission(permission)
+    given().role(permission).and()
       .param(operation, noop)
     .when()
       .delete("/{language}", language)
@@ -257,7 +258,7 @@ public class FeatureProtocol extends IntegrationTest {
 
   @Test
   public void reject_empty_query_parameter_value() throws Exception {
-    givenPermission(permission)
+    given().role(permission).and()
       .param(operation, "")
     .when()
       .get("/{language}", language)
@@ -267,7 +268,7 @@ public class FeatureProtocol extends IntegrationTest {
 
   @Test
   public void reject_empty_form_parameter_value() throws Exception {
-    givenPermission(permission)
+    given().role(permission).and()
       .param(operation, "")
     .when()
       .post("/{language}", language)
@@ -278,7 +279,7 @@ public class FeatureProtocol extends IntegrationTest {
   @Test
   public void reject_empty_payload_parameter_value() throws Exception {
     final String operationContentType = Pretty.format("application/%s-%s", language, operation);
-    givenPermission(permission)
+    given().role(permission).and()
       .content(new byte[] {})
       .contentType(operationContentType)
     .when()
@@ -290,7 +291,7 @@ public class FeatureProtocol extends IntegrationTest {
   @Test
   public void reject_duplicated_query_parameter() throws Exception {
     ensureReadOnly();
-    givenPermission(permission)
+    given().role(permission).and()
       .param(operation, noop, noop)
     .when()
       .get("/{language}", language)
@@ -300,7 +301,7 @@ public class FeatureProtocol extends IntegrationTest {
 
   @Test
   public void reject_duplicated_form_parameter() throws Exception {
-    givenPermission(permission)
+    given().role(permission).and()
       .param(operation, noop, noop)
     .when()
       .post("/{language}", language)
@@ -310,7 +311,7 @@ public class FeatureProtocol extends IntegrationTest {
 
   @Test
   public void reject_malformed_payload_content_type() throws Exception {
-    givenPermission(permission)
+    given().role(permission).and()
       .content(Payload.encodeUtf8(noop))
       .contentType("text/plain")
     .when()
@@ -322,7 +323,8 @@ public class FeatureProtocol extends IntegrationTest {
   @Test
   @Ignore("cxf ignores missing content-type") // FIXME : strict mode
   public void reject_form_submission_without_form_content_type() throws Exception {
-    final String form = URLEncoder.encode(operation + "=" + noop, Charsets.UTF_8.name());givenPermission(permission) // rest assured cannot serialize without content type
+    final String form = URLEncoder.encode(operation + "=" + noop, Charsets.UTF_8.name());
+    given().role(permission).and() // rest assured cannot serialize without content type
       .body(Payload.encodeUtf8(form))
       .header(HttpHeaders.CONTENT_TYPE, "")
     .when()
@@ -334,7 +336,7 @@ public class FeatureProtocol extends IntegrationTest {
   @Test
   @Ignore("cf infers form type")
   public void reject_post_where_content_type_is_missing() throws Exception {
-    givenPermission(permission)
+    given().role(permission).and()
       .body(Payload.encodeUtf8(noop))
       .header(HttpHeaders.CONTENT_TYPE, "")
     .when()
@@ -348,7 +350,7 @@ public class FeatureProtocol extends IntegrationTest {
   public void reject_non_utf8_encoded_payload() throws Exception {
     final String operationContentType =
         Pretty.format("application/%s-%s; charset=UTF-16", language, operation);
-    givenPermission(permission)
+    given().role(permission).and()
       .body(noop.getBytes(Charsets.UTF_16))
       .contentType(operationContentType)
     .when()
@@ -361,7 +363,7 @@ public class FeatureProtocol extends IntegrationTest {
   @Ignore("sql errors not translated")
   public void reject_invalid_syntax_payload() throws Exception {
     // hashing the given no-op should produce an illegal command
-    givenPermission(permission)
+    given().role(permission).and()
       .param(operation, Hashing.md5().hashString(noop, Charsets.UTF_8).toString())
     .when()
       .post("/{language}", language)

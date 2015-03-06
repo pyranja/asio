@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio;
 
+import at.ac.univie.isc.asio.integration.IntegrationTest;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.sparql.vocabulary.FOAF;
@@ -27,7 +28,7 @@ public class FeatureSparql extends IntegrationTest {
   public class Execute {
     @Test
     public void ask() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .param("query", "ASK {}")
       .when()
         .post("/sparql")
@@ -38,7 +39,7 @@ public class FeatureSparql extends IntegrationTest {
     
     @Test
     public void select() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .param("query", "SELECT (1 AS ?value) {}")
       .when()
         .post("/sparql")
@@ -58,7 +59,7 @@ public class FeatureSparql extends IntegrationTest {
           "CONSTRUCT { "
           + "<http://example.com/human> <http://xmlns.com/foaf/0.1/name> 'test-name' "
           + "} WHERE { }";
-      givenPermission("read")
+      given().role("read").and()
         .header(HttpHeaders.ACCEPT, "application/xml")
         .param("query", query)
       .when()
@@ -72,7 +73,7 @@ public class FeatureSparql extends IntegrationTest {
     public void describe() throws Exception {
       final String query = "DESCRIBE <http://example.com/human>";
       /* execution without error is sufficient - format not defined */
-      givenPermission("read")
+      given().role("read").and()
         .param("query", query)
       .when()
         .post("/sparql")
@@ -84,7 +85,7 @@ public class FeatureSparql extends IntegrationTest {
   public class MediaType {
     @Test
     public void select_for_xml() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .param("query", "SELECT (1 AS ?value) {}")
         .header(HttpHeaders.ACCEPT, "application/xml")
       .when()
@@ -96,7 +97,7 @@ public class FeatureSparql extends IntegrationTest {
 
     @Test
     public void select_for_json() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .param("query", "SELECT (1 AS ?value) {}")
         .header(HttpHeaders.ACCEPT, "application/json")
       .when()
@@ -108,7 +109,7 @@ public class FeatureSparql extends IntegrationTest {
 
     @Test
     public void select_for_csv() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .param("query", "SELECT (1 AS ?value) {}")
         .header(HttpHeaders.ACCEPT, "text/csv")
       .when()
@@ -120,7 +121,7 @@ public class FeatureSparql extends IntegrationTest {
 
     @Test
     public void ask_for_xml() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .param("query", "ASK {}")
         .header(HttpHeaders.ACCEPT, "application/xml")
       .when()
@@ -132,7 +133,7 @@ public class FeatureSparql extends IntegrationTest {
 
     @Test
     public void ask_for_json() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .param("query", "ASK {}")
         .header(HttpHeaders.ACCEPT, "application/json")
       .when()
@@ -144,7 +145,7 @@ public class FeatureSparql extends IntegrationTest {
 
     @Test
     public void describe_for_xml() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .param("query", "DESCRIBE <http://example.org>")
         .header(HttpHeaders.ACCEPT, "application/xml")
       .when()
@@ -156,7 +157,7 @@ public class FeatureSparql extends IntegrationTest {
 
     @Test
     public void describe_for_json() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .param("query", "DESCRIBE <http://example.org>")
         .header(HttpHeaders.ACCEPT, "application/json")
       .when()
@@ -168,7 +169,7 @@ public class FeatureSparql extends IntegrationTest {
 
     @Test
     public void describe_for_turtle() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .param("query", "DESCRIBE <http://example.org>")
         .header(HttpHeaders.ACCEPT, "text/turtle")
       .when()
@@ -180,7 +181,7 @@ public class FeatureSparql extends IntegrationTest {
 
     @Test
     public void construct_for_xml() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .param("query", "CONSTRUCT { <s> <p> 1 } WHERE {}")
         .header(HttpHeaders.ACCEPT, "application/xml")
       .when()
@@ -192,7 +193,7 @@ public class FeatureSparql extends IntegrationTest {
 
     @Test
     public void construct_for_json() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .param("query", "CONSTRUCT { <s> <p> 1 } WHERE {}")
         .header(HttpHeaders.ACCEPT, "application/json")
       .when()
@@ -204,7 +205,7 @@ public class FeatureSparql extends IntegrationTest {
 
     @Test
     public void construct_for_turtle() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .param("query", "CONSTRUCT { <s> <p> 1 } WHERE {}")
         .header(HttpHeaders.ACCEPT, "text/turtle")
       .when()
@@ -220,7 +221,7 @@ public class FeatureSparql extends IntegrationTest {
     @Test
     @Ignore("XXX default-graph-uri param not supported")
     public void dataset_default_graph_get() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .queryParam("query", "ASK { <http://kasei.us/2009/09/sparql/data/data1.rdf> ?p ?o }")
         .queryParam("default-graph-uri","http://kasei.us/2009/09/sparql/data/data1.rdf")
       .when()
@@ -234,7 +235,7 @@ public class FeatureSparql extends IntegrationTest {
     @Test
     @Ignore("XXX default-graph-uri param not supported")
     public void dataset_default_graph_post() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .formParam("query", "ASK { <http://kasei.us/2009/09/sparql/data/data1.rdf> ?p ?o }")
         .queryParam("default-graph-uri","http://kasei.us/2009/09/sparql/data/data1.rdf")
       .when()
@@ -248,7 +249,7 @@ public class FeatureSparql extends IntegrationTest {
     @Test
     @Ignore("XXX default-graph-uri param not supported")
     public void dataset_default_multi_graph_get() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .queryParam("query","ASK { <http://kasei.us/2009/09/sparql/data/data1.rdf> ?p ?o . <http://kasei.us/2009/09/sparql/data/data2.rdf> ?p ?o }")
         .queryParam("default-graph-uri", "http://kasei.us/2009/09/sparql/data/data1.rdf", "http://kasei.us/2009/09/sparql/data/data2.rdf")
       .when()
@@ -262,7 +263,7 @@ public class FeatureSparql extends IntegrationTest {
     @Test
     @Ignore("XXX default-graph-uri param not supported")
     public void dataset_default_multi_graph_post() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .formParam("query","ASK { <http://kasei.us/2009/09/sparql/data/data1.rdf> ?p ?o . <http://kasei.us/2009/09/sparql/data/data2.rdf> ?p ?o }")
         .queryParam("default-graph-uri", "http://kasei.us/2009/09/sparql/data/data1.rdf", "http://kasei.us/2009/09/sparql/data/data2.rdf")
       .when()
@@ -276,7 +277,7 @@ public class FeatureSparql extends IntegrationTest {
     @Test
     @Ignore("XXX default-graph-uri param not supported")
     public void dataset_named_multi_graph_get() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .queryParam("query", "ASK { GRAPH ?g { ?s ?p ?o } }")
         .queryParam("named-graph-uri", "http://kasei.us/2009/09/sparql/data/data1.rdf", "http://kasei.us/2009/09/sparql/data/data2.rdf")
       .when()
@@ -290,7 +291,7 @@ public class FeatureSparql extends IntegrationTest {
     @Test
     @Ignore("XXX default-graph-uri param not supported")
     public void dataset_named_multi_graph_post() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .formParam("query", "ASK { GRAPH ?g { ?s ?p ?o } }")
         .queryParam("named-graph-uri", "http://kasei.us/2009/09/sparql/data/data1.rdf", "http://kasei.us/2009/09/sparql/data/data2.rdf")
       .when()
@@ -304,7 +305,7 @@ public class FeatureSparql extends IntegrationTest {
     @Test
     @Ignore("XXX default-graph-uri param not supported")
     public void dataset_mixed_multi_graph_get() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .queryParam("query", "ASK { ?x ?y ?z GRAPH ?g { ?s ?p ?o } }")
         .queryParam("default-graph-uri", "http://kasei.us/2009/09/sparql/data/data3.rdf")
         .queryParam("named-graph-uri", "http://kasei.us/2009/09/sparql/data/data1.rdf", "http://kasei.us/2009/09/sparql/data/data2.rdf")
@@ -319,7 +320,7 @@ public class FeatureSparql extends IntegrationTest {
     @Test
     @Ignore("XXX default-graph-uri param not supported")
     public void dataset_mixed_multi_graph_post() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .formParam("query", "ASK { ?x ?y ?z GRAPH ?g { ?s ?p ?o } }")
         .queryParam("default-graph-uri", "http://kasei.us/2009/09/sparql/data/data3.rdf")
         .queryParam("named-graph-uri", "http://kasei.us/2009/09/sparql/data/data1.rdf", "http://kasei.us/2009/09/sparql/data/data2.rdf")
@@ -334,7 +335,7 @@ public class FeatureSparql extends IntegrationTest {
     @Test
     @Ignore("XXX ? FROM not supported in jena ?")
     public void multiple_dataset() throws Exception {
-      givenPermission("read")
+      given().role("read").and()
         .formParam("query", "ASK FROM <http://kasei.us/2009/09/sparql/data/data1.rdf> { <data1.rdf> ?p ?o }")
         .queryParam("default-graph-uri", "http://kasei.us/2009/09/sparql/data/data2.rdf")
       .when()

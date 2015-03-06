@@ -1,5 +1,7 @@
 package at.ac.univie.isc.asio;
 
+import at.ac.univie.isc.asio.integration.IntegrationTest;
+import at.ac.univie.isc.asio.security.AuthMechanism;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.SSLConfig;
 import org.junit.AfterClass;
@@ -32,8 +34,9 @@ public class FlockSuite {
     // FIXME : move init code to a rule ?
     final int port =
         ((AnnotationConfigEmbeddedWebApplicationContext) asio).getEmbeddedServletContainer().getPort();
-    IntegrationTest.asio =
-        AsioSpec.withoutAuthorization(URI.create("http://localhost:" + port + "/"));
+    IntegrationTest.configure()
+        .baseService(URI.create("http://localhost:" + port + "/"))
+        .auth(AuthMechanism.none());
     RestAssured.config =
         RestAssured.config().sslConfig(SSLConfig.sslConfig().relaxedHTTPSValidation());
   }
