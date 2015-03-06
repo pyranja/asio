@@ -17,6 +17,7 @@ import java.net.URI;
 @Suite.SuiteClasses({
     FeatureProtocol.class,
     FeatureMetadata.class,
+    FeatureWhoami.class,
     FeatureEvents.class,
     FeatureSql.class,
     FeatureSparql.class,

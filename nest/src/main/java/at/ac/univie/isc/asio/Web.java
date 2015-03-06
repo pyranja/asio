@@ -5,6 +5,7 @@ import at.ac.univie.isc.asio.insight.EventResource;
 import at.ac.univie.isc.asio.jaxrs.DatasetExceptionMapper;
 import at.ac.univie.isc.asio.metadata.MetaResource;
 import at.ac.univie.isc.asio.security.AccessDeniedJaxrsHandler;
+import at.ac.univie.isc.asio.security.WhoamiResource;
 import at.ac.univie.isc.asio.tool.ExpandingQNameSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.threetenbp.ThreeTenModule;
@@ -43,6 +44,7 @@ class Web {
     final ResourceConfig config = new Application();
     config.setApplicationName("jersey-nest");
     config.register(MetaResource.class);
+    config.register(WhoamiResource.class);
     config.register(EndpointsResource.class);
     config.register(EventResource.class);
     config.register(DatasetExceptionMapper.class);
