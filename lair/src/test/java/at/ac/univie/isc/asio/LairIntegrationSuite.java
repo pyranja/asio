@@ -25,7 +25,7 @@ import static org.junit.runners.Suite.SuiteClasses;
     ReferenceSparql.class,
 //    ReferenceSql.class,
 })
-public class LairSuite {
+public class LairIntegrationSuite {
   @BeforeClass
   public static void start() {
     IntegrationTest.configure()

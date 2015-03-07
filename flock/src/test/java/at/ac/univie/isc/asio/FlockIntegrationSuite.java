@@ -24,7 +24,7 @@ import static org.junit.runners.Suite.SuiteClasses;
     FeatureSparqlFederation.class,
     FeatureCredentialDelegation.class,
 })
-public class FlockSuite {
+public class FlockIntegrationSuite {
   private static ApplicationContext asio;
 
   @BeforeClass

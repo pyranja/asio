@@ -26,7 +26,7 @@ import java.net.URI;
     ReferenceSql.class,
     ReferenceSparql.class,
 })
-public class NestSuite {
+public class NestIntegrationSuite {
   @ClassRule
   public static ApplicationRunner application = ApplicationRunner.run(Nest.class);
 

@@ -546,7 +546,8 @@
           <configuration>
             <failIfNoTests>true</failIfNoTests>
             <includes>
-              <include>**/*.java</include>
+              <include>**/*IntegrationTest.java</include>
+              <include>**/*IntegrationSuite.java</include>
             </includes>
             <groups>at.ac.univie.isc.asio.Integration</groups>
           </configuration>
