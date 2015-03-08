@@ -74,7 +74,7 @@ public final class DefaultJenaFactory implements AutoCloseable {
       log.debug("delegating credentials from {}", owner);
       final Identity identity = (Identity) owner;
       context.set(CONTEXT_AUTH_USERNAME, "");
-      context.set(CONTEXT_AUTH_PASSWORD, identity.getToken());
+      context.set(CONTEXT_AUTH_PASSWORD, identity.getSecret());
     } else {
       log.debug("skipping credentials delegation - not a valid auth token {}", owner);
     }

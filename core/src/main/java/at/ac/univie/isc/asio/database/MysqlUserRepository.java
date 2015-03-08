@@ -38,7 +38,7 @@ public final class MysqlUserRepository {
   public Identity createUserFor(final String schema) {
     final Identity user = translateToCredentials(schema);
     create.execute("GRANT SELECT, INSERT, UPDATE, DELETE ON {0}.* TO {1}@{2} IDENTIFIED BY {3}",
-        name(schema), name(user.getName()), name(USER_HOST), inline(user.getToken()));
+        name(schema), name(user.getName()), name(USER_HOST), inline(user.getSecret()));
     return user;
   }
 

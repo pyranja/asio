@@ -80,13 +80,13 @@ public class MysqlUserRepositoryTest {
   @Test
   public void should_not_use_schema_name_as_password() throws Exception {
     final Identity credentials = subject.createUserFor(TEST_SCHEMA_NAME);
-    assertThat(credentials.getToken(), is(not(equalToIgnoringCase(TEST_SCHEMA_NAME))));
+    assertThat(credentials.getSecret(), is(not(equalToIgnoringCase(TEST_SCHEMA_NAME))));
   }
 
   @Test
   public void should_use_a_long_password() throws Exception {
     final Identity credentials = subject.createUserFor(TEST_SCHEMA_NAME);
-    assertThat(credentials.getToken().length(), greaterThan(10));
+    assertThat(credentials.getSecret().length(), greaterThan(10));
   }
 
   @Test
@@ -143,7 +143,7 @@ public class MysqlUserRepositoryTest {
     final String query =
         "SELECT User FROM mysql.user WHERE User = '${username}' AND Password = PASSWORD('${password}')";
     final Map<String, String> bindings =
-        ImmutableMap.of("username", credentials.getName(), "password", credentials.getToken());
+        ImmutableMap.of("username", credentials.getName(), "password", credentials.getSecret());
     final Table<Integer, String, String> table = ROOT.reference(substitute(query, bindings));
     return table.column("User").values();
   }

@@ -108,15 +108,6 @@ public final class Identity implements Principal {
     return secret;
   }
 
-  /**
-   * @return the user's api key for delegated auth
-   */
-  @Deprecated
-  @Nonnull
-  public String getToken() {
-    return getSecret();
-  }
-
   private void failIfUndefined() {
     if (!isDefined()) { throw new UndefinedIdentity(); }
   }
