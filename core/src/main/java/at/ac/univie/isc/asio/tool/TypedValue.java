@@ -1,5 +1,8 @@
 package at.ac.univie.isc.asio.tool;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -8,21 +11,23 @@ import java.util.Objects;
 import static java.util.Objects.requireNonNull;
 
 @Immutable
-public class TypedValue<VALUE> {
+public /* abstract */ class TypedValue<VALUE> {
   private final VALUE val;
 
+  @JsonCreator
   protected TypedValue(@Nonnull final VALUE val) {
     requireNonNull(val, "id must not be null");
     this.val = normalize(val);
   }
 
+  @JsonValue
   @Nonnull
-  protected VALUE normalize(@Nonnull final VALUE val) {
+  protected final VALUE value() {
     return val;
   }
 
   @Nonnull
-  protected final VALUE value() {
+  protected VALUE normalize(@Nonnull final VALUE val) {
     return val;
   }
 

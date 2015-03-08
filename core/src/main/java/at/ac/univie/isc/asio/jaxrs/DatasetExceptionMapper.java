@@ -4,8 +4,11 @@ import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.DatasetUsageException;
 import at.ac.univie.isc.asio.engine.Language;
 import at.ac.univie.isc.asio.engine.TypeMatchingResolver;
+import at.ac.univie.isc.asio.insight.Correlation;
+import at.ac.univie.isc.asio.insight.Error;
+import at.ac.univie.isc.asio.tool.SystemTime;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Throwables;
+import com.google.common.base.Ticker;
 import com.google.common.collect.ImmutableMap;
 
 import javax.ws.rs.core.MediaType;
@@ -15,9 +18,6 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 import java.util.Map;
 
-//import at.ac.univie.isc.asio.engine.Command;
-//import at.ac.univie.isc.asio.engine.TypeMatchingResolver;
-
 /**
  * Convert {@link DatasetException}s to responses with appropriate status and attempt to add a
  * detail message describing the cause if available.
@@ -26,31 +26,29 @@ import java.util.Map;
  */
 @Provider
 public class DatasetExceptionMapper implements ExceptionMapper<DatasetException> {
-  static final MediaType ERROR_TYPE = MediaType.valueOf("application/vnd.error+json");
+  static final MediaType ERROR_TYPE = MediaType.valueOf(Error.MEDIA_TYPE_NAME);
 
-  private boolean debug;
+  // TODO : inject correctly scoped
+  private static final Correlation FIXED_PLACEHOLDER = Correlation.valueOf("none");
+
+  private final Ticker ticker;
+  private final boolean debug;
 
   @VisibleForTesting
-  DatasetExceptionMapper(final boolean debug) {
+  DatasetExceptionMapper(final boolean debug, final Ticker ticker) {
     this.debug = debug;
+    this.ticker = ticker;
   }
 
   public DatasetExceptionMapper() {
-    this(true);
+    this(true, SystemTime.instance());
   }
 
   @Override
-  public Response toResponse(final DatasetException error) {
-    final ResponseBuilder response = selectResponseStatus(error);
-    final Error dto = new Error();
-    dto.setMessage(error.getLocalizedMessage());
-    dto.setCause(error.toString());
-    //noinspection ThrowableResultOfMethodCallIgnored
-    dto.setRoot(Throwables.getRootCause(error).toString());
-    if (debug) {
-      dto.setTrace(Throwables.getStackTraceAsString(error));
-    }
-    return response.entity(dto).type(ERROR_TYPE).build();
+  public Response toResponse(final DatasetException exception) {
+    final ResponseBuilder response = selectResponseStatus(exception);
+    final Error error = Error.from(exception, FIXED_PLACEHOLDER, ticker.read(), debug);
+    return response.entity(error).type(ERROR_TYPE).build();
   }
 
   private static final Map<Class<?>, Response.Status> ERROR_CODE_LOOKUP = ImmutableMap

@@ -3,6 +3,7 @@ package at.ac.univie.isc.asio.jaxrs;
 import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.DatasetFailureException;
 import at.ac.univie.isc.asio.DatasetUsageException;
+import com.google.common.base.Ticker;
 import org.junit.Test;
 
 import javax.ws.rs.core.MediaType;
@@ -22,7 +23,7 @@ import static org.mockito.Mockito.when;
 @SuppressWarnings("unchecked")
 public class DatasetExceptionMapperTest {
   private Request request = mock(Request.class);
-  private final DatasetExceptionMapper subject = new DatasetExceptionMapper(false);
+  private final DatasetExceptionMapper subject = new DatasetExceptionMapper(false, Ticker.systemTicker());
 
   @Test
   public void ignore_accept_and_use_json_as_format() throws Exception {
