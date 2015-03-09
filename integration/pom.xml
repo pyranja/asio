@@ -16,8 +16,6 @@
   <description>standalone integration tests for asio server</description>
   <packaging>jar</packaging>
 
-  <!-- FIXME : remove scope settings in parent to avoid overriding it here -->
-
   <dependencies>
     <dependency>
       <groupId>at.ac.univie.isc</groupId>
@@ -44,6 +42,10 @@
     <dependency>
       <groupId>de.bechte.junit</groupId>
       <artifactId>junit-hierarchicalcontextrunner</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.takari.junit</groupId>
+      <artifactId>takari-cpsuite</artifactId>
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
