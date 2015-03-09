@@ -1,25 +1,47 @@
 # asio uri structure
 
 # brood
-/catalog
-    /{schema}   -> PUT/DELETE to create/destroy schemas
-        /sql
-        /entity/(tables*)
-        /schema
-        /sparql
-        /resources/(subjects*)
-        /mapping
-        /meta
-    /events
-/explore/(sql|sparql)
-/insight/(spring-endpoints)
-/whoami
+/api                          => management endpoints
+  /events                     => event stream
+  /whoami                     => auth info
+  /catalog/{schema}           => GET/PUT/DELETE to manage deployed schemas
+/{schema}
+  /sql                        => protocol
+  /schema                     => sql schema
+  /sparql                     => protocol
+  /mapping                    => d2rq config
+  /meta                       => vph metadata
+  /explore/(sql|sparql)       => static content path - redirect to root
+## handled by spring dispatcher
+/{css, js, webjars, images}   => static content
+/{sql, sparql, events}.html   => browser pages
+/                             => welcome page
 
-# brood rewrites :
-/{schema}/{role}/(.*)
-  -> if {schema} is a deployed schema rewrite to
-  /catalog/{schema}/(.*) and add header "Role={role}"
-  -> else forward as is
+# brood default rewrites :
+/{context}/{head}/{tail}
+  # {context} is always omitted
+  if {tail} startsWith '/explore'
+      -> /{tail without '/explore'}
+    if {head} is a deployed schema
+      -> /catalog/{head}/{tail}
+
+# brood VPH rewrites :
+/{context}/{head}/{role}/{tail}
+  # {context} is always omitted
+  if {tail} startsWith '/explore'
+    -> /{tail without '/explore'} and add login Role.NONE
+  if {head} is a deployed schema
+    -> /catalog/{head}/{tail} and add login '{role}'
+  else
+    -> /{head}/{tail} and add login '{role}'
+
+# on another port
+/(spring-endpoints)
+
+# maybe
+/{schema}
+    /entity/(tables*)
+    /resources/(subjects*)
 
 # flock
 /                                                 => snorql
