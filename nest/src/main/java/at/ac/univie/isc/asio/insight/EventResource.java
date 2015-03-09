@@ -26,7 +26,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  * Publish events from the internal event bus as server-sent-event streams.
  */
 @Component
-@Path("/events")
+@Path("/api/events")
 public class EventResource implements AutoCloseable {
   private static final Logger log = getLogger(EventResource.class);
 

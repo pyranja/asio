@@ -10,7 +10,7 @@ String.prototype.startsWith = function(str) {
 
 function Snorql() {
     // modify this._endpoint to point to your SPARQL endpoint
-    this._endpoint = document.location.href.match(/^([^?]*)sparql.html/)[1] + 'catalog/public/sparql';
+    this._endpoint = document.location.href.match(/^([^?]*)\/explore\/sparql.html/)[1] + '/sparql';
     // modify these to your likeing
     this._poweredByLink = 'http://www4.wiwiss.fu-berlin.de/bizer/d2r-server/';
     this._poweredByLabel = 'D2R Server';
@@ -469,7 +469,7 @@ function SPARQLResultFormatter(json, namespaces) {
             var externalLink = document.createElement('a');
             externalLink.href = node.value;
             img = document.createElement('img');
-            img.src = '/snorql/link.png';
+            img.src = 'snorql/link.png';
             img.alt = '[' + match[1] + ']';
             img.title = 'Go to Web page';
             externalLink.appendChild(img);

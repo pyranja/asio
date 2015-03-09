@@ -16,8 +16,7 @@ var asio = (function() {
 
   // relative path from site location to asio sql endpoint
   // change this to adapt to deployment location
-  /* TODO : do sth clever to guess dynamic catalog endpoint? */
-  var ENDPOINT_PATH = "/catalog/public";
+  var ENDPOINT_PATH = "";
   // service suffixes
   var SERVICE_SCHEMA = "/schema";
   var SERVICE_QUERY = "/sql";

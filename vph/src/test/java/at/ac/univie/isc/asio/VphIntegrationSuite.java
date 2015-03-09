@@ -13,9 +13,12 @@ import org.junit.runners.Suite;
 
 import java.net.URI;
 
+/**
+ * Run nest integration tests using the URI-based auth mechanism required for VPH deployments.
+ */
 @RunWith(Suite.class)
-@Suite.SuiteClasses({AllFeatures.class})
-public class NestIntegrationSuite {
+@Suite.SuiteClasses(AllFeatures.class)
+public class VphIntegrationSuite {
   @ClassRule
   public static ApplicationRunner application = ApplicationRunner.run(Nest.class);
 
@@ -28,8 +31,7 @@ public class NestIntegrationSuite {
 
     IntegrationTest.configure()
         .baseService(URI.create("http://localhost:" + application.getPort() + "/"))
-        .auth(AuthMechanism.basic(application.property("asio.secret", String.class))
-            .overrideCredentialDelegationHeader("Delegate-Authorization"))
+        .auth(AuthMechanism.uri().overrideCredentialDelegationHeader("Authorization"))
         .database(h2)
         .defaults().schema("public").role(Role.NONE.name());
   }

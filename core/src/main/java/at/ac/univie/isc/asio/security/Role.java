@@ -30,15 +30,21 @@ public enum Role implements GrantedAuthority, GrantedAuthoritiesContainer {
   public static final String PREFIX = "ROLE_";
 
   /**
-   * Attempt to convert the given {@code String} into the Role with a matching name.
+   * Attempt to convert the given {@code String} into the Role with a matching name. Accept both
+   * raw {@link Role#name()} and {@link Role#getAuthority()} values that match a defined role.
    *
-   * @param name name of the role
+   * @param name name or authority of the role
    * @return parsed role or {@link Role#NONE} if there is no role with that name
    */
   public static Role fromString(@Nullable final String name) {
     if (name == null) { return Role.NONE; }
     final Role found = LOOKUP.get(normalize(name));
     return found != null ? found : Role.NONE;
+  }
+
+  public static Role fromAuthority(@Nullable final GrantedAuthority authority) {
+    if (authority == null) { return Role.NONE; }
+    return fromString(authority.getAuthority());
   }
 
   private static String normalize(final String name) {

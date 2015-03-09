@@ -28,6 +28,7 @@
     <module>flock-distribution</module>
     <module>integration</module>
     <module>nest</module>
+    <module>vph</module>
   </modules>
 
   <build>

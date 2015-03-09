@@ -1,11 +1,15 @@
 package at.ac.univie.isc.asio.security;
 
 import at.ac.univie.isc.asio.Scope;
-import com.google.common.net.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.*;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -18,11 +22,11 @@ public final class FixedPermissionAuthFilter implements Filter {
   private static final Logger log = LoggerFactory.getLogger(FixedPermissionAuthFilter.class);
 
   private final Role role;
-  private final BasicAuthIdentityExtractor extractor;
+  private final TranslateAuthorization adapter;
 
-  public FixedPermissionAuthFilter(final Role role, final BasicAuthIdentityExtractor extractor) {
+  public FixedPermissionAuthFilter(final Role role, final TranslateAuthorization adapter) {
     this.role = role;
-    this.extractor = extractor;
+    this.adapter = adapter;
   }
 
   @Override
@@ -30,17 +34,11 @@ public final class FixedPermissionAuthFilter implements Filter {
     final HttpServletRequest request = (HttpServletRequest) servletRequest;
     final HttpServletResponse response = (HttpServletResponse) servletResponse;
     try {
-      final AuthorizedRequestProxy authorizedRequest = authorize(request);
-      chain.doFilter(authorizedRequest, servletResponse);
+      final TranslateAuthorization.Wrapped adapted = adapter.translate(role, request, response);
+      chain.doFilter(adapted.request(), adapted.response());
     } catch (BasicAuthIdentityExtractor.MalformedAuthHeader error) {
       response.sendError(HttpServletResponse.SC_UNAUTHORIZED, error.getMessage());
     }
-  }
-
-  private AuthorizedRequestProxy authorize(final HttpServletRequest request) {
-    final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-    final Identity identity = extractor.authenticate(authHeader);
-    return AuthorizedRequestProxy.wrap(request, identity, role);
   }
 
   @Override

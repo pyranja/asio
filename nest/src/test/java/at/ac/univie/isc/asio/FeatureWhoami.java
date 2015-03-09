@@ -34,7 +34,7 @@ public class FeatureWhoami extends IntegrationTest {
 
   @Theory
   public void delivers_json(final Role role) {
-    given().role(role.name()).noSchema()
+    given().manage().role(role.name())
       .and()
       .header(HttpHeaders.ACCEPT, "application/json")
     .when()
@@ -47,7 +47,7 @@ public class FeatureWhoami extends IntegrationTest {
 
   @Theory
   public void login_is_role_name(final Role role) {
-    given().role(role.name()).noSchema()
+    given().manage().role(role.name())
       .and()
       .header(HttpHeaders.ACCEPT, "application/json")
     .when()
@@ -61,7 +61,7 @@ public class FeatureWhoami extends IntegrationTest {
   @SuppressWarnings("unchecked")
   public void permissions_contains_all_granted_to_role(final Role role) {
     final Set<String> expected = AuthorityUtils.authorityListToSet(role.getGrantedAuthorities());
-    given().role(role.name()).noSchema()
+    given().manage().role(role.name())
       .and()
       .header(HttpHeaders.ACCEPT, "application/json")
     .when()
@@ -73,7 +73,7 @@ public class FeatureWhoami extends IntegrationTest {
 
   @Theory
   public void has_no_identity_if_no_delegated_credentials_present(final Role role) {
-    given().role(role.name()).noSchema()
+    given().manage().role(role.name())
       .and()
       .header(HttpHeaders.ACCEPT, "application/json")
     .when()
@@ -86,7 +86,7 @@ public class FeatureWhoami extends IntegrationTest {
 
   @Theory
   public void contains_delegated_credentials(final Role role, final Identity credentials) {
-    given().role(role.name()).noSchema().delegate(credentials.getName(), credentials.getSecret())
+    given().manage().role(role.name()).delegate(credentials.getName(), credentials.getSecret())
       .and()
       .header(HttpHeaders.ACCEPT, "application/json")
     .when()

@@ -26,7 +26,9 @@ import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Objects.requireNonNull;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assume.assumeThat;
 
 /**
@@ -95,8 +97,11 @@ public abstract class IntegrationTest implements IntegrationDsl.SpecFactoryCallb
    * @return configured event source
    */
   protected final EventSource eventSource() {
-    final URI endpoint = config.auth.configureUri(config.serviceBase, "admin").resolve(config.eventService);
-    final DefaultHttpClient client = config.auth.configureClient(EventSource.defaultClient(), "admin");
+    final URI managementEndpoint = config.serviceBase.resolve(config.managementService);
+    final URI endpoint =
+        config.auth.configureUri(managementEndpoint, "admin").resolve(config.eventService);
+    final DefaultHttpClient client =
+        config.auth.configureClient(EventSource.defaultClient(), "admin");
     return EventSource.listenTo(endpoint, client);
   }
 
@@ -138,9 +143,14 @@ public abstract class IntegrationTest implements IntegrationDsl.SpecFactoryCallb
 
   @Override
   public final RequestSpecification requestFrom(final IntegrationDsl dsl) {
-    final URI baseUri = dsl.hasSchema()
-        ? config.serviceBase
-        : config.serviceBase.resolve(dsl.getSchemaPath());
+    final URI baseUri;
+    if (dsl.isManage()) {
+      baseUri = config.serviceBase.resolve(config.managementService);
+    } else if (dsl.hasSchema()) {
+      baseUri = config.serviceBase.resolve(dsl.getSchemaPath());
+    } else {
+      baseUri = config.serviceBase;
+    }
     final URI authedBaseUri = config.auth.configureUri(baseUri, dsl.getRole());
 
     RequestSpecBuilder request = new RequestSpecBuilder().setBaseUri(authedBaseUri.toString());

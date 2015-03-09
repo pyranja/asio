@@ -8,18 +8,7 @@
 @prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#> .
 @prefix jdbc: <http://d2rq.org/terms/jdbc/> .
 
-<> d2r:baseURI <http://test.com/integration/>;
-  d2r:port 80;
-  rdf:type d2r:Server;
-  rdfs:label "integration-test"
-  .
-
-map:database a d2rq:Database;
-	d2rq:jdbcDriver "org.h2.Driver";
-	d2rq:jdbcDSN "jdbc:h2:tcp://localhost/mem:test";
-	d2rq:username "root";
-	d2rq:password "change";
-	.
+map:database a d2rq:Database.
 
 # Table PUBLIC.DATETIMES
 map:PUBLIC_DATETIMES a d2rq:ClassMap;

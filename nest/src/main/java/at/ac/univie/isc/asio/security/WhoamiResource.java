@@ -14,7 +14,7 @@ import javax.ws.rs.core.MediaType;
  * Provide authentication and authorization information to a client.
  */
 @Component
-@Path("/whoami")
+@Path("/api/whoami")
 public class WhoamiResource {
   // TODO : move to CatalogResource ?
   private final SecurityContext security;

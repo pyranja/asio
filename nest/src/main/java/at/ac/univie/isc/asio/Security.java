@@ -5,8 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
+import org.springframework.boot.context.embedded.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configurers.provisioning.InMemoryUserDetailsManagerConfigurer;
@@ -17,9 +19,11 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
+import javax.servlet.DispatcherType;
 import java.util.Arrays;
 
 @Configuration
@@ -35,6 +39,8 @@ class Security extends WebSecurityConfigurerAdapter {
 
   @Value("${spring.security.debug:false}")
   private boolean debug = false;
+  @Value("${asio.feature.vph-uri-auth:false}")
+  private boolean uriAuth = false;
 
   @Bean
   @ConditionalOnProperty("spring.security.debug")
@@ -46,6 +52,39 @@ class Security extends WebSecurityConfigurerAdapter {
   @ConditionalOnProperty("spring.security.debug")
   public org.springframework.security.authentication.event.LoggerListener debugAuthenticationEventLogger() {
     return new org.springframework.security.authentication.event.LoggerListener();
+  }
+
+  /** Order the AdaptAuthorizationFilter before the spring security filter chain */
+  public static final int AUTHORIZATION_ADAPTER_ORDER = SecurityProperties.DEFAULT_FILTER_ORDER - 5;
+
+  @Bean(name = "uriAuthorizationFilter")
+  @Primary
+  @ConditionalOnProperty(value = "asio.feature.vph-uri-auth", havingValue = "true")
+  public FilterRegistrationBean uriAuthorizationFilter() {
+    final FindAuthorization authorizer = VphUriRewriter.withPrefixes("/catalog", "/explore");
+    final TranslateAuthorization adapter = TranslateToDelegateAuthorization.withSecret(config.secret);
+    final AdaptAuthorizationFilter filter = new AdaptAuthorizationFilter(authorizer, adapter);
+    final FilterRegistrationBean registration = new FilterRegistrationBean(filter);
+    registration.addUrlPatterns("/*");
+    registration.setDispatcherTypes(DispatcherType.REQUEST);
+    registration.setAsyncSupported(true);
+    registration.setOrder(AUTHORIZATION_ADAPTER_ORDER);
+    registration.setName("uri-auth-filter");
+    return registration;
+  }
+
+  @Bean(name = "uriAuthorizationFilter")
+  public FilterRegistrationBean rewriteFilter() {
+    final FindAuthorization authorizer = StaticCatalogRewriter.withPrefixes("/catalog", "/explore");
+    final TranslateAuthorization adapter = NoTranslation.create();
+    final AdaptAuthorizationFilter filter = new AdaptAuthorizationFilter(authorizer, adapter);
+    final FilterRegistrationBean registration = new FilterRegistrationBean(filter);
+    registration.addUrlPatterns("/*");
+    registration.setDispatcherTypes(DispatcherType.REQUEST);
+    registration.setAsyncSupported(true);
+    registration.setOrder(AUTHORIZATION_ADAPTER_ORDER);
+    registration.setName("rewrite-filter");
+    return registration;
   }
 
   @Override
@@ -99,11 +138,16 @@ class Security extends WebSecurityConfigurerAdapter {
     return filter;
   }
 
+  // FIXME : clean this up
   private AuthenticationEntryPoint basicAuthenticationEntryPoint() throws Exception {
-    final BasicAuthenticationEntryPoint entryPoint = new BasicAuthenticationEntryPoint();
-    entryPoint.setRealmName(REALM_NAME);
-    entryPoint.afterPropertiesSet();
-    return entryPoint;
+    if (uriAuth) {
+      return new Http403ForbiddenEntryPoint();
+    } else {
+      final BasicAuthenticationEntryPoint entryPoint = new BasicAuthenticationEntryPoint();
+      entryPoint.setRealmName(REALM_NAME);
+      entryPoint.afterPropertiesSet();
+      return entryPoint;
+    }
   }
 
   private DelegationAwareAuthenticationProvider delegationAwareAuthenticationProvider() throws Exception {

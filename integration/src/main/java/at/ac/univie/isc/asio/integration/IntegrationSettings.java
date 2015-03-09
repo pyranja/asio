@@ -19,6 +19,7 @@ public final class IntegrationSettings {
 
   URI serviceBase;
   URI eventService = URI.create("events/");
+  URI managementService = URI.create("api/");
   AuthMechanism auth = null;
   Database database = null;
   int timeoutInSeconds = 10;
@@ -51,6 +52,15 @@ public final class IntegrationSettings {
   }
 
   /**
+   * Address of management endpoint. May be relative to service base.
+   */
+  @Nonnull
+  public IntegrationSettings managementService(final URI managementService) {
+    this.managementService = Uris.ensureDirectoryPath(managementService);
+    return this;
+  }
+
+  /**
    * Authorization mechanism.
    */
   @Nonnull
@@ -60,7 +70,7 @@ public final class IntegrationSettings {
   }
 
   /**
-   * Integration database if avialable. May be null.
+   * Integration database if available. May be null.
    */
   @Nonnull
   public IntegrationSettings database(@Nullable final Database database) {

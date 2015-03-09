@@ -16,9 +16,11 @@ public final class IntegrationDsl {
     RequestSpecification requestFrom(IntegrationDsl args);
   }
 
+
   private final SpecFactoryCallback create;
   private String schema;
   private String role;
+  private boolean manage = false;
   private UsernamePasswordCredentials delegated = null;
 
   /**
@@ -30,6 +32,7 @@ public final class IntegrationDsl {
 
   IntegrationDsl copy(final IntegrationDsl other) {
     this.schema = other.schema;
+    this.manage = other.manage;
     this.role = other.role;
     this.delegated = other.delegated;
     return this;
@@ -49,6 +52,14 @@ public final class IntegrationDsl {
   public IntegrationDsl noSchema() {
     this.schema = null;
     return this;
+  }
+
+  /**
+   * Access the management service, instead of a database schema.
+   */
+  public IntegrationDsl manage() {
+    this.manage = true;
+    return noSchema();
   }
 
   /**
@@ -84,11 +95,15 @@ public final class IntegrationDsl {
   // === getter ====================================================================================
 
   boolean hasSchema() {
-    return schema == null;
+    return schema != null;
   }
 
   URI getSchemaPath() {
     return Uris.ensureDirectoryPath(URI.create(schema));
+  }
+
+  boolean isManage() {
+    return manage;
   }
 
   String getRole() {
