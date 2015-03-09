@@ -57,7 +57,7 @@ var asio = (function() {
 
   // attempt to parse an error response (expected to be json)
   function parseErrorResponse(xhr) {
-    var error = JSON.parse(xhr.responseText).error;
+    var error = JSON.parse(xhr.responseText);
     return new Error(xhr.statusText + "\n'" + error.message + "'");
   }
 
