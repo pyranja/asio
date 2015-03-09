@@ -1,4 +1,4 @@
-package at.ac.univie.isc.asio;
+package at.ac.univie.isc.asio.web;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,6 +25,7 @@ public class ExploreUriResolving {
         , { "base", "/other", "/other" }
         , { "base/", "/other", "/other" }
         , { "base//", "other", "base/other" }
+        , { "base/", "other/", "base/other/"}
     });
   }
 
