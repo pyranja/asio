@@ -138,9 +138,9 @@ public abstract class IntegrationTest implements IntegrationDsl.SpecFactoryCallb
 
   @Override
   public final RequestSpecification requestFrom(final IntegrationDsl dsl) {
-    final URI baseUri = dsl.getSchema() == null
+    final URI baseUri = dsl.hasSchema()
         ? config.serviceBase
-        : config.serviceBase.resolve(dsl.getSchema());
+        : config.serviceBase.resolve(dsl.getSchemaPath());
     final URI authedBaseUri = config.auth.configureUri(baseUri, dsl.getRole());
 
     RequestSpecBuilder request = new RequestSpecBuilder().setBaseUri(authedBaseUri.toString());

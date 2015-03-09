@@ -1,12 +1,15 @@
 package at.ac.univie.isc.asio.integration;
 
+import at.ac.univie.isc.asio.web.Uris;
 import com.jayway.restassured.specification.RequestSpecification;
 import org.apache.http.auth.UsernamePasswordCredentials;
+
+import java.net.URI;
 
 import static java.util.Objects.requireNonNull;
 
 /**
- * Fluent builder for integration test requests. 
+ * Fluent builder for integration test requests.
  */
 public final class IntegrationDsl {
   static interface SpecFactoryCallback {
@@ -26,9 +29,9 @@ public final class IntegrationDsl {
   }
 
   IntegrationDsl copy(final IntegrationDsl other) {
-    this.schema = other.getSchema();
-    this.role = other.getRole();
-    this.delegated = other.getDelegated();
+    this.schema = other.schema;
+    this.role = other.role;
+    this.delegated = other.delegated;
     return this;
   }
 
@@ -80,8 +83,12 @@ public final class IntegrationDsl {
 
   // === getter ====================================================================================
 
-  String getSchema() {
-    return schema;
+  boolean hasSchema() {
+    return schema == null;
+  }
+
+  URI getSchemaPath() {
+    return Uris.ensureDirectoryPath(URI.create(schema));
   }
 
   String getRole() {

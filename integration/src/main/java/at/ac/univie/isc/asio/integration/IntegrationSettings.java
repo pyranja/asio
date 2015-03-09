@@ -2,6 +2,7 @@ package at.ac.univie.isc.asio.integration;
 
 import at.ac.univie.isc.asio.security.AuthMechanism;
 import at.ac.univie.isc.asio.sql.Database;
+import at.ac.univie.isc.asio.web.Uris;
 import com.jayway.restassured.specification.RequestSpecification;
 
 import javax.annotation.Nonnull;
@@ -17,7 +18,7 @@ public final class IntegrationSettings {
   final IntegrationDsl dslDefaults;
 
   URI serviceBase;
-  URI eventService = URI.create("events");
+  URI eventService = URI.create("events/");
   AuthMechanism auth = null;
   Database database = null;
   int timeoutInSeconds = 10;
@@ -36,7 +37,7 @@ public final class IntegrationSettings {
    */
   @Nonnull
   public IntegrationSettings baseService(final URI serviceBase) {
-    this.serviceBase = serviceBase;
+    this.serviceBase = Uris.ensureDirectoryPath(serviceBase);
     return this;
   }
 
@@ -45,7 +46,7 @@ public final class IntegrationSettings {
    */
   @Nonnull
   public IntegrationSettings eventService(final URI eventService) {
-    this.eventService = eventService;
+    this.eventService = Uris.ensureDirectoryPath(eventService);
     return this;
   }
 
