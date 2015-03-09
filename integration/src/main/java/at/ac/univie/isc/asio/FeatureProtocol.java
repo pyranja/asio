@@ -197,7 +197,7 @@ public class FeatureProtocol extends IntegrationTest {
     given().role(permission).and()
       .param(operation, noop)
     .when()
-      .get("/{permission}/unknown-language", permission)
+      .get("/unknown-language")
     .then()
       .statusCode(is(HttpStatus.SC_NOT_FOUND));
   }
@@ -228,10 +228,10 @@ public class FeatureProtocol extends IntegrationTest {
   @Test
   @Ignore("FIXME not implemented")
   public void reject_unknown_permission() throws Exception {
-    given().role(permission).and()
+    given().role("unknown").and()
       .param(operation, noop)
     .when()
-      .get("/unknown/{language}", language)
+      .get("/{language}", language)
     .then()
       .statusCode(is(HttpStatus.SC_NOT_FOUND));
   }
