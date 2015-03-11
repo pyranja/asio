@@ -5,13 +5,20 @@ import net.atos.AtosDataset;
 import net.atos.AtosLink;
 import net.atos.AtosRelatedResource;
 import net.atos.AtosSemanticConcept;
-import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.threeten.bp.ZoneOffset;
 import org.threeten.bp.ZonedDateTime;
 import org.threeten.bp.chrono.ChronoZonedDateTime;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.both;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.Assert.assertThat;
 
 public class DescriptorConversionTest {
@@ -91,13 +98,18 @@ public class DescriptorConversionTest {
 
   @Test
   public void replace_unparseable_date_properties_with_now() throws Exception {
+    final ChronoZonedDateTime beforeConversion = ZonedDateTime.now(ZoneOffset.UTC);
     result = expectSuccess(sample()
             .withCreationDate("not valid")
             .withUpdateDate("not valid")
     );
-    final ZonedDateTime reference = ZonedDateTime.now(ZoneOffset.UTC);
-    assertThat("mismatch on property <created>", result.getCreated(), is(Matchers.<ChronoZonedDateTime>greaterThanOrEqualTo(reference)));
-    assertThat("mismatch on property <updated>", result.getUpdated(), is(Matchers.<ChronoZonedDateTime>greaterThanOrEqualTo(reference)));
+    final ChronoZonedDateTime afterConversion = ZonedDateTime.now(ZoneOffset.UTC);
+    assertThat("mismatch on property <created>", result.getCreated(),
+        is(both(greaterThanOrEqualTo(beforeConversion)).and(lessThanOrEqualTo(afterConversion)))
+    );
+    assertThat("mismatch on property <updated>", result.getUpdated(),
+        is(both(greaterThanOrEqualTo(beforeConversion)).and(lessThanOrEqualTo(afterConversion)))
+    );
   }
 
   @Test
