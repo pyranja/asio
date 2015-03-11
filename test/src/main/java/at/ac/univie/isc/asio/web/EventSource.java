@@ -81,8 +81,8 @@ public final class EventSource implements AutoCloseable {
    * connecting to the event stream server failed
    */
   public static class SubscriptionFailed extends IOException {
-    public SubscriptionFailed(final HttpResponse response) {
-      super("subscription to event stream failed : " + response.getStatusLine().toString());
+    public SubscriptionFailed(final HttpGet request, final HttpResponse response) {
+      super("subscription to event stream @ <" + request.getURI() + "> failed : " + response.getStatusLine().toString());
     }
   }
 
@@ -166,12 +166,14 @@ public final class EventSource implements AutoCloseable {
         if (closed || eventObserver.isUnsubscribed()) {
           throw new EventSourceClosed();
         }
-        connection.onNext(response);
         if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+          connection.onNext(response);
           consume(response);
           eventObserver.onCompleted();
         } else {
-          throw new SubscriptionFailed(response);
+          final SubscriptionFailed error = new SubscriptionFailed(request, response);
+          connection.onError(error);
+          throw error;
         }
       } catch (IOException e) {
         notify(e);

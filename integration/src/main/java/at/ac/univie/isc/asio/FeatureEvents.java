@@ -21,6 +21,7 @@ import rx.schedulers.Schedulers;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import static at.ac.univie.isc.asio.web.EventMatchers.whereData;
@@ -76,7 +77,7 @@ public class FeatureEvents extends IntegrationTest {
 
   @Test
   public void successful_query_event_sequence() throws Exception {
-    monitor.connection().subscribeOn(Schedulers.io()).subscribe(new Action1<HttpResponse>() {
+    monitor.connection().delay(100L, TimeUnit.MILLISECONDS).observeOn(Schedulers.io()).subscribe(new Action1<HttpResponse>() {
       @Override
       public void call(final HttpResponse aVoid) {
         given().role("admin").and().param(operation, noop).post("/{language}", language);
@@ -92,7 +93,7 @@ public class FeatureEvents extends IntegrationTest {
 
   @Test
   public void failed_query_event_sequence() throws Exception {
-    monitor.connection().subscribeOn(Schedulers.io()).subscribe(new Action1<HttpResponse>() {
+    monitor.connection().delay(100L, TimeUnit.MILLISECONDS).observeOn(Schedulers.io()).subscribe(new Action1<HttpResponse>() {
       @Override
       public void call(final HttpResponse aVoid) {
         final String commandWithInvalidSyntax = Hashing.md5().hashString(noop, Charsets.UTF_8).toString();
@@ -108,7 +109,7 @@ public class FeatureEvents extends IntegrationTest {
 
   @Test
   public void rejected_query_event_sequence() throws Exception {
-    monitor.connection().subscribeOn(Schedulers.io()).subscribe(new Action1<HttpResponse>() {
+    monitor.connection().delay(100L, TimeUnit.MILLISECONDS).observeOn(Schedulers.io()).subscribe(new Action1<HttpResponse>() {
       @Override
       public void call(final HttpResponse aVoid) {
         given().role("admin").and().param(operation).post("/{language}", language);
@@ -154,6 +155,16 @@ public class FeatureEvents extends IntegrationTest {
     @Override
     public void describeTo(final Description description) {
       description.appendText("correlated event sequence");
+    }
+  }
+
+  @SuppressWarnings("UnusedDeclaration")
+  private static final Action1<EventSource.MessageEvent> LOG_MESSAGES = new DumpMessages();
+
+  private static class DumpMessages implements Action1<EventSource.MessageEvent> {
+    @Override
+    public void call(final EventSource.MessageEvent messageEvent) {
+      System.out.println(messageEvent);
     }
   }
 }
