@@ -19,10 +19,10 @@ import static org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses({
     FeatureProtocol.class,
-//    FeatureEvents.class,  // listens to wrong endpoint /meta instead of /insight
     FeatureSparql.class,
     FeatureSparqlFederation.class,
     FeatureCredentialDelegation.class,
+    FeatureEvents.class,
 })
 public class FlockIntegrationSuite {
   private static ApplicationContext asio;
@@ -36,6 +36,7 @@ public class FlockIntegrationSuite {
         ((AnnotationConfigEmbeddedWebApplicationContext) asio).getEmbeddedServletContainer().getPort();
     IntegrationTest.configure()
         .baseService(URI.create("http://localhost:" + port + "/"))
+        .managementService(URI.create("insight/"))
         .auth(AuthMechanism.none());
     RestAssured.config =
         RestAssured.config().sslConfig(SSLConfig.sslConfig().relaxedHTTPSValidation());

@@ -90,7 +90,7 @@ public class Flock {
   @Bean
   public ServletRegistrationBean eventServlet() {
     final ServletRegistrationBean events =
-        new ServletRegistrationBean(new EventStreamServlet(), "/insight/events");
+        new ServletRegistrationBean(new EventStreamServlet(), "/insight/events", "/insight/events/*");
     events.setLoadOnStartup(-1);
     events.setAsyncSupported(true);
     events.setName("event-stream");
