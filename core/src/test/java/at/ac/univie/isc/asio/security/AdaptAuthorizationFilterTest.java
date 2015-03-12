@@ -68,7 +68,7 @@ public class AdaptAuthorizationFilterTest {
     given(authorizer.accept(request))
         .willReturn(FindAuthorization.Result.create(Role.ADMIN, "/redirection/path"));
     given(adapter.translate(Role.ADMIN, request, response))
-        .willThrow(new BasicAuthIdentityExtractor.MalformedCredentials("test"));
+        .willThrow(new BasicAuthConverter.MalformedCredentials("test"));
     subject.doFilter(request, response, chain);
     assertThat(response.getErrorMessage(), is("test"));
     assertThat(response.getStatus(), is(HttpStatus.SC_UNAUTHORIZED));

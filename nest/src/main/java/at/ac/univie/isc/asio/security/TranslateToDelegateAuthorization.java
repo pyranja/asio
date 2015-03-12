@@ -20,7 +20,7 @@ import java.util.Map;
  * the authority as login.
  */
 public final class TranslateToDelegateAuthorization implements TranslateAuthorization {
-  private final Converter<Identity, String> basicAuthFormatter = new BasicAuthIdentityExtractor().reverse();
+  private final Converter<Identity, String> formatter;
   private final String secret;
 
   /**
@@ -29,11 +29,12 @@ public final class TranslateToDelegateAuthorization implements TranslateAuthoriz
    * @return initialized translator
    */
   public static TranslateToDelegateAuthorization withSecret(final String secret) {
-    return new TranslateToDelegateAuthorization(secret);
+    return new TranslateToDelegateAuthorization(secret, BasicAuthConverter.fromIdentity());
   }
 
-  private TranslateToDelegateAuthorization(final String secret) {
+  private TranslateToDelegateAuthorization(final String secret, final Converter<Identity, String> formatter) {
     this.secret = secret;
+    this.formatter = formatter;
   }
 
   @Override
@@ -41,7 +42,7 @@ public final class TranslateToDelegateAuthorization implements TranslateAuthoriz
     final WithHeadersRequest translatedRequest = new WithHeadersRequest(request);
     // override authorization with internal login
     final Identity login = Identity.from(authority.getAuthority(), secret);
-    translatedRequest.override(HttpHeaders.AUTHORIZATION, basicAuthFormatter.convert(login));
+    translatedRequest.override(HttpHeaders.AUTHORIZATION, formatter.convert(login));
     // if present use original authorization as delegated credentials
     final String delegated = request.getHeader(HttpHeaders.AUTHORIZATION);
     if (delegated != null) {

@@ -5,7 +5,6 @@ import com.google.common.base.Converter;
 import com.google.common.io.BaseEncoding;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -16,17 +15,20 @@ import java.util.regex.Pattern;
  * Convert between credentials formatted according to the Basic Authentication Scheme (RFC-2617).
  * <p>
  * {@code String} input <strong>MUST</strong> be formatted according to the Basic Authentication
- * Scheme.
- * A password <strong>MUST</strong> be present, but the username <strong>MAY</strong> be omitted.
+ * Scheme. Both username and password <strong>MAY</strong> be empty.
  * </p>
  * <p>
  * {@code Identity} input <strong>MUST</strong> be {@link Identity#isDefined() defined}.
+ * </p>
+ * <p>
+ * As defined by {@link com.google.common.base.Converter} {@code null} input will always yield
+ * {@code null} output.
  * </p>
  *
  * @see <a href='https://www.ietf.org/rfc/rfc2617.txt'>RFC 2617</a>
  */
 @ThreadSafe
-public final class BasicAuthIdentityExtractor extends Converter<String, Identity> {
+public final class BasicAuthConverter extends Converter<String, Identity> {
   private final static Pattern BASIC_AUTH_PATTERN = Pattern.compile("^Basic ([A-Za-z0-9+/=]*)$");
   private final static Pattern CREDENTIALS_PATTERN = Pattern.compile("^([^:]*):(.*)$");
   /**
@@ -36,6 +38,18 @@ public final class BasicAuthIdentityExtractor extends Converter<String, Identity
    * This is well above the limits applied by widely used http servers (between 4KiB - 16KiB).
    */
   public static final int MAXIMUM_CREDENTIALS_LENGTH = 16 * 1_024;
+
+  private static final BasicAuthConverter INSTANCE = new BasicAuthConverter();
+
+  BasicAuthConverter() {}
+
+  public static Converter<String,Identity> fromString() {
+    return INSTANCE;
+  }
+
+  public static Converter<Identity, String> fromIdentity() {
+    return INSTANCE.reverse();
+  }
 
   @Override
   protected Identity doForward(@Nonnull final String input) throws MalformedCredentials {
@@ -102,33 +116,12 @@ public final class BasicAuthIdentityExtractor extends Converter<String, Identity
     }
   }
 
+  /**
+   * Thrown if the given credentials cannot be converted, e.g. it is not the expected scheme on
+   * parsing or it contains illegal characters during formatting.
+   */
   public static final class MalformedCredentials extends IllegalArgumentException {
     public MalformedCredentials(final String reason) {
-      super(reason);
-    }
-  }
-
-  /**
-   * @param auth Authorization header value
-   * @return extracted identity
-   * @throws BasicAuthIdentityExtractor.MalformedAuthHeader if parsing the header fails
-   */
-  @Nonnull
-  @Deprecated
-  public Identity authenticate(@Nullable final String auth) throws MalformedAuthHeader {
-    if (auth == null || auth.isEmpty()) {
-      return Identity.undefined();
-    }
-    try {
-      return doForward(auth);
-    } catch (MalformedCredentials malformedCredentials) {
-      throw new MalformedAuthHeader(malformedCredentials.getMessage());
-    }
-  }
-
-
-  public static class MalformedAuthHeader extends IllegalArgumentException {
-    public MalformedAuthHeader(final String reason) {
       super(reason);
     }
   }

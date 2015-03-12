@@ -16,12 +16,12 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 @RunWith(Enclosed.class)
-public class BasicAuthenticationConverterTest {
+public class BasicAuthConverterTest {
   public static class IdentityToString {
     @Rule
     public ExpectedException error = ExpectedException.none();
 
-    private final Converter<Identity, String> subject = new BasicAuthIdentityExtractor().reverse();
+    private final Converter<Identity, String> subject = BasicAuthConverter.fromIdentity();
     private String output;
 
     @Test
@@ -80,7 +80,7 @@ public class BasicAuthenticationConverterTest {
 
     @Test
     public void should_reject_username_with_colon() throws Exception {
-      error.expect(BasicAuthIdentityExtractor.MalformedCredentials.class);
+      error.expect(BasicAuthConverter.MalformedCredentials.class);
       subject.convert(Identity.from("with:colon", "password"));
     }
 
@@ -100,7 +100,7 @@ public class BasicAuthenticationConverterTest {
     @Rule
     public ExpectedException error = ExpectedException.none();
 
-    private final Converter<String, Identity> subject = new BasicAuthIdentityExtractor();
+    private final Converter<String, Identity> subject = BasicAuthConverter.fromString();
 
     @Test
     public void should_auth_with_given_name_and_password() throws Exception {
@@ -150,25 +150,25 @@ public class BasicAuthenticationConverterTest {
 
     @Test
     public void should_fail_on_empty_input() throws Exception {
-      error.expect(BasicAuthIdentityExtractor.MalformedCredentials.class);
+      error.expect(BasicAuthConverter.MalformedCredentials.class);
       assertThat(subject.convert(""), is(Identity.undefined()));
     }
 
     @Test
     public void should_fail_on_non_basic_auth() throws Exception {
-      error.expect(BasicAuthIdentityExtractor.MalformedCredentials.class);
+      error.expect(BasicAuthConverter.MalformedCredentials.class);
       subject.convert("NONBASIC ABC");
     }
 
     @Test
     public void should_fail_when_no_encoded_credentials_given() throws Exception {
-      error.expect(BasicAuthIdentityExtractor.MalformedCredentials.class);
+      error.expect(BasicAuthConverter.MalformedCredentials.class);
       subject.convert("Basic ");
     }
 
     @Test
     public void should_fail_on_malformed_credentials() throws Exception {
-      error.expect(BasicAuthIdentityExtractor.MalformedCredentials.class);
+      error.expect(BasicAuthConverter.MalformedCredentials.class);
       final String malformed = encoded("no_colon");
       subject.convert("Basic " + malformed);
     }

@@ -1,5 +1,7 @@
 package at.ac.univie.isc.asio.security;
 
+import com.google.common.base.Converter;
+import com.google.common.base.Objects;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -22,14 +24,14 @@ public final class DelegationDetailsSource
   static final AuthoritiesFilter GET_RESTRICTION =
       AuthoritiesFilter.exclude(Arrays.<GrantedAuthority>asList(Permission.INVOKE_UPDATE));
 
-  private final BasicAuthIdentityExtractor parser;
+  private final Converter<String, Identity> parser;
 
-  private DelegationDetailsSource(final BasicAuthIdentityExtractor parser) {
+  private DelegationDetailsSource(final Converter<String, Identity> parser) {
     this.parser = parser;
   }
 
   public static DelegationDetailsSource create() {
-    return new DelegationDetailsSource(new BasicAuthIdentityExtractor());
+    return new DelegationDetailsSource(BasicAuthConverter.fromString());
   }
 
   public DelegatedCredentialsDetails buildDetails(final HttpServletRequest request) {
@@ -42,9 +44,9 @@ public final class DelegationDetailsSource
   private Identity findDelegatedCredentials(final HttpServletRequest request) {
     try {
       final String header = request.getHeader(DELEGATE_AUTHORIZATION_HEADER);
-      return parser.authenticate(header);
-    } catch (BasicAuthIdentityExtractor.MalformedAuthHeader malformedAuthHeader) {
-      throw new BadCredentialsException("illegal 'Delegate-Authorization'", malformedAuthHeader);
+      return Objects.firstNonNull(parser.convert(header), Identity.undefined());
+    } catch (IllegalArgumentException malformedCredentials) {
+      throw new BadCredentialsException("illegal 'Delegate-Authorization'", malformedCredentials);
     }
   }
 

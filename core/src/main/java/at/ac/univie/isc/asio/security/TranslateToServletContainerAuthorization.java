@@ -1,5 +1,7 @@
 package at.ac.univie.isc.asio.security;
 
+import com.google.common.base.Converter;
+import com.google.common.base.Objects;
 import org.apache.http.HttpHeaders;
 import org.springframework.security.core.GrantedAuthority;
 
@@ -12,19 +14,20 @@ import javax.servlet.http.HttpServletResponse;
  * authorization methods.
  */
 public class TranslateToServletContainerAuthorization implements TranslateAuthorization {
-  private final BasicAuthIdentityExtractor basicAuth;
+  private final Converter<String, Identity> basicAuth;
 
   public static TranslateToServletContainerAuthorization newInstance() {
-    return new TranslateToServletContainerAuthorization(new BasicAuthIdentityExtractor());
+    return new TranslateToServletContainerAuthorization(BasicAuthConverter.fromString());
   }
 
-  private TranslateToServletContainerAuthorization(final BasicAuthIdentityExtractor basicAuth) {
+  private TranslateToServletContainerAuthorization(final Converter<String, Identity> basicAuth) {
     this.basicAuth = basicAuth;
   }
 
   @Override
   public Wrapped translate(final GrantedAuthority authority, final HttpServletRequest request, final HttpServletResponse response) {
-    final Identity principal = basicAuth.authenticate(request.getHeader(HttpHeaders.AUTHORIZATION));
+    final String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+    final Identity principal = Objects.firstNonNull(basicAuth.convert(header), Identity.undefined());
     final Role role = Role.fromAuthority(authority);  // translate to asio conventions
     final AuthorizedRequestProxy requestProxy = new AuthorizedRequestProxy(request, principal, role);
     return Wrapped.create(requestProxy, response);

@@ -36,7 +36,7 @@ public final class FixedPermissionAuthFilter implements Filter {
     try {
       final TranslateAuthorization.Wrapped adapted = adapter.translate(role, request, response);
       chain.doFilter(adapted.request(), adapted.response());
-    } catch (BasicAuthIdentityExtractor.MalformedAuthHeader error) {
+    } catch (IllegalArgumentException error) {
       response.sendError(HttpServletResponse.SC_UNAUTHORIZED, error.getMessage());
     }
   }

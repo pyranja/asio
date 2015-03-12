@@ -1,7 +1,5 @@
 package at.ac.univie.isc.asio.security;
 
-import at.ac.univie.isc.asio.io.Payload;
-import com.google.common.io.BaseEncoding;
 import org.apache.http.HttpHeaders;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -9,7 +7,6 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import javax.servlet.http.HttpServletRequest;
-
 import java.util.Collections;
 import java.util.Enumeration;
 
@@ -59,16 +56,14 @@ public class TranslateToDelegateAuthorizationTest {
   }
 
   private String encode(final Identity identity) {
-    return "Basic " + BaseEncoding.base64().encode(
-        Payload.encodeUtf8(identity.getName() + ":" + identity.getSecret())
-    );
+    return BasicAuthConverter.fromIdentity().convert(identity);
   }
 
   private Identity basicAuth(final HttpServletRequest request) {
-    return new BasicAuthIdentityExtractor().convert(request.getHeader(HttpHeaders.AUTHORIZATION));
+    return BasicAuthConverter.fromString().convert(request.getHeader(HttpHeaders.AUTHORIZATION));
   }
 
   private Identity delegateAuth(final HttpServletRequest request) {
-    return new BasicAuthIdentityExtractor().convert(request.getHeader("Delegate-Authorization"));
+    return BasicAuthConverter.fromString().convert(request.getHeader("Delegate-Authorization"));
   }
 }
