@@ -4,6 +4,7 @@ import at.ac.univie.isc.asio.tool.Pair;
 import com.google.common.base.Optional;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -20,18 +21,27 @@ public interface FindAuthorization {
    * @throws AuthenticationException if the required authorization information is not found in the
    *                                 request
    */
-  Result accept(HttpServletRequest request) throws AuthenticationException;
+  AuthAndRedirect accept(HttpServletRequest request) throws AuthenticationException;
 
   /**
    * Hold extracted authority and redirection target.
    */
-  public static final class Result extends Pair<GrantedAuthority, Optional<String>> {
-    private Result(final GrantedAuthority authority, final Optional<String> redirection) {
+  public static final class AuthAndRedirect extends Pair<GrantedAuthority, Optional<String>> {
+    /**
+     * Use name of {@link Role#NONE} as null authority
+     */
+    public static SimpleGrantedAuthority NO_AUTHORITY = new SimpleGrantedAuthority(Role.NONE.name());
+
+    private AuthAndRedirect(final GrantedAuthority authority, final Optional<String> redirection) {
       super(authority, redirection);
     }
 
-    public static Result create(final GrantedAuthority permission, final String tail) {
-      return new Result(permission, Optional.fromNullable(tail));
+    public static AuthAndRedirect create(final GrantedAuthority authority, final String tail) {
+      return new AuthAndRedirect(authority, Optional.fromNullable(tail));
+    }
+
+    public static AuthAndRedirect noRedirect(final GrantedAuthority authority) {
+      return new AuthAndRedirect(authority, Optional.<String>absent());
     }
 
     /**

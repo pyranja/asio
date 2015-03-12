@@ -11,6 +11,7 @@ public class Runner {
     Database.create("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1")
         .credentials("root", "change").build()
         .execute(Classpath.read("sql/database.integration.sql"));
-    Nest.application().logStartupInfo(true).run("--server.port=8080", "--asio.feature.vph-uri-auth=false");
+    Nest.application().logStartupInfo(true)
+        .run("--server.port=8080", "--spring.profiles.active=test", "--logging.level.=INFO");
   }
 }

@@ -51,6 +51,11 @@ public final class TranslateToDelegateAuthorization implements TranslateAuthoriz
     return Wrapped.create(translatedRequest, response);
   }
 
+  @Override
+  public String toString() {
+    return "TranslateToDelegateAuthorization{}";
+  }
+
   /**
    * Allow to add headers to a http request. Added headers take precedence over headers of original
    * request.

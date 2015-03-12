@@ -9,7 +9,7 @@ asioApp.controller('EventMonitor', function ($scope) {
       $scope.events.push(event);
     });
   }
-  var feed = new EventSource('/catalog/events');
+  var feed = new EventSource('/api/events');
   feed.addEventListener('request', handler, false);
   feed.addEventListener('stream', handler, false);
 });

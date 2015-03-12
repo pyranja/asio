@@ -2,6 +2,9 @@ package at.ac.univie.isc.asio;
 
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * Global asio settings.
@@ -19,6 +22,10 @@ public class AsioSettings {
    * default timeout value in milliseconds. (default = 5000ms)
    */
   public long timeout = 5_000;
+
+  @NestedConfigurationProperty
+  @NotNull
+  public AsioFeatures feature;
 
   @Override
   public String toString() {
@@ -42,5 +49,13 @@ public class AsioSettings {
 
   public void setTimeout(final long timeout) {
     this.timeout = timeout;
+  }
+
+  public AsioFeatures getFeature() {
+    return feature;
+  }
+
+  public void setFeature(final AsioFeatures feature) {
+    this.feature = feature;
   }
 }

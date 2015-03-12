@@ -33,6 +33,11 @@ public class TranslateToServletContainerAuthorization implements TranslateAuthor
     return Wrapped.create(requestProxy, response);
   }
 
+  @Override
+  public String toString() {
+    return "TranslateToServletContainerAuthorization{}";
+  }
+
   /**
    * Override a {@link javax.servlet.http.HttpServletRequest}'s auth methods and delegate to asio
    * security primitives.

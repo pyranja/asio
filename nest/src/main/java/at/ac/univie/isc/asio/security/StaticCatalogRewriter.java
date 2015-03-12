@@ -63,7 +63,7 @@ public class StaticCatalogRewriter implements FindAuthorization {
   }
 
   @Override
-  public Result accept(final HttpServletRequest request) throws AuthenticationException {
+  public AuthAndRedirect accept(final HttpServletRequest request) throws AuthenticationException {
     final String uri = request.getRequestURI();
     if (uri == null) { throw new MalformedUri("null"); }
     final String normalizedContext = Strings.nullToEmpty(request.getContextPath());
@@ -79,16 +79,16 @@ public class StaticCatalogRewriter implements FindAuthorization {
     }
   }
 
-  private Result selectRedirect(final String head, final String tail) {
+  private AuthAndRedirect selectRedirect(final String head, final String tail) {
     if (tail.startsWith(staticPathPrefix)) {
       final String staticContent = tail.substring(staticPathPrefix.length());
       final Map<String, String> args = ImmutableMap.of("tail", staticContent);
-      return Result.create(NO_AUTHORITY, Pretty.substitute(STATIC_CONTENT_REDIRECT, args));
+      return AuthAndRedirect.create(NO_AUTHORITY, Pretty.substitute(STATIC_CONTENT_REDIRECT, args));
     } else {
       // TODO : check schema name here and omit /catalog prefix if schema not active
       final ImmutableMap<String, String> args = ImmutableMap.of("prefix", catalogPrefix, "head", head, "tail", tail);
       final String redirection = Pretty.substitute(CATALOG_REDIRECT, args);
-      return Result.create(NO_AUTHORITY, redirection);
+      return AuthAndRedirect.create(NO_AUTHORITY, redirection);
     }
   }
 

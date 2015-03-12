@@ -36,7 +36,7 @@ public class AdaptAuthorizationFilterTest {
   @Test
   public void successful_authorization() throws Exception {
     given(authorizer.accept(request))
-        .willReturn(FindAuthorization.Result.create(Role.ADMIN, null));
+        .willReturn(FindAuthorization.AuthAndRedirect.create(Role.ADMIN, null));
     given(adapter.translate(Role.ADMIN, request, response))
         .willReturn(TranslateAuthorization.Wrapped.create(request, response));
     subject.doFilter(request, response, chain);
@@ -47,7 +47,7 @@ public class AdaptAuthorizationFilterTest {
   @Test
   public void successful_authorization_with_forward() throws Exception {
     given(authorizer.accept(request))
-        .willReturn(FindAuthorization.Result.create(Role.ADMIN, "/redirection/path"));
+        .willReturn(FindAuthorization.AuthAndRedirect.create(Role.ADMIN, "/redirection/path"));
     given(adapter.translate(Role.ADMIN, request, response))
         .willReturn(TranslateAuthorization.Wrapped.create(request, response));
     subject.doFilter(request, response, chain);
@@ -56,17 +56,16 @@ public class AdaptAuthorizationFilterTest {
 
   @Test
   public void invalid_request_uri() throws Exception {
-    given(authorizer.accept(request))
-        .willThrow(new VphUriRewriter.MalformedUri("test"));
+    given(authorizer.accept(request)).willThrow(new IllegalArgumentException("test"));
     subject.doFilter(request, response, chain);
-    assertThat(response.getErrorMessage(), is("cannot extract authorization from request uri <test>"));
+    assertThat(response.getErrorMessage(), is("test"));
     assertThat(response.getStatus(), is(HttpStatus.SC_UNAUTHORIZED));
   }
 
   @Test
   public void authentication_error() throws Exception {
     given(authorizer.accept(request))
-        .willReturn(FindAuthorization.Result.create(Role.ADMIN, "/redirection/path"));
+        .willReturn(FindAuthorization.AuthAndRedirect.create(Role.ADMIN, "/redirection/path"));
     given(adapter.translate(Role.ADMIN, request, response))
         .willThrow(new BasicAuthConverter.MalformedCredentials("test"));
     subject.doFilter(request, response, chain);
@@ -77,7 +76,7 @@ public class AdaptAuthorizationFilterTest {
   @Test
   public void no_dispatcher_found() throws Exception {
     given(authorizer.accept(request))
-        .willReturn(FindAuthorization.Result.create(Role.ADMIN, "/redirection/path"));
+        .willReturn(FindAuthorization.AuthAndRedirect.create(Role.ADMIN, "/redirection/path"));
     given(adapter.translate(Role.ADMIN, request, response))
         .willReturn(TranslateAuthorization.Wrapped.create(request, response));
     request.setForceIllegalRedirect(true);

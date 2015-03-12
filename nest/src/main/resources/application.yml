@@ -1,0 +1,27 @@
+# core server settings - override only if you know what you are doing
+server.session-timeout: 0
+server.servletPath: '/static'
+management.context-path: '/insight'
+
+# asio settings
+asio.timeout: 30000
+nest.api:
+  override-accept-parameter: '_type'
+  default-media-type: 'application/xml'
+  default-language: 'en'
+
+# jackson global options
+spring.jackson:
+  serialization:
+    WRITE_DATES_AS_TIMESTAMPS: false
+  deserialization:
+    FAIL_ON_NUMBERS_FOR_ENUMS: true
+    ADJUST_DATES_TO_CONTEXT_TIME_ZONE: false
+
+# log errors and top level events, but disable some noisy loggers in libraries
+logging.level.: 'WARN'
+logging.level:
+  at.ac.univie.isc.asio.events: 'INFO'
+  org.springframework.boot.actuate.audit.listener.AuditListener: 'INFO'
+  com.hp.hpl.jena.arq.exec: 'OFF'
+  org.d2rq.db.SQLIterator: 'OFF'

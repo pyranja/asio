@@ -22,8 +22,8 @@ public final class UriPermissionExtractor implements FindAuthorization {
    */
   public static final String URI_REGEX_TEMPLATE = "^%s/(?<permission>[^/?#]+)(?<tail>.*)?$";
 
-  static Result result(final String permission, final String tail) {
-    return Result.create(new SimpleGrantedAuthority(permission), tail);
+  static AuthAndRedirect result(final String permission, final String tail) {
+    return AuthAndRedirect.create(new SimpleGrantedAuthority(permission), tail);
   }
 
   private Pattern cachedParser;
@@ -40,8 +40,8 @@ public final class UriPermissionExtractor implements FindAuthorization {
   }
 
   @Nonnull
-  public Result accept(@Nullable final String uri, @Nullable final String context) throws VphUriRewriter.MalformedUri {
-    if (uri == null) { throw new VphUriRewriter.MalformedUri("null"); }
+  public AuthAndRedirect accept(@Nullable final String uri, @Nullable final String context) {
+    if (uri == null) { throw new IllegalArgumentException("null"); }
     final Pattern parser = parserFor(context);
     final Matcher parsed = parser.matcher(uri);
     if (parsed.matches()) {
@@ -49,12 +49,12 @@ public final class UriPermissionExtractor implements FindAuthorization {
       final String tail = rootIfNull(Strings.emptyToNull(parsed.group("tail")));
       return result(permission, tail);
     } else {
-      throw new VphUriRewriter.MalformedUri(uri);
+      throw new IllegalArgumentException(uri);
     }
   }
 
   @Override
-  public Result accept(final HttpServletRequest request) throws AuthenticationException {
+  public AuthAndRedirect accept(final HttpServletRequest request) throws AuthenticationException {
     return accept(request.getRequestURI(), request.getContextPath());
   }
 

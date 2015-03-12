@@ -58,7 +58,7 @@ public final class AdaptAuthorizationFilter implements Filter {
     final HttpServletRequest request = (HttpServletRequest) servletRequest;
     final HttpServletResponse response = (HttpServletResponse) servletResponse;
     try {
-      final FindAuthorization.Result extracted = authorizer.accept(request);
+      final FindAuthorization.AuthAndRedirect extracted = authorizer.accept(request);
       log.debug(Scope.REQUEST.marker(), "authorized request as {}", extracted.authority());
       final TranslateAuthorization.Wrapped authorized =
           translator.translate(extracted.authority(), request, response);
@@ -66,8 +66,10 @@ public final class AdaptAuthorizationFilter implements Filter {
         final RequestDispatcher dispatcher = findDispatcher(request, extracted.redirection().get());
         dispatcher.forward(authorized.request(), authorized.response());
       } else {
+        log.debug(Scope.REQUEST.marker(), "forwarding request to <{}>", request.getRequestURI());
         chain.doFilter(authorized.request(), authorized.response());
       }
+      log.debug(Scope.REQUEST.marker(), "request processing completed");
     } catch (final IllegalRedirect error) {
       log.debug(Scope.REQUEST.marker(), "no dispatcher found", error);
       response.sendError(HttpServletResponse.SC_NOT_FOUND, error.getMessage());
@@ -100,7 +102,8 @@ public final class AdaptAuthorizationFilter implements Filter {
 
   @Override
   public void init(final FilterConfig config) throws ServletException {
-    log.info(Scope.SYSTEM.marker(), "initialized");
+    log.info(Scope.SYSTEM.marker(),
+        "initialized with finder <{}> and translator <{}>", authorizer, translator);
   }
 
   @Override

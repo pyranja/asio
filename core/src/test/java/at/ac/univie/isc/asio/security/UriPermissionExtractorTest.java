@@ -14,7 +14,7 @@ public class UriPermissionExtractorTest {
   public ExpectedException error = ExpectedException.none();
 
   private UriPermissionExtractor subject;
-  private FindAuthorization.Result result;
+  private FindAuthorization.AuthAndRedirect result;
 
   @Before
   public void setUp() throws Exception {
@@ -47,19 +47,19 @@ public class UriPermissionExtractorTest {
 
   @Test
   public void reject_empty() throws Exception {
-    error.expect(VphUriRewriter.MalformedUri.class);
+    error.expect(IllegalArgumentException.class);
     subject.accept("", "");
   }
 
   @Test
   public void reject_relative_uri() throws Exception {
-    error.expect(VphUriRewriter.MalformedUri.class);
+    error.expect(IllegalArgumentException.class);
     subject.accept("permission/tail", "");
   }
 
   @Test
   public void reject_empty_permission() throws Exception {
-    error.expect(VphUriRewriter.MalformedUri.class);
+    error.expect(IllegalArgumentException.class);
     subject.accept("//", "");
   }
 
@@ -77,7 +77,7 @@ public class UriPermissionExtractorTest {
 
   @Test
   public void prevent_prefix_regex_injection() throws Exception {
-    error.expect(VphUriRewriter.MalformedUri.class);
+    error.expect(IllegalArgumentException.class);
     subject.accept("/illegal/permission/tail", ".?");
   }
 
@@ -89,7 +89,7 @@ public class UriPermissionExtractorTest {
 
   @Test
   public void reject_null_uri() throws Exception {
-    error.expect(VphUriRewriter.MalformedUri.class);
+    error.expect(IllegalArgumentException.class);
     subject.accept(null, "");
   }
 }

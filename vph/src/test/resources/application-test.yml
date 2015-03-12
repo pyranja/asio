@@ -1,22 +1,15 @@
 # nest server configuration
 spring.application.name: 'vph-integration'
-server:
-  port: 0
-  address: 0.0.0.0
-  session-timeout: 0
+server.port: 0
 
-management.context-path: '/insight'
-
-asio.timeout: 3000
-asio.secret: 'change'
-asio.feature:
-  vph-uri-auth: on
+asio:
+  timeout: 3000
+  secret: 'change'
+  feature:
+    vph-uri-auth: on
+    simple-auth: off
 
 nest.configuration: classpath:/nest.properties
-nest.api:
-  override-accept-parameter: '_type'
-  default-media-type: 'application/xml'
-  default-language: 'en'
 nest.meta:
   enable: false
   repository: http://vphshare.atosresearch.eu/metadata-extended/rest/
@@ -25,13 +18,6 @@ asio.db:
   jdbc-url: jdbc:h2:mem:test
   username: root
   password: change
-
-spring.jackson:
-  serialization:
-    WRITE_DATES_AS_TIMESTAMPS: false
-  deserialization:
-    FAIL_ON_NUMBERS_FOR_ENUMS: true
-    ADJUST_DATES_TO_CONTEXT_TIME_ZONE: false
 
 logging.level.: 'OFF'  # root logger
 logging.level:

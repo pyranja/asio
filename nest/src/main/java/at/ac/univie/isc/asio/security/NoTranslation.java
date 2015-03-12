@@ -19,4 +19,9 @@ public final class NoTranslation implements TranslateAuthorization {
   public Wrapped translate(final GrantedAuthority ignored, final HttpServletRequest request, final HttpServletResponse response) {
     return Wrapped.create(request, response);
   }
+
+  @Override
+  public String toString() {
+    return "NoTranslation{}";
+  }
 }

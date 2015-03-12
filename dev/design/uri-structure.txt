@@ -13,26 +13,24 @@
   /meta                       => vph metadata
   /explore/(sql|sparql)       => static content path - redirect to root
 ## handled by spring dispatcher
-/{css, js, webjars, images}   => static content
-/{sql, sparql, events}.html   => browser pages
+/static/{css, js, webjars, images}   => static content
+/static/{sql, sparql, events}.html   => browser pages
 /                             => welcome page
 
 # brood default rewrites :
 /{context}/{head}/{tail}
   # {context} is always omitted
   if {tail} startsWith '/explore'
-      -> /{tail without '/explore'}
+      -> /static/{tail without '/explore'}
     if {head} is a deployed schema
-      -> /catalog/{head}/{tail}
+      -> /{head}/{tail}
 
 # brood VPH rewrites :
 /{context}/{head}/{role}/{tail}
   # {context} is always omitted
   if {tail} startsWith '/explore'
-    -> /{tail without '/explore'} and add login Role.NONE
+    -> /static/{tail without '/explore'} and add login Role.NONE
   if {head} is a deployed schema
-    -> /catalog/{head}/{tail} and add login '{role}'
-  else
     -> /{head}/{tail} and add login '{role}'
 
 # on another port

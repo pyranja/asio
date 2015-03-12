@@ -35,7 +35,7 @@ class Web {
   @Value("${spring.jersey.debug:false}")
   private boolean debug;
 
-  @ApplicationPath("/catalog")
+  @ApplicationPath("/")
   private static class Application extends ResourceConfig { /* just carries annotation */ }
 
   @Bean
