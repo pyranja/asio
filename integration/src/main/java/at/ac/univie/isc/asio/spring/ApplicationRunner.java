@@ -1,10 +1,13 @@
 package at.ac.univie.isc.asio.spring;
 
+import at.ac.univie.isc.asio.Unchecked;
 import org.junit.rules.ExternalResource;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext;
 import org.springframework.context.ApplicationContext;
+
+import java.util.concurrent.TimeUnit;
 
 import static java.util.Objects.requireNonNull;
 
@@ -31,6 +34,7 @@ public final class ApplicationRunner extends ExternalResource {
   public ApplicationRunner run(final String... args) {
     assert context == null : "application already started";
     context = builder.run(args);
+    Unchecked.sleep(100, TimeUnit.MILLISECONDS);  // brief pause to allow initialization to complete
     return this;
   }
 
