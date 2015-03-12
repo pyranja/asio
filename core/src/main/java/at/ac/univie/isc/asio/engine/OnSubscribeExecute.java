@@ -46,6 +46,7 @@ public class OnSubscribeExecute implements Observable.OnSubscribe<StreamedResult
 
   /**
    * Return an {@code OnSubscribe} function suitable for creating an {@code Observable} from it.
+   *
    * @param delegate invocation to be executed
    * @return wrapper function
    */
@@ -54,6 +55,8 @@ public class OnSubscribeExecute implements Observable.OnSubscribe<StreamedResult
   }
 
   private static enum State {EXECUTE, STREAM, COMPLETE, ABORT, DONE}
+
+
   /* null      => initial - not started
    * EXECUTE   => query is running
    * STREAM    => results are ready to be/are being serialized
@@ -88,12 +91,7 @@ public class OnSubscribeExecute implements Observable.OnSubscribe<StreamedResult
   private void prepare(final Subscriber<?> subscriber) {
     final boolean firstSubscription = state.compareAndSet(null, State.EXECUTE);
     assert firstSubscription : "multiple subscriptions";
-    subscriber.add(Subscriptions.create(new Action0() {
-      @Override
-      public void call() {
-        cancel(State.EXECUTE);
-      }
-    }));
+    subscriber.add(Subscriptions.create(new Cancel()));
   }
 
   private void execute() {
@@ -136,6 +134,18 @@ public class OnSubscribeExecute implements Observable.OnSubscribe<StreamedResult
   private void cleanUp() {
     if (state.getAndSet(State.DONE) != State.DONE) {
       delegate.close();
+    }
+  }
+
+  /** Cancel execution on unsubscribe */
+  private final class Cancel implements Action0 {
+    @Override
+    public void call() {
+      try {
+        cancel(State.EXECUTE);
+      } catch (final Exception ignored) {
+        /* suppress errors during cancel */
+      }
     }
   }
 }

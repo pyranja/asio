@@ -1,9 +1,9 @@
 package at.ac.univie.isc.asio.engine;
 
-import at.ac.univie.isc.asio.io.Payload;
-import at.ac.univie.isc.asio.tool.Resources;
-import at.ac.univie.isc.asio.junit.Rules;
 import at.ac.univie.isc.asio.Unchecked;
+import at.ac.univie.isc.asio.io.Payload;
+import at.ac.univie.isc.asio.junit.Rules;
+import at.ac.univie.isc.asio.tool.Resources;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.junit.Before;
 import org.junit.Rule;
@@ -25,7 +25,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -62,7 +61,7 @@ public class OnSubscribeExecuteTest {
         Unchecked.write(results, sink);
       }
     };
-    subscriber = new TestSubscriber<StreamedResults>(consumer);
+    subscriber = new TestSubscriber<>(consumer);
     sink = new ByteArrayOutputStream();
   }
 
@@ -121,7 +120,6 @@ public class OnSubscribeExecuteTest {
   @Test
   public void should_not_close_operation_while_streaming() throws Exception {
     final CountDownLatch serializing = new CountDownLatch(1);
-    final AtomicBoolean completed = new AtomicBoolean(false);
     doAnswer(new Answer<Void>() {
       @Override
       public Void answer(final InvocationOnMock invocation) throws Throwable {
@@ -176,6 +174,25 @@ public class OnSubscribeExecuteTest {
     Unchecked.await(executed);
     subscription.unsubscribe();
     verify(delegate).cancel();
+  }
+
+  @Test
+  public void should_suppress_errors_from_cancelling_during_unsubscribe() throws Exception {
+    final CountDownLatch executed = new CountDownLatch(1);
+    doAnswer(new Answer<Void>() {
+      @Override
+      public Void answer(final InvocationOnMock invocation) throws Throwable {
+        executed.countDown(); // block observable to allow concurrent unsubscribe
+        Uninterruptibles.sleepUninterruptibly(4000, TimeUnit.MILLISECONDS);
+        return null;
+      }
+    }).when(delegate).execute();
+    doThrow(RuntimeException.class).when(delegate).cancel();
+    final Subscription subscription = subject
+        .subscribeOn(Schedulers.newThread())
+        .subscribe();
+    Unchecked.await(executed);
+    subscription.unsubscribe();
   }
 
   @Test
