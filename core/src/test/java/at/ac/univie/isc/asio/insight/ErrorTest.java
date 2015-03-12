@@ -1,6 +1,7 @@
 package at.ac.univie.isc.asio.insight;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.google.common.testing.ClassSanityTester;
 import org.junit.Test;
 
@@ -25,10 +26,21 @@ public class ErrorTest {
   public void jackson_round_tripping() throws Exception {
     final Correlation correlation = Correlation.valueOf("correlation");
     final List<StackTraceElement> traceList = Arrays.asList(Thread.currentThread().getStackTrace());
-    final Error original = Error.create("message", "cause", correlation, 1337, traceList);
+    final Error.ErrorChainElement first = Error.ErrorChainElement.create("first-exception", traceList);
+    final Error.ErrorChainElement second = Error.ErrorChainElement.create("second-exception", traceList);
+    final Error original = Error.create("message", "cause", correlation, 1337, ImmutableList.of(first, second));
     final ObjectMapper mapper = new ObjectMapper();
     final String json = mapper.writeValueAsString(original);
     final Error read = mapper.readValue(json, Error.class);
     assertThat(read, is(original));
+  }
+
+  @Test(timeout = 1_000L)
+  public void do_not_fail_on_circular_causal_chain() throws Exception {
+    final RuntimeException top = new RuntimeException("top");
+    final RuntimeException circular = new RuntimeException("circular");
+    top.initCause(circular);
+    circular.initCause(top);
+    Error.from(top, Correlation.valueOf("none"), -1L, true);
   }
 }
