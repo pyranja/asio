@@ -11,9 +11,6 @@ import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
-import org.springframework.security.core.authority.AuthorityUtils;
-
-import java.util.Set;
 
 import static at.ac.univie.isc.asio.matcher.RestAssuredMatchers.compatibleTo;
 import static org.hamcrest.Matchers.*;
@@ -59,15 +56,14 @@ public class FeatureWhoami extends IntegrationTest {
 
   @Theory
   @SuppressWarnings("unchecked")
-  public void permissions_contains_all_granted_to_role(final Role role) {
-    final Set<String> expected = AuthorityUtils.authorityListToSet(role.getGrantedAuthorities());
+  public void authorities_contain_role(final Role role) {
     given().manage().role(role.name())
       .and()
       .header(HttpHeaders.ACCEPT, "application/json")
     .when()
       .get("whoami")
     .then()
-      .body("permissions", containsInAnyOrder(expected.toArray()))
+      .body("authorities", hasItem(role.getAuthority()))
     ;
   }
 

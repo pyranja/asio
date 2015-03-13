@@ -4,9 +4,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableSet;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Set;
 
 /**
@@ -17,15 +19,15 @@ public abstract class AuthInfo {
   /**
    * Derive authorization info from the given identity and role.
    *
+   * @param login login name used by client
    * @param identity identity of authorized client
-   * @param role role of authorized client
+   * @param authorities all authorities granted to client
    * @return information on authorization
    */
-  public static AuthInfo from(final Identity identity, final Role role) {
+  public static AuthInfo from(final String login, final Identity identity, final Collection<? extends GrantedAuthority> authorities) {
     final String name = identity.nameOrIfUndefined(null);
     final String secret = identity.isDefined() ? identity.getSecret() : null;
-    final Set<String> permissions = AuthorityUtils.authorityListToSet(role.getGrantedAuthorities());
-    return create(name, secret, role.name(), permissions);
+    return create(name, secret, login, AuthorityUtils.authorityListToSet(authorities));
   }
 
   @JsonCreator
@@ -33,10 +35,9 @@ public abstract class AuthInfo {
       @JsonProperty("name") @Nullable final String name
       , @JsonProperty("secret") @Nullable final String secret
       , @JsonProperty("login") final String login
-      , @JsonProperty("permissions") final Iterable<String> permissions
+      , @JsonProperty("authorities") final Iterable<String> authorities
   ) {
-    return new AutoValue_AuthInfo(name, secret, login,
-        ImmutableSet.copyOf(permissions));
+    return new AutoValue_AuthInfo(name, secret, login, ImmutableSet.copyOf(authorities));
   }
 
   AuthInfo() { /* prevent sub-classing */ }
@@ -61,5 +62,5 @@ public abstract class AuthInfo {
   /**
    * @return all permissions granted based on the {@link Role}
    */
-  public abstract Set<String> getPermissions();
+  public abstract Set<String> getAuthorities();
 }

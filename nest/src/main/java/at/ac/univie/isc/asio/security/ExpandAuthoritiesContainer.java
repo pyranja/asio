@@ -27,15 +27,16 @@ public final class ExpandAuthoritiesContainer implements GrantedAuthoritiesMappe
 
   /**
    * Map all {@link org.springframework.security.core.authority.GrantedAuthoritiesContainer authority container}
-   * to the contained authorities and drop all others.
+   * to themselves and their contained authorities.
    * Only first level members are expanded, i.e. nested containers are not supported.
    *
    * @param authorities source authorities
-   * @return authorities contained in given ones
+   * @return authorities plus all contained ones
    */
   @Override
   public Set<GrantedAuthority> mapAuthorities(final Collection<? extends GrantedAuthority> authorities) {
     final ImmutableSet.Builder<GrantedAuthority> mapped = ImmutableSet.builder();
+    mapped.addAll(authorities);
     for (final GrantedAuthoritiesContainer container : Iterables.filter(authorities, GrantedAuthoritiesContainer.class)) {
       for (final GrantedAuthority each : container.getGrantedAuthorities()) {
         mapped.add(each);

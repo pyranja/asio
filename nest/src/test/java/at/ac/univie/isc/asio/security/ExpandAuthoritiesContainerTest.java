@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.security;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.Theories;
@@ -9,6 +10,7 @@ import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertThat;
@@ -22,7 +24,8 @@ public class ExpandAuthoritiesContainerTest {
 
   @Theory
   public void maps_role_container_to_contained(final Role container) {
-    final Object[] expected = container.getGrantedAuthorities().toArray();
+    final Object[] expected =
+        Lists.asList(container, container.getGrantedAuthorities().toArray()).toArray();
     final Collection<? extends GrantedAuthority> actual =
         subject.mapAuthorities(Arrays.asList(container));
     assertThat(actual, containsInAnyOrder(expected));
@@ -30,8 +33,12 @@ public class ExpandAuthoritiesContainerTest {
 
   @Theory
   public void maps_multiple_role_container_to_union(final Role one, final Role two) {
-    final Object[] expected =
-        Sets.union(one.getGrantedAuthorities(), two.getGrantedAuthorities()).toArray();
+    final HashSet<GrantedAuthority> union = Sets.newHashSet();
+    union.add(one);
+    union.addAll(one.getGrantedAuthorities());
+    union.add(two);
+    union.addAll(two.getGrantedAuthorities());
+    final Object[] expected = union.toArray();
     final Collection<? extends GrantedAuthority> actual =
         subject.mapAuthorities(Arrays.asList(one, two));
     assertThat(actual, containsInAnyOrder(expected));
