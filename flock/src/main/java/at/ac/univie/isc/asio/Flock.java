@@ -2,9 +2,7 @@ package at.ac.univie.isc.asio;
 
 import at.ac.univie.isc.asio.insight.EventStreamServlet;
 import at.ac.univie.isc.asio.jaxrs.AppSpec;
-import at.ac.univie.isc.asio.security.FixedPermissionAuthFilter;
-import at.ac.univie.isc.asio.security.Role;
-import at.ac.univie.isc.asio.security.TranslateToServletContainerAuthorization;
+import at.ac.univie.isc.asio.security.*;
 import at.ac.univie.isc.asio.web.SslFixListener;
 import org.apache.cxf.Bus;
 import org.apache.cxf.bus.spring.SpringBus;
@@ -40,8 +38,7 @@ public class Flock {
           .web(true)
           .headless(true)
           .logStartupInfo(true)
-          .showBanner(false)
-      ;
+          .showBanner(false);
 
   public static void main(String[] args) throws Exception {
     Daemonize.current().process();
@@ -99,8 +96,10 @@ public class Flock {
 
   @Bean
   public FilterRegistrationBean authFilter() {
-    final FixedPermissionAuthFilter filter =
-        new FixedPermissionAuthFilter(Role.READ, TranslateToServletContainerAuthorization.newInstance());
+    final AdaptAuthorizationFilter filter = new AdaptAuthorizationFilter(
+        FixedAuthorityFinder.create(Role.READ),
+        TranslateToServletContainerAuthorization.newInstance()
+    );
     final FilterRegistrationBean auth = new FilterRegistrationBean(filter);
     auth.setDispatcherTypes(DispatcherType.REQUEST);
     auth.setUrlPatterns(Arrays.asList("/*"));
