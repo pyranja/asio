@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Invoke methods and wrap checked exceptions as {@code AssertionError}.
  */
-public class Unchecked {
+public final class Unchecked {
   /** Thrown if recovery from an IO error is unlikely or unnecessary */
   public static class UncheckedIOException extends RuntimeException {
     public UncheckedIOException(final IOException cause) {
@@ -17,7 +17,25 @@ public class Unchecked {
     }
   }
 
-  private Unchecked() {
+  /**
+   * An action that may fail with a checked exception.
+   */
+  public static interface Action {
+    /**
+     * Execute the action.
+     * @throws Exception if the action fails
+     */
+    void call() throws Exception;
+  }
+
+  private Unchecked() { /* no instances */ }
+
+  public static void run(final Action action) {
+    try {
+      action.call();
+    } catch (Exception e) {
+      throw new AssertionError(e);
+    }
   }
 
   public static void sleep(final long duration, final TimeUnit unit) {

@@ -31,9 +31,14 @@ public final class ApplicationRunner extends ExternalResource {
     this.builder = builder;
   }
 
+  public ApplicationRunner profile(final String... profiles) {
+    builder.profiles(profiles);
+    return this;
+  }
+
   public ApplicationRunner run(final String... args) {
     assert context == null : "application already started";
-    context = builder.run(args);
+    context = builder.showBanner(false).run(args);
     Unchecked.sleep(100, TimeUnit.MILLISECONDS);  // brief pause to allow initialization to complete
     return this;
   }
