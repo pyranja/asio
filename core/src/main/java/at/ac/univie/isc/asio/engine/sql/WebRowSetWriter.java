@@ -1,28 +1,19 @@
 package at.ac.univie.isc.asio.engine.sql;
 
+import at.ac.univie.isc.asio.DatasetFailureException;
+import at.ac.univie.isc.asio.tool.Resources;
 import com.google.common.base.Charsets;
-
 import org.jooq.Cursor;
 import org.jooq.Record;
 import org.jooq.RecordMapper;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.util.Objects;
-
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-
-import at.ac.univie.isc.asio.DatasetFailureException;
-import at.ac.univie.isc.asio.tool.Resources;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.sql.*;
+import java.util.Objects;
 
 final class WebRowSetWriter implements SelectInvocation.CursorWriter {
 
@@ -86,23 +77,23 @@ final class WebRowSetWriter implements SelectInvocation.CursorWriter {
   private void properties(final String statement) throws XMLStreamException {
     // @formatter:off
     xml.writeStartElement(WRS, "properties");
-      _("command", statement);
-      _("concurrency", ResultSet.CONCUR_UPDATABLE);
-      _("datasource", null);
-      _("escape-processing", Boolean.TRUE);
-      _("fetch-direction", ResultSet.FETCH_FORWARD);
-      _("fetch-size", 0);
-      _("isolation-level", Connection.TRANSACTION_NONE);
-      _("key-columns");
-      _("map");
-      _("max-field-size", 0);
-      _("max-rows", 0);
-      _("query-timeout", 0);
-      _("read-only", Boolean.TRUE);
-      _("rowset-type", "ResultSet.TYPE_SCROLL_INSENSITIVE");  // must be constant name !
-      _("show-deleted", Boolean.FALSE);
-      _("table-name");  // <null /> would represent java null - but is invalid according to schema
-      _("url", null);
+      tag("command", statement);
+      tag("concurrency", ResultSet.CONCUR_UPDATABLE);
+      tag("datasource", null);
+      tag("escape-processing", Boolean.TRUE);
+      tag("fetch-direction", ResultSet.FETCH_FORWARD);
+      tag("fetch-size", 0);
+      tag("isolation-level", Connection.TRANSACTION_NONE);
+      emptyTag("key-columns");
+      emptyTag("map");
+      tag("max-field-size", 0);
+      tag("max-rows", 0);
+      tag("query-timeout", 0);
+      tag("read-only", Boolean.TRUE);
+      tag("rowset-type", "ResultSet.TYPE_SCROLL_INSENSITIVE");  // must be constant name !
+      tag("show-deleted", Boolean.FALSE);
+      emptyTag("table-name");  // <null /> would represent java null - but is invalid according to schema
+      tag("url", null);
       emptySyncProvider();
     xml.writeEndElement();
     // @formatter:on
@@ -111,11 +102,11 @@ final class WebRowSetWriter implements SelectInvocation.CursorWriter {
   private void emptySyncProvider() throws XMLStreamException {
     // @formatter:off
     xml.writeStartElement(WRS, "sync-provider");
-      _("sync-provider-name");
-      _("sync-provider-vendor");
-      _("sync-provider-version");
-      _("sync-provider-grade");
-      _("data-source-lock");
+      emptyTag("sync-provider-name");
+      emptyTag("sync-provider-vendor");
+      emptyTag("sync-provider-version");
+      emptyTag("sync-provider-grade");
+      emptyTag("data-source-lock");
     xml.writeEndElement();
     // @formatter:on
   }
@@ -124,7 +115,7 @@ final class WebRowSetWriter implements SelectInvocation.CursorWriter {
     final ResultSetMetaData rsmd = context();
     // @formatter:off
     xml.writeStartElement(WRS, "metadata");
-      _("column-count", rsmd.getColumnCount());
+      tag("column-count", rsmd.getColumnCount());
       for (int index = 1; index <= rsmd.getColumnCount(); index++) {
         columnDefinition(index, rsmd);
       }
@@ -144,23 +135,23 @@ final class WebRowSetWriter implements SelectInvocation.CursorWriter {
       throws XMLStreamException, SQLException {
     // @formatter:off
     xml.writeStartElement(WRS, "column-definition");
-      _("column-index", idx);
-      _("auto-increment", context.isAutoIncrement(idx));
-      _("case-sensitive", context.isCaseSensitive(idx));
-      _("currency", context.isCurrency(idx));
-      _("nullable", context.isNullable(idx));
-      _("signed", context.isSigned(idx));
-      _("searchable", context.isSearchable(idx));
-      _("column-display-size", context.getColumnDisplaySize(idx));
-      _("column-label", context.getColumnLabel(idx));
-      _("column-name", context.getColumnName(idx));
-      _("schema-name", context.getSchemaName(idx));
-      _("column-precision", context.getPrecision(idx));
-      _("column-scale", context.getScale(idx));
-      _("table-name", context.getTableName(idx));
-      _("catalog-name", context.getCatalogName(idx));
-      _("column-type", context.getColumnType(idx));
-      _("column-type-name", context.getColumnTypeName(idx));
+      tag("column-index", idx);
+      tag("auto-increment", context.isAutoIncrement(idx));
+      tag("case-sensitive", context.isCaseSensitive(idx));
+      tag("currency", context.isCurrency(idx));
+      tag("nullable", context.isNullable(idx));
+      tag("signed", context.isSigned(idx));
+      tag("searchable", context.isSearchable(idx));
+      tag("column-display-size", context.getColumnDisplaySize(idx));
+      tag("column-label", context.getColumnLabel(idx));
+      tag("column-name", context.getColumnName(idx));
+      tag("schema-name", context.getSchemaName(idx));
+      tag("column-precision", context.getPrecision(idx));
+      tag("column-scale", context.getScale(idx));
+      tag("table-name", context.getTableName(idx));
+      tag("catalog-name", context.getCatalogName(idx));
+      tag("column-type", context.getColumnType(idx));
+      tag("column-type-name", context.getColumnTypeName(idx));
     xml.writeEndElement();
     // @formatter:on
   }
@@ -193,7 +184,7 @@ final class WebRowSetWriter implements SelectInvocation.CursorWriter {
       //noinspection StringEquality
       if (value == Representations.NULL_VALUE) {
         // must use <null /> tag to capture nullability
-        _("null");
+        emptyTag("null");
       } else {
         xml.writeCharacters(value);
       }
@@ -209,7 +200,7 @@ final class WebRowSetWriter implements SelectInvocation.CursorWriter {
 
   // shortcuts for qualified element writing
 
-  private void _(final String elementName, final Object content) throws XMLStreamException {
+  private void tag(final String elementName, final Object content) throws XMLStreamException {
     xml.writeStartElement(WRS, elementName);
     final String text = Objects.toString(content);
     if ((content == null || text.isEmpty()) && useNullTag) {
@@ -220,7 +211,7 @@ final class WebRowSetWriter implements SelectInvocation.CursorWriter {
     xml.writeEndElement();
   }
 
-  private void _(final String elementName) throws XMLStreamException {
+  private void emptyTag(final String elementName) throws XMLStreamException {
     xml.writeEmptyElement(WRS, elementName);
   }
 }
