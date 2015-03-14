@@ -27,7 +27,7 @@ public class VphIntegrationSuite {
     final Database h2 = Database.create("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1")
         .credentials("root", "change").build()
         .execute(Classpath.read("sql/database.integration.sql"));
-    application.run("--spring.profiles.active=test");
+    application.profile("test").run();
 
     IntegrationTest.configure()
         .baseService(URI.create("http://localhost:" + application.getPort() + "/"))

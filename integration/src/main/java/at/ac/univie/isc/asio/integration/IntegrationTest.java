@@ -11,6 +11,7 @@ import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.builder.RequestSpecBuilder;
 import com.jayway.restassured.config.EncoderConfig;
 import com.jayway.restassured.config.MatcherConfig;
+import com.jayway.restassured.config.SSLConfig;
 import com.jayway.restassured.specification.RequestSpecification;
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import org.apache.http.HttpStatus;
@@ -26,9 +27,7 @@ import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Objects.requireNonNull;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assume.assumeThat;
 
 /**
@@ -50,6 +49,7 @@ public abstract class IntegrationTest implements IntegrationDsl.SpecFactoryCallb
         .matcherConfig(
             new MatcherConfig().errorDescriptionType(MatcherConfig.ErrorDescriptionType.HAMCREST)
         )
+        .sslConfig(SSLConfig.sslConfig().relaxedHTTPSValidation())
     ;
   }
 

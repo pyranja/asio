@@ -1,6 +1,7 @@
 # nest server configuration
 spring.application.name: 'vph-integration'
 server.port: 0
+server.ssl.enabled: false
 
 asio:
   timeout: 3000

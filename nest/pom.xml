@@ -178,6 +178,20 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <mainClass>at.ac.univie.isc.asio.Nest</mainClass>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <configuration>
+          <mainClass>at.ac.univie.isc.asio.Runner</mainClass>
+          <classpathScope>test</classpathScope>
+          <arguments>
+            <argument>--server.ssl.key-store=${basedir}/src/test/resources/keystore</argument>
+          </arguments>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.jvnet.jaxb2.maven2</groupId>
