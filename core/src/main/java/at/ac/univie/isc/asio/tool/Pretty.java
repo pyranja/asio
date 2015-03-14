@@ -40,7 +40,7 @@ public final class Pretty {
   /**
    * Format the given string with fixed {@link java.util.Locale#ENGLISH english locale}.
    *
-   * @see {@link String#format(String, Object...)}
+   * @see String#format(String, Object...)
    * @param template a format string
    * @param arguments format arguments
    * @return formatted string

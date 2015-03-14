@@ -112,7 +112,7 @@ public class AsioConfiguration {
   }
 
   @Bean
-  public MetadataResource metadataResource(final MetadataService service, final Schema schema) {
+  public MetadataResource metadataResource(final MetadataFacade service, final Schema schema) {
     return new MetadataResource(new Supplier<DatasetMetadata>() {
       @Override
       public DatasetMetadata get() {
@@ -139,11 +139,11 @@ public class AsioConfiguration {
   }
 
   @Bean
-  public MetadataService metadataService() {
+  public MetadataFacade metadataService() {
     final boolean contactRemote = env.getProperty("asio.meta.enable", Boolean.class, Boolean.FALSE);
     final URI repository = URI.create(env.getRequiredProperty("asio.meta.repository"));
     final AtosMetadataService proxy = new AtosMetadataService(repository);
-    return new MetadataService(proxy, contactRemote);
+    return new MetadataFacade(proxy, contactRemote);
   }
 
   @Bean

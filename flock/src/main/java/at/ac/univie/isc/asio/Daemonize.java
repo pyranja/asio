@@ -16,7 +16,7 @@ import static com.sun.akuma.CLibrary.LIBC;
  *   <li>{@code asio.base}      : asio installation directory</li>
  * </ul>
  *
- * @see {@link com.sun.akuma.Daemon}
+ * @see com.sun.akuma.Daemon
  */
 public final class Daemonize extends Daemon {
   /**

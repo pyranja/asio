@@ -8,10 +8,10 @@ import at.ac.univie.isc.asio.security.FindAuthorization;
  * is always set to {@link at.ac.univie.isc.asio.security.Role#NONE}.
  * <p>
  * Redirects paths containing a marker element to a prefixed base path, e.g. given the
- * marker {@code 'marker-element'} and redirect prefix {@code 'redirect-prefix'}:
- * </p>
- * <p>
- * {@code /some/path/marker-element/rest/of/path}  ==>  {@code /redirect-prefix/rest/of/path}
+ * marker {@code 'marker-element'} and redirect prefix {@code 'redirect-prefix'}:<br\>
+ * <pre>    {@code /some/path/marker-element/rest/of/path}</pre>
+ * becomes
+ * <pre>    {@code /redirect-prefix/rest/of/path}</pre>
  * </p>
  */
 public final class StaticRedirect implements UriAuthRule {

@@ -31,8 +31,53 @@
     <module>vph</module>
   </modules>
 
+  <properties>
+    <!-- properties for filtered sites - dot notation not allowed -->
+    <site-version>${project.version}</site-version>
+  </properties>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <configuration>
+          <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
+          <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <id>aggregated javadoc</id>
+            <configuration>
+              <failOnError>false</failOnError>
+            </configuration>
+            <reports>
+              <report>aggregate</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-changelog-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </reporting>
+
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <configuration>
+          <skip>false</skip>
+          <siteDirectory>${basedir}/documentation/site</siteDirectory>
+        </configuration>
+      </plugin>
       <!-- aggregator does not produce installable/deployable artifacts -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

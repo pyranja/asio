@@ -7,11 +7,11 @@ import rx.util.async.Async;
 
 import java.util.concurrent.Callable;
 
-public final class MetadataService {
+public final class MetadataFacade {
   private final AtosMetadataService repository;
   private final boolean contactRemote;
 
-  public MetadataService(final AtosMetadataService repository, final boolean contactRemote) {
+  public MetadataFacade(final AtosMetadataService repository, final boolean contactRemote) {
     this.repository = repository;
     this.contactRemote = contactRemote;
   }
