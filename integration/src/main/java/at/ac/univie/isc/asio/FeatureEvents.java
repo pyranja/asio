@@ -7,6 +7,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.hash.Hashing;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
@@ -16,12 +17,14 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.regex.Pattern;
 
 import static at.ac.univie.isc.asio.web.EventMatchers.whereData;
@@ -57,6 +60,16 @@ public class FeatureEvents extends IntegrationTest {
   public String noop;
 
   private final EventSource monitor = eventSource();
+  private final CountDownLatch connected = new CountDownLatch(1);
+  private final Queue<EventSource.MessageEvent> received = new ConcurrentLinkedQueue<>();
+  private final CountDownLatch finished = new CountDownLatch(1);
+  private final Action1<EventSource.MessageEvent> collector =
+      new Action1<EventSource.MessageEvent>() {
+        @Override
+        public void call(final EventSource.MessageEvent message) {
+          received.add(message);
+        }
+      };
 
   @Before
   public void ensureLanguageSupported() {
@@ -77,14 +90,22 @@ public class FeatureEvents extends IntegrationTest {
 
   @Test
   public void successful_query_event_sequence() throws Exception {
-    monitor.connection().delay(100L, TimeUnit.MILLISECONDS).observeOn(Schedulers.io()).subscribe(new Action1<HttpResponse>() {
+    monitor.connection().subscribe(new Action1<HttpResponse>() {
       @Override
-      public void call(final HttpResponse aVoid) {
-        given().role("admin").and().param(operation, noop).post("/{language}", language);
+      public void call(final HttpResponse httpResponse) {
+        connected.countDown();
       }
     });
-    final List<EventSource.MessageEvent> received =
-        monitor.events().skip(1).take(3).toList().toBlocking().single();
+    monitor.events().subscribeOn(Schedulers.io()).skip(1).take(3).finallyDo(new Action0() {
+      @Override
+      public void call() {
+        finished.countDown();
+      }
+    }).subscribe(collector);
+    connected.await();
+    given().role("admin").and().param(operation, noop).post("/{language}", language)
+        .then().statusCode(is(HttpStatus.SC_OK));
+    finished.await();
     assertThat(received,
         both(hasItems(subject("received"), subject("executed"), subject("completed")))
             .and(is(correlated()))
@@ -93,15 +114,23 @@ public class FeatureEvents extends IntegrationTest {
 
   @Test
   public void failed_query_event_sequence() throws Exception {
-    monitor.connection().delay(100L, TimeUnit.MILLISECONDS).observeOn(Schedulers.io()).subscribe(new Action1<HttpResponse>() {
+    monitor.connection().subscribe(new Action1<HttpResponse>() {
       @Override
-      public void call(final HttpResponse aVoid) {
-        final String commandWithInvalidSyntax = Hashing.md5().hashString(noop, Charsets.UTF_8).toString();
-        given().role("admin").and().param(operation, commandWithInvalidSyntax).post("/{language}", language);
+      public void call(final HttpResponse httpResponse) {
+        connected.countDown();
       }
     });
-    final List<EventSource.MessageEvent> received =
-        monitor.events().skip(1).take(2).toList().toBlocking().single();
+    monitor.events().subscribeOn(Schedulers.io()).skip(1).take(2).finallyDo(new Action0() {
+      @Override
+      public void call() {
+        finished.countDown();
+      }
+    }).subscribe(collector);
+    connected.await();
+    final String commandWithInvalidSyntax =
+        Hashing.md5().hashString(noop, Charsets.UTF_8).toString();
+    given().role("admin").and().param(operation, commandWithInvalidSyntax).post("/{language}", language);
+    finished.await();
     assertThat(received,
         both(hasItems(subject("received"), subject("failed"))).and(is(correlated()))
     );
@@ -109,14 +138,21 @@ public class FeatureEvents extends IntegrationTest {
 
   @Test
   public void rejected_query_event_sequence() throws Exception {
-    monitor.connection().delay(100L, TimeUnit.MILLISECONDS).observeOn(Schedulers.io()).subscribe(new Action1<HttpResponse>() {
+    monitor.connection().subscribe(new Action1<HttpResponse>() {
       @Override
-      public void call(final HttpResponse aVoid) {
-        given().role("admin").and().param(operation).post("/{language}", language);
+      public void call(final HttpResponse httpResponse) {
+        connected.countDown();
       }
     });
-    final List<EventSource.MessageEvent> received =
-        monitor.events().skip(1).take(2).toList().toBlocking().single();
+    monitor.events().subscribeOn(Schedulers.io()).skip(1).take(2).finallyDo(new Action0() {
+      @Override
+      public void call() {
+        finished.countDown();
+      }
+    }).subscribe(collector);
+    connected.await();
+    given().role("admin").and().param(operation).post("/{language}", language);
+    finished.await();
     assertThat(received,
         both(hasItems(subject("received"), subject("failed"))).and(is(correlated()))
     );
@@ -158,8 +194,10 @@ public class FeatureEvents extends IntegrationTest {
     }
   }
 
+
   @SuppressWarnings("UnusedDeclaration")
   private static final Action1<EventSource.MessageEvent> LOG_MESSAGES = new DumpMessages();
+
 
   private static class DumpMessages implements Action1<EventSource.MessageEvent> {
     @Override
