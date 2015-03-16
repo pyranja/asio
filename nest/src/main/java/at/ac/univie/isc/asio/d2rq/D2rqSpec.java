@@ -15,7 +15,9 @@ import org.d2rq.lang.D2RQCompiler;
 import org.d2rq.lang.D2RQReader;
 import org.d2rq.lang.Mapping;
 import org.d2rq.vocab.D2RConfig;
+import org.d2rq.vocab.D2RQ;
 
+import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -41,11 +43,11 @@ public final class D2rqSpec {
    * Load and parse the given data as a d2rq mapping file. The given {@code baseUri} overrides any
    * embedded one.
    *
-   * @param source raw configuration data
+   * @param source  raw configuration data
    * @param baseUri uri used to resolve relative IRIs
    * @return initialized d2rq specification
    */
-  public static D2rqSpec load(final ByteSource source, final String baseUri) {
+  public static D2rqSpec load(final ByteSource source, final URI baseUri) {
     final Model configuration = LoadD2rqModel.overrideBaseUri(baseUri).parse(source);
     return D2rqSpec.wrap(configuration);
   }
@@ -75,12 +77,34 @@ public final class D2rqSpec {
    * @return {@link org.d2rq.vocab.D2RConfig#Server} resource
    */
   static Optional<Resource> findServerResource(final Model model) {
-    final ResIterator it = model.listResourcesWithProperty(RDF.type, D2RConfig.Server);
+    return findSingleResourceOfType(model, D2RConfig.Server);
+  }
+
+  /**
+   * Find the d2rq Database resource in the configuration model.
+   *
+   * @param model given configuration to search in
+   * @return {@link org.d2rq.vocab.D2RQ#Database} resource
+   */
+  static Optional<Resource> findDatabaseResource(final Model model) {
+    return findSingleResourceOfType(model, D2RQ.Database);
+  }
+
+  /**
+   * Find a single resource with given rdf:type in the model if one is present.
+   *
+   * @param model model to search in
+   * @param type  type of required resource
+   * @return the resource if present
+   * @throws java.lang.IllegalArgumentException if multiple resources with matching type are found
+   */
+  static Optional<Resource> findSingleResourceOfType(final Model model, final Resource type) {
+    final ResIterator it = model.listResourcesWithProperty(RDF.type, type);
     final Optional<Resource> found = it.hasNext()
         ? Optional.of(it.nextResource())
         : Optional.<Resource>absent();
     if (found.isPresent() && it.hasNext()) {
-      throw new IllegalArgumentException("found multiple <" + D2RConfig.Server + "> resources");
+      throw new IllegalArgumentException("found multiple <" + type + "> resources");
     }
     return found;
   }
@@ -108,6 +132,38 @@ public final class D2rqSpec {
     final Model model = ModelFactory.createModelForGraph(graph);
     model.withDefaultMappings(PrefixMapping.Extended);
     return model;
+  }
+
+  /**
+   * The d2rq mapping definition, parsed from the wrapped configuration model.
+   *
+   * @return the d2rq mapping
+   */
+  public Mapping getMapping() {
+    return mapping;
+  }
+
+  /**
+   * Strip contextual information from the d2rq configuration model. Only mapping definitions and an
+   * empty database resource remain.
+   *
+   * @return context free model
+   */
+  public Model getContextFreeModel() {
+    final Model clone = ModelFactory.createDefaultModel().add(configuration);
+    clone.setNsPrefixes(configuration.getNsPrefixMap());
+    final Optional<Resource> database = findDatabaseResource(clone);
+    if (database.isPresent()) {
+      database.get().removeProperties();
+      database.get().addProperty(RDF.type, D2RQ.Database);
+    } else {
+      clone.createResource(DEFAULT_BASE + "database", D2RQ.Database);
+    }
+    final Optional<Resource> server = findServerResource(clone);
+    if (server.isPresent()) {
+      server.get().removeProperties();
+    }
+    return clone;
   }
 
   /**

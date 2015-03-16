@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.metadata;
 
-import at.ac.univie.isc.asio.SchemaIdentifier;
+import at.ac.univie.isc.asio.Schema;
 
 /**
  * Facade for metadata fetching.
@@ -12,5 +12,5 @@ public interface MetadataService {
    * @param identifier id of the target schema
    * @return descriptor of the target schema
    */
-  SchemaDescriptor describe(SchemaIdentifier identifier);
+  SchemaDescriptor describe(Schema identifier);
 }

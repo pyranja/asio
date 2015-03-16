@@ -19,6 +19,7 @@ import org.openjena.riot.system.JenaReaderTurtle2;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.charset.MalformedInputException;
 
 /**
@@ -43,8 +44,8 @@ public final class LoadD2rqModel {
    * @param override alternative base uri that should be used
    * @return d2rq model loader
    */
-  public static LoadD2rqModel overrideBaseUri(final String override) {
-    return new LoadD2rqModel(Optional.of(override));
+  public static LoadD2rqModel overrideBaseUri(final URI override) {
+    return new LoadD2rqModel(Optional.of(override.toString()));
   }
 
   private LoadD2rqModel(final Optional<String> baseUri) {

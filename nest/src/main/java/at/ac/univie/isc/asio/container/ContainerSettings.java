@@ -1,57 +1,96 @@
 package at.ac.univie.isc.asio.container;
 
+import at.ac.univie.isc.asio.Schema;
 import at.ac.univie.isc.asio.d2rq.D2rqSpec;
+import at.ac.univie.isc.asio.tool.BeanToMap;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.springframework.beans.BeanUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
-import org.springframework.core.io.Resource;
 
 import javax.validation.constraints.NotNull;
+import java.net.URI;
+import java.util.Map;
 
 /**
  * nest configuration settings. getter/setter required by spring boot.
  */
 @ConfigurationProperties("nest")
-final class PhysicalSchemaSettings {
+public final class ContainerSettings {
+
+  /**
+   * @param schema local name of schema
+   * @return settings with name set to the schema name
+   */
+  public static ContainerSettings of(final Schema schema) {
+    final ContainerSettings it = new ContainerSettings();
+    it.setName(schema);
+    return it;
+  }
+
+  /**
+   * Create a deep copy of given settings.
+   *
+   * @param source original settings
+   * @return deep copy of settings
+   */
+  public static ContainerSettings copy(final ContainerSettings source) {
+    final ContainerSettings cloned = new ContainerSettings();
+    BeanUtils.copyProperties(source, cloned);
+    if (source.getSparql() != null) {
+      final Sparql sparql = new Sparql();
+      BeanUtils.copyProperties(source.getSparql(), sparql);
+      cloned.setSparql(sparql);
+    }
+    if (source.getDatasource() != null) {
+      final Datasource datasource = new Datasource();
+      BeanUtils.copyProperties(source.getDatasource(), datasource);
+      cloned.setDatasource(datasource);
+    }
+    return cloned;
+  }
+
+  /**
+   * Convert into a flattened map of properties.
+   */
+  public Map<String, Object> asMap() {
+    return BeanToMap.withPrefix("nest").convert(this);
+  }
+
   /**
    * Local name of this schema, must be equal to the backing database schema.
    */
-  @NotEmpty
-  public String name;
+  @NotNull
+  Schema name;
 
   /**
    * Global identifier of this schema, must be equal to the key in the used metadata repository.
    */
   @NotEmpty
-  public String identifier;
+  String identifier;
 
   /**
    * request timeout in milliseconds, negative values disable timeouts (default : 5000ms)
    */
-  public long timeout = 5_000;
+  long timeout = 5_000;
 
   @NestedConfigurationProperty
   @NotNull
-  public Sparql sparql;
+  Sparql sparql;
 
   @NestedConfigurationProperty
   @NotNull
-  public Datasource datasource;
+  Datasource datasource;
 
-  public String getName() {
-    return name;
+  public ContainerSettings() {
   }
 
-  public void setName(final String name) {
-    this.name = name;
+  public Schema getName() {
+    return name;
   }
 
   public String getIdentifier() {
     return identifier;
-  }
-
-  public void setIdentifier(final String identifier) {
-    this.identifier = identifier;
   }
 
   public long getTimeout() {
@@ -64,6 +103,14 @@ final class PhysicalSchemaSettings {
 
   public Datasource getDatasource() {
     return datasource;
+  }
+
+  public void setName(final Schema name) {
+    this.name = name;
+  }
+
+  public void setIdentifier(final String identifier) {
+    this.identifier = identifier;
   }
 
   public void setTimeout(final long timeout) {
@@ -84,24 +131,24 @@ final class PhysicalSchemaSettings {
      * location of d2r mapping file
      */
     @NotNull
-    public Resource d2rMapping;
+    URI d2rMappingLocation;
 
     /**
      * base uri used to resolve relative IRIS (default : asio:///default/)
      */
     @NotNull
-    public String d2rBaseUri = D2rqSpec.DEFAULT_BASE;
+    URI d2rBaseUri = URI.create(D2rqSpec.DEFAULT_BASE);
 
     /**
      * whether federated sparql queries are allowed (default : false)
      */
-    public boolean federation = false;
+    boolean federation = false;
 
-    public Resource getD2rMapping() {
-      return d2rMapping;
+    public URI getD2rMappingLocation() {
+      return d2rMappingLocation;
     }
 
-    public String getD2rBaseUri() {
+    public URI getD2rBaseUri() {
       return d2rBaseUri;
     }
 
@@ -109,11 +156,11 @@ final class PhysicalSchemaSettings {
       return federation;
     }
 
-    public void setD2rMapping(final Resource d2rMapping) {
-      this.d2rMapping = d2rMapping;
+    public void setD2rMappingLocation(final URI d2rMappingLocation) {
+      this.d2rMappingLocation = d2rMappingLocation;
     }
 
-    public void setD2rBaseUri(final String d2rBaseUri) {
+    public void setD2rBaseUri(final URI d2rBaseUri) {
       this.d2rBaseUri = d2rBaseUri;
     }
 
@@ -124,7 +171,7 @@ final class PhysicalSchemaSettings {
     @Override
     public String toString() {
       return "Sparql{" +
-          "d2rMapping=" + d2rMapping +
+          "d2rMappingLocation=" + d2rMappingLocation +
           ", d2rBaseUri='" + d2rBaseUri + '\'' +
           ", federation=" + federation +
           '}';
@@ -138,19 +185,19 @@ final class PhysicalSchemaSettings {
      * the jdbc connection url
      */
     @NotEmpty
-    public String jdbcUrl;
+    String jdbcUrl;
 
     /**
      * the jdbc username
      */
     @NotNull
-    public String username;
+    String username;
 
     /**
      * the jdbc password
      */
     @NotNull
-    public String password;
+    String password;
 
     public String getJdbcUrl() {
       return jdbcUrl;

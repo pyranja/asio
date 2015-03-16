@@ -24,7 +24,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 /**
  * Map {@link net.atos.AtosDataset} to {@link at.ac.univie.isc.asio.metadata.SchemaDescriptor}.
  */
-public final class DescriptorConversion {
+final class DescriptorConversion {
   private static final Logger log = getLogger(DescriptorConversion.class);
 
   /**

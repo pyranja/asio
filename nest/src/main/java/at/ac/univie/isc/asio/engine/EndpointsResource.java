@@ -1,7 +1,7 @@
 package at.ac.univie.isc.asio.engine;
 
 import at.ac.univie.isc.asio.DatasetException;
-import at.ac.univie.isc.asio.SchemaIdentifier;
+import at.ac.univie.isc.asio.Schema;
 import at.ac.univie.isc.asio.security.Identity;
 import at.ac.univie.isc.asio.tool.TimeoutSpec;
 import org.slf4j.Logger;
@@ -126,7 +126,7 @@ public class EndpointsResource {
   /** aggregate shared method parameters */
   static final class Params {
     @PathParam("schema")
-    public SchemaIdentifier schema;
+    public Schema schema;
     @PathParam("language")
     public Language language;
     @Context

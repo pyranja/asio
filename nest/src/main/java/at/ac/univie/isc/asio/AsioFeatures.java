@@ -4,6 +4,16 @@ package at.ac.univie.isc.asio;
  * All feature toggles.
  */
 public class AsioFeatures {
+  public static final String VPH_METADATA = "asio.feature.vphMetadata";
+  public static final String VPH_URI_AUTH = "asio.feature.vphUriAuth";
+  public static final String SIMPLE_AUTH = "asio.feature.simpleAuth";
+
+  /**
+   * Enable metadata lookup in the vph metadata repository. If enabled, the repository http endpoint
+   * may be configured by setting the {@code asio.metadata-repository} property.
+   */
+  public boolean vphMetadata = false;
+
   /**
    * Enable authorization from role name embedded in request URI.
    * <p>
@@ -22,7 +32,8 @@ public class AsioFeatures {
   @Override
   public String toString() {
     return "AsioFeatures{" +
-        "vphUriAuth=" + vphUriAuth +
+        "vphMetadata=" + vphMetadata +
+        ", vphUriAuth=" + vphUriAuth +
         ", simpleAuth=" + simpleAuth +
         '}';
   }
@@ -41,5 +52,13 @@ public class AsioFeatures {
 
   public void setSimpleAuth(final boolean simpleAuth) {
     this.simpleAuth = simpleAuth;
+  }
+
+  public boolean isVphMetadata() {
+    return vphMetadata;
+  }
+
+  public void setVphMetadata(final boolean vphMetadata) {
+    this.vphMetadata = vphMetadata;
   }
 }

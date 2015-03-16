@@ -1,19 +1,21 @@
 package at.ac.univie.isc.asio.container;
 
+import at.ac.univie.isc.asio.Schema;
 import at.ac.univie.isc.asio.engine.Engine;
+import at.ac.univie.isc.asio.metadata.sql.RelationalSchemaService;
 
 import java.util.Set;
 
 /**
  * Facade to a single data set.
  */
-public interface Schema extends AutoCloseable {
+public interface Container {
   /**
    * Local name of this schema. Equal to the mysql schema name.
    *
    * @return the local name of this schema
    */
-  String name();
+  Schema name();
 
   /**
    * Global name of this schema, e.g. as used in a metadata repository.
@@ -30,8 +32,9 @@ public interface Schema extends AutoCloseable {
   Set<Engine> engines();
 
   /**
-   * Release all resources that are part of this schema.
+   * {@code RelationalSchemaService} of this container.
+   *
+   * @return a service providing the relational structure of the backing database
    */
-  @Override
-  void close();
+  RelationalSchemaService schemaService();
 }

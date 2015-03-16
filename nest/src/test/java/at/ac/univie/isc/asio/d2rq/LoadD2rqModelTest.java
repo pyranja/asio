@@ -1,8 +1,6 @@
 package at.ac.univie.isc.asio.d2rq;
 
 import at.ac.univie.isc.asio.io.Payload;
-import at.ac.univie.isc.asio.d2rq.D2rqSpec;
-import at.ac.univie.isc.asio.d2rq.LoadD2rqModel;
 import com.google.common.io.ByteSource;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -17,10 +15,12 @@ import org.junit.rules.TemporaryFolder;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 
 import static at.ac.univie.isc.asio.junit.IsIsomorphic.isomorphicWith;
 import static at.ac.univie.isc.asio.junit.IsSuperSetOf.superSetOf;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 public class LoadD2rqModelTest {
@@ -78,7 +78,7 @@ public class LoadD2rqModelTest {
   @Test
   public void resolve_relative_resource_iris_with_given_base() throws Exception {
     final ByteSource turtle = dump(Payload.encodeUtf8("<it> a <http://example.org/thing> ."));
-    final Model result = LoadD2rqModel.overrideBaseUri("asio:///test/").parse(turtle);
+    final Model result = LoadD2rqModel.overrideBaseUri(URI.create("asio:///test/")).parse(turtle);
     expected.createResource("asio:///test/it").addProperty(RDF.type, THING);
     assertThat(result, is(superSetOf(expected)));
   }
@@ -86,7 +86,7 @@ public class LoadD2rqModelTest {
   @Test
   public void set_embedded_base_uri_to_given_base() throws Exception {
     final ByteSource turtle = dump(Payload.encodeUtf8("<it> a <http://example.org/thing> ."));
-    final Model result = LoadD2rqModel.overrideBaseUri("asio:///test/").parse(turtle);
+    final Model result = LoadD2rqModel.overrideBaseUri(URI.create("asio:///test/")).parse(turtle);
     expected.createResource("asio:///test/it").addProperty(RDF.type, THING);
     expected.createResource()
         .addProperty(D2RConfig.baseURI, expected.createResource("asio:///test/"))
@@ -100,7 +100,7 @@ public class LoadD2rqModelTest {
         "<urn:d2r:server> a <http://sites.wiwiss.fu-berlin.de/suhl/bizer/d2r-server/config.rdf#Server> ;"
             + "<http://sites.wiwiss.fu-berlin.de/suhl/bizer/d2r-server/config.rdf#baseURI> <http://test.com/> ."
             + "<it> a <http://example.org/thing> ."));
-    final Model result = LoadD2rqModel.overrideBaseUri("asio:///test/").parse(turtle);
+    final Model result = LoadD2rqModel.overrideBaseUri(URI.create("asio:///test/")).parse(turtle);
     expected.createResource("urn:d2r:server")
         .addProperty(D2RConfig.baseURI, expected.createResource("asio:///test/"))
         .addProperty(RDF.type, D2RConfig.Server);

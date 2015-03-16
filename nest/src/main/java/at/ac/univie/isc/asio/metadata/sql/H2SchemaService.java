@@ -1,12 +1,11 @@
 package at.ac.univie.isc.asio.metadata.sql;
 
-import at.ac.univie.isc.asio.SchemaIdentifier;
+import at.ac.univie.isc.asio.Schema;
 import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.engine.sql.SqlSchemaBuilder;
 import org.jooq.Catalog;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
-import org.jooq.Schema;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
 
@@ -31,13 +30,13 @@ public final class H2SchemaService implements RelationalSchemaService {
     this.pool = pool;
   }
 
-  public SqlSchema explore(final SchemaIdentifier identifier) {
+  public SqlSchema explore(final Schema identifier) {
     final SqlSchemaBuilder builder = SqlSchemaBuilder.create();
     try (final Connection connection = pool.getConnection()) {
       final DSLContext jooq = DSL.using(connection, SQLDialect.H2);
       for (final Catalog sqlCatalog : jooq.meta().getCatalogs()) {
         builder.switchCatalog(sqlCatalog);
-        for (final Schema sqlSchema : sqlCatalog.getSchemas()) {
+        for (final org.jooq.Schema sqlSchema : sqlCatalog.getSchemas()) {
           if (isNotExcluded(sqlSchema, identifier)) {
             builder.switchSchema(sqlSchema);
             for (final org.jooq.Table<?> sqlTable : sqlSchema.getTables()) {
@@ -52,7 +51,7 @@ public final class H2SchemaService implements RelationalSchemaService {
     return builder.build();
   }
 
-  private boolean isNotExcluded(final Schema schema, final SchemaIdentifier identifier) {
+  private boolean isNotExcluded(final org.jooq.Schema schema, final Schema identifier) {
     final String name = schema.getName();
     return name != null
         && name.equalsIgnoreCase(identifier.name())

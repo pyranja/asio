@@ -6,6 +6,7 @@ asio:
   timeout: 3000
   secret: 'change'
   feature:
+    vph-metadata: off
     vph-uri-auth: off
     simple-auth: on
 

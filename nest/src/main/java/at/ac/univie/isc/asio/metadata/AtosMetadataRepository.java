@@ -1,12 +1,14 @@
 package at.ac.univie.isc.asio.metadata;
 
+import at.ac.univie.isc.asio.AsioFeatures;
 import net.atos.AtosDataset;
 import net.atos.AtosMessage;
 import net.atos.AtosResourceMetadata;
 import net.atos.AtosResourceMetadataList;
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Service;
 import rx.Observable;
 import rx.functions.Func1;
 
@@ -21,8 +23,9 @@ import java.util.concurrent.Callable;
 /**
  * Connect to the atos vph-metadata repository to perform CRUD on dataset metadata.
  */
-//@Repository TODO : integrate into nest
-public final class AtosMetadataRepository {
+@Service
+@ConditionalOnProperty(AsioFeatures.VPH_METADATA)
+final class AtosMetadataRepository {
   private final WebTarget endpoint;
 
   @Autowired
@@ -183,16 +186,17 @@ public final class AtosMetadataRepository {
     }
   }
 
-  private RepositoryFailure tooManyResults(final String identifier, final int actualSize) {
-    return new RepositoryFailure(
-        "expected a single dataset but found " + actualSize + " with identifier "
-            + identifier, endpoint.getUri(), null);
-  }
-
   private RuntimeException wrapError(final Exception original) {
     if (original instanceof RepositoryFailure || original instanceof MetadataNotFound) {
       return (RuntimeException) original;
     }
     return new RepositoryFailure(original.getMessage(), endpoint.getUri(), original);
+  }
+
+  @Override
+  public String toString() {
+    return "AtosMetadataRepository{" +
+        "endpoint=" + endpoint.getUri() +
+        '}';
   }
 }

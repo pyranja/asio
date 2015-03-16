@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.engine;
 
-import at.ac.univie.isc.asio.SchemaIdentifier;
+import at.ac.univie.isc.asio.Schema;
 import at.ac.univie.isc.asio.tool.ValueOrError;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
@@ -17,7 +17,7 @@ import java.util.Map;
  * Build protocol request parameters from JAX-RS request elements.
  */
 public class ParseJaxrsCommand {
-  private final SchemaIdentifier schema;
+  private final Schema schema;
   private final Language language;
   private final ImmutableListMultimap.Builder<String, String> params =
       ImmutableListMultimap.builder();
@@ -25,16 +25,16 @@ public class ParseJaxrsCommand {
   private Principal owner;
   private RuntimeException cause;
 
-  private ParseJaxrsCommand(final SchemaIdentifier schema, final Language language) {
+  private ParseJaxrsCommand(final Schema schema, final Language language) {
     this.schema = schema;
     this.language = language;
   }
 
   public static ParseJaxrsCommand with(final Language language) {
-    return new ParseJaxrsCommand(SchemaIdentifier.DEFAULT, language);
+    return new ParseJaxrsCommand(Schema.DEFAULT, language);
   }
 
-  public static ParseJaxrsCommand with(final SchemaIdentifier schema, final Language language) {
+  public static ParseJaxrsCommand with(final Schema schema, final Language language) {
     return new ParseJaxrsCommand(schema, language);
   }
 

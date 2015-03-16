@@ -1,0 +1,29 @@
+@prefix map: <#> .
+@prefix db: <> .
+@prefix d2r: <http://sites.wiwiss.fu-berlin.de/suhl/bizer/d2r-server/config.rdf#> .
+@prefix vocab: <vocab/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#> .
+@prefix jdbc: <http://d2rq.org/terms/jdbc/> .
+
+map:database a d2rq:Database;
+  d2rq:jdbcDSN "jdbc:mysql://localhost/test";
+  d2rq:jdbcDriver "com.mysql.jdbc.Driver";
+  d2rq:username "username";
+  d2rq:password "password";
+  .
+
+<> a d2r:Server;
+  d2r:baseURI <http://localhost:8080/asio/>;
+  d2r:sparqlTimeout 2;
+  .
+
+# Table PUBLIC.PATIENT
+map:PUBLIC_PATIENT a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "PUBLIC/PATIENT/@@PUBLIC.PATIENT.ID@@";
+	d2rq:class vocab:PUBLIC_PATIENT;
+	d2rq:classDefinitionLabel "PUBLIC.PATIENT";
+	.

@@ -5,6 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 import javax.validation.constraints.NotNull;
+import java.net.URI;
 
 /**
  * Global asio settings.
@@ -23,6 +24,17 @@ public class AsioSettings {
    */
   public long timeout = 5_000;
 
+  /**
+   * Path to asio's working directory.
+   */
+  @NotNull
+  public String home;
+
+  /**
+   * Http endpoint of the external metadata repository.
+   */
+  public URI metadataRepository;
+
   @NestedConfigurationProperty
   @NotNull
   public AsioFeatures feature;
@@ -32,6 +44,9 @@ public class AsioSettings {
     return "AsioSettings{" +
         "secret='" + secret + '\'' +
         ", timeout=" + timeout +
+        ", home=" + home +
+        ", metadataRepository=" + metadataRepository +
+        ", feature=" + feature +
         '}';
   }
 
@@ -49,6 +64,22 @@ public class AsioSettings {
 
   public void setTimeout(final long timeout) {
     this.timeout = timeout;
+  }
+
+  public String getHome() {
+    return home;
+  }
+
+  public void setHome(final String home) {
+    this.home = home;
+  }
+
+  public URI getMetadataRepository() {
+    return metadataRepository;
+  }
+
+  public void setMetadataRepository(final URI metadataRepository) {
+    this.metadataRepository = metadataRepository;
   }
 
   public AsioFeatures getFeature() {

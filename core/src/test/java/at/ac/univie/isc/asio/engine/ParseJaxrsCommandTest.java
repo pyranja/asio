@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.engine;
 
-import at.ac.univie.isc.asio.SchemaIdentifier;
+import at.ac.univie.isc.asio.Schema;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -38,14 +38,14 @@ public class ParseJaxrsCommandTest {
 
   @Test
   public void should_set_language_param() throws Exception {
-    params = ParseJaxrsCommand.with(SchemaIdentifier.valueOf("test"), Language.valueOf("test")).collect();
+    params = ParseJaxrsCommand.with(Schema.valueOf("test"), Language.valueOf("test")).collect();
     assertThat(params.language(), is(Language.valueOf("test")));
   }
 
   @Test
   public void should_set_schema_param() throws Exception {
-    params = ParseJaxrsCommand.with(SchemaIdentifier.valueOf("test"), Language.valueOf("test")).collect();
-    assertThat(params.schema(), is(SchemaIdentifier.valueOf("test")));
+    params = ParseJaxrsCommand.with(Schema.valueOf("test"), Language.valueOf("test")).collect();
+    assertThat(params.schema(), is(Schema.valueOf("test")));
   }
 
   @Test

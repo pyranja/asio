@@ -15,8 +15,11 @@ server.ssl:
 server.servletPath: '/static'
 management.context-path: '/insight'
 
-# asio settings
-asio.timeout: 30000
+# asio default settings
+asio:
+  home: '${java.io.tmpdir}'
+  timeout: 30000
+  metadata-repository: 'http://vphshare.atosresearch.eu/metadata-extended/rest/'
 nest.api:
   override-accept-parameter: '_type'
   default-media-type: 'application/xml'

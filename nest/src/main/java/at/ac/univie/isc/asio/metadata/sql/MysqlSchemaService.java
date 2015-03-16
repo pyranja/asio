@@ -1,15 +1,14 @@
 package at.ac.univie.isc.asio.metadata.sql;
 
-import at.ac.univie.isc.asio.SchemaIdentifier;
+import at.ac.univie.isc.asio.Schema;
 import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.engine.sql.SqlSchemaBuilder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
-import org.jooq.Schema;
-import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
+import org.springframework.dao.DataAccessResourceFailureException;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -35,29 +34,29 @@ public final class MysqlSchemaService implements RelationalSchemaService {
   }
 
   @Override
-  public SqlSchema explore(final SchemaIdentifier target) throws SchemaNotFound {
+  public SqlSchema explore(final Schema target) throws Schema.NotFound {
     final SqlSchemaBuilder builder = SqlSchemaBuilder.create().noCatalog();
     try (final Connection connection = pool.getConnection()) {
       final DSLContext jooq = DSL.using(connection, SQLDialect.MYSQL);
-      final Schema schema = findActiveSchema(jooq, target);
+      final org.jooq.Schema schema = findActiveSchema(jooq, target);
       builder.switchSchema(schema);
       for (final org.jooq.Table<?> sqlTable : schema.getTables()) {
         builder.add(sqlTable);
       }
-    } catch (SQLException e) {
-      throw new DataAccessException(e.getMessage(), e);
+    } catch (final SQLException e) {
+      throw new DataAccessResourceFailureException(e.getMessage(), e);
     }
     return builder.build();
   }
 
-  private Schema findActiveSchema(final DSLContext jooq, final SchemaIdentifier target) throws SQLException {
+  private org.jooq.Schema findActiveSchema(final DSLContext jooq, final Schema target) throws SQLException {
     final String activeSchemaName = target.name();
     if (INTERNAL_SCHEMA.contains(activeSchemaName.toLowerCase(Locale.ENGLISH))) {
-      throw new SchemaNotFound(target, "cannot access mysql system schemas");
+      throw new Schema.NotFound(target);
     }
-    final Schema schema = Iterables.getOnlyElement(jooq.meta().getCatalogs()).getSchema(activeSchemaName);
+    final org.jooq.Schema schema = Iterables.getOnlyElement(jooq.meta().getCatalogs()).getSchema(activeSchemaName);
     if (schema == null) {
-      throw new SchemaNotFound(target, "not available in catalog");
+      throw new Schema.NotFound(target);
     }
     return schema;
   }

@@ -1,15 +1,12 @@
 package at.ac.univie.isc.asio;
 
-import at.ac.univie.isc.asio.container.Schema;
-import at.ac.univie.isc.asio.container.SchemaFactory;
-import at.ac.univie.isc.asio.engine.*;
+import at.ac.univie.isc.asio.container.ContainerSettings;
+import at.ac.univie.isc.asio.engine.Connector;
+import at.ac.univie.isc.asio.engine.EngineRouter;
+import at.ac.univie.isc.asio.engine.EventfulConnector;
+import at.ac.univie.isc.asio.engine.ReactiveInvoker;
 import at.ac.univie.isc.asio.insight.EventBusEmitter;
 import at.ac.univie.isc.asio.insight.EventLoggerBridge;
-import at.ac.univie.isc.asio.metadata.MetadataService;
-import at.ac.univie.isc.asio.metadata.NullMetadataService;
-import at.ac.univie.isc.asio.metadata.sql.H2SchemaService;
-import at.ac.univie.isc.asio.metadata.sql.MysqlSchemaService;
-import at.ac.univie.isc.asio.metadata.sql.RelationalSchemaService;
 import at.ac.univie.isc.asio.security.Authorizer;
 import at.ac.univie.isc.asio.spring.EventBusAutoRegistrator;
 import at.ac.univie.isc.asio.spring.JerseyLogInitializer;
@@ -18,28 +15,23 @@ import com.google.common.base.Ticker;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.*;
 import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.ResourcePropertySource;
 import org.springframework.security.concurrent.DelegatingSecurityContextScheduledExecutorService;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import rx.schedulers.Schedulers;
 
-import javax.sql.DataSource;
-import java.io.IOException;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -47,7 +39,7 @@ import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
 @PropertySource("${nest.configuration}")
-@EnableConfigurationProperties(AsioSettings.class)
+@EnableConfigurationProperties({AsioSettings.class, ContainerSettings.class})
 public class Nest {
 
   public static void main(String[] args) {
@@ -68,44 +60,14 @@ public class Nest {
   private AsioSettings config;
 
   @Bean
-  public Schema defaultSchema(final SchemaFactory factory,
-                              @Value("${nest.configuration}") final Resource schemaConfig) throws IOException {
-    return factory.create(new ResourcePropertySource(schemaConfig));
-  }
-
-  @Bean
   @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-  public Connector connector(final Schema schema,
+  public Connector connector(final EngineRouter router,
                              final Authorizer authorizer,
                              final EventBus eventBus) {
-    final EngineRouter router = FixedSelection.from(schema.engines());
     final ReactiveInvoker invoker = ReactiveInvoker.from(router, Schedulers.io(), authorizer);
     final EventBusEmitter emitter =
         EventBusEmitter.create(eventBus, Ticker.systemTicker(), at.ac.univie.isc.asio.Scope.REQUEST);
     return EventfulConnector.around(emitter, invoker);
-  }
-
-  @Bean
-  public MetadataService metadataService() {
-    return new NullMetadataService();
-  }
-
-  @Bean
-  public RelationalSchemaService schemaService(@Value("${asio.db.jdbc-url}") final String jdbcUrl,
-                                               final DataSource pool) {
-    if (jdbcUrl.startsWith("jdbc:mysql:")) {
-      return new MysqlSchemaService(pool);
-    } else if (jdbcUrl.startsWith("jdbc:h2:")) {
-      return new H2SchemaService(pool);
-    } else {
-      throw new IllegalStateException(jdbcUrl + " not supported");
-    }
-  }
-
-  @Bean(destroyMethod = "close")
-  @ConfigurationProperties("asio.db")
-  public DataSource dataSource() {
-    return DataSourceBuilder.create().type(HikariDataSource.class).build();
   }
 
   @Bean
@@ -124,6 +86,23 @@ public class Nest {
     final DelegatingSecurityContextScheduledExecutorService secured =
         new DelegatingSecurityContextScheduledExecutorService(executor);
     return secured;
+  }
+
+  @Bean
+  @Lazy
+  public WebTarget metadataEndpoint(final Client httpClient) {
+    return httpClient.target(config.getMetadataRepository());
+  }
+
+  @Bean(destroyMethod = "close")
+  @Lazy
+  public Client httpClient() {
+    return ClientBuilder.newClient();
+  }
+
+  @Bean
+  public Path workingDirectory() {
+    return Paths.get(config.getHome());
   }
 
   @Bean

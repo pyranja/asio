@@ -1,0 +1,80 @@
+package at.ac.univie.isc.asio.container;
+
+import at.ac.univie.isc.asio.Schema;
+import at.ac.univie.isc.asio.engine.Engine;
+import at.ac.univie.isc.asio.metadata.sql.RelationalSchemaService;
+import com.google.auto.value.AutoValue;
+import com.google.common.collect.ImmutableSet;
+import org.springframework.context.ConfigurableApplicationContext;
+
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * Schema container wrapping a spring {@code ApplicationContext} holding the schema components.
+ * This schema should be {@link AutoCloseable#close() closed}, to release the resources in the
+ * wrapped {@code ApplicationContext}.
+ */
+@AutoValue
+abstract class SpringContainer implements Container, AutoCloseable {
+  /**
+   * Create a schema using components from the given {@code ApplicationContext}.
+   *
+   * @param context schema configuration
+   * @return schema facade
+   */
+  static SpringContainer create(final ConfigurableApplicationContext context) {
+    final ContainerSettings settings = context.getBean(ContainerSettings.class);
+    return new AutoValue_SpringContainer(context, settings);
+  }
+
+  SpringContainer() { /* prevent external subclasses */ }
+
+  /**
+   * Destroy this schema and release all contained resources.
+   */
+  @Override
+  public void close() {
+    context().close();
+  }
+
+  /**
+   * The {@code ApplicationContext}, that holds all components of this schema.
+   * Only for internal use.
+   * @return the backing {@code ApplicationContext}.
+   */
+  abstract ConfigurableApplicationContext context();
+
+  /**
+   * @return schema configuration properties
+   */
+  abstract ContainerSettings settings();
+
+  // implement schema by delegating to stored settings and context
+
+  @Override
+  public final Schema name() {
+    return settings().getName();
+  }
+
+  @Override
+  public final String identifier() {
+    return settings().getIdentifier();
+  }
+
+  @Override
+  public final Set<Engine> engines() {
+    final Map<String, Engine> found = context().getBeansOfType(Engine.class);
+    return ImmutableSet.copyOf(found.values());
+  }
+
+  @Override
+  public final RelationalSchemaService schemaService() {
+    return context().getBean(RelationalSchemaService.class);
+  }
+
+  @Override
+  public String toString() {
+    return "SpringContainer{" + context().getDisplayName() + '}';
+  }
+}

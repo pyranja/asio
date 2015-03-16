@@ -12,7 +12,7 @@ import java.util.Locale;
 public final class Language extends TypedValue<String> {
 
   /**
-   * The given {@link at.ac.univie.isc.asio.engine.Language} is not supported by a component.
+   * Thrown if a requested {@link at.ac.univie.isc.asio.engine.Language} is not supported.
    */
   public static final class NotSupported extends DatasetUsageException {
     public NotSupported(final Language language) {
