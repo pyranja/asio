@@ -1,4 +1,4 @@
-package at.ac.univie.isc.asio.spring;
+package at.ac.univie.isc.asio.io;
 
 import at.ac.univie.isc.asio.Unchecked;
 import com.google.common.io.ByteSource;
@@ -41,7 +41,7 @@ public final class TransientFile extends ExternalResource {
 
   @Override
   protected void before() throws Throwable {
-    dump = Files.createTempFile("keystore-dump-", ".jks");
+    dump = Files.createTempFile("file-dump-", ".tmp");
     Files.write(dump, content.read());
   }
 

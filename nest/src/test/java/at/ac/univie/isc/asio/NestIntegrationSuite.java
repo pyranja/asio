@@ -5,7 +5,7 @@ import at.ac.univie.isc.asio.io.Classpath;
 import at.ac.univie.isc.asio.security.AuthMechanism;
 import at.ac.univie.isc.asio.security.Role;
 import at.ac.univie.isc.asio.spring.ApplicationRunner;
-import at.ac.univie.isc.asio.spring.TransientFile;
+import at.ac.univie.isc.asio.io.TransientFile;
 import at.ac.univie.isc.asio.sql.Database;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
