@@ -68,12 +68,12 @@ public final class ValueOrError<VALUE> {
 
   /**
    * @return contained value
-   * @throws java.lang.IllegalStateException if no value is present
+   * @throws java.lang.RuntimeException if no value is present, the contained error is thrown
    */
   @Nonnull
   public VALUE get() {
     if (hasError()) {
-      throw new IllegalStateException("no value present");
+      throw error;
     }
     return value;
   }
