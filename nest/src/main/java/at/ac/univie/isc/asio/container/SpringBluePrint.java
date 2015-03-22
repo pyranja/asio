@@ -4,6 +4,9 @@ import at.ac.univie.isc.asio.d2rq.D2rqSpec;
 import at.ac.univie.isc.asio.engine.sparql.JenaEngine;
 import at.ac.univie.isc.asio.engine.sql.JdbcSpec;
 import at.ac.univie.isc.asio.engine.sql.JooqEngine;
+import at.ac.univie.isc.asio.metadata.AtosMetadataRepository;
+import at.ac.univie.isc.asio.metadata.DescriptorConversion;
+import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
 import at.ac.univie.isc.asio.metadata.sql.H2SchemaService;
 import at.ac.univie.isc.asio.metadata.sql.MysqlSchemaService;
 import at.ac.univie.isc.asio.metadata.sql.RelationalSchemaService;
@@ -11,16 +14,23 @@ import at.ac.univie.isc.asio.spring.SpringByteSource;
 import at.ac.univie.isc.asio.tool.TimeoutSpec;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.zaxxer.hikari.HikariDataSource;
+import net.atos.AtosDataset;
 import org.d2rq.db.SQLConnection;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import rx.Observable;
+import rx.Subscriber;
+import rx.functions.Func1;
 
 import javax.sql.DataSource;
 import java.util.concurrent.TimeUnit;
@@ -34,6 +44,13 @@ public class SpringBluePrint {
 
   @Autowired
   private ContainerSettings config;
+
+  @Bean
+  public SpringContainer container(final ConfigurableApplicationContext context,
+                                   final ContainerSettings settings,
+                                   final Observable<SchemaDescriptor> metadata) {
+    return new AutoValue_SpringContainer(context, settings, metadata);
+  }
 
   @Bean(destroyMethod = "close")
   public JooqEngine jooqEngine(final DataSource pool, final TimeoutSpec timeout) {
@@ -49,6 +66,18 @@ public class SpringBluePrint {
     final SpringByteSource turtle = SpringByteSource.asByteSource(mappingSource);
     final Model model = D2rqSpec.load(turtle, config.sparql.d2rBaseUri).compile(connection);
     return JenaEngine.create(model, timeout, config.sparql.federation);
+  }
+
+  @Bean
+  @Primary
+  @ConditionalOnBean(AtosMetadataRepository.class)
+  public Observable<SchemaDescriptor> metadata(final AtosMetadataRepository repository) {
+    return repository.findByLocalId(config.identifier).map(DescriptorConversion.asFunction());
+  }
+
+  @Bean
+  public Observable<SchemaDescriptor> nullMetadata() {
+    return Observable.empty();
   }
 
   @Bean

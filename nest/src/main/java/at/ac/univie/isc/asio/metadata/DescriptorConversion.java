@@ -14,6 +14,7 @@ import org.threeten.bp.ZoneOffset;
 import org.threeten.bp.ZonedDateTime;
 import org.threeten.bp.format.DateTimeFormatter;
 import org.threeten.bp.format.DateTimeParseException;
+import rx.functions.Func1;
 
 import java.util.Collection;
 import java.util.List;
@@ -24,8 +25,22 @@ import static org.slf4j.LoggerFactory.getLogger;
 /**
  * Map {@link net.atos.AtosDataset} to {@link at.ac.univie.isc.asio.metadata.SchemaDescriptor}.
  */
-final class DescriptorConversion {
+public final class DescriptorConversion {
   private static final Logger log = getLogger(DescriptorConversion.class);
+
+  /**
+   * Create a function that applies this conversion to its input.
+   *
+   * @return a function performing this conversion
+   */
+  public static Func1<AtosDataset, SchemaDescriptor> asFunction() {
+    return new Func1<AtosDataset, SchemaDescriptor>() {
+      @Override
+      public SchemaDescriptor call(final AtosDataset atosDataset) {
+        return DescriptorConversion.from(atosDataset).get();
+      }
+    };
+  }
 
   /**
    * Create a conversion from the given {@link net.atos.AtosDataset} to a
@@ -50,6 +65,7 @@ final class DescriptorConversion {
       return violations;
     }
   }
+
 
   private final AtosDataset input;
   private final Violations report;

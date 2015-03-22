@@ -4,7 +4,7 @@ import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.Schema;
 import at.ac.univie.isc.asio.container.CatalogEvent;
 import at.ac.univie.isc.asio.container.Container;
-import at.ac.univie.isc.asio.container.DummySchema;
+import at.ac.univie.isc.asio.container.StubContainer;
 import at.ac.univie.isc.asio.security.Identity;
 import com.google.common.collect.ArrayListMultimap;
 import org.junit.Rule;
@@ -30,7 +30,7 @@ public class EngineRegistryTest {
 
   @Test
   public void should_fail_if_language_not_supported() throws Exception {
-    subject.onDeployed(new CatalogEvent.SchemaDeployed(DummySchema.create("default")));
+    subject.onDeployed(new CatalogEvent.SchemaDeployed(StubContainer.create("default")));
     error.expect(Language.NotSupported.class);
     subject.select(command(Schema.DEFAULT, Language.UNKNOWN));
   }
@@ -38,7 +38,7 @@ public class EngineRegistryTest {
   @Test
   public void should_find_engine_identified_by_schema_and_language() throws Exception {
     final Engine expected = new StubEngine();
-    final Container container = DummySchema.create("default").withEngine(expected);
+    final Container container = StubContainer.create("default").withEngine(expected);
     subject.onDeployed(new CatalogEvent.SchemaDeployed(container));
     final Engine selected = subject.select(command(Schema.DEFAULT, Language.UNKNOWN));
     assertThat(selected, sameInstance(expected));
@@ -46,7 +46,7 @@ public class EngineRegistryTest {
 
   @Test
   public void should_forget_undeployed_schemas() throws Exception {
-    final Container container = DummySchema.create("default").withEngine(new StubEngine());
+    final Container container = StubContainer.create("default").withEngine(new StubEngine());
     subject.onDeployed(new CatalogEvent.SchemaDeployed(container));
     subject.select(command(Schema.DEFAULT, Language.UNKNOWN));
     subject.onDropped(new CatalogEvent.SchemaDropped(container));
@@ -59,10 +59,10 @@ public class EngineRegistryTest {
     final Engine first = new StubEngine();
     final Engine second = new StubEngine();
     Engine selected;
-    subject.onDeployed(new CatalogEvent.SchemaDeployed(DummySchema.create("default").withEngine(first)));
+    subject.onDeployed(new CatalogEvent.SchemaDeployed(StubContainer.create("default").withEngine(first)));
     selected = subject.select(command(Schema.DEFAULT, Language.UNKNOWN));
     assertThat(selected, sameInstance(first));
-    subject.onDeployed(new CatalogEvent.SchemaDeployed(DummySchema.create("default").withEngine(second)));
+    subject.onDeployed(new CatalogEvent.SchemaDeployed(StubContainer.create("default").withEngine(second)));
     selected = subject.select(command(Schema.DEFAULT, Language.UNKNOWN));
     assertThat(selected, sameInstance(second));
   }

@@ -65,7 +65,7 @@ final class SpringContainerFactory {
     context.setId(prefix);
     context.refresh();
     log.debug(SYSTEM.marker(), "created {}", context);
-    return SpringContainer.create(context);
+    return context.getBean(SpringContainer.class);
   }
 
   /**

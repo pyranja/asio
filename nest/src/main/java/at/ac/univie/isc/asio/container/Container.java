@@ -2,7 +2,9 @@ package at.ac.univie.isc.asio.container;
 
 import at.ac.univie.isc.asio.Schema;
 import at.ac.univie.isc.asio.engine.Engine;
+import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
 import at.ac.univie.isc.asio.metadata.sql.RelationalSchemaService;
+import rx.Observable;
 
 import java.util.Set;
 
@@ -18,11 +20,12 @@ public interface Container {
   Schema name();
 
   /**
-   * Global name of this schema, e.g. as used in a metadata repository.
+   * An {@code Observable}, that may emit a single descriptor of this container on subscription.
+   * There may not be metadata available, meaning that the observable will be {@code empty}.
    *
-   * @return the global identifier of this schema
+   * @return single or zero element sequence of descriptors
    */
-  String identifier();
+  Observable<SchemaDescriptor> metadata();
 
   /**
    * All configured engines for this schema, i.e. sql and sparql.

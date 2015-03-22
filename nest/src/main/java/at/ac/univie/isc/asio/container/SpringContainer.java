@@ -2,10 +2,12 @@ package at.ac.univie.isc.asio.container;
 
 import at.ac.univie.isc.asio.Schema;
 import at.ac.univie.isc.asio.engine.Engine;
+import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
 import at.ac.univie.isc.asio.metadata.sql.RelationalSchemaService;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableSet;
 import org.springframework.context.ConfigurableApplicationContext;
+import rx.Observable;
 
 import java.util.Map;
 import java.util.Set;
@@ -17,17 +19,6 @@ import java.util.Set;
  */
 @AutoValue
 abstract class SpringContainer implements Container, AutoCloseable {
-  /**
-   * Create a schema using components from the given {@code ApplicationContext}.
-   *
-   * @param context schema configuration
-   * @return schema facade
-   */
-  static SpringContainer create(final ConfigurableApplicationContext context) {
-    final ContainerSettings settings = context.getBean(ContainerSettings.class);
-    return new AutoValue_SpringContainer(context, settings);
-  }
-
   SpringContainer() { /* prevent external subclasses */ }
 
   /**
@@ -50,16 +41,17 @@ abstract class SpringContainer implements Container, AutoCloseable {
    */
   abstract ContainerSettings settings();
 
+  /**
+   * @return sequence of metadata descriptors
+   */
+  @Override
+  public abstract Observable<SchemaDescriptor> metadata();
+
   // implement schema by delegating to stored settings and context
 
   @Override
   public final Schema name() {
     return settings().getName();
-  }
-
-  @Override
-  public final String identifier() {
-    return settings().getIdentifier();
   }
 
   @Override

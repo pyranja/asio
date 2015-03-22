@@ -24,15 +24,15 @@ public class CatalogTest {
 
   @Test
   public void no_former_if_deploying_new() throws Exception {
-    final Optional<Container> former = subject.deploy(DummySchema.create("test"));
+    final Optional<Container> former = subject.deploy(StubContainer.create("test"));
     assertThat(former.isPresent(), is(false));
   }
 
   @Test
   public void yield_replaced_if_replacing() throws Exception {
-    final Container replaced = DummySchema.create("test");
+    final Container replaced = StubContainer.create("test");
     subject.deploy(replaced);
-    final Container replacement = DummySchema.create("test");
+    final Container replacement = StubContainer.create("test");
     final Optional<Container> former = subject.deploy(replacement);
     assertThat(former.get(), is(replaced));
   }
@@ -45,7 +45,7 @@ public class CatalogTest {
 
   @Test
   public void yield_dropped() throws Exception {
-    final Container container = DummySchema.create("name");
+    final Container container = StubContainer.create("name");
     subject.deploy(container);
     final Optional<Container> dropped = subject.drop(Schema.valueOf("name"));
     assertThat(dropped.get(), is(container));
@@ -55,7 +55,7 @@ public class CatalogTest {
   public void reject_deploy_after_close() throws Exception {
     subject.clear();
     error.expect(IllegalStateException.class);
-    subject.deploy(DummySchema.create("test"));
+    subject.deploy(StubContainer.create("test"));
   }
 
   @Test
@@ -67,7 +67,7 @@ public class CatalogTest {
 
   @Test
   public void should_yield_remaining_after_close() throws Exception {
-    final Container container = DummySchema.create("test");
+    final Container container = StubContainer.create("test");
     subject.deploy(container);
     final Set<Container> remaining = subject.clear();
     assertThat(remaining, contains(container));
@@ -76,7 +76,7 @@ public class CatalogTest {
   @Test
   public void found_schemas_are_a_snapshot() throws Exception {
     final Collection<Container> containers =
-        Arrays.<Container>asList(DummySchema.create("1"), DummySchema.create("2"));
+        Arrays.<Container>asList(StubContainer.create("1"), StubContainer.create("2"));
     for (Container container : containers) {
       subject.deploy(container);
     }
@@ -90,21 +90,21 @@ public class CatalogTest {
 
   @Test
   public void emit_event_on_deploying_schema() throws Exception {
-    subject.deploy(DummySchema.create("name"));
+    subject.deploy(StubContainer.create("name"));
     assertThat(events.captured(), contains(instanceOf(CatalogEvent.SchemaDeployed.class)));
   }
 
   @Test
   public void emit_event_on_dropping_schema() throws Exception {
-    subject.deploy(DummySchema.create("name"));
+    subject.deploy(StubContainer.create("name"));
     subject.drop(Schema.valueOf("name"));
     assertThat(events.captured(), contains(instanceOf(CatalogEvent.SchemaDeployed.class), instanceOf(CatalogEvent.SchemaDropped.class)));
   }
 
   @Test
   public void emit_drop_and_deploy_when_replacing() throws Exception {
-    subject.deploy(DummySchema.create("first"));
-    subject.deploy(DummySchema.create("first"));
+    subject.deploy(StubContainer.create("first"));
+    subject.deploy(StubContainer.create("first"));
     assertThat(events.captured(), contains(instanceOf(CatalogEvent.SchemaDeployed.class), instanceOf(CatalogEvent.SchemaDropped.class), instanceOf(CatalogEvent.SchemaDeployed.class)));
   }
 
@@ -116,8 +116,8 @@ public class CatalogTest {
 
   @Test
   public void emit_drop_for_all_remaining_on_close() throws Exception {
-    subject.deploy(DummySchema.create("one"));
-    subject.deploy(DummySchema.create("two"));
+    subject.deploy(StubContainer.create("one"));
+    subject.deploy(StubContainer.create("two"));
     subject.clear();
     assertThat(events.captured(), contains(
         instanceOf(CatalogEvent.SchemaDeployed.class), instanceOf(CatalogEvent.SchemaDeployed.class),
