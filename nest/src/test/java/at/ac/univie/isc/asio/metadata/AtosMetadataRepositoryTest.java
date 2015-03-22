@@ -81,6 +81,14 @@ public class AtosMetadataRepositoryTest {
     subject.findOne("global-id").toBlocking().single();
   }
 
+  @Test
+  public void should_create_cold_observables() throws Exception {
+    // operations on the repository should be started lazily on subscription
+    subject.findOne("global-id");
+    Thread.sleep(500);
+    assertThat(exchanges.getExchanges(), empty());
+  }
+
   public class FindOne {
     /*
      * the atos service seems to require UUIDs as global id

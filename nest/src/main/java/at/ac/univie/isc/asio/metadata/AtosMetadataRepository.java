@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import rx.Observable;
+import rx.Subscriber;
 import rx.functions.Func1;
 
 import javax.ws.rs.WebApplicationException;
@@ -25,7 +26,7 @@ import java.util.concurrent.Callable;
  */
 @Service
 @ConditionalOnProperty(AsioFeatures.VPH_METADATA)
-final class AtosMetadataRepository {
+public final class AtosMetadataRepository {
   private final WebTarget endpoint;
 
   @Autowired
@@ -178,11 +179,33 @@ final class AtosMetadataRepository {
    * perform given interaction with repository and handle errors
    */
   private <TYPE> Observable<TYPE> checkedRequest(final Callable<TYPE> action) {
-    try {
-      final TYPE result = action.call();
-      return result == null ? Observable.<TYPE>empty() : Observable.just(result);
-    } catch (Exception error) {
-      return Observable.error(wrapError(error));
+    return Observable.create(new ReactiveCallable<>(action));
+  }
+
+  /**
+   * Turn the given {@code Callable} into an {@code Observable}, that may yield zero or a single
+   * item.
+   *
+   * @param <TYPE> type of the single result
+   */
+  private class ReactiveCallable<TYPE> implements Observable.OnSubscribe<TYPE> {
+    private final Callable<TYPE> action;
+
+    public ReactiveCallable(final Callable<TYPE> action) {
+      this.action = action;
+    }
+
+    @Override
+    public void call(final Subscriber<? super TYPE> subscriber) {
+      try {
+        final TYPE result = action.call();
+        if (result != null) {
+          subscriber.onNext(result);
+        }
+        subscriber.onCompleted();
+      } catch (Exception error) {
+        subscriber.onError(wrapError(error));
+      }
     }
   }
 
