@@ -22,19 +22,27 @@
     <module>core</module>
     <module>d2rq</module>
     <module>ssl-fix</module>
-    <module>lair</module>
-    <module>lair-distribution</module>
     <module>flock</module>
-    <module>flock-distribution</module>
     <module>integration</module>
     <module>nest</module>
     <module>vph</module>
+    <module>lair</module>
   </modules>
 
   <properties>
     <!-- properties for filtered sites - dot notation not allowed -->
     <site-version>${project.version}</site-version>
   </properties>
+
+  <profiles>
+    <profile>
+      <id>release</id>
+      <modules>
+        <module>flock-distribution</module>
+        <module>lair-distribution</module>
+      </modules>
+    </profile>
+  </profiles>
 
   <reporting>
     <plugins>
