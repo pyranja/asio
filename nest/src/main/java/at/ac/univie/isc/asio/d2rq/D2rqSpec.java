@@ -195,4 +195,16 @@ public final class D2rqSpec {
       return TimeoutSpec.undefined();
     }
   }
+
+  /**
+   * Whether this dataset supports federated sparql queries.
+   *
+   * @return true if federated queries are supported
+   */
+  public boolean isSupportingFederation() {
+    final Optional<Resource> service =
+        findSingleResourceOfType(configuration, SparqlServiceDescription.Service);
+    return service.isPresent()
+        && service.get().hasProperty(SparqlServiceDescription.feature, SparqlServiceDescription.BasicFederatedQuery);
+  }
 }
