@@ -1,9 +1,9 @@
 package at.ac.univie.isc.asio.container;
 
 import at.ac.univie.isc.asio.Schema;
+import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.engine.Engine;
 import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
-import at.ac.univie.isc.asio.metadata.sql.RelationalSchemaService;
 import rx.Observable;
 
 import javax.annotation.Nonnull;
@@ -17,7 +17,6 @@ public class StubContainer implements Container {
 
   private final Schema schema;
   private Set<Engine> engines = new HashSet<>();
-  private RelationalSchemaService schemaService;
 
   protected StubContainer(final Schema schema) {
     this.schema = schema;
@@ -29,29 +28,23 @@ public class StubContainer implements Container {
   }
 
   @Override
-  public Observable<SchemaDescriptor> metadata() {
-    return Observable.empty();
-  }
-
-  @Override
   public final Set<Engine> engines() {
     return engines;
   }
 
   @Override
-  public final RelationalSchemaService schemaService() {
-    return schemaService;
+  public Observable<SchemaDescriptor> metadata() {
+    return Observable.empty();
+  }
+
+  @Override
+  public Observable<SqlSchema> definition() {
+    return Observable.empty();
   }
 
   @Nonnull
   public StubContainer withEngine(final Engine engine) {
     engines.add(engine);
-    return this;
-  }
-
-  @Nonnull
-  public StubContainer withSchemaService(final RelationalSchemaService dataSource) {
-    this.schemaService = dataSource;
     return this;
   }
 }

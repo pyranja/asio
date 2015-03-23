@@ -30,7 +30,7 @@ public class EngineRegistryTest {
 
   @Test
   public void should_fail_if_language_not_supported() throws Exception {
-    subject.onDeployed(new CatalogEvent.SchemaDeployed(StubContainer.create("default")));
+    subject.onDeploy(new CatalogEvent.SchemaDeployed(StubContainer.create("default")));
     error.expect(Language.NotSupported.class);
     subject.select(command(Schema.DEFAULT, Language.UNKNOWN));
   }
@@ -39,7 +39,7 @@ public class EngineRegistryTest {
   public void should_find_engine_identified_by_schema_and_language() throws Exception {
     final Engine expected = new StubEngine();
     final Container container = StubContainer.create("default").withEngine(expected);
-    subject.onDeployed(new CatalogEvent.SchemaDeployed(container));
+    subject.onDeploy(new CatalogEvent.SchemaDeployed(container));
     final Engine selected = subject.select(command(Schema.DEFAULT, Language.UNKNOWN));
     assertThat(selected, sameInstance(expected));
   }
@@ -47,9 +47,9 @@ public class EngineRegistryTest {
   @Test
   public void should_forget_undeployed_schemas() throws Exception {
     final Container container = StubContainer.create("default").withEngine(new StubEngine());
-    subject.onDeployed(new CatalogEvent.SchemaDeployed(container));
+    subject.onDeploy(new CatalogEvent.SchemaDeployed(container));
     subject.select(command(Schema.DEFAULT, Language.UNKNOWN));
-    subject.onDropped(new CatalogEvent.SchemaDropped(container));
+    subject.onDrop(new CatalogEvent.SchemaDropped(container));
     error.expect(Schema.NotFound.class);
     subject.select(command(Schema.DEFAULT, Language.UNKNOWN));
   }
@@ -59,10 +59,10 @@ public class EngineRegistryTest {
     final Engine first = new StubEngine();
     final Engine second = new StubEngine();
     Engine selected;
-    subject.onDeployed(new CatalogEvent.SchemaDeployed(StubContainer.create("default").withEngine(first)));
+    subject.onDeploy(new CatalogEvent.SchemaDeployed(StubContainer.create("default").withEngine(first)));
     selected = subject.select(command(Schema.DEFAULT, Language.UNKNOWN));
     assertThat(selected, sameInstance(first));
-    subject.onDeployed(new CatalogEvent.SchemaDeployed(StubContainer.create("default").withEngine(second)));
+    subject.onDeploy(new CatalogEvent.SchemaDeployed(StubContainer.create("default").withEngine(second)));
     selected = subject.select(command(Schema.DEFAULT, Language.UNKNOWN));
     assertThat(selected, sameInstance(second));
   }

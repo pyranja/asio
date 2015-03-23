@@ -1,9 +1,9 @@
 package at.ac.univie.isc.asio.container;
 
 import at.ac.univie.isc.asio.Schema;
+import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.engine.Engine;
 import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
-import at.ac.univie.isc.asio.metadata.sql.RelationalSchemaService;
 import rx.Observable;
 
 import java.util.Set;
@@ -20,6 +20,13 @@ public interface Container {
   Schema name();
 
   /**
+   * All configured engines for this schema, i.e. sql and sparql.
+   *
+   * @return set of sql and sparql engine
+   */
+  Set<Engine> engines();
+
+  /**
    * An {@code Observable}, that may emit a single descriptor of this container on subscription.
    * There may not be metadata available, meaning that the observable will be {@code empty}.
    *
@@ -28,16 +35,9 @@ public interface Container {
   Observable<SchemaDescriptor> metadata();
 
   /**
-   * All configured engines for this schema, i.e. sql and sparql.
+   * The relational table structure of this schema, if it is backed by a relational database.
    *
-   * @return set of sql and sparql engine
+   * @return single or zero element sequence of sql definition
    */
-  Set<Engine> engines();
-
-  /**
-   * {@code RelationalSchemaService} of this container.
-   *
-   * @return a service providing the relational structure of the backing database
-   */
-  RelationalSchemaService schemaService();
+  Observable<SqlSchema> definition();
 }

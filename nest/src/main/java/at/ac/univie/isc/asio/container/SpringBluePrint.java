@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.container;
 
+import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.d2rq.D2rqSpec;
 import at.ac.univie.isc.asio.engine.sparql.JenaEngine;
 import at.ac.univie.isc.asio.engine.sql.JdbcSpec;
@@ -7,6 +8,7 @@ import at.ac.univie.isc.asio.engine.sql.JooqEngine;
 import at.ac.univie.isc.asio.metadata.AtosMetadataRepository;
 import at.ac.univie.isc.asio.metadata.DescriptorConversion;
 import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
+import at.ac.univie.isc.asio.metadata.sql.DatabaseInspector;
 import at.ac.univie.isc.asio.metadata.sql.H2SchemaService;
 import at.ac.univie.isc.asio.metadata.sql.MysqlSchemaService;
 import at.ac.univie.isc.asio.metadata.sql.RelationalSchemaService;
@@ -48,8 +50,9 @@ public class SpringBluePrint {
   @Bean
   public SpringContainer container(final ConfigurableApplicationContext context,
                                    final ContainerSettings settings,
-                                   final Observable<SchemaDescriptor> metadata) {
-    return new AutoValue_SpringContainer(context, settings, metadata);
+                                   final Observable<SchemaDescriptor> metadata,
+                                   final Observable<SqlSchema> definition) {
+    return new AutoValue_SpringContainer(context, settings, metadata, definition);
   }
 
   @Bean(destroyMethod = "close")
@@ -81,15 +84,8 @@ public class SpringBluePrint {
   }
 
   @Bean
-  public RelationalSchemaService schemaService(final DataSource pool) {
-    final String jdbcUrl = config.getDatasource().getJdbcUrl();
-    if (jdbcUrl.startsWith("jdbc:mysql:")) {
-      return new MysqlSchemaService(pool);
-    } else if (jdbcUrl.startsWith("jdbc:h2:")) {
-      return new H2SchemaService(pool);
-    } else {
-      throw new IllegalStateException(jdbcUrl + " not supported");
-    }
+  public Observable<SqlSchema> definition(final DataSource pool) {
+    return DatabaseInspector.from(config.getName(), config.datasource.jdbcUrl, pool).definition();
   }
 
   @Bean(destroyMethod = "close")

@@ -1,9 +1,9 @@
 package at.ac.univie.isc.asio.container;
 
 import at.ac.univie.isc.asio.Schema;
+import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.engine.Engine;
 import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
-import at.ac.univie.isc.asio.metadata.sql.RelationalSchemaService;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableSet;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -47,6 +47,12 @@ abstract class SpringContainer implements Container, AutoCloseable {
   @Override
   public abstract Observable<SchemaDescriptor> metadata();
 
+  /**
+   * @return sequence of schema definitions
+   */
+  @Override
+  public abstract Observable<SqlSchema> definition();
+
   // implement schema by delegating to stored settings and context
 
   @Override
@@ -58,11 +64,6 @@ abstract class SpringContainer implements Container, AutoCloseable {
   public final Set<Engine> engines() {
     final Map<String, Engine> found = context().getBeansOfType(Engine.class);
     return ImmutableSet.copyOf(found.values());
-  }
-
-  @Override
-  public final RelationalSchemaService schemaService() {
-    return context().getBean(RelationalSchemaService.class);
   }
 
   @Override
