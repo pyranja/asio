@@ -72,13 +72,21 @@ public final class AdaptAuthorizationFilter implements Filter {
       log.debug(Scope.REQUEST.marker(), "request processing completed");
     } catch (final IllegalRedirect error) {
       log.debug(Scope.REQUEST.marker(), "no dispatcher found", error);
-      response.sendError(HttpServletResponse.SC_NOT_FOUND, error.getMessage());
+      sendErrorIfPossible(HttpServletResponse.SC_NOT_FOUND, error.getMessage(), response);
     } catch (final AuthenticationException | IllegalArgumentException error) {
       log.debug(Scope.REQUEST.marker(), "reject unauthorized request", error);
-      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, error.getMessage());
+      sendErrorIfPossible(HttpServletResponse.SC_UNAUTHORIZED, error.getMessage(), response);
     } catch (final Throwable error) {
       log.warn(Scope.REQUEST.marker(), "uncaught error in filter chain", error);
-      response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, error.getMessage());
+      sendErrorIfPossible(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, error.getMessage(), response);
+    }
+  }
+
+  private void sendErrorIfPossible(final int statusCode,
+                                   final String message,
+                                   final HttpServletResponse response) throws IOException {
+    if (!response.isCommitted()) {
+      response.sendError(statusCode, message);
     }
   }
 
