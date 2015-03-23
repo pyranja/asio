@@ -1,0 +1,15 @@
+{
+  "name": "public",
+  "identifier": "http://asio/",
+  "timeout": 5000,
+  "datasource": {
+    "jdbcUrl": "jdbc:h2:mem:test",
+    "username": "root",
+    "password": "change"
+  },
+  "sparql": {
+    "d2rBaseUri": "http://test.com/integration/",
+    "d2rMappingLocation": "classpath:/sparql/mapping.integration.ttl",
+    "federation": true
+  }
+}

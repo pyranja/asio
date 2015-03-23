@@ -22,8 +22,13 @@ import static org.slf4j.LoggerFactory.getLogger;
  * Orchestrate creation and removal of schema containers.
  */
 @Service
-public final class ContainerDirector implements AutoCloseable {
+final class ContainerDirector implements AutoCloseable {
   private static final Logger log = getLogger(ContainerDirector.class);
+
+  /** describe what happened on a director operation */
+  public static enum Result {
+    CREATED, REPLACED, DISPOSED, NOOP
+  }
 
   private final Catalog<SpringContainer> catalog;
   private final ConfigStore config;
@@ -50,22 +55,22 @@ public final class ContainerDirector implements AutoCloseable {
    *
    * @param schema local name of target schema
    * @param adapter adapted configuration
-   * @return local name of the deployed schema
+   * @return true if en existing schema was replaced, false if a new one was created
    */
-  public Schema createNewOrReplace(final Schema schema, final ContainerAdapter adapter) {
+  public Result createNewOrReplace(final Schema schema, final ContainerAdapter adapter) {
     log.debug(Scope.SYSTEM.marker(), "create or replace <{}>", schema);
     catalog.lock(schema, timeout);
     try {
-      dispose(schema);
+      final Result outcome = dispose(schema);
       final ContainerSettings settings = adapter.translate(schema, config);
       config.save(schema.name(), "settings.json", serialize(settings));
       final SpringContainer container = factory.createFrom(settings);
       log.debug(Scope.SYSTEM.marker(), "created {} for <{}>", container, schema);
       catalog.deploy(container);
+      return outcome == Result.DISPOSED ? Result.REPLACED : Result.CREATED;
     } finally {
       catalog.unlock(schema);
     }
-    return schema;
   }
 
   /**
@@ -74,7 +79,7 @@ public final class ContainerDirector implements AutoCloseable {
    * @param schema local name of target schema
    * @return true if the target schema was present and has been dropped, false if no such schema existed
    */
-  public boolean dispose(final Schema schema) {
+  public Result dispose(final Schema schema) {
     log.debug(Scope.SYSTEM.marker(), "dispose <{}>", schema);
     catalog.lock(schema, timeout);
     try {
@@ -85,7 +90,7 @@ public final class ContainerDirector implements AutoCloseable {
         container.close();
         config.clear(schema.name());
       }
-      return dropped.isPresent();
+      return dropped.isPresent() ? Result.DISPOSED : Result.NOOP;
     } finally {
       catalog.unlock(schema);
     }

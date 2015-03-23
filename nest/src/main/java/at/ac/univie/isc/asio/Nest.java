@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio;
 
-import at.ac.univie.isc.asio.container.ContainerSettings;
+import at.ac.univie.isc.asio.container.SpringBluePrint;
 import at.ac.univie.isc.asio.engine.Connector;
 import at.ac.univie.isc.asio.engine.EngineRouter;
 import at.ac.univie.isc.asio.engine.EventfulConnector;
@@ -38,8 +38,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
-@PropertySource("${nest.configuration}")
-@EnableConfigurationProperties({AsioSettings.class, ContainerSettings.class})
+@EnableConfigurationProperties({AsioSettings.class})
+@ComponentScan(excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = SpringBluePrint.class))
 public class Nest {
 
   public static void main(String[] args) {

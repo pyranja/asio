@@ -7,8 +7,24 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#> .
 @prefix jdbc: <http://d2rq.org/terms/jdbc/> .
+@prefix sd: <http://www.w3.org/ns/sparql-service-description#> .
 
-map:database a d2rq:Database.
+# includes all information required for deployment, as in VPH deployments
+
+<> a d2r:Server;
+  rdfs:label "integration-test";
+  d2r:baseURI <http://test.com/integration/>;
+  d2r:port 80;
+  a sd:Service;
+  sd:feature sd:BasicFederatedQuery;
+  .
+
+map:database a d2rq:Database;
+  d2rq:jdbcDriver "org.h2.Driver";
+	d2rq:jdbcDSN "jdbc:h2:mem:test";
+	d2rq:username "root";
+	d2rq:password "change";
+	.
 
 # Table PUBLIC.DATETIMES
 map:PUBLIC_DATETIMES a d2rq:ClassMap;

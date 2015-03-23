@@ -24,7 +24,6 @@ logging.level.: 'OFF'  # root logger
 logging.level:
   at.ac.univie.isc.asio: 'OFF'
   at.ac.univie.isc.asio.events: 'OFF'
-  at.ac.univie.isc.asio.security: 'OFF'
   org.springframework.boot.actuate.audit.listener.AuditListener: 'OFF'
   org.springframework.security: 'OFF'
 

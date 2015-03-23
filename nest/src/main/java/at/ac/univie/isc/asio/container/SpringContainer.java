@@ -39,7 +39,7 @@ abstract class SpringContainer implements Container, AutoCloseable {
   /**
    * @return schema configuration properties
    */
-  abstract ContainerSettings settings();
+  public abstract ContainerSettings settings();
 
   /**
    * @return sequence of metadata descriptors

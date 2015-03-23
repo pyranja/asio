@@ -16,7 +16,7 @@ public class Runner {
         .execute(Classpath.read("sql/database.integration.sql"));
     Nest.application()
         .profiles("test")
-        .properties("server.ssl.key-store=nest/src/test/resources/keystore")
+        .properties("server.ssl.key-store=integration/src/main/resources/keystore.integration")
         .logStartupInfo(true)
         .run(extend(args));
   }
@@ -25,6 +25,7 @@ public class Runner {
     final List<String> arguments = Lists.newArrayList(args);
     arguments.add("--server.port=8443");
     arguments.add("--logging.level.=INFO");
+    arguments.add("--logging.level.at.ac.univie.isc.asio=DEBUG");
     return arguments.toArray(new String[arguments.size()]);
   }
 }

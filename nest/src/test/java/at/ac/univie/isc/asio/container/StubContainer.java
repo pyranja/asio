@@ -28,6 +28,11 @@ public class StubContainer implements Container {
   }
 
   @Override
+  public ContainerSettings settings() {
+    return ContainerSettings.of(schema);
+  }
+
+  @Override
   public final Set<Engine> engines() {
     return engines;
   }

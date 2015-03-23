@@ -70,6 +70,7 @@ public final class D2rqContainerAdapter implements ContainerAdapter {
     final ContainerSettings.Sparql sparql = new ContainerSettings.Sparql();
     sparql.setD2rBaseUri(URI.create(spec.getBaseResourceIri()));
     sparql.setD2rMappingLocation(mappingLocation);
+    sparql.setFederation(spec.isSupportingFederation());
     settings.setSparql(sparql);
     final ContainerSettings.Datasource datasource =
         FindJdbcConfig.create().parse(spec.getMapping());

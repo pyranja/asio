@@ -1,5 +1,9 @@
 package at.ac.univie.isc.asio.io;
 
+import at.ac.univie.isc.asio.Unchecked;
+import com.google.common.io.ByteSource;
+
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
 
@@ -40,5 +44,19 @@ public final class Payload {
    */
   public static byte[] encodeUtf8(final String text) {
     return text.getBytes(StandardCharsets.UTF_8);
+  }
+
+  /**
+   * Copy the content from given {@code ByteSource} to an array.
+   * @param source source of binary data
+   * @return byte array containing the contents of the {@code source}
+   * @throw UncheckedIOException if reading the source fails
+   */
+  public static byte[] asArray(final ByteSource source) {
+    try {
+      return source.read();
+    } catch (IOException e) {
+      throw new Unchecked.UncheckedIOException(e);
+    }
   }
 }

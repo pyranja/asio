@@ -3,19 +3,15 @@ package at.ac.univie.isc.asio.integration;
 import at.ac.univie.isc.asio.Integration;
 import at.ac.univie.isc.asio.junit.Interactions;
 import at.ac.univie.isc.asio.junit.Rules;
-import at.ac.univie.isc.asio.restassured.ReportingFilter;
 import at.ac.univie.isc.asio.sql.Database;
 import at.ac.univie.isc.asio.web.EventSource;
 import com.google.common.base.Charsets;
 import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.builder.RequestSpecBuilder;
 import com.jayway.restassured.config.EncoderConfig;
 import com.jayway.restassured.config.MatcherConfig;
 import com.jayway.restassured.config.SSLConfig;
-import com.jayway.restassured.specification.RequestSpecification;
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import org.apache.http.HttpStatus;
-import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -36,7 +32,7 @@ import static org.junit.Assume.assumeThat;
  */
 @Category(Integration.class)
 @RunWith(HierarchicalContextRunner.class)
-public abstract class IntegrationTest implements IntegrationDsl.SpecFactoryCallback {
+public abstract class IntegrationTest {
 
   @BeforeClass
   public static void restAssuredDefaults() {
@@ -70,6 +66,14 @@ public abstract class IntegrationTest implements IntegrationDsl.SpecFactoryCallb
     return config;
   }
 
+  /**
+   * Deploy test container.
+   */
+  public static IntegrationDeployer deploy() {
+    restAssuredDefaults();
+    return new IntegrationDeployer(new IntegrationDsl(new RequestSpecAssembler(config, Interactions.empty())));
+  }
+
   // === test case scope ===========================================================================
 
   @Rule
@@ -77,8 +81,9 @@ public abstract class IntegrationTest implements IntegrationDsl.SpecFactoryCallb
   @Rule
   public Interactions interactions = Rules.interactions();
 
+  private final RequestSpecAssembler assembler = new RequestSpecAssembler(config, interactions);
   // create dsl with global defaults
-  private final IntegrationDsl dsl = new IntegrationDsl(this).copy(config.dslDefaults);
+  private final IntegrationDsl dsl = new IntegrationDsl(assembler).copy(config.dslDefaults);
 
   // === test components ===========================================================================
 
@@ -139,29 +144,5 @@ public abstract class IntegrationTest implements IntegrationDsl.SpecFactoryCallb
    */
   protected final IntegrationDsl given() {
     return dsl;
-  }
-
-  @Override
-  public final RequestSpecification requestFrom(final IntegrationDsl dsl) {
-    final URI baseUri;
-    if (dsl.isManage()) {
-      baseUri = config.serviceBase.resolve(config.managementService);
-    } else if (dsl.hasSchema()) {
-      baseUri = config.serviceBase.resolve(dsl.getSchemaPath());
-    } else {
-      baseUri = config.serviceBase;
-    }
-    final URI authedBaseUri = config.auth.configureUri(baseUri, dsl.getRole());
-
-    RequestSpecBuilder request = new RequestSpecBuilder().setBaseUri(authedBaseUri.toString());
-    request = config.auth.configureRequestSpec(request, dsl.getRole());
-
-    final UsernamePasswordCredentials delegated = dsl.getDelegated();
-    request = delegated == null
-        ? request
-        : config.auth.attachCredentials(delegated.getUserName(), delegated.getPassword(), request);
-
-    final ReportingFilter reportingInterceptor = interactions.attached(ReportingFilter.create());
-    return RestAssured.given().spec(request.build()).filter(reportingInterceptor);
   }
 }

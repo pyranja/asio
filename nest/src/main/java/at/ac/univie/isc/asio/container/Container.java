@@ -20,6 +20,13 @@ public interface Container {
   Schema name();
 
   /**
+   * Active settings of this schema.
+   *
+   * @return the settings
+   */
+  ContainerSettings settings();
+
+  /**
    * All configured engines for this schema, i.e. sql and sparql.
    *
    * @return set of sql and sparql engine

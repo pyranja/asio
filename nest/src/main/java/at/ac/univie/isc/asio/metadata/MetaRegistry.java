@@ -26,7 +26,7 @@ final class MetaRegistry extends BaseContainerRegistry implements MetadataServic
 
   MetaRegistry() {
     log.info(Scope.SYSTEM.marker(), "meta registry enabled");
-    log.debug(Scope.SYSTEM.marker(), "using load data {}", LOAD_DATE);
+    log.debug(Scope.SYSTEM.marker(), "using load date {}", LOAD_DATE);
   }
 
   @Override

@@ -11,6 +11,7 @@ import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
+import java.io.IOException;
 import java.net.URI;
 
 /**
@@ -23,16 +24,20 @@ public class VphIntegrationSuite {
   public static ApplicationRunner application = ApplicationRunner.run(Nest.class);
 
   @BeforeClass
-  public static void start() {
+  public static void start() throws IOException {
     final Database h2 = Database.create("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1")
         .credentials("root", "change").build()
         .execute(Classpath.read("sql/database.integration.sql"));
+
     application.profile("test").run();
 
     IntegrationTest.configure()
         .baseService(URI.create("http://localhost:" + application.getPort() + "/"))
         .auth(AuthMechanism.uri().overrideCredentialDelegationHeader("Authorization"))
         .database(h2)
+        .timeoutInSeconds(10)
         .defaults().schema("public").role(Role.NONE.name());
+
+    IntegrationTest.deploy().fromD2r("public", Classpath.load("standalone.mapping.ttl"));
   }
 }

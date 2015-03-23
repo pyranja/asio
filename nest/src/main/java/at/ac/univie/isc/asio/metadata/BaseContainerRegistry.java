@@ -22,7 +22,7 @@ public abstract class BaseContainerRegistry {
    */
   protected final Logger log = getLogger(this.getClass());
 
-  private final ConcurrentMap<Schema, Container> registry = new ConcurrentHashMap<>();
+  protected final ConcurrentMap<Schema, Container> registry = new ConcurrentHashMap<>();
 
   protected Container find(final Schema target) {
     final Container found = registry.get(target);
