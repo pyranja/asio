@@ -68,9 +68,11 @@ class DefaultSecurity {
   @Autowired
   public void configureGlobal(final AuthenticationManagerBuilder auth) throws Exception {
     log.info(Scope.SYSTEM.marker(), "registering root user");
-    auth.inMemoryAuthentication().withUser("root").password(config.secret).authorities(Role.ADMIN);
+    final InMemoryUserDetailsManagerConfigurer<AuthenticationManagerBuilder> configuration =
+        auth.inMemoryAuthentication();
+    configuration.withUser("root").password(config.secret).authorities(Role.ADMIN);
     if (config.feature.simpleAuth) {
-      registerUsersForRoles(auth.inMemoryAuthentication(), config.secret);
+      registerUsersForRoles(configuration, config.secret);
     }
   }
 
