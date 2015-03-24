@@ -1,5 +1,7 @@
 package at.ac.univie.isc.asio.web;
 
+import at.ac.univie.isc.asio.Pretty;
+import at.ac.univie.isc.asio.Unchecked;
 import at.ac.univie.isc.asio.io.CachedInputStream;
 import at.ac.univie.isc.asio.io.Payload;
 import at.ac.univie.isc.asio.io.TeeOutputStream;
@@ -35,11 +37,12 @@ import static java.lang.String.format;
  * Provide a lightweight, embedded {@link com.sun.net.httpserver.HttpServer http server} listening
  * to a random, free port on localhost.
  */
-public final class HttpServer extends ExternalResource implements Interactions.Report {
+public final class HttpServer extends ExternalResource implements Interactions.Report, AutoCloseable {
 
   private static final Splitter.MapSplitter PARAMETER_PARSER =
       Splitter.on('&').trimResults().omitEmptyStrings().withKeyValueSeparator('=');
 
+  private static final int THREAD_COUNT = 2;
   private static final ThreadFactory THREAD_FACTORY =
       new ThreadFactoryBuilder().setNameFormat("embedded-http-worker-%d").build();
 
@@ -79,7 +82,7 @@ public final class HttpServer extends ExternalResource implements Interactions.R
 
   private final com.sun.net.httpserver.HttpServer server;
   private final String label;
-  private final ExecutorService exec = Executors.newCachedThreadPool(THREAD_FACTORY);
+  private final ExecutorService exec = Executors.newFixedThreadPool(THREAD_COUNT, THREAD_FACTORY);
   private final StringBuilder capturedExchanges = new StringBuilder();
   private boolean logging = false;
 
@@ -87,6 +90,7 @@ public final class HttpServer extends ExternalResource implements Interactions.R
     this.label = label;
     try {
       server = com.sun.net.httpserver.HttpServer.create();
+      server.setExecutor(exec);
     } catch (IOException e) {
       throw Throwables.propagate(e);
     }
@@ -134,22 +138,46 @@ public final class HttpServer extends ExternalResource implements Interactions.R
 
   @Override
   public Appendable appendTo(final Appendable sink) throws IOException {
-    return sink.append(capturedExchanges);
+    sink.append(capturedExchanges);
+    capturedExchanges.setLength(0);
+    return sink;
+  }
+
+  public HttpServer start(final int port) {
+    log(Pretty.format("starting on port %d", port));
+    try {
+      final InetAddress localhost = InetAddress.getByName(null);
+      server.bind(new InetSocketAddress(localhost, port), 0);
+      server.start();
+    } catch (IOException e) {
+      throw new Unchecked.UncheckedIOException(e);
+    }
+    return this;
   }
 
   @Override
-  protected void before() throws Throwable {
-    final InetAddress localhost = InetAddress.getByName(null);
-    server.bind(new InetSocketAddress(localhost, 0), 0);
-    server.start();
-  }
-
-  @Override
-  protected void after() {
+  public void close() {
+    log("shutting down...");
     try {
       server.stop(0);
     } finally {
       exec.shutdown();
+    }
+  }
+
+  @Override
+  protected void before() throws Throwable {
+    start(0);
+  }
+
+  @Override
+  protected void after() {
+    close();
+  }
+
+  private void log(final String message) {
+    if (logging) {
+      System.out.println("[" + label + "] " + message);
     }
   }
 

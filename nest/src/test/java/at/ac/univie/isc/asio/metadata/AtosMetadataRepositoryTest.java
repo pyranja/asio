@@ -32,7 +32,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.*;
@@ -180,9 +179,8 @@ public class AtosMetadataRepositoryTest {
       http.with("/", exchanges);
       subject.findByLocalId("http://example.com/test-id").subscribe(subscriber);
       final HttpExchange captured = exchanges.single();
-      final Map<String, String> parameters = HttpServer.parseParameters(captured);
       assertThat(captured.getRequestURI().getPath(), is("/metadata/facets/Dataset/localID"));
-      assertThat(parameters, hasEntry("value", "http://example.com/test-id"));
+      assertThat(captured.getRequestURI().getQuery(), containsString("value=http://example.com/test-id"));
     }
 
     @Test
