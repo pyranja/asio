@@ -4,7 +4,11 @@ import at.ac.univie.isc.asio.tool.Pretty;
 import at.ac.univie.isc.asio.tool.TimeoutSpec;
 import com.google.common.base.Optional;
 import com.google.common.io.ByteSource;
-import com.hp.hpl.jena.rdf.model.*;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.RDFNode;
+import com.hp.hpl.jena.rdf.model.ResIterator;
+import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.shared.PrefixMapping;
 import com.hp.hpl.jena.vocabulary.RDF;
 import org.d2rq.CompiledMapping;
@@ -167,6 +171,20 @@ public final class D2rqSpec {
   }
 
   /**
+   * The IRI of the D2r:Server resource in the configuration.
+   *
+   * @return the resource identifier of this d2rq mapping
+   */
+  public String getIdentifier() {
+    final Optional<Resource> serverResource = findServerResource(configuration);
+    if (serverResource.isPresent() && serverResource.get().isURIResource()) {
+      return serverResource.get().getURI();
+    } else {
+      throw new D2RQException("Missing <" + D2RConfig.Server + "> resource");
+    }
+  }
+
+  /**
    * The absolute IRI used to resolve relative references in the source configuration model.
    *
    * @return base IRI of this configuration
@@ -181,8 +199,9 @@ public final class D2rqSpec {
    * @return Concrete timeout or {@link at.ac.univie.isc.asio.tool.TimeoutSpec#UNDEFINED}.
    */
   public TimeoutSpec getSparqlTimeout() {
-    final Resource server = findServerResource(configuration).or(ResourceFactory.createResource());
-    if (server.hasProperty(D2RConfig.sparqlTimeout)) {
+    final Optional<Resource> serverResource = findServerResource(configuration);
+    if (serverResource.isPresent() && serverResource.get().hasProperty(D2RConfig.sparqlTimeout)) {
+      final Resource server = serverResource.get();
       final RDFNode value = server.getProperty(D2RConfig.sparqlTimeout).getObject();
       try {
         return TimeoutSpec.from(value.asLiteral().getLong(), TimeUnit.SECONDS);

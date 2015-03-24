@@ -15,6 +15,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.concurrent.NotThreadSafe;
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -63,7 +64,7 @@ public final class D2rqContainerAdapter implements ContainerAdapter {
    * read all settings from the d2rq config
    */
   private void populate(final ContainerSettings settings, final URI mappingLocation) {
-    settings.setIdentifier(spec.getBaseResourceIri());
+    settings.setIdentifier(spec.getIdentifier());
     if (spec.getSparqlTimeout().isDefined()) {
       settings.setTimeout(spec.getSparqlTimeout().getAs(TimeUnit.MILLISECONDS, -1L));
     }
@@ -73,7 +74,7 @@ public final class D2rqContainerAdapter implements ContainerAdapter {
     sparql.setFederation(spec.isSupportingFederation());
     settings.setSparql(sparql);
     final ContainerSettings.Datasource datasource =
-        FindJdbcConfig.create().parse(spec.getMapping());
+        FindJdbcConfig.create(settings.getName().name()).parse(spec.getMapping());
     settings.setDatasource(datasource);
   }
 
@@ -91,13 +92,15 @@ public final class D2rqContainerAdapter implements ContainerAdapter {
    * Extract jdbc settings from a d2rq mapping. Expect a single jdbc configuration block.
    */
   static final class FindJdbcConfig extends D2RQMappingVisitor.Default {
+    private final String defaultSchema;
     ContainerSettings.Datasource datasource;
 
-    private FindJdbcConfig() {
+    private FindJdbcConfig(final String defaultSchema) {
+      this.defaultSchema = defaultSchema;
     }
 
-    static FindJdbcConfig create() {
-      return new FindJdbcConfig();
+    static FindJdbcConfig create(final String schema) {
+      return new FindJdbcConfig(schema);
     }
 
     ContainerSettings.Datasource parse(final Mapping mapping) {
@@ -117,6 +120,8 @@ public final class D2rqContainerAdapter implements ContainerAdapter {
       this.datasource.setJdbcUrl(database.getJdbcURL());
       this.datasource.setPassword(database.getPassword());
       this.datasource.setUsername(database.getUsername());
+      final Properties props = database.getConnectionProperties();
+      this.datasource.setSchema(props.getProperty("schema", defaultSchema));
     }
   }
 }

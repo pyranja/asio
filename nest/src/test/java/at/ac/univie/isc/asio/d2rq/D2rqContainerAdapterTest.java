@@ -1,14 +1,17 @@
 package at.ac.univie.isc.asio.d2rq;
 
 import at.ac.univie.isc.asio.Schema;
+import at.ac.univie.isc.asio.Unchecked;
 import at.ac.univie.isc.asio.container.ConfigStore;
 import at.ac.univie.isc.asio.container.ContainerSettings;
 import at.ac.univie.isc.asio.io.Classpath;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.ByteSource;
 import com.hp.hpl.jena.rdf.model.Model;
 import org.junit.Test;
 import org.springframework.dao.DataAccessException;
 
+import java.io.IOException;
 import java.net.URI;
 
 import static at.ac.univie.isc.asio.junit.IsIsomorphic.isomorphicWith;
@@ -38,6 +41,7 @@ public class D2rqContainerAdapterTest {
     assertThat(settings.getDatasource().getJdbcUrl(), equalTo("jdbc:mysql://localhost/test"));
     assertThat(settings.getDatasource().getUsername(), equalTo("username"));
     assertThat(settings.getDatasource().getPassword(), equalTo("password"));
+    assertThat(settings.getDatasource().getSchema(), equalTo("test-schema"));
   }
 
   @Test
@@ -46,6 +50,25 @@ public class D2rqContainerAdapterTest {
     final Model cleaned = readModel(store.saved);
     final Model expected = readModel(Classpath.load("d2rq-container/cleaned-mapping.ttl"));
     assertThat(cleaned, isomorphicWith(expected));
+  }
+
+  @Test
+  public void should_translate_integration_standalone_mapping_to_reference_settings() throws Exception {
+    final D2rqContainerAdapter adapter =
+        D2rqContainerAdapter.load(Classpath.load("standalone.mapping.ttl"));
+    final ContainerSettings settings = adapter.translate(Schema.valueOf("public"), store);
+    final ContainerSettings expected = readSettings(Classpath.load("settings.integration.json"));
+    expected.getSparql().setD2rMappingLocation(URI.create("asio://test"));  // set by config store
+    assertThat(settings.asMap(), equalTo(expected.asMap()));
+  }
+
+  private ContainerSettings readSettings(final ByteSource raw) {
+    try {
+      final ObjectMapper mapper = new ObjectMapper();
+      return mapper.readValue(raw.read(), ContainerSettings.class);
+    } catch (IOException e) {
+      throw new Unchecked.UncheckedIOException(e);
+    }
   }
 
   private static class StubConfigStore implements ConfigStore {

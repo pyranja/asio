@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.d2rq;
 
+import at.ac.univie.isc.asio.io.Classpath;
 import at.ac.univie.isc.asio.io.Payload;
 import com.google.common.io.ByteSource;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -11,7 +12,6 @@ import org.d2rq.vocab.D2RConfig;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,11 +26,14 @@ import static org.junit.Assert.assertThat;
 public class LoadD2rqModelTest {
   public static final Resource THING = ResourceFactory.createResource("http://example.org/thing");
   @Rule
-  public final TemporaryFolder temp = new TemporaryFolder();
-  @Rule
   public final ExpectedException error = ExpectedException.none();
 
   private final Model expected = ModelFactory.createDefaultModel();
+
+  @Test
+  public void can_parse_integration_mapping() throws Exception {
+    LoadD2rqModel.inferBaseUri().parse(Classpath.load("standalone.mapping.ttl"));
+  }
 
   @Test
   public void inject_server_with_default_base_if_none_present() throws Exception {

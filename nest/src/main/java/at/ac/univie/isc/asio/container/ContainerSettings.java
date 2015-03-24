@@ -58,7 +58,7 @@ public final class ContainerSettings {
   }
 
   /**
-   * Local name of this schema, must be equal to the backing database schema.
+   * Local name of this container.
    */
   @NotNull
   Schema name;
@@ -182,6 +182,12 @@ public final class ContainerSettings {
   public static final class Datasource {
 
     /**
+     * The name of the schema holding the data in the backing database. In case of MySQL this is
+     * the database name. (defaults to the container name if missing)
+     */
+    String schema;
+
+    /**
      * the jdbc connection url
      */
     @NotEmpty
@@ -199,6 +205,10 @@ public final class ContainerSettings {
     @NotNull
     String password;
 
+    public String getSchema() {
+      return schema;
+    }
+
     public String getJdbcUrl() {
       return jdbcUrl;
     }
@@ -209,6 +219,10 @@ public final class ContainerSettings {
 
     public String getPassword() {
       return password;
+    }
+
+    public void setSchema(final String schema) {
+      this.schema = schema;
     }
 
     public void setJdbcUrl(final String jdbcUrl) {
@@ -226,7 +240,8 @@ public final class ContainerSettings {
     @Override
     public String toString() {
       return "Datasource{" +
-          "jdbcUrl='" + jdbcUrl + '\'' +
+          "schema='" + schema + '\'' +
+          ", jdbcUrl='" + jdbcUrl + '\'' +
           ", username='" + username + '\'' +
           ", password='" + password + '\'' +
           '}';
@@ -235,8 +250,10 @@ public final class ContainerSettings {
 
   @Override
   public String toString() {
-    return "NestSettings{" +
-        "timeout=" + timeout +
+    return "ContainerSettings{" +
+        "name=" + name +
+        ", identifier='" + identifier + '\'' +
+        ", timeout=" + timeout +
         ", sparql=" + sparql +
         ", datasource=" + datasource +
         '}';
