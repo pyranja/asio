@@ -28,7 +28,12 @@ public class NestIntegrationSuite {
         .credentials("root", "change").build()
         .execute(Classpath.read("sql/database.integration.sql"));
 
-    application.profile("test").run("--server.ssl.key-store=" + keystore.path());
+    final String[] args = new String[] {
+        "--server.ssl.key-store=" + keystore.path(),
+        "--asio.feature.vph-metadata=on",
+        "--asio.metadata-repository=" + IntegrationTest.atos.address(),
+    };
+    application.profile("test").run(args);
 
     IntegrationTest.configure()
         .baseService(URI.create("https://localhost:" + application.getPort() + "/"))

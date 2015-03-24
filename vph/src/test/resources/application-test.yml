@@ -7,19 +7,9 @@ asio:
   timeout: 3000
   secret: 'change'
   feature:
-    vph-metadata: off
+    vph-metadata: on
     vph-uri-auth: on
     simple-auth: off
-
-nest.configuration: classpath:/nest.properties
-nest.meta:
-  enable: false
-  repository: http://vphshare.atosresearch.eu/metadata-extended/rest/
-
-asio.db:
-  jdbc-url: jdbc:h2:mem:test
-  username: root
-  password: change
 
 logging.level.: 'OFF'  # root logger
 logging.level:

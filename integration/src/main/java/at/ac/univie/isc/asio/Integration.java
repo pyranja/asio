@@ -12,4 +12,9 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PACKAGE, ElementType.TYPE})
-public @interface Integration {}
+public @interface Integration {
+  /** the identifier of integration datasets */
+  public static final String IDENTIFIER = "urn:asio:dataset:integration";
+  /** the base resource uri of integration mappings */
+  public static final String BASE_URI = "http://example.com/asio/integration/";
+}

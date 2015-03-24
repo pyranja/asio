@@ -8,6 +8,7 @@ import org.junit.experimental.categories.Category;
 
 import static at.ac.univie.isc.asio.matcher.RestAssuredMatchers.compatibleTo;
 import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 
 @Category(Integration.class)
@@ -16,6 +17,17 @@ public class FeatureMetadata extends IntegrationTest {
   // @formatter:off
 
   public class SchemaDescriptor {
+
+    @Test
+    public void fetch_reference_metadata() throws Exception {
+      given().role("read").and()
+        .header(HttpHeaders.ACCEPT, "application/json")
+      .when()
+        .get("/meta")
+      .then()
+        .statusCode(equalTo(HttpStatus.SC_OK))
+        .content("identifier", equalTo("44bab742-2c27-4dad-8419-fae8a848358b"));
+    }
 
     @Test
     public void deliver_json() throws Exception {

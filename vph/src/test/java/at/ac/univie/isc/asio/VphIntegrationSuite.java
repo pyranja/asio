@@ -29,7 +29,7 @@ public class VphIntegrationSuite {
         .credentials("root", "change").build()
         .execute(Classpath.read("sql/database.integration.sql"));
 
-    application.profile("test").run();
+    application.profile("test").run("--asio.metadata-repository=" + IntegrationTest.atos.address());
 
     IntegrationTest.configure()
         .baseService(URI.create("http://localhost:" + application.getPort() + "/"))

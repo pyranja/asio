@@ -1,10 +1,12 @@
 package at.ac.univie.isc.asio.integration;
 
 import at.ac.univie.isc.asio.Integration;
+import at.ac.univie.isc.asio.atos.FakeAtosService;
 import at.ac.univie.isc.asio.junit.Interactions;
 import at.ac.univie.isc.asio.junit.Rules;
 import at.ac.univie.isc.asio.sql.Database;
 import at.ac.univie.isc.asio.web.EventSource;
+import at.ac.univie.isc.asio.web.HttpServer;
 import com.google.common.base.Charsets;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.EncoderConfig;
@@ -66,6 +68,8 @@ public abstract class IntegrationTest {
     return config;
   }
 
+  public static HttpServer atos = FakeAtosService.attachTo(HttpServer.create("atos-fake")).start(0);
+
   /**
    * Deploy test container.
    */
@@ -79,7 +83,7 @@ public abstract class IntegrationTest {
   @Rule
   public Timeout timeout = Rules.timeout(config.timeoutInSeconds, TimeUnit.SECONDS);
   @Rule
-  public Interactions interactions = Rules.interactions();
+  public Interactions interactions = Rules.interactions().and(atos);
 
   private final RequestSpecAssembler assembler = new RequestSpecAssembler(config, interactions);
   // create dsl with global defaults

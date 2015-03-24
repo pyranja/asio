@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- fake dataset metadata for integration tests -->
+<resource_metadata_list atsCount="0" datasetCount="1" fileCount="0" numCurrentPageMetadata="1" numTotalMetadata="1" page="1" queryTime="0.017" swsCount="0" wfCount="0" wsCount="0">
+  <resource_metadata>
+    <dataset>
+      <author>Chris Borckholder</author>
+      <category>test</category>
+      <creationDate>2015-03-24 16:49:54.000</creationDate>
+      <description>test dataset</description>
+      <globalID>44bab742-2c27-4dad-8419-fae8a848358b</globalID>
+      <licence>public_domain</licence>
+      <linkedTo/>
+      <localID>urn:asio:dataset:integration</localID>
+      <metadataCreationDate>2015-04-14 16:49:54.945</metadataCreationDate>
+      <metadataUpdateDate>2015-04-23 11:41:51.307</metadataUpdateDate>
+      <name>integration</name>
+      <provenance>provenance</provenance>
+      <rating>0</rating>
+      <relatedResources/>
+      <resourceURL>http://example.com/asio/integration/</resourceURL>
+      <semanticAnnotations>
+        <semanticConcept>
+          <conceptURI>http://sites.wiwiss.fu-berlin.de/suhl/bizer/d2r-server/config.rdf#Server</conceptURI>
+          <label>d2r server</label>
+        </semanticConcept>
+        <semanticConcept>
+          <conceptURI>http://www.w3.org/ns/sparql-service-description#Service</conceptURI>
+          <label>sparql service</label>
+        </semanticConcept>
+      </semanticAnnotations>
+      <status>active</status>
+      <tags>test, dataset</tags>
+      <type>Dataset</type>
+      <updateDate>2015-03-24 17:02:53.000</updateDate>
+      <views>18</views>
+      <sparqlEndpoint>http://example.com/asio/integration/sparql/</sparqlEndpoint>
+    </dataset>
+  </resource_metadata>
+</resource_metadata_list>
