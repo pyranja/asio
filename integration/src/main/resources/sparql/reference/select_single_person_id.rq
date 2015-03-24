@@ -1,4 +1,4 @@
 SELECT ?id
 WHERE {
-  <http://test.com/integration/PUBLIC/PERSON/1> <http://test.com/integration/vocab/PUBLIC_PERSON_ID> ?id
+  <http://example.com/asio/integration/PUBLIC/PERSON/1> <http://example.com/asio/integration/vocab/PUBLIC_PERSON_ID> ?id
 }

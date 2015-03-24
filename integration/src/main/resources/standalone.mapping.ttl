@@ -11,15 +11,15 @@
 
 # includes all information required for deployment, as in VPH deployments
 
-<> a d2r:Server;
-  rdfs:label "integration-test";
-  d2r:baseURI <http://test.com/integration/>;
-  d2r:port 80;
+<urn:asio:dataset:integration> a d2r:Server;
+  rdfs:label "integration_test_dataset";
+  d2r:baseURI <http://example.com/asio/integration/>;
   a sd:Service;
   sd:feature sd:BasicFederatedQuery;
   .
 
 map:database a d2rq:Database;
+  jdbc:schema "public";
   d2rq:jdbcDriver "org.h2.Driver";
 	d2rq:jdbcDSN "jdbc:h2:mem:test";
 	d2rq:username "root";
