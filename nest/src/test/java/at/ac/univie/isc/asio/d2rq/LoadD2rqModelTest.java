@@ -32,7 +32,7 @@ public class LoadD2rqModelTest {
 
   @Test
   public void can_parse_integration_mapping() throws Exception {
-    LoadD2rqModel.inferBaseUri().parse(Classpath.load("standalone.mapping.ttl"));
+    LoadD2rqModel.inferBaseUri().parse(Classpath.load("config.integration.ttl"));
   }
 
   @Test
@@ -42,7 +42,7 @@ public class LoadD2rqModelTest {
     final Model result = LoadD2rqModel.inferBaseUri().parse(turtle);
     expected.createResource("http://example.org/it").addProperty(RDF.type, THING);
     expected.createResource()
-        .addProperty(D2RConfig.baseURI, expected.createResource(D2rqSpec.DEFAULT_BASE))
+        .addProperty(D2RConfig.baseURI, expected.createResource(D2rqTools.DEFAULT_BASE))
         .addProperty(RDF.type, D2RConfig.Server);
     assertThat(result, is(isomorphicWith(expected)));
   }
@@ -51,7 +51,7 @@ public class LoadD2rqModelTest {
   public void resolve_relative_resource_iris_with_default_base() throws Exception {
     final ByteSource turtle = dump(Payload.encodeUtf8("<it> a <http://example.org/thing> ."));
     final Model result = LoadD2rqModel.inferBaseUri().parse(turtle);
-    expected.createResource(D2rqSpec.DEFAULT_BASE + "it").addProperty(RDF.type, THING);
+    expected.createResource(D2rqTools.DEFAULT_BASE + "it").addProperty(RDF.type, THING);
     assertThat(result, is(superSetOf(expected)));
   }
 
@@ -59,9 +59,9 @@ public class LoadD2rqModelTest {
   public void set_embedded_base_uri_to_default_base() throws Exception {
     final ByteSource turtle = dump(Payload.encodeUtf8("<it> a <http://example.org/thing> ."));
     final Model result = LoadD2rqModel.inferBaseUri().parse(turtle);
-    expected.createResource(D2rqSpec.DEFAULT_BASE + "it").addProperty(RDF.type, THING);
+    expected.createResource(D2rqTools.DEFAULT_BASE + "it").addProperty(RDF.type, THING);
     expected.createResource()
-        .addProperty(D2RConfig.baseURI, expected.createResource(D2rqSpec.DEFAULT_BASE))
+        .addProperty(D2RConfig.baseURI, expected.createResource(D2rqTools.DEFAULT_BASE))
         .addProperty(RDF.type, D2RConfig.Server);
     assertThat(result, is(isomorphicWith(expected)));
   }

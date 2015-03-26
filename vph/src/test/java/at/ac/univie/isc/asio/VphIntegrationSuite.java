@@ -38,6 +38,6 @@ public class VphIntegrationSuite {
         .timeoutInSeconds(10)
         .defaults().schema("public").role(Role.NONE.name());
 
-    IntegrationTest.deploy().fromD2r("public", Classpath.load("standalone.mapping.ttl"));
+    IntegrationTest.deploy().d2rq("public", Classpath.load("config.integration.ttl"));
   }
 }

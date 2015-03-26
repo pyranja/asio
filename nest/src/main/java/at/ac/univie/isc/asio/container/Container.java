@@ -11,20 +11,14 @@ import java.util.Set;
 /**
  * Facade to a single data set.
  */
-public interface Container {
+public interface Container extends AutoCloseable {
+
   /**
    * Local name of this schema. Equal to the mysql schema name.
    *
    * @return the local name of this schema
    */
   Schema name();
-
-  /**
-   * Active settings of this schema.
-   *
-   * @return the settings
-   */
-  ContainerSettings settings();
 
   /**
    * All configured engines for this schema, i.e. sql and sparql.
@@ -47,4 +41,20 @@ public interface Container {
    * @return single or zero element sequence of sql definition
    */
   Observable<SqlSchema> definition();
+
+  // === lifecycle =================================================================================
+
+  /**
+   * Allocate required resources and attempt to start all components, which are part of this
+   * container. A container may only be activated once.
+   *
+   * @throws IllegalStateException if activated more than once.
+   */
+  void activate() throws IllegalStateException;
+
+  /**
+   * Release all resources associated to this container.
+   */
+  @Override
+  void close();
 }

@@ -9,6 +9,7 @@ asio:
     vph-metadata: off
     vph-uri-auth: off
     simple-auth: on
+    allow-federation: on
 
 logging.level.: 'OFF'  # root logger
 logging.level:

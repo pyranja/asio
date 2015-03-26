@@ -10,8 +10,8 @@ import java.util.logging.Logger;
 /**
  * TODO : needed as JooqEngine has to strict type requirements.
  */
-class ClosableDataSourceProxy implements DataSource, AutoCloseable {
-  static ClosableDataSourceProxy wrap(final DataSource delegate) {
+public class ClosableDataSourceProxy implements DataSource, AutoCloseable {
+  public static ClosableDataSourceProxy wrap(final DataSource delegate) {
     return new ClosableDataSourceProxy(delegate);
   }
 

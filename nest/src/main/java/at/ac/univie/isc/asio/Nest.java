@@ -1,15 +1,20 @@
 package at.ac.univie.isc.asio;
 
-import at.ac.univie.isc.asio.container.SpringBluePrint;
+import at.ac.univie.isc.asio.container.DescriptorService;
 import at.ac.univie.isc.asio.engine.Connector;
 import at.ac.univie.isc.asio.engine.EngineRouter;
 import at.ac.univie.isc.asio.engine.EventfulConnector;
 import at.ac.univie.isc.asio.engine.ReactiveInvoker;
 import at.ac.univie.isc.asio.insight.EventBusEmitter;
 import at.ac.univie.isc.asio.insight.EventLoggerBridge;
+import at.ac.univie.isc.asio.metadata.AtosMetadataRepository;
+import at.ac.univie.isc.asio.metadata.DescriptorConversion;
+import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
 import at.ac.univie.isc.asio.security.Authorizer;
 import at.ac.univie.isc.asio.spring.EventBusAutoRegistrator;
+import at.ac.univie.isc.asio.spring.ExplicitWiring;
 import at.ac.univie.isc.asio.spring.JerseyLogInitializer;
+import at.ac.univie.isc.asio.spring.SpringAutoFactory;
 import at.ac.univie.isc.asio.tool.TimeoutSpec;
 import com.google.common.base.Ticker;
 import com.google.common.eventbus.AsyncEventBus;
@@ -18,6 +23,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.*;
@@ -25,11 +31,13 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.security.concurrent.DelegatingSecurityContextScheduledExecutorService;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import rx.Observable;
 import rx.schedulers.Schedulers;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
+import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.Executors;
@@ -39,7 +47,10 @@ import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
 @EnableConfigurationProperties({AsioSettings.class})
-@ComponentScan(excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = SpringBluePrint.class))
+@ComponentScan(
+    includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = SpringAutoFactory.class)
+    , excludeFilters = @ComponentScan.Filter(type = FilterType.ANNOTATION, value = ExplicitWiring.class)
+)
 public class Nest {
 
   public static void main(String[] args) {
@@ -89,9 +100,16 @@ public class Nest {
   }
 
   @Bean
-  @Lazy
-  public WebTarget metadataEndpoint(final Client httpClient) {
-    return httpClient.target(config.getMetadataRepository());
+  @ConditionalOnProperty(AsioFeatures.VPH_METADATA)
+  public DescriptorService descriptorService(final Client http) {
+    final WebTarget endpoint = http.target(config.getMetadataRepository());
+    final AtosMetadataRepository atos = new AtosMetadataRepository(endpoint);
+    return new DescriptorService() {
+      @Override
+      public Observable<SchemaDescriptor> metadata(final URI identifier) {
+        return atos.findByLocalId(identifier.toString()).map(DescriptorConversion.asFunction());
+      }
+    };
   }
 
   @Bean(destroyMethod = "close")
@@ -106,7 +124,7 @@ public class Nest {
   }
 
   @Bean
-  public TimeoutSpec timeout() {
+  public TimeoutSpec globalTimeout() {
     return TimeoutSpec.from(config.timeout, TimeUnit.MILLISECONDS);
   }
 

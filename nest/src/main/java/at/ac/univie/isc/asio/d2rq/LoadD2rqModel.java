@@ -29,7 +29,7 @@ import java.nio.charset.MalformedInputException;
 public final class LoadD2rqModel {
   /**
    * Create a loader, that will use an embedded base uri or
-   * {@link D2rqSpec#DEFAULT_BASE} if none is present.
+   * {@link D2rqTools#DEFAULT_BASE} if none is present.
    *
    * @return d2rq model loader
    */
@@ -76,14 +76,14 @@ public final class LoadD2rqModel {
 
   private Model doParse(final ByteSource source) throws IOException {
     // first pass : use default or overriding to avoid non-deterministic resolution
-    Model model = readFrom(source, baseUri.or(D2rqSpec.DEFAULT_BASE));
-    final Optional<String> embeddedBaseUri = D2rqSpec.findEmbeddedBaseUri(model);
+    Model model = readFrom(source, baseUri.or(D2rqTools.DEFAULT_BASE));
+    final Optional<String> embeddedBaseUri = D2rqTools.findEmbeddedBaseUri(model);
     if (!baseUri.isPresent() && embeddedBaseUri.isPresent()) {
       // second pass : use retrieved base uri for resolution if no override set
       model.close();
       model = readFrom(source, embeddedBaseUri.get());
     }
-    injectBaseUri(model, baseUri.or(embeddedBaseUri.or(D2rqSpec.DEFAULT_BASE)));
+    injectBaseUri(model, baseUri.or(embeddedBaseUri.or(D2rqTools.DEFAULT_BASE)));
     return model;
   }
 

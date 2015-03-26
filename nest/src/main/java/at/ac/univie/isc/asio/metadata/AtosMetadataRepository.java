@@ -1,14 +1,10 @@
 package at.ac.univie.isc.asio.metadata;
 
-import at.ac.univie.isc.asio.AsioFeatures;
 import net.atos.AtosDataset;
 import net.atos.AtosMessage;
 import net.atos.AtosResourceMetadata;
 import net.atos.AtosResourceMetadataList;
 import org.apache.http.HttpStatus;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Service;
 import rx.Observable;
 import rx.Subscriber;
 import rx.functions.Func1;
@@ -24,12 +20,9 @@ import java.util.concurrent.Callable;
 /**
  * Connect to the atos vph-metadata repository to perform CRUD on dataset metadata.
  */
-@Service
-@ConditionalOnProperty(AsioFeatures.VPH_METADATA)
 public final class AtosMetadataRepository {
   private final WebTarget endpoint;
 
-  @Autowired
   public AtosMetadataRepository(final WebTarget atosService) {
     endpoint = atosService;
   }

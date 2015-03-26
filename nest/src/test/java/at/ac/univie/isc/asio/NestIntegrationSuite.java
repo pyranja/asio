@@ -42,6 +42,6 @@ public class NestIntegrationSuite {
         .database(h2)
         .defaults().schema("public").role(Role.NONE.name());
 
-    IntegrationTest.deploy().fromJson("public", Classpath.read("settings.integration.json"));
+    IntegrationTest.deploy().d2rq("public", Classpath.load("config.integration.ttl"));
   }
 }

@@ -7,7 +7,6 @@ import com.google.common.io.ByteSource;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.shared.PrefixMapping;
 import com.hp.hpl.jena.vocabulary.RDF;
@@ -28,10 +27,6 @@ import java.util.concurrent.TimeUnit;
  * Capture d2rq settings and mapping.
  */
 public final class D2rqSpec {
-  /**
-   * Default base to resolve relative IRIs
-   */
-  public static final String DEFAULT_BASE = "asio:///default/";
 
   /**
    * Wrap the given rdf based d2rq configuration model.
@@ -57,31 +52,13 @@ public final class D2rqSpec {
   }
 
   /**
-   * Find the embedded base resource IRI if present.
-   *
-   * @param model given configuration
-   * @return base resource IRI embedded in model.
-   */
-  static Optional<String> findEmbeddedBaseUri(final Model model) {
-    final Optional<Resource> server = findServerResource(model);
-    if (server.isPresent()) {
-      final Resource baseUriProperty = server.get().getPropertyResourceValue(D2RConfig.baseURI);
-      return baseUriProperty != null
-          ? Optional.fromNullable(baseUriProperty.getURI())
-          : Optional.<String>absent();
-    } else {
-      return Optional.absent();
-    }
-  }
-
-  /**
    * Find the d2rq Server resource in the configuration model if present.
    *
    * @param model given configuration
    * @return {@link org.d2rq.vocab.D2RConfig#Server} resource
    */
   static Optional<Resource> findServerResource(final Model model) {
-    return findSingleResourceOfType(model, D2RConfig.Server);
+    return D2rqTools.findSingleOfType(model, D2RConfig.Server);
   }
 
   /**
@@ -91,26 +68,7 @@ public final class D2rqSpec {
    * @return {@link org.d2rq.vocab.D2RQ#Database} resource
    */
   static Optional<Resource> findDatabaseResource(final Model model) {
-    return findSingleResourceOfType(model, D2RQ.Database);
-  }
-
-  /**
-   * Find a single resource with given rdf:type in the model if one is present.
-   *
-   * @param model model to search in
-   * @param type  type of required resource
-   * @return the resource if present
-   * @throws java.lang.IllegalArgumentException if multiple resources with matching type are found
-   */
-  static Optional<Resource> findSingleResourceOfType(final Model model, final Resource type) {
-    final ResIterator it = model.listResourcesWithProperty(RDF.type, type);
-    final Optional<Resource> found = it.hasNext()
-        ? Optional.of(it.nextResource())
-        : Optional.<Resource>absent();
-    if (found.isPresent() && it.hasNext()) {
-      throw new IllegalArgumentException("found multiple <" + type + "> resources");
-    }
-    return found;
+    return D2rqTools.findSingleOfType(model, D2RQ.Database);
   }
 
   private final Model configuration;
@@ -161,7 +119,7 @@ public final class D2rqSpec {
       database.get().removeProperties();
       database.get().addProperty(RDF.type, D2RQ.Database);
     } else {
-      clone.createResource(DEFAULT_BASE + "database", D2RQ.Database);
+      clone.createResource(D2rqTools.DEFAULT_BASE + "database", D2RQ.Database);
     }
     final Optional<Resource> server = findServerResource(clone);
     if (server.isPresent()) {
@@ -190,7 +148,7 @@ public final class D2rqSpec {
    * @return base IRI of this configuration
    */
   public String getBaseResourceIri() {
-    return findEmbeddedBaseUri(configuration).or(DEFAULT_BASE);
+    return D2rqTools.findEmbeddedBaseUri(configuration).or(D2rqTools.DEFAULT_BASE);
   }
 
   /**
@@ -222,7 +180,7 @@ public final class D2rqSpec {
    */
   public boolean isSupportingFederation() {
     final Optional<Resource> service =
-        findSingleResourceOfType(configuration, SparqlServiceDescription.Service);
+        D2rqTools.findSingleOfType(configuration, SparqlServiceDescription.Service);
     return service.isPresent()
         && service.get().hasProperty(SparqlServiceDescription.feature, SparqlServiceDescription.BasicFederatedQuery);
   }

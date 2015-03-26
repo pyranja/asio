@@ -7,6 +7,7 @@ public class AsioFeatures {
   public static final String VPH_METADATA = "asio.feature.vphMetadata";
   public static final String VPH_URI_AUTH = "asio.feature.vphUriAuth";
   public static final String SIMPLE_AUTH = "asio.feature.simpleAuth";
+  public static final String ALLOW_FEDERATION = "asio.feature.allowFederation";
 
   /**
    * Enable metadata lookup in the vph metadata repository. If enabled, the repository http endpoint
@@ -29,12 +30,20 @@ public class AsioFeatures {
    */
   public boolean simpleAuth = false;
 
+  /**
+   * Allow SPARQL basic federated queries. If this feature is enabled, individual containers may
+   * explicitly enable federated query support. If the feature is disabled, container settings are
+   * overrided and no federated queries are accepted.
+   */
+  public boolean allowFederation = false;
+
   @Override
   public String toString() {
     return "AsioFeatures{" +
         "vphMetadata=" + vphMetadata +
         ", vphUriAuth=" + vphUriAuth +
         ", simpleAuth=" + simpleAuth +
+        ", allowFederation=" + allowFederation +
         '}';
   }
 
@@ -60,5 +69,13 @@ public class AsioFeatures {
 
   public void setVphMetadata(final boolean vphMetadata) {
     this.vphMetadata = vphMetadata;
+  }
+
+  public boolean isAllowFederation() {
+    return allowFederation;
+  }
+
+  public void setAllowFederation(final boolean allowFederation) {
+    this.allowFederation = allowFederation;
   }
 }
