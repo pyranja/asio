@@ -1,15 +1,17 @@
 package at.ac.univie.isc.asio.metadata.sql;
 
 import at.ac.univie.isc.asio.*;
+import at.ac.univie.isc.asio.Table;
 import at.ac.univie.isc.asio.engine.sql.XmlSchemaType;
 import at.ac.univie.isc.asio.io.Classpath;
 import at.ac.univie.isc.asio.sql.Database;
-import com.google.common.collect.Iterables;
+import com.google.common.collect.*;
 import org.jooq.impl.SQLDataType;
 import org.junit.Test;
 
 import java.util.List;
 
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.hamcrest.core.Is.is;
@@ -22,6 +24,14 @@ public class H2SchemaServiceTest {
       .execute(Classpath.read("database/H2SchemaServiceTest-schema.sql"));
 
   private final H2SchemaService subject = new H2SchemaService(db.datasource());
+
+  @Test
+  public void explore_h2_transient_in_memory_db() throws Exception {
+    final Database db = Database.create("jdbc:h2:mem:").build();
+    final com.google.common.collect.Table<Integer, String, String> result =
+        db.reference("SELECT SCHEMA()");
+    assertThat(result.values(), hasItem("public"));
+  }
 
   @Test
   public void fetches_public_table_metadata() throws Exception {
