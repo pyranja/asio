@@ -216,7 +216,7 @@ public class FeatureProtocol extends IntegrationTest {
 
   @Test
   public void reject_modifying_operation_via_http_GET() throws Exception {
-    assumeThat("not a modifying operation", permission, is("update"));
+    assumeThat("not a modifying operation", operation, is("update"));
     given().role(permission).and()
       .param(operation, noop)
     .when()
