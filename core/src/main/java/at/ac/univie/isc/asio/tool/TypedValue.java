@@ -10,8 +10,15 @@ import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
 
+/**
+ * A string-convertible, immutable value type.
+ * Implementations of this type should be transparent wrappers around a single value without
+ * attached logic. The intention is to provide type safe primitive values, e.g. for identifiers.
+ *
+ * @param <VALUE> type of wrapped value
+ */
 @Immutable
-public /* abstract */ class TypedValue<VALUE> {
+public abstract class TypedValue<VALUE> {
   private final VALUE val;
 
   @JsonCreator

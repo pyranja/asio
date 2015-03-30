@@ -20,17 +20,22 @@ public class TypedValueTest {
 
   @Test
   public void should_be_a_transparent_wrapper() throws Exception {
+    class TestType extends TypedValue<String> {
+      protected TestType(@Nonnull final String val) {
+        super(val);
+      }
+    }
     final String value = new String(Payload.randomWithLength(256), Charsets.UTF_8);
-    final TypedValue<String> subject = new TypedValue<>(value);
+    final TypedValue<String> subject = new TestType(value);
     assertThat(subject.toString(), is(value));
-    final TypedValue<String> other = new TypedValue<>(subject.toString());
+    final TypedValue<String> other = new TestType(subject.toString());
     assertThat(other, is(equalTo(subject)));
   }
 
   @Test
   public void should_reject_null_value() throws Exception {
     exception.expect(NullPointerException.class);
-    new TypedValue<>(null);
+    new TypedValue<String>(null) {};
   }
 
   @Test

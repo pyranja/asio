@@ -1,7 +1,7 @@
 package at.ac.univie.isc.asio.container;
 
 import at.ac.univie.isc.asio.CaptureEvents;
-import at.ac.univie.isc.asio.Schema;
+import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.io.Payload;
 import at.ac.univie.isc.asio.io.TransientFolder;
 import at.ac.univie.isc.asio.tool.TimeoutSpec;
@@ -33,13 +33,13 @@ public class ContainerResourceTest {
   @Test
   public void should_respond_with_OK_if_disposed_successfully() throws Exception {
     catalog.deploy(StubContainer.create("test"));
-    final Response response = subject.deleteContainer(Schema.valueOf("test"));
+    final Response response = subject.deleteContainer(Id.valueOf("test"));
     assertThat(response, hasStatus(Response.Status.OK));
   }
 
   @Test
   public void should_respond_with_NOT_FOUND_if_target_not_found_on_dispose() throws Exception {
-    final Response response = subject.deleteContainer(Schema.valueOf("test"));
+    final Response response = subject.deleteContainer(Id.valueOf("test"));
     assertThat(response, hasStatus(Response.Status.NOT_FOUND));
   }
 
@@ -48,9 +48,9 @@ public class ContainerResourceTest {
 
   @Test
   public void should_respond_with_CREATED_if_deployed_successfully() throws Exception {
-    when(assembler.assemble(Mockito.eq(Schema.valueOf("test")), Mockito.any(ByteSource.class)))
+    when(assembler.assemble(Mockito.eq(Id.valueOf("test")), Mockito.any(ByteSource.class)))
         .thenReturn(StubContainer.create("test"));
-    final Response response = subject.createD2rqContainer(Schema.valueOf("test"),
+    final Response response = subject.createD2rqContainer(Id.valueOf("test"),
         Files.createTempFile(temp.path(), "test", ".dat").toFile());
     assertThat(response, hasStatus(Response.Status.CREATED));
   }
@@ -58,22 +58,22 @@ public class ContainerResourceTest {
   @Test
   public void should_respond_with_list_of_deployed_container_ids() throws Exception {
     catalog.deploy(StubContainer.create("test"));
-    final Collection<Schema> names = subject.listContainers();
-    assertThat(names, contains(Schema.valueOf("test")));
+    final Collection<Id> names = subject.listContainers();
+    assertThat(names, contains(Id.valueOf("test")));
   }
 
   @Test
   public void should_respond_with_deployed_container_info() throws Exception {
     final Container container = StubContainer.create("test");
     catalog.deploy(container);
-    final Response response = subject.findContainer(Schema.valueOf("test"));
+    final Response response = subject.findContainer(Id.valueOf("test"));
     assertThat(response, hasStatus(Response.Status.OK));
     assertThat(response.getEntity(), Matchers.<Object>equalTo(container));
   }
 
   @Test
   public void should_respond_with_NOT_FOUND_if_container_not_present() throws Exception {
-    final Response response = subject.findContainer(Schema.valueOf("test"));
+    final Response response = subject.findContainer(Id.valueOf("test"));
     assertThat(response, hasStatus(Response.Status.NOT_FOUND));
   }
 
@@ -97,26 +97,26 @@ public class ContainerResourceTest {
 
   @Test
   public void should_return_false_if_target_container_not_deployed_when_disposing() throws Exception {
-    assertThat(subject.dispose(Schema.valueOf("not-there")), equalTo(false));
+    assertThat(subject.dispose(Id.valueOf("not-there")), equalTo(false));
   }
 
   @Test
   public void should_clear_config_even_if_no_container_was_present() throws Exception {
-    subject.dispose(Schema.valueOf("not-there"));
+    subject.dispose(Id.valueOf("not-there"));
     verify(store).clear("not-there");
   }
 
   @Test
   public void should_return_true_if_target_container_was_present_on_dispose() throws Exception {
     catalog.deploy(StubContainer.create("test"));
-    assertThat(subject.dispose(Schema.valueOf("test")), equalTo(true));
+    assertThat(subject.dispose(Id.valueOf("test")), equalTo(true));
   }
 
   @Test
   public void should_close_disposed_container() throws Exception {
     final StubContainer container = StubContainer.create("test");
     catalog.deploy(container);
-    subject.dispose(Schema.valueOf("test"));
+    subject.dispose(Id.valueOf("test"));
     assertThat(container.isClosed(), equalTo(true));
   }
 
@@ -124,7 +124,7 @@ public class ContainerResourceTest {
   public void should_remove_stored_config_of_disposed_container() throws Exception {
     final StubContainer container = StubContainer.create("test");
     catalog.deploy(container);
-    subject.dispose(Schema.valueOf("test"));
+    subject.dispose(Id.valueOf("test"));
     verify(store).clear("test");
   }
 
@@ -174,7 +174,7 @@ public class ContainerResourceTest {
     subject.deploy(created, ByteSource.empty());
     final CatalogEvent event = events.single();
     assertThat(event, instanceOf(CatalogEvent.SchemaDeployed.class));
-    assertThat(event.getName(), equalTo(Schema.valueOf("created")));
+    assertThat(event.getName(), equalTo(Id.valueOf("created")));
     assertThat(event.getContainer(), Matchers.<Container>sameInstance(created));
   }
 }

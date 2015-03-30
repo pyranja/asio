@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.metadata.sql;
 
-import at.ac.univie.isc.asio.Schema;
+import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.engine.sql.SqlSchemaBuilder;
 import org.jooq.Catalog;
@@ -30,7 +30,7 @@ public final class H2SchemaService implements RelationalSchemaService {
     this.pool = pool;
   }
 
-  public SqlSchema explore(final Schema identifier) {
+  public SqlSchema explore(final Id identifier) {
     final SqlSchemaBuilder builder = SqlSchemaBuilder.create();
     try (final Connection connection = pool.getConnection()) {
       final DSLContext jooq = DSL.using(connection, SQLDialect.H2);
@@ -51,10 +51,10 @@ public final class H2SchemaService implements RelationalSchemaService {
     return builder.build();
   }
 
-  private boolean isNotExcluded(final org.jooq.Schema schema, final Schema identifier) {
+  private boolean isNotExcluded(final org.jooq.Schema schema, final Id identifier) {
     final String name = schema.getName();
     return name != null
-        && name.equalsIgnoreCase(identifier.name())
+        && name.equalsIgnoreCase(identifier.asString())
         && !INTERNAL_SCHEMA.contains(name.toUpperCase(Locale.ENGLISH))
     ;
   }

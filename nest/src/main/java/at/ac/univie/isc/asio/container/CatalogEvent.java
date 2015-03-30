@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.container;
 
-import at.ac.univie.isc.asio.Schema;
+import at.ac.univie.isc.asio.Id;
 
 import javax.annotation.Nonnull;
 
@@ -14,7 +14,7 @@ public abstract class CatalogEvent {
     this.container = container;
   }
 
-  public final Schema getName() {
+  public final Id getName() {
     return container.name();
   }
 

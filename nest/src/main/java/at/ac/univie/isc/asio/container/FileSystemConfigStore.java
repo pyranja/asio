@@ -152,7 +152,7 @@ final class FileSystemConfigStore implements ConfigStore {
   }
 
   /**
-   * Allow only simple characters (a-z, A-Z, 0-9, _ and .) in names.
+   * Allow only simple characters (a-z, A-Z, 0-9, _, - and .) in names.
    */
   static final Pattern LEGAL_IDENTIFIER = Pattern.compile("^[\\w][\\w\\.-]+$");
 

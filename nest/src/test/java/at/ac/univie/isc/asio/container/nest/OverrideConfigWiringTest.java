@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.container.nest;
 
-import at.ac.univie.isc.asio.Schema;
+import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.container.DefinitionService;
 import at.ac.univie.isc.asio.container.DescriptorService;
@@ -58,7 +58,7 @@ public class OverrideConfigWiringTest extends BaseContainerWiring {
     @Bean
     public Dataset datasetConfig() {
       return new Dataset()
-          .setName(Schema.valueOf("test"))
+          .setName(Id.valueOf("test"))
           .setIdentifier(URI.create("urn:asio:test"))
           .setTimeout(TimeoutSpec.from(1000, TimeUnit.SECONDS))
           .setFederationEnabled(false);

@@ -1,7 +1,7 @@
 package at.ac.univie.isc.asio.engine;
 
 import at.ac.univie.isc.asio.DatasetUsageException;
-import at.ac.univie.isc.asio.Schema;
+import at.ac.univie.isc.asio.Id;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
@@ -99,8 +99,8 @@ public final class Command {
    *
    * @return requested schema
    */
-  public Schema schema() {
-    return Schema.valueOf(require(KEY_SCHEMA));
+  public Id schema() {
+    return Id.valueOf(require(KEY_SCHEMA));
   }
 
   /**

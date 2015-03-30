@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.metadata.sql;
 
-import at.ac.univie.isc.asio.Schema;
+import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.container.DefinitionService;
 import rx.Observable;
@@ -12,7 +12,7 @@ import javax.sql.DataSource;
  * Reactive adapter for relational schema services.
  */
 public final class DatabaseInspector implements DefinitionService {
-  private final Schema schema;
+  private final Id schema;
   private final RelationalSchemaService service;
 
   public static DatabaseInspector nonFixedSchema(final String jdbcUrl, final DataSource pool) {
@@ -27,7 +27,7 @@ public final class DatabaseInspector implements DefinitionService {
     return new DatabaseInspector(null, service);
   }
 
-  public static DatabaseInspector from(final Schema schema, final String jdbcUrl, final DataSource pool) {
+  public static DatabaseInspector from(final Id schema, final String jdbcUrl, final DataSource pool) {
     final RelationalSchemaService service;
     if (jdbcUrl.startsWith("jdbc:mysql:")) {
       service = new MysqlSchemaService(pool);
@@ -39,7 +39,7 @@ public final class DatabaseInspector implements DefinitionService {
     return new DatabaseInspector(schema, service);
   }
 
-  private DatabaseInspector(final Schema schema, final RelationalSchemaService service) {
+  private DatabaseInspector(final Id schema, final RelationalSchemaService service) {
     this.schema = schema;
     this.service = service;
   }
@@ -50,7 +50,7 @@ public final class DatabaseInspector implements DefinitionService {
       @Override
       public void call(final Subscriber<? super SqlSchema> subscriber) {
         try {
-          subscriber.onNext(service.explore(Schema.valueOf(name)));
+          subscriber.onNext(service.explore(Id.valueOf(name)));
           subscriber.onCompleted();
         } catch (final Exception error) {
           subscriber.onError(error);
@@ -60,6 +60,6 @@ public final class DatabaseInspector implements DefinitionService {
   }
 
   public Observable<SqlSchema> definition() {
-    return definition(schema.name());
+    return definition(schema.asString());
   }
 }

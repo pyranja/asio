@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.container;
 
-import at.ac.univie.isc.asio.Schema;
+import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.Scope;
 import at.ac.univie.isc.asio.tool.TimeoutSpec;
 import com.google.common.annotations.VisibleForTesting;
@@ -39,7 +39,7 @@ import static org.slf4j.LoggerFactory.getLogger;
   private static final float LOAD_FACTOR = 0.75f;
   private static final int CONCURRENCY_LEVEL = 4;
 
-  private final ConcurrentMap<Schema, CONTAINER> catalog =
+  private final ConcurrentMap<Id, CONTAINER> catalog =
       new ConcurrentHashMap<>(INITIAL_CAPACITY, LOAD_FACTOR, CONCURRENCY_LEVEL);
   private final Striped<Lock> locks = Striped.lock(CONCURRENCY_LEVEL);
   private final AtomicBoolean closed = new AtomicBoolean(false);
@@ -76,13 +76,13 @@ import static org.slf4j.LoggerFactory.getLogger;
   /**
    * Remove the schema with the given name from this catalog if one is present.
    *
-   * @param schema name of the schema that will be dropped
+   * @param id name of the schema that will be dropped
    * @return the removed schema if one existed
    */
-  public Optional<CONTAINER> drop(final Schema schema) {
-    log.debug(Scope.SYSTEM.marker(), "drop <{}>", schema);
+  public Optional<CONTAINER> drop(final Id id) {
+    log.debug(Scope.SYSTEM.marker(), "drop <{}>", id);
     ensureOpen();
-    final Optional<CONTAINER> removed = Optional.fromNullable(catalog.remove(schema));
+    final Optional<CONTAINER> removed = Optional.fromNullable(catalog.remove(id));
     if (removed.isPresent()) { events.post(dropEvent(removed.get())); }
     return removed;
   }
@@ -98,7 +98,7 @@ import static org.slf4j.LoggerFactory.getLogger;
    * @throws UncheckedExecutionException if the callback throws a checked exception
    * @throws UncheckedTimeoutException   if the lock cannot be acquired in the maximal allowed time
    */
-  public <RESULT> RESULT atomic(final Schema name, final Callable<RESULT> action)
+  public <RESULT> RESULT atomic(final Id name, final Callable<RESULT> action)
       throws UncheckedTimeoutException, UncheckedExecutionException {
     lock(name);
     try {
@@ -116,12 +116,12 @@ import static org.slf4j.LoggerFactory.getLogger;
   /**
    * Find a deployed container with given id.
    *
-   * @param schema id of container
+   * @param id id of container
    * @return deployed container if present
    */
-  Optional<CONTAINER> find(final Schema schema) {
+  Optional<CONTAINER> find(final Id id) {
     ensureOpen();
-    return Optional.fromNullable(catalog.get(schema));
+    return Optional.fromNullable(catalog.get(id));
   }
 
   /**
@@ -129,7 +129,7 @@ import static org.slf4j.LoggerFactory.getLogger;
    *
    * @return snapshot of all present container names.
    */
-  Set<Schema> findKeys() {
+  Set<Id> findKeys() {
     ensureOpen();
     return ImmutableSet.copyOf(catalog.keySet());
   }
@@ -149,32 +149,32 @@ import static org.slf4j.LoggerFactory.getLogger;
   /**
    * Attempt to lock the given schema.
    *
-   * @param schema name of schema that should be locked
+   * @param id name of schema that should be locked
    * @throws UncheckedTimeoutException if the lock cannot be acquired in the granted time span
    */
-  void lock(final Schema schema) throws UncheckedTimeoutException {
-    final Lock lock = locks.get(schema);
+  void lock(final Id id) throws UncheckedTimeoutException {
+    final Lock lock = locks.get(id);
     try {
       if (!lock.tryLock(maximalWaitingTimeInMilliseconds, TimeUnit.MILLISECONDS)) {
-        throw new UncheckedTimeoutException("timed out while locking " + schema);
+        throw new UncheckedTimeoutException("timed out while locking " + id);
       }
     } catch (InterruptedException e) {
-      throw new UncheckedTimeoutException("interrupted while locking " + schema, e);
+      throw new UncheckedTimeoutException("interrupted while locking " + id, e);
     }
   }
 
   /**
    * Unlock the given schema
    *
-   * @param schema name of schema that should be unlocked.
+   * @param id name of schema that should be unlocked.
    */
-  void unlock(final Schema schema) {
-    locks.get(schema).unlock();
+  void unlock(final Id id) {
+    locks.get(id).unlock();
   }
 
   /**
    * Disable this catalog, all existing schemas are dropped and future calls to
-   * {@link #deploy(Container)} or {@link #drop(at.ac.univie.isc.asio.Schema)} will fail.
+   * {@link #deploy(Container)} or {@link #drop(Id)} will fail.
    *
    * @return all schemas that were present when closing
    */

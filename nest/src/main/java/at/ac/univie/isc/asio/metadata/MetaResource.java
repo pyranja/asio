@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.metadata;
 
-import at.ac.univie.isc.asio.Schema;
+import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.metadata.sql.RelationalSchemaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,20 +32,20 @@ public class MetaResource {
 
   @GET
   @Path("/meta")
-  public SchemaDescriptor fetchDescriptor(@PathParam("schema") final Schema identifier) {
+  public SchemaDescriptor fetchDescriptor(@PathParam("schema") final Id identifier) {
     return metadataService.describe(identifier);
   }
 
   @GET
   @Path("/schema")
-  public SqlSchema fetchRelationalSchema(@PathParam("schema") final Schema identifier) {
+  public SqlSchema fetchRelationalSchema(@PathParam("schema") final Id identifier) {
     return schemaService.explore(identifier);
   }
 
   @GET
   @Path("/meta/schema")
   @Deprecated
-  public SqlSchema legacySchemaPath(@PathParam("schema") final Schema identifier) {
+  public SqlSchema legacySchemaPath(@PathParam("schema") final Id identifier) {
     return fetchRelationalSchema(identifier);
   }
 }

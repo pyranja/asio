@@ -1,7 +1,7 @@
 package at.ac.univie.isc.asio.engine;
 
 import at.ac.univie.isc.asio.DatasetException;
-import at.ac.univie.isc.asio.Schema;
+import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.container.CatalogEvent;
 import at.ac.univie.isc.asio.container.Container;
 import at.ac.univie.isc.asio.container.StubContainer;
@@ -24,15 +24,15 @@ public class EngineRegistryTest {
 
   @Test
   public void should_fail_if_schema_not_found() throws Exception {
-    error.expect(Schema.NotFound.class);
-    subject.select(command(Schema.DEFAULT, Language.UNKNOWN));
+    error.expect(Id.NotFound.class);
+    subject.select(command(Id.valueOf("default"), Language.UNKNOWN));
   }
 
   @Test
   public void should_fail_if_language_not_supported() throws Exception {
     subject.onDeploy(new CatalogEvent.SchemaDeployed(StubContainer.create("default")));
     error.expect(Language.NotSupported.class);
-    subject.select(command(Schema.DEFAULT, Language.UNKNOWN));
+    subject.select(command(Id.valueOf("default"), Language.UNKNOWN));
   }
 
   @Test
@@ -40,7 +40,7 @@ public class EngineRegistryTest {
     final Engine expected = new StubEngine();
     final Container container = StubContainer.create("default").withEngine(expected);
     subject.onDeploy(new CatalogEvent.SchemaDeployed(container));
-    final Engine selected = subject.select(command(Schema.DEFAULT, Language.UNKNOWN));
+    final Engine selected = subject.select(command(Id.valueOf("default"), Language.UNKNOWN));
     assertThat(selected, sameInstance(expected));
   }
 
@@ -48,10 +48,10 @@ public class EngineRegistryTest {
   public void should_forget_undeployed_schemas() throws Exception {
     final Container container = StubContainer.create("default").withEngine(new StubEngine());
     subject.onDeploy(new CatalogEvent.SchemaDeployed(container));
-    subject.select(command(Schema.DEFAULT, Language.UNKNOWN));
+    subject.select(command(Id.valueOf("default"), Language.UNKNOWN));
     subject.onDrop(new CatalogEvent.SchemaDropped(container));
-    error.expect(Schema.NotFound.class);
-    subject.select(command(Schema.DEFAULT, Language.UNKNOWN));
+    error.expect(Id.NotFound.class);
+    subject.select(command(Id.valueOf("default"), Language.UNKNOWN));
   }
 
   @Test
@@ -60,16 +60,16 @@ public class EngineRegistryTest {
     final Engine second = new StubEngine();
     Engine selected;
     subject.onDeploy(new CatalogEvent.SchemaDeployed(StubContainer.create("default").withEngine(first)));
-    selected = subject.select(command(Schema.DEFAULT, Language.UNKNOWN));
+    selected = subject.select(command(Id.valueOf("default"), Language.UNKNOWN));
     assertThat(selected, sameInstance(first));
     subject.onDeploy(new CatalogEvent.SchemaDeployed(StubContainer.create("default").withEngine(second)));
-    selected = subject.select(command(Schema.DEFAULT, Language.UNKNOWN));
+    selected = subject.select(command(Id.valueOf("default"), Language.UNKNOWN));
     assertThat(selected, sameInstance(second));
   }
 
-  private Command command(final Schema schema, final Language language) {
+  private Command command(final Id id, final Language language) {
     final ArrayListMultimap<String, String> params = ArrayListMultimap.create();
-    params.put(Command.KEY_SCHEMA, schema.name());
+    params.put(Command.KEY_SCHEMA, id.asString());
     params.put(Command.KEY_LANGUAGE, language.name());
     return new Command(params, Collections.<MediaType>emptyList(), Identity.undefined(), null);
   }

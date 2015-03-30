@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.container;
 
-import at.ac.univie.isc.asio.Schema;
+import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.engine.Engine;
 import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
@@ -18,7 +18,7 @@ public interface Container extends AutoCloseable {
    *
    * @return the local name of this schema
    */
-  Schema name();
+  Id name();
 
   /**
    * All configured engines for this schema, i.e. sql and sparql.

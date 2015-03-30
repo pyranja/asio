@@ -1,7 +1,7 @@
 package at.ac.univie.isc.asio.container;
 
 import at.ac.univie.isc.asio.CaptureEvents;
-import at.ac.univie.isc.asio.Schema;
+import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.tool.TimeoutSpec;
 import com.google.common.base.Optional;
 import com.google.common.eventbus.EventBus;
@@ -71,7 +71,7 @@ public class CatalogTest {
 
     @Test
     public void should_yield_absent_if_dropping_missing() throws Exception {
-      final Optional<Container> dropped = subject.drop(Schema.valueOf("name"));
+      final Optional<Container> dropped = subject.drop(Id.valueOf("name"));
       assertThat(dropped.isPresent(), is(false));
     }
 
@@ -79,7 +79,7 @@ public class CatalogTest {
     public void should_yield_dropped() throws Exception {
       final Container container = StubContainer.create("name");
       subject.deploy(container);
-      final Optional<Container> dropped = subject.drop(Schema.valueOf("name"));
+      final Optional<Container> dropped = subject.drop(Id.valueOf("name"));
       assertThat(dropped.get(), is(container));
     }
 
@@ -87,7 +87,7 @@ public class CatalogTest {
     public void should_remove_dropped_from_internal_storage() throws Exception {
       final StubContainer dropped = StubContainer.create("test");
       subject.deploy(dropped);
-      subject.drop(Schema.valueOf("test"));
+      subject.drop(Id.valueOf("test"));
       assertThat(subject.findAll(), not(hasItem(dropped)));
     }
   }
@@ -110,7 +110,7 @@ public class CatalogTest {
     public void should_reject_drop_after_clear() throws Exception {
       subject.clear();
       error.expect(IllegalStateException.class);
-      subject.drop(Schema.valueOf("test"));
+      subject.drop(Id.valueOf("test"));
     }
 
     @Test
@@ -136,7 +136,7 @@ public class CatalogTest {
     @Test
     public void emit_event_on_dropping_schema() throws Exception {
       subject.deploy(StubContainer.create("name"));
-      subject.drop(Schema.valueOf("name"));
+      subject.drop(Id.valueOf("name"));
       assertThat(events.captured(), contains(instanceOf(CatalogEvent.SchemaDeployed.class), instanceOf(CatalogEvent.SchemaDropped.class)));
     }
 
@@ -149,7 +149,7 @@ public class CatalogTest {
 
     @Test
     public void no_event_if_schema_not_present_on_drop() throws Exception {
-      subject.drop(Schema.valueOf("name"));
+      subject.drop(Id.valueOf("name"));
       assertThat(events.captured(), is(emptyIterable()));
     }
 
@@ -180,14 +180,14 @@ public class CatalogTest {
 
     @Test
     public void should_lock_stripe_for_given_name() throws Exception {
-      subject.lock(Schema.valueOf("test"));
+      subject.lock(Id.valueOf("test"));
       assertThat(lockOf("test").isLocked(), equalTo(true));
     }
 
     @Test
     public void should_unlock_stripe_for_given_name() throws Exception {
-      subject.lock(Schema.valueOf("test"));
-      subject.unlock(Schema.valueOf("test"));
+      subject.lock(Id.valueOf("test"));
+      subject.unlock(Id.valueOf("test"));
       assertThat(lockOf("test").isLocked(), equalTo(false));
     }
 
@@ -200,12 +200,12 @@ public class CatalogTest {
           lockOf("test").lock();
         }
       }).get();
-      subject.lock(Schema.valueOf("test"));
+      subject.lock(Id.valueOf("test"));
     }
 
     @Test
     public void should_return_result_of_atomic_callback() throws Exception {
-      final Long result = subject.atomic(Schema.valueOf("test"), new Callable<Long>() {
+      final Long result = subject.atomic(Id.valueOf("test"), new Callable<Long>() {
         @Override
         public Long call() throws Exception {
           return 1337L;
@@ -216,7 +216,7 @@ public class CatalogTest {
 
     @Test
     public void should_execute_atomic_action_while_holding_lock() throws Exception {
-      subject.atomic(Schema.valueOf("test"), new Callable<Void>() {
+      subject.atomic(Id.valueOf("test"), new Callable<Void>() {
         @Override
         public Void call() throws Exception {
           assertThat(lockOf("test").isHeldByCurrentThread(), equalTo(true));
@@ -227,7 +227,7 @@ public class CatalogTest {
 
     @Test
     public void should_release_lock_after_executing_the_callback() throws Exception {
-      subject.atomic(Schema.valueOf("test"), new Callable<Void>() {
+      subject.atomic(Id.valueOf("test"), new Callable<Void>() {
         @Override
         public Void call() throws Exception {
           return null;
@@ -240,7 +240,7 @@ public class CatalogTest {
     public void should_release_lock_even_if_callable_fails() throws Exception {
       error.expect(RuntimeException.class);
       try {
-        subject.atomic(Schema.valueOf("test"), new Callable<Void>() {
+        subject.atomic(Id.valueOf("test"), new Callable<Void>() {
           @Override
           public Void call() throws Exception {
             throw new RuntimeException("error");
@@ -260,7 +260,7 @@ public class CatalogTest {
           lockOf("test").lock();
         }
       }).get();
-      subject.atomic(Schema.valueOf("test"), new Callable<Void>() {
+      subject.atomic(Id.valueOf("test"), new Callable<Void>() {
         @Override
         public Void call() throws Exception {
           return null;
@@ -272,7 +272,7 @@ public class CatalogTest {
     public void should_rethrow_unchecked_exceptions_from_callback() throws Exception {
       final RuntimeException failure = new RuntimeException("test");
       error.expect(sameInstance(failure));
-      subject.atomic(Schema.valueOf("test"), new Callable<Void>() {
+      subject.atomic(Id.valueOf("test"), new Callable<Void>() {
         @Override
         public Void call() throws Exception {
           throw failure;
@@ -285,7 +285,7 @@ public class CatalogTest {
       final Exception failure = new Exception("test");
       error.expect(UncheckedExecutionException.class);
       error.expectCause(sameInstance(failure));
-      subject.atomic(Schema.valueOf("test"), new Callable<Void>() {
+      subject.atomic(Id.valueOf("test"), new Callable<Void>() {
         @Override
         public Void call() throws Exception {
           throw failure;
@@ -294,7 +294,7 @@ public class CatalogTest {
     }
 
     private ReentrantLock lockOf(final String name) {
-      final Lock lock = subject.locks().get(Schema.valueOf(name));
+      final Lock lock = subject.locks().get(Id.valueOf(name));
       assert lock instanceof ReentrantLock : "unexpected lock type " + lock.getClass();
       return (ReentrantLock) lock;
     }
@@ -307,7 +307,7 @@ public class CatalogTest {
 
     @Test
     public void yield_absent_if_no_container_with_id_deployed() throws Exception {
-      final Optional<Container> found = subject.find(Schema.valueOf("test"));
+      final Optional<Container> found = subject.find(Id.valueOf("test"));
       assertThat(found.isPresent(), equalTo(false));
     }
 
@@ -315,7 +315,7 @@ public class CatalogTest {
     public void should_yield_deployed_container() throws Exception {
       final Container container = StubContainer.create("test");
       subject.deploy(container);
-      final Optional<Container> found = subject.find(Schema.valueOf("test"));
+      final Optional<Container> found = subject.find(Id.valueOf("test"));
       assertThat(found.get(), equalTo(container));
     }
 
@@ -328,7 +328,7 @@ public class CatalogTest {
       }
       final Collection<Container> all = subject.findAll();
       assertThat(all, containsInAnyOrder(containers.toArray()));
-      subject.drop(Schema.valueOf("1"));  // catalog changes, but snapshot should not
+      subject.drop(Id.valueOf("1"));  // catalog changes, but snapshot should not
       assertThat(all, containsInAnyOrder(containers.toArray()));
     }
 
@@ -337,10 +337,10 @@ public class CatalogTest {
       final Catalog<Container> subject = new Catalog<>(new EventBus(), TimeoutSpec.undefined());
       subject.deploy(StubContainer.create("1"));
       subject.deploy(StubContainer.create("2"));
-      final Collection<Schema> keys = subject.findKeys();
-      assertThat(keys, containsInAnyOrder(Schema.valueOf("1"), Schema.valueOf("2")));
-      subject.drop(Schema.valueOf("1"));  // catalog changes, but snapshot should not
-      assertThat(keys, containsInAnyOrder(Schema.valueOf("1"), Schema.valueOf("2")));
+      final Collection<Id> keys = subject.findKeys();
+      assertThat(keys, containsInAnyOrder(Id.valueOf("1"), Id.valueOf("2")));
+      subject.drop(Id.valueOf("1"));  // catalog changes, but snapshot should not
+      assertThat(keys, containsInAnyOrder(Id.valueOf("1"), Id.valueOf("2")));
     }
   }
 }

@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.container.nest;
 
-import at.ac.univie.isc.asio.Schema;
+import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.tool.TimeoutSpec;
 
 import javax.validation.constraints.NotNull;
@@ -15,7 +15,7 @@ final class Dataset {
    * Local name of the dataset.
    */
   @NotNull
-  private Schema name;
+  private Id name;
   /**
    * Global identifier of the dataset.
    */
@@ -31,11 +31,11 @@ final class Dataset {
    */
   private boolean federationEnabled = false;
 
-  public Schema getName() {
+  public Id getName() {
     return name;
   }
 
-  public Dataset setName(final Schema name) {
+  public Dataset setName(final Id name) {
     this.name = name;
     return this;
   }

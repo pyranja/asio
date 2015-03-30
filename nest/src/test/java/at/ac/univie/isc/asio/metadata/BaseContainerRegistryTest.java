@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.metadata;
 
-import at.ac.univie.isc.asio.Schema;
+import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.container.CatalogEvent;
 import at.ac.univie.isc.asio.container.Container;
 import at.ac.univie.isc.asio.container.StubContainer;
@@ -20,16 +20,16 @@ public class BaseContainerRegistryTest {
 
   @Test
   public void should_fail_if_requested_schema_not_present() throws Exception {
-    error.expect(Schema.NotFound.class);
+    error.expect(Id.NotFound.class);
     error.expectMessage(containsString("not-there"));
-    subject.find(Schema.valueOf("not-there"));
+    subject.find(Id.valueOf("not-there"));
   }
 
   @Test
   public void should_find_deployed_schema() throws Exception {
     final Container expected = StubContainer.create("test");
     subject.onDeploy(new CatalogEvent.SchemaDeployed(expected));
-    assertThat(subject.find(Schema.valueOf("test")), sameInstance(expected));
+    assertThat(subject.find(Id.valueOf("test")), sameInstance(expected));
   }
 
   @Test
@@ -37,7 +37,7 @@ public class BaseContainerRegistryTest {
     final Container expected = StubContainer.create("test");
     subject.onDeploy(new CatalogEvent.SchemaDeployed(expected));
     subject.onDrop(new CatalogEvent.SchemaDropped(expected));
-    error.expect(Schema.NotFound.class);
-    subject.find(Schema.valueOf("test"));
+    error.expect(Id.NotFound.class);
+    subject.find(Id.valueOf("test"));
   }
 }

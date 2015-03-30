@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.container.nest;
 
-import at.ac.univie.isc.asio.Schema;
+import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.spring.SpringContextFactory;
 import com.google.common.collect.Lists;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -57,7 +57,7 @@ public class D2rqNestAssemblerTest {
     final Configurer first = Mockito.mock(Configurer.class);
     final Configurer second = Mockito.mock(Configurer.class);
     final NestConfig config = NestConfig.empty();
-    config.getDataset().setName(Schema.valueOf("test"));
+    config.getDataset().setName(Id.valueOf("test"));
     subject.postProcess(config, Lists.newArrayList(first, second));
     verify(first).apply(Mockito.any(NestConfig.class));
     verify(second).apply(Mockito.any(NestConfig.class));

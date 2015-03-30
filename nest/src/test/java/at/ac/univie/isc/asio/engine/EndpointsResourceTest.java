@@ -2,7 +2,7 @@ package at.ac.univie.isc.asio.engine;
 
 import at.ac.univie.isc.asio.DatasetFailureException;
 import at.ac.univie.isc.asio.Mime;
-import at.ac.univie.isc.asio.Schema;
+import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.io.Payload;
 import at.ac.univie.isc.asio.jaxrs.AsyncResponseFake;
 import at.ac.univie.isc.asio.security.Identity;
@@ -47,7 +47,7 @@ public class EndpointsResourceTest {
   @Before
   public void setUp() throws Exception {
     when(connector.accept(any(Command.class))).thenReturn(streamedResultsFrom(payload));
-    request.schema = Schema.valueOf("test");
+    request.id = Id.valueOf("test");
     request.language = Language.valueOf("test");
     request.headers = headers;
     request.security = security;
@@ -101,7 +101,7 @@ public class EndpointsResourceTest {
   public void forward_request_schema() throws Exception {
     subject.acceptForm(requestParameters, async, request);
     verify(connector).accept(params.capture());
-    assertThat(params.getValue().schema(), is(Schema.valueOf("test")));
+    assertThat(params.getValue().schema(), is(Id.valueOf("test")));
     assertThat(params.getValue().properties(), hasEntries(is("schema"), contains(equalToIgnoringCase("test"))));
   }
 

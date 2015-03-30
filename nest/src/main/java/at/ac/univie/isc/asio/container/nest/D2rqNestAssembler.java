@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.container.nest;
 
-import at.ac.univie.isc.asio.Schema;
+import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.Scope;
 import at.ac.univie.isc.asio.container.Assembler;
 import at.ac.univie.isc.asio.container.Container;
@@ -36,7 +36,7 @@ final class D2rqNestAssembler implements Assembler {
   }
 
   @Override
-  public Container assemble(final Schema name, final ByteSource source) {
+  public Container assemble(final Id name, final ByteSource source) {
     log.debug(Scope.SYSTEM.marker(), "assemble <{}> from {}", name, source);
     final Model model = LoadD2rqModel.inferBaseUri().parse(source);
     final NestConfig initial = parse(model);
@@ -44,7 +44,7 @@ final class D2rqNestAssembler implements Assembler {
     log.debug(Scope.SYSTEM.marker(), "initial config for {} : {}", name, initial);
     final NestConfig processed = postProcess(initial, configurers);
     log.debug(Scope.SYSTEM.marker(), "final config for {} : {}", name, initial);
-    final AnnotationConfigApplicationContext context = create.named(name.name());
+    final AnnotationConfigApplicationContext context = create.named(name.asString());
     inject(context, processed);
     log.debug(Scope.SYSTEM.marker(), "assembled container <{}> with {} ({})", name, context.getId(), context);
     return NestContainer.wrap(context, processed);

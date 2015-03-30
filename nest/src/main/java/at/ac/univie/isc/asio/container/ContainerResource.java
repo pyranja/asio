@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.container;
 
-import at.ac.univie.isc.asio.Schema;
+import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.Scope;
 import com.google.common.base.Optional;
 import com.google.common.io.ByteSource;
@@ -41,14 +41,14 @@ public class ContainerResource implements AutoCloseable {
   }
 
   @GET
-  public Collection<Schema> listContainers() {
+  public Collection<Id> listContainers() {
     return catalog.findKeys();
   }
 
   @GET
   @Path("/{id}")
-  public Response findContainer(@PathParam("id") final Schema schema) {
-    final Optional<Container> container = catalog.find(schema);
+  public Response findContainer(@PathParam("id") final Id id) {
+    final Optional<Container> container = catalog.find(id);
     return container.isPresent()
         ? Response.ok(container.get()).build()
         : Response.status(Response.Status.NOT_FOUND).build();
@@ -57,7 +57,7 @@ public class ContainerResource implements AutoCloseable {
   @PUT
   @Path("/{id}")
   @Consumes("text/turtle")
-  public Response createD2rqContainer(@PathParam("id") final Schema target, final File upload) {
+  public Response createD2rqContainer(@PathParam("id") final Id target, final File upload) {
     final ByteSource source = Files.asByteSource(upload);
     final Container container = assembler.assemble(target, source);
     deploy(container, source);
@@ -66,7 +66,7 @@ public class ContainerResource implements AutoCloseable {
 
   @DELETE
   @Path("/{id}")
-  public Response deleteContainer(@PathParam("id") final Schema target) {
+  public Response deleteContainer(@PathParam("id") final Id target) {
     final boolean wasPresent = dispose(target);
     return wasPresent
         ? Response.ok().build()
@@ -82,14 +82,14 @@ public class ContainerResource implements AutoCloseable {
    * @param configuration raw configuration data of the deployed container
    */
   void deploy(final Container container, final ByteSource configuration) {
-    final Schema target = container.name();
+    final Id target = container.name();
     log.debug(Scope.SYSTEM.marker(), "create container <{}>", target);
     catalog.atomic(target, new Callable<Void>() {
       @Override
       public Void call() throws Exception {
         dispose(target);
         final URI location =
-            ContainerResource.this.config.save(target.name(), "config", configuration);
+            ContainerResource.this.config.save(target.asString(), "config", configuration);
         log.debug(Scope.SYSTEM.marker(), "saved configuration at <{}>", location);
         container.activate();
         log.debug(Scope.SYSTEM.marker(), "activated {} as <{}>", container, target);
@@ -106,7 +106,7 @@ public class ContainerResource implements AutoCloseable {
    * @param target name of target container
    * @return true if the target container was present and has been dropped, false if not present
    */
-  boolean dispose(final Schema target) {
+  boolean dispose(final Id target) {
     log.debug(Scope.SYSTEM.marker(), "dispose container <{}>", target);
     return catalog.atomic(target, new Callable<Boolean>() {
       @Override
@@ -117,7 +117,7 @@ public class ContainerResource implements AutoCloseable {
           log.debug(Scope.SYSTEM.marker(), "found {} for <{}> - destroying it", container, target);
           container.close();
         }
-        config.clear(target.name());
+        config.clear(target.asString());
         return dropped.isPresent();
       }
     });

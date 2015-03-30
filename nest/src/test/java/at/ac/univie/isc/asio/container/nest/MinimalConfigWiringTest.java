@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.container.nest;
 
-import at.ac.univie.isc.asio.Schema;
+import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.Table;
 import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
@@ -33,7 +33,7 @@ public class MinimalConfigWiringTest extends BaseContainerWiring {
     @Bean
     public Dataset datasetConfig() {
       return new Dataset()
-          .setName(Schema.valueOf("test"))
+          .setName(Id.valueOf("test"))
           .setIdentifier(URI.create("urn:asio:minimal"))
           .setTimeout(TimeoutSpec.undefined())
           .setFederationEnabled(true);

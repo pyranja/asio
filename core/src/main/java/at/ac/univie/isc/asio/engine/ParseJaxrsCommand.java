@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.engine;
 
-import at.ac.univie.isc.asio.Schema;
+import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.tool.ValueOrError;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
@@ -17,7 +17,7 @@ import java.util.Map;
  * Build protocol request parameters from JAX-RS request elements.
  */
 public class ParseJaxrsCommand {
-  private final Schema schema;
+  private final Id id;
   private final Language language;
   private final ImmutableListMultimap.Builder<String, String> params =
       ImmutableListMultimap.builder();
@@ -25,17 +25,17 @@ public class ParseJaxrsCommand {
   private Principal owner;
   private RuntimeException cause;
 
-  private ParseJaxrsCommand(final Schema schema, final Language language) {
-    this.schema = schema;
+  private ParseJaxrsCommand(final Id id, final Language language) {
+    this.id = id;
     this.language = language;
   }
 
   public static ParseJaxrsCommand with(final Language language) {
-    return new ParseJaxrsCommand(Schema.DEFAULT, language);
+    return new ParseJaxrsCommand(Id.valueOf("default"), language);
   }
 
-  public static ParseJaxrsCommand with(final Schema schema, final Language language) {
-    return new ParseJaxrsCommand(schema, language);
+  public static ParseJaxrsCommand with(final Id id, final Language language) {
+    return new ParseJaxrsCommand(id, language);
   }
 
   public ParseJaxrsCommand argumentsFrom(final MultivaluedMap<String, String> map) {
@@ -78,7 +78,7 @@ public class ParseJaxrsCommand {
   }
 
   public Command collect() {
-    params.put(Command.KEY_SCHEMA, schema.name());
+    params.put(Command.KEY_SCHEMA, id.asString());
     params.put(Command.KEY_LANGUAGE, language.name());
     return new Command(params.build(), acceptedTypes.build(), owner, cause);
   }

@@ -242,7 +242,7 @@ public class BeanToMapTest {
   public void should_map_string_convertible_properties_as_string() throws Exception {
     class BeanWithStringConvertibles {
       public URI getUriProperty() { return URI.create("asio://test"); }
-      public TypedValue<String> getTypedValueProperty() { return new TypedValue<>("typed-value"); }
+      public TypedValue<String> getTypedValueProperty() { return new TypedValue<String>("typed-value") {}; }
       public TestEnum getEnumProperty() { return TestEnum.TEST; }
       public CharSequence getCharSequenceProperty() { return new StringBuilder("char-sequence"); }
     }

@@ -35,14 +35,14 @@ public class H2SchemaServiceTest {
 
   @Test
   public void fetches_public_table_metadata() throws Exception {
-    final SqlSchema schema = subject.explore(Schema.valueOf("test"));
+    final SqlSchema schema = subject.explore(Id.valueOf("test"));
     final List<Table> tables = schema.getTable();
     assertThat(tables, hasSize(1));
   }
 
   @Test
   public void validate_extracted_metadata() throws Exception {
-    final SqlSchema schema = subject.explore(Schema.valueOf("test"));
+    final SqlSchema schema = subject.explore(Id.valueOf("test"));
     final Table table = Iterables.getOnlyElement(schema.getTable());
     assertThat(table.getName(), is(equalToIgnoringCase("SAMPLE")));
     assertThat(table.getSchema(), is(equalToIgnoringCase("TEST")));
@@ -52,7 +52,7 @@ public class H2SchemaServiceTest {
   @Test
   public void validate_extracted_columns() throws Exception {
     final ObjectFactory jaxb = new ObjectFactory();
-    final SqlSchema schema = subject.explore(Schema.valueOf("test"));
+    final SqlSchema schema = subject.explore(Id.valueOf("test"));
     final Table table = Iterables.getOnlyElement(schema.getTable());
     final Column idColumn = jaxb.createColumn()
         .withName("ID")

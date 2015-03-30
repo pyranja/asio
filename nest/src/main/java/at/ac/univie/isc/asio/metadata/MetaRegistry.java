@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.metadata;
 
-import at.ac.univie.isc.asio.Schema;
+import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.Scope;
 import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.metadata.sql.RelationalSchemaService;
@@ -30,12 +30,12 @@ final class MetaRegistry extends BaseContainerRegistry implements MetadataServic
   }
 
   @Override
-  public SchemaDescriptor describe(final Schema target) {
+  public SchemaDescriptor describe(final Id target) {
     return find(target).metadata().toBlocking().singleOrDefault(NULL_METADATA);
   }
 
   @Override
-  public SqlSchema explore(final Schema target) throws Schema.NotFound {
+  public SqlSchema explore(final Id target) throws Id.NotFound {
     return find(target).definition().toBlocking().single();
   }
 }

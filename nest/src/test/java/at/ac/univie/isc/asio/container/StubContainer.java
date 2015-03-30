@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.container;
 
-import at.ac.univie.isc.asio.Schema;
+import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.engine.Engine;
 import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
@@ -12,21 +12,21 @@ import java.util.Set;
 
 public class StubContainer implements Container {
   public static StubContainer create(final String name) {
-    return new StubContainer(Schema.valueOf(name));
+    return new StubContainer(Id.valueOf(name));
   }
 
-  private final Schema schema;
+  private final Id id;
   private boolean closed = false;
   private boolean activated = false;
   private Set<Engine> engines = new HashSet<>();
 
-  protected StubContainer(final Schema schema) {
-    this.schema = schema;
+  protected StubContainer(final Id id) {
+    this.id = id;
   }
 
   @Override
-  public Schema name() {
-    return schema;
+  public Id name() {
+    return id;
   }
 
   @Override

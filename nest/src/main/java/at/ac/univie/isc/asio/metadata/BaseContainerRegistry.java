@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.metadata;
 
-import at.ac.univie.isc.asio.Schema;
+import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.Scope;
 import at.ac.univie.isc.asio.container.CatalogEvent;
 import at.ac.univie.isc.asio.container.Container;
@@ -22,12 +22,12 @@ public abstract class BaseContainerRegistry {
    */
   protected final Logger log = getLogger(this.getClass());
 
-  protected final ConcurrentMap<Schema, Container> registry = new ConcurrentHashMap<>();
+  protected final ConcurrentMap<Id, Container> registry = new ConcurrentHashMap<>();
 
-  protected Container find(final Schema target) {
+  protected Container find(final Id target) {
     final Container found = registry.get(target);
     if (found == null) {
-      throw new Schema.NotFound(target);
+      throw new Id.NotFound(target);
     }
     return found;
   }

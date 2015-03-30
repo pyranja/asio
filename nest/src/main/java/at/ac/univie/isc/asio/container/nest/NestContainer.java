@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.container.nest;
 
-import at.ac.univie.isc.asio.Schema;
+import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.container.Container;
 import at.ac.univie.isc.asio.engine.Engine;
@@ -64,7 +64,7 @@ abstract class NestContainer implements Container, AutoCloseable {
    * Name of the container, equal to the {@link ApplicationContext#getDisplayName()}.
    */
   @Override
-  public abstract Schema name();
+  public abstract Id name();
 
   /**
    * Retrieve all beans that implement {@link Engine}.
