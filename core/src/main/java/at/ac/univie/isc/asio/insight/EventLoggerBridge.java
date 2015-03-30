@@ -6,11 +6,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * Log {@link Event internal} and {@link com.google.common.eventbus.DeadEvent unhandled} events
  * to a {@link #LOGGER_NAME SLF4J logger}.
  */
+@Component
 public final class EventLoggerBridge {
   /** special logger name for events */
   public static final String LOGGER_NAME = "at.ac.univie.isc.asio.events";

@@ -6,12 +6,11 @@ import at.ac.univie.isc.asio.engine.EngineRouter;
 import at.ac.univie.isc.asio.engine.EventfulConnector;
 import at.ac.univie.isc.asio.engine.ReactiveInvoker;
 import at.ac.univie.isc.asio.insight.EventBusEmitter;
-import at.ac.univie.isc.asio.insight.EventLoggerBridge;
 import at.ac.univie.isc.asio.metadata.AtosMetadataRepository;
 import at.ac.univie.isc.asio.metadata.DescriptorConversion;
 import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
 import at.ac.univie.isc.asio.security.Authorizer;
-import at.ac.univie.isc.asio.spring.EventBusAutoRegistrator;
+import at.ac.univie.isc.asio.spring.EventBusAutoRegistrar;
 import at.ac.univie.isc.asio.spring.ExplicitWiring;
 import at.ac.univie.isc.asio.spring.JerseyLogInitializer;
 import at.ac.univie.isc.asio.spring.SpringAutoFactory;
@@ -63,8 +62,8 @@ public class Nest {
   }
 
   @Bean
-  public static EventBusAutoRegistrator eventBusAutoRegistrator(final EventBus eventBus) {
-    return new EventBusAutoRegistrator(eventBus);
+  public static EventBusAutoRegistrar eventBusAutoRegistrar(final EventBus eventBus) {
+    return new EventBusAutoRegistrar(eventBus);
   }
 
   @Autowired
@@ -83,9 +82,7 @@ public class Nest {
 
   @Bean
   public EventBus eventBus(final ScheduledExecutorService workerPool) {
-    final AsyncEventBus eventBus = new AsyncEventBus("asio-events", workerPool);
-    eventBus.register(new EventLoggerBridge());
-    return eventBus;
+    return new AsyncEventBus("asio-events", workerPool);
   }
 
   @Bean(destroyMethod = "shutdown")

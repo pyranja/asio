@@ -10,11 +10,11 @@ import org.springframework.stereotype.Component;
  * Pass all beans to the configured {@link com.google.common.eventbus.EventBus} for registration.
  */
 @Component
-public final class EventBusAutoRegistrator implements BeanPostProcessor {
+public final class EventBusAutoRegistrar implements BeanPostProcessor {
   private final EventBus eventBus;
 
   @Autowired
-  public EventBusAutoRegistrator(final EventBus eventBus) {
+  public EventBusAutoRegistrar(final EventBus eventBus) {
     this.eventBus = eventBus;
   }
 
