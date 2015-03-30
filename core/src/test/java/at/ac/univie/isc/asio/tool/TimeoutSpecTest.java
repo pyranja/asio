@@ -4,6 +4,8 @@ import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
@@ -53,5 +55,45 @@ public class TimeoutSpecTest {
     subject = TimeoutSpec.from(20, TimeUnit.DAYS);
     final TimeoutSpec alternative = TimeoutSpec.from(10, TimeUnit.SECONDS);
     assertThat(subject.orIfUndefined(alternative), is(subject));
+  }
+
+  @Test
+  public void should_roundtrip_undefined_as_string() throws Exception {
+    final TimeoutSpec parsed = TimeoutSpec.fromString(TimeoutSpec.undefined().toString());
+    assertThat(parsed, sameInstance(TimeoutSpec.undefined()));
+  }
+
+  @Test
+  public void should_roundtrip_defined_millisecond_timeout_as_string() throws Exception {
+    final TimeoutSpec original = TimeoutSpec.from(100, TimeUnit.MILLISECONDS);
+    final TimeoutSpec parsed = TimeoutSpec.fromString(original.toString());
+    assertThat(parsed, equalTo(original));
+  }
+
+  @Test
+  public void should_lossy_roundtrip_defined_nanosecond_timeout_as_string() throws Exception {
+    final TimeoutSpec original = TimeoutSpec.from(100, TimeUnit.NANOSECONDS);
+    final TimeoutSpec parsed = TimeoutSpec.fromString(original.toString());
+    assertThat(parsed, equalTo(TimeoutSpec.from(0, TimeUnit.MILLISECONDS)));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void should_fail_on_illegal_syntax() throws Exception {
+    TimeoutSpec.fromString("test");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void should_fail_on_illegal_value() throws Exception {
+    TimeoutSpec.fromString("ms");
+  }
+
+  @Test
+  public void should_yield_undefined_for_negative_value() throws Exception {
+    assertThat(TimeoutSpec.fromString("-1ms"), equalTo(TimeoutSpec.undefined()));
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void should_fail_on_null_input() throws Exception {
+    TimeoutSpec.fromString(null);
   }
 }

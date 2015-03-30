@@ -1,5 +1,8 @@
 package at.ac.univie.isc.asio.tool;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 import java.util.concurrent.TimeUnit;
@@ -75,6 +78,36 @@ public /* final */ class TimeoutSpec {
     return timeoutInNanos;
   }
 
+  // === string serialization ======================================================================
+
+  /**
+   * Convert a text representation as created by {@link #toString()} into a timeout instance.
+   *
+   * @param text a string representing a timeout value
+   * @return the parsed timeout instance
+   * @throws IllegalArgumentException if the given string is not a representation of a timeout
+   */
+  @JsonCreator
+  public static TimeoutSpec fromString(final String text) throws IllegalArgumentException {
+    requireNonNull(text, "cannot parse <" + text + "> as timeout (null)");
+    if ("undefined".equals(text)) {
+      return TimeoutSpec.undefined();
+    }
+    if (text.endsWith("ms")) {
+      final Long value = Long.valueOf(text.substring(0, text.length() - 2));
+      return TimeoutSpec.from(value, TimeUnit.MILLISECONDS);
+    }
+    throw new IllegalArgumentException("cannot parse <" + text + "> as timeout (invalid format)");
+  }
+
+  /**
+   * Convert this timeout into a {@code String}. The text format is either {@code undefined} if the
+   * timeout is not defined or the timeout value in milliseconds and {@code ms} appended.
+   * The text representation of this timeout can be round-tripped via {@link #fromString(String)}.
+   *
+   * @return text value of this timeout
+   */
+  @JsonValue
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder();
