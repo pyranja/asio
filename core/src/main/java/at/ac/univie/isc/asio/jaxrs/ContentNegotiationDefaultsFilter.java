@@ -18,6 +18,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -31,14 +32,16 @@ import java.util.Locale;
 public final class ContentNegotiationDefaultsFilter implements ContainerRequestFilter {
   private static final Logger log = LoggerFactory.getLogger(ContentNegotiationDefaultsFilter.class);
 
-  private final String defaultMediaType;
+  public static final String WILDCARD_FALLBACK = MediaType.WILDCARD + "; q=0.5";
+
   private final String defaultLanguage;
+  private final List<String> defaultMediaType;
 
   @Autowired
   ContentNegotiationDefaultsFilter(@Value("${nest.api.default-media-type}") final String mediaType,
                                    @Value("${nest.api.default-language}") final String language) {
-    this.defaultMediaType = mediaType;
     this.defaultLanguage = language;
+    defaultMediaType = Arrays.asList(mediaType, WILDCARD_FALLBACK);
   }
 
   @Deprecated // FIXME : remove when not needed anymore
@@ -52,7 +55,7 @@ public final class ContentNegotiationDefaultsFilter implements ContainerRequestF
     if (headerNotDefined(HttpHeaders.ACCEPT, headers)
         || containsNoConcreteType(headers.get(HttpHeaders.ACCEPT))) {
       log.debug("header {Accept} set to default '{}'", defaultMediaType);
-      headers.putSingle(HttpHeaders.ACCEPT, defaultMediaType);
+      headers.put(HttpHeaders.ACCEPT, defaultMediaType);
     }
     if (headerNotDefined(HttpHeaders.ACCEPT_LANGUAGE, headers)) {
       log.debug("header {Accept-Language} set to default '{}'", Locale.ENGLISH.getLanguage());

@@ -14,26 +14,21 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import static java.util.Arrays.asList;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
-/**
- * Created by pyranja on 04/05/2014.
- */
 @RunWith(MockitoJUnitRunner.class)
 public class ContentNegotiationDefaultsFilterTest {
 
   public static final Matcher<Map<? extends String, ? extends List<String>>>
-      ACCEPTS_DEFAULT_TYPE = hasEntry(HttpHeaders.ACCEPT, asList(MediaType.APPLICATION_XML));
+      ACCEPTS_DEFAULT_TYPE = hasEntry(equalTo(HttpHeaders.ACCEPT), hasItem(MediaType.APPLICATION_XML));
   public static final Matcher<Map<? extends String, ? extends List<String>>>
-      ACCEPTS_DEFAULT_LANGUAGE = hasEntry(HttpHeaders.ACCEPT_LANGUAGE,
-      asList(Locale.ENGLISH.getLanguage()));
+      ACCEPTS_DEFAULT_LANGUAGE = hasEntry(HttpHeaders.ACCEPT_LANGUAGE, Collections.singletonList(Locale.ENGLISH.getLanguage()));
 
   private ContentNegotiationDefaultsFilter subject;
 
@@ -43,7 +38,7 @@ public class ContentNegotiationDefaultsFilterTest {
 
   @Before
   public void setup() {
-    subject = new ContentNegotiationDefaultsFilter();
+    subject = new ContentNegotiationDefaultsFilter(MediaType.APPLICATION_XML, Locale.ENGLISH.getLanguage());
     Mockito.when(context.getHeaders()).thenReturn(headers);
   }
 
@@ -54,10 +49,25 @@ public class ContentNegotiationDefaultsFilterTest {
   }
 
   @Test
+  public void should_add_wildcard_fallback_to_accept_header() throws Exception {
+    subject.filter(context);
+    assertThat(headers, hasEntry(equalTo(HttpHeaders.ACCEPT), hasItem(containsString(MediaType.WILDCARD))));
+  }
+
+  @Test
+  public void added_accept_header_should_be_convertible_to_MediaType() throws Exception {
+    subject.filter(context);
+    final List<String> types = headers.get(HttpHeaders.ACCEPT);
+    for (String type : types) {
+      MediaType.valueOf(type);
+    }
+  }
+
+  @Test
   public void should_not_replace_existing_accept_header() throws Exception {
     headers.putSingle(HttpHeaders.ACCEPT, MediaType.TEXT_PLAIN);
     subject.filter(context);
-    assertThat(headers, hasEntry(HttpHeaders.ACCEPT, asList(MediaType.TEXT_PLAIN)));
+    assertThat(headers, hasEntry(HttpHeaders.ACCEPT, Collections.singletonList(MediaType.TEXT_PLAIN)));
   }
 
   @Test
@@ -92,6 +102,6 @@ public class ContentNegotiationDefaultsFilterTest {
   public void should_not_replace_if_language_tag_present() throws Exception {
     headers.putSingle(HttpHeaders.ACCEPT_LANGUAGE, "fr");
     subject.filter(context);
-    assertThat(headers, hasEntry(HttpHeaders.ACCEPT_LANGUAGE, asList("fr")));
+    assertThat(headers, hasEntry(HttpHeaders.ACCEPT_LANGUAGE, Collections.singletonList("fr")));
   }
 }
