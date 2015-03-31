@@ -1,6 +1,7 @@
 package at.ac.univie.isc.asio.tool;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Optional;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -23,6 +24,7 @@ import static java.util.Objects.requireNonNull;
  * RxJava support utilities.
  */
 public final class Reactive {
+  private Reactive() { /* utility class */ }
 
   /**
    * Create an {@link rx.functions.Action0 action}, which does nothing.
@@ -51,6 +53,27 @@ public final class Reactive {
     @Override
     public void call(final Throwable o) {}
   };
+
+  /**
+   * Synchronously consume the given {@code Observable} and convert the single contained element
+   * into an {@code Optional}.
+   * If the {@code source} is empty, {@link Optional#absent()} is returned.
+   *
+   * @param source a reactive sequence
+   * @param <ELEMENT> type of source contents
+   * @return optional single element of the source
+   * @throws IllegalArgumentException if the source has more than one element
+   */
+  public static <ELEMENT> Optional<ELEMENT> asOptional(final Observable<ELEMENT> source) {
+    return source.map(new ConvertToOptional<ELEMENT>()).toBlocking().singleOrDefault(Optional.<ELEMENT>absent());
+  }
+
+  private static class ConvertToOptional<ELEMENT> implements Func1<ELEMENT, Optional<ELEMENT>> {
+    @Override
+    public Optional<ELEMENT> call(final ELEMENT element) {
+      return Optional.fromNullable(element);
+    }
+  }
 
   /**
    * Create a function, which replaces empty or null input collections with given default collection.
@@ -139,9 +162,5 @@ public final class Reactive {
         Futures.addCallback(future, callback, MoreExecutors.sameThreadExecutor());
       }
     }
-  }
-
-  private Reactive() {
-    /* utility class */
   }
 }
