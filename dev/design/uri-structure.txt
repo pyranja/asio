@@ -1,50 +1,30 @@
 # asio uri structure
 
-# brood
-/api                          => management endpoints
+# brood || uri-based authentication; use proxy-auth to override; credential delegation from basic-auth
+/api/{role}
   /events                     => event stream
   /whoami                     => auth info
-  /catalog/{schema}           => GET/PUT/DELETE to manage deployed schemas
-/{schema}
+  /container/{schema}         => GET/PUT/DELETE to manage deployed schemas
+/{schema}/{role}
   /sql                        => protocol
   /schema                     => sql schema
   /sparql                     => protocol
   /mapping                    => d2rq config
   /meta                       => vph metadata
-  /explore/(sql|sparql)       => static content path - redirect to root
+  /explore/(sql|sparql)       => static content path - strip prefix and forward to root
+## handled by spring dispatcher -> only accessible through internal forward
+/explore/{css, js, webjars, images}   => static content
+/explore/{sql, sparql, events}.html   => browser pages
+
+# flock || anonymous user access; proxy-auth for admin access (later X509); credential delegation from basic-auth
+/             => snorql
+/index.html   => snorql
+/sparql       => query endpoint
+/meta         => meta data
+/api
+  /whoami     => auth info
+  /events     => event stream
 ## handled by spring dispatcher
-/static/{css, js, webjars, images}   => static content
-/static/{sql, sparql, events}.html   => browser pages
-/                             => welcome page
-
-# brood default rewrites :
-/{context}/{head}/{tail}
-  # {context} is always omitted
-  if {tail} startsWith '/explore'
-      -> /static/{tail without '/explore'}
-    if {head} is a deployed schema
-      -> /{head}/{tail}
-
-# brood VPH rewrites :
-/{context}/{head}/{role}/{tail}
-  # {context} is always omitted
-  if {tail} startsWith '/explore'
-    -> /static/{tail without '/explore'} and add login Role.NONE
-  if {head} is a deployed schema
-    -> /{head}/{tail} and add login '{role}'
-
-# on another port
-/(spring-endpoints)
-
-# maybe
-/{schema}
-    /entity/(tables*)
-    /resources/(subjects*)
-
-# flock
-/                                                 => snorql
-/index.html                                       => snorql
-/static/*                                         => js/css resources
-/sparql                                           => query endpoint
-/meta                                             => meta data
-/insight/events                                   => event stream
+/explore      => snorql (later browser page)
+  /*          => js/css resources
+/insight/*    => management endpoints
