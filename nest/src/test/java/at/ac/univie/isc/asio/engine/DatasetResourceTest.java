@@ -1,10 +1,13 @@
 package at.ac.univie.isc.asio.engine;
 
 import at.ac.univie.isc.asio.DatasetFailureException;
-import at.ac.univie.isc.asio.Mime;
 import at.ac.univie.isc.asio.Id;
+import at.ac.univie.isc.asio.Mime;
+import at.ac.univie.isc.asio.SqlSchema;
+import at.ac.univie.isc.asio.container.StubContainer;
 import at.ac.univie.isc.asio.io.Payload;
 import at.ac.univie.isc.asio.jaxrs.AsyncResponseFake;
+import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
 import at.ac.univie.isc.asio.security.Identity;
 import at.ac.univie.isc.asio.tool.TimeoutSpec;
 import org.hamcrest.Matchers;
@@ -12,45 +15,88 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextImpl;
 import rx.Observable;
 
 import javax.ws.rs.core.*;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URI;
 import java.security.Principal;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.hasHeader;
 import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.hasStatus;
 import static at.ac.univie.isc.asio.junit.IsMultimapContaining.hasEntries;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.equalToIgnoringCase;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class EndpointsResourceTest {
+public class DatasetResourceTest {
   private final Connector connector = Mockito.mock(Connector.class);
-  private final EndpointsResource subject = new EndpointsResource(connector, TimeoutSpec.undefined());
+  private final SecurityContextImpl securityContext = new SecurityContextImpl();
+  private final StubContainer dataset = StubContainer.create("test");
+  private final DatasetResource subject = new DatasetResource(dataset, connector, securityContext, TimeoutSpec.undefined());
 
   private final HttpHeaders headers = Mockito.mock(HttpHeaders.class);
-  private final SecurityContext security = Mockito.mock(SecurityContext.class);
 
   private final AsyncResponseFake async = AsyncResponseFake.create();
   private final MultivaluedMap<String, String> requestParameters = new MultivaluedHashMap<>();
   private final byte[] payload = Payload.randomWithLength(100);
 
-  private EndpointsResource.Params request = new EndpointsResource.Params();
+  private DatasetResource.Params request = new DatasetResource.Params();
 
   @Before
   public void setUp() throws Exception {
     when(connector.accept(any(Command.class))).thenReturn(streamedResultsFrom(payload));
-    request.id = Id.valueOf("test");
     request.language = Language.valueOf("test");
     request.headers = headers;
-    request.security = security;
+  }
+
+  // ===============================================================================================
+  // METADATA
+
+  @Test
+  public void should_respond_with_metadata_from_dataset() throws Exception {
+    final SchemaDescriptor descriptor = SchemaDescriptor.empty("test").build();
+    dataset.withMetadata(Observable.just(descriptor));
+    final Response response = subject.fetchMetadata();
+    assertThat(response, hasStatus(Response.Status.OK));
+    assertThat(response.getEntity(), Matchers.<Object>equalTo(descriptor));
+  }
+
+  @Test
+  public void should_respond_with_NOT_FOUND_if_dataset_has_no_metadata() throws Exception {
+    assertThat(subject.fetchMetadata(), hasStatus(Response.Status.NOT_FOUND));
+  }
+
+  @Test
+  public void should_respond_with_definition_from_dataset() throws Exception {
+    final SqlSchema definition = new SqlSchema();
+    dataset.withDefinition(Observable.just(definition));
+    final Response response = subject.fetchDefinition();
+    assertThat(response, hasStatus(Response.Status.OK));
+    assertThat(response.getEntity(), Matchers.<Object>equalTo(definition));
+  }
+
+  @Test
+  public void should_respond_with_NOT_FOUND_if_dataset_has_no_definition() throws Exception {
+    assertThat(subject.fetchDefinition(), hasStatus(Response.Status.NOT_FOUND));
+  }
+
+  @Test
+  public void should_redirect_to_new_schema_path() throws Exception {
+    final UriInfo uri = Mockito.mock(UriInfo.class);
+    when(uri.getAbsolutePath()).thenReturn(URI.create("http://localhost:8080/asio/public/read/meta/schema"));
+    assertThat(subject.redirectFromDeprecatedDefinitionUri(uri), hasHeader(HttpHeaders.LOCATION, equalTo("http://localhost:8080/asio/public/read/schema")));
+    when(uri.getAbsolutePath()).thenReturn(URI.create("http://localhost:8080/asio/meta/read/meta/schema"));
+    assertThat(subject.redirectFromDeprecatedDefinitionUri(uri), hasHeader(HttpHeaders.LOCATION, equalTo("http://localhost:8080/asio/meta/read/schema")));
+    when(uri.getAbsolutePath()).thenReturn(URI.create("http://localhost:8080/asio/public/read/meta/schema/"));
+    assertThat(subject.redirectFromDeprecatedDefinitionUri(uri), hasHeader(HttpHeaders.LOCATION, equalTo("http://localhost:8080/asio/public/read/schema")));
   }
 
   // ===============================================================================================
@@ -107,7 +153,7 @@ public class EndpointsResourceTest {
 
   @Test
   public void forward_accepted_types() throws Exception {
-    final List<MediaType> expected = Arrays.asList(MediaType.APPLICATION_JSON_TYPE);
+    final List<MediaType> expected = Collections.singletonList(MediaType.APPLICATION_JSON_TYPE);
     when(headers.getAcceptableMediaTypes()).thenReturn(expected);
     subject.acceptForm(requestParameters, async, request);
     verify(connector).accept(params.capture());
@@ -116,7 +162,7 @@ public class EndpointsResourceTest {
 
   @Test
   public void forward_request_principal() throws Exception {
-    when(security.getUserPrincipal()).thenReturn(Identity.from("test", "password"));
+    securityContext.setAuthentication(new TestingAuthenticationToken("user", Identity.from("test", "password")));
     subject.acceptForm(requestParameters, async, request);
     verify(connector).accept(params.capture());
     assertThat(params.getValue().owner().get(), Matchers.<Principal>is(Identity.from("test", "password")));
@@ -124,7 +170,6 @@ public class EndpointsResourceTest {
 
   @Test
   public void use_undefined_principal_if_missing() throws Exception {
-    when(security.getUserPrincipal()).thenReturn(null);
     subject.acceptForm(requestParameters, async, request);
     verify(connector).accept(params.capture());
     assertThat(params.getValue().owner().get(), Matchers.<Principal>is(Identity.undefined()));

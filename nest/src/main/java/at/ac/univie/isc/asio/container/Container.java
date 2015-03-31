@@ -1,24 +1,14 @@
 package at.ac.univie.isc.asio.container;
 
-import at.ac.univie.isc.asio.Id;
-import at.ac.univie.isc.asio.SqlSchema;
+import at.ac.univie.isc.asio.Dataset;
 import at.ac.univie.isc.asio.engine.Engine;
-import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
-import rx.Observable;
 
 import java.util.Set;
 
 /**
  * Facade to a single data set.
  */
-public interface Container extends AutoCloseable {
-
-  /**
-   * Local name of this schema. Equal to the mysql schema name.
-   *
-   * @return the local name of this schema
-   */
-  Id name();
+public interface Container extends AutoCloseable, Dataset {
 
   /**
    * All configured engines for this schema, i.e. sql and sparql.
@@ -26,21 +16,6 @@ public interface Container extends AutoCloseable {
    * @return set of sql and sparql engine
    */
   Set<Engine> engines();
-
-  /**
-   * An {@code Observable}, that may emit a single descriptor of this container on subscription.
-   * There may not be metadata available, meaning that the observable will be {@code empty}.
-   *
-   * @return single or zero element sequence of descriptors
-   */
-  Observable<SchemaDescriptor> metadata();
-
-  /**
-   * The relational table structure of this schema, if it is backed by a relational database.
-   *
-   * @return single or zero element sequence of sql definition
-   */
-  Observable<SqlSchema> definition();
 
   // === lifecycle =================================================================================
 

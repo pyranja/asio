@@ -11,14 +11,18 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class StubContainer implements Container {
+
   public static StubContainer create(final String name) {
     return new StubContainer(Id.valueOf(name));
   }
 
   private final Id id;
+
   private boolean closed = false;
   private boolean activated = false;
   private Set<Engine> engines = new HashSet<>();
+  private Observable<SchemaDescriptor> metadata = Observable.empty();
+  private Observable<SqlSchema> definition = Observable.empty();
 
   protected StubContainer(final Id id) {
     this.id = id;
@@ -36,18 +40,12 @@ public class StubContainer implements Container {
 
   @Override
   public Observable<SchemaDescriptor> metadata() {
-    return Observable.empty();
+    return metadata;
   }
 
   @Override
   public Observable<SqlSchema> definition() {
-    return Observable.empty();
-  }
-
-  @Nonnull
-  public StubContainer withEngine(final Engine engine) {
-    engines.add(engine);
-    return this;
+    return definition;
   }
 
   @Override
@@ -58,6 +56,24 @@ public class StubContainer implements Container {
   @Override
   public void close() {
     closed = true;
+  }
+
+  @Nonnull
+  public StubContainer withEngine(final Engine engine) {
+    engines.add(engine);
+    return this;
+  }
+
+  @Nonnull
+  public StubContainer withMetadata(final Observable<SchemaDescriptor> metadata) {
+    this.metadata = metadata;
+    return this;
+  }
+
+  @Nonnull
+  public StubContainer withDefinition(final Observable<SqlSchema> definition) {
+    this.definition = definition;
+    return this;
   }
 
   // === test getter ===============================================================================
