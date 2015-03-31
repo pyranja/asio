@@ -39,4 +39,11 @@ public final class AuthoritiesFilter implements GrantedAuthoritiesMapper {
     }
     return filtered.build();
   }
+
+  @Override
+  public String toString() {
+    return "AuthoritiesFilter{" +
+        "excluded=" + excluded +
+        '}';
+  }
 }

@@ -24,9 +24,7 @@ public class WhoamiResource {
   @Produces(MediaType.APPLICATION_JSON)
   public AuthInfo getAuthInfo() {
     final Authentication authentication = security.getAuthentication();
-    final Identity identity = authentication.getCredentials() instanceof Identity
-        ? (Identity) authentication.getCredentials()
-        : Identity.undefined();
+    final Identity identity = AuthTools.findIdentity(security);
     return AuthInfo.from(authentication.getName(), identity, authentication.getAuthorities());
   }
 }

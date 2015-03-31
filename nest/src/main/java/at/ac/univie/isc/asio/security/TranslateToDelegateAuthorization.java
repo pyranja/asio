@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.security;
 
+import at.ac.univie.isc.asio.AsioSettings;
 import com.google.common.base.Converter;
 import org.apache.http.HttpHeaders;
 import org.springframework.security.core.GrantedAuthority;
@@ -46,7 +47,7 @@ public final class TranslateToDelegateAuthorization implements TranslateAuthoriz
     // if present use original authorization as delegated credentials
     final String delegated = request.getHeader(HttpHeaders.AUTHORIZATION);
     if (delegated != null) {
-      translatedRequest.override(DelegationDetailsSource.DELEGATE_AUTHORIZATION_HEADER, delegated);
+      translatedRequest.override(AsioSettings.DELEGATE_AUTHORIZATION_HEADER, delegated);
     }
     return Wrapped.create(translatedRequest, response);
   }

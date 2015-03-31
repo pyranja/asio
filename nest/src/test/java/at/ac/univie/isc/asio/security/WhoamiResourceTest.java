@@ -23,9 +23,10 @@ public class WhoamiResourceTest {
   }
 
   @Test
-  public void should_omit_credentials_if_not_instance_of_identity() throws Exception {
-    when(security.getAuthentication())
-        .thenReturn(new TestingAuthenticationToken("name", "password"));
+  public void should_omit_delegated_credentials_if_not_instance_of_identity() throws Exception {
+    final TestingAuthenticationToken auth = new TestingAuthenticationToken("name", "password");
+    auth.setDetails("not delegated credentials");
+    when(security.getAuthentication()).thenReturn(auth);
     final AuthInfo response = subject.getAuthInfo();
     assertThat(response.getName(), nullValue());
     assertThat(response.getSecret(), nullValue());
@@ -33,8 +34,9 @@ public class WhoamiResourceTest {
 
   @Test
   public void should_include_identity_if_present() throws Exception {
-    when(security.getAuthentication())
-        .thenReturn(new TestingAuthenticationToken("name", Identity.from("test-login", "test-secret")));
+    final TestingAuthenticationToken auth = new TestingAuthenticationToken("name", "password");
+    auth.setDetails(new DelegatedCredentialsDetails(Identity.from("test-login", "test-secret")));
+    when(security.getAuthentication()).thenReturn(auth);
     final AuthInfo response = subject.getAuthInfo();
     assertThat(response.getName(), equalTo("test-login"));
     assertThat(response.getSecret(), equalTo("test-secret"));

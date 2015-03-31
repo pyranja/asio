@@ -13,6 +13,8 @@ import java.net.URI;
 @ConfigurationProperties("asio")
 public class AsioSettings {
 
+  /** the http header used to transmit delegated credentials */
+  public static final String DELEGATE_AUTHORIZATION_HEADER = "Delegate-Authorization";
   /**
    * BasicAuth password of role-based accounts.
    */

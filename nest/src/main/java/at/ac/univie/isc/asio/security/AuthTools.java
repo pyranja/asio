@@ -14,7 +14,7 @@ public final class AuthTools {
   private AuthTools() { /* no instances */ }
 
   /**
-   * Extract the {@link Identity} from the authentication's credentials i one is present.
+   * Extract the {@link Identity} from the authentication's details if present.
    *
    * @param context spring security context
    * @return the client's identity if one is present
@@ -23,8 +23,10 @@ public final class AuthTools {
   public static Identity findIdentity(@Nonnull final SecurityContext context) {
     requireNonNull(context, "spring security context");
     final Authentication authentication = context.getAuthentication();
-    if (authentication != null && authentication.getCredentials() instanceof Identity) {
-      return (Identity) authentication.getCredentials();
+    if (authentication != null && authentication.getDetails() instanceof DelegatedCredentialsDetails) {
+      final DelegatedCredentialsDetails details =
+          (DelegatedCredentialsDetails) authentication.getDetails();
+      return details.getCredentials();
     }
     return Identity.undefined();
   }

@@ -8,6 +8,7 @@ import at.ac.univie.isc.asio.container.StubContainer;
 import at.ac.univie.isc.asio.io.Payload;
 import at.ac.univie.isc.asio.jaxrs.AsyncResponseFake;
 import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
+import at.ac.univie.isc.asio.security.DelegatedCredentialsDetails;
 import at.ac.univie.isc.asio.security.Identity;
 import at.ac.univie.isc.asio.tool.TimeoutSpec;
 import org.hamcrest.Matchers;
@@ -162,7 +163,9 @@ public class DatasetResourceTest {
 
   @Test
   public void forward_request_principal() throws Exception {
-    securityContext.setAuthentication(new TestingAuthenticationToken("user", Identity.from("test", "password")));
+    final TestingAuthenticationToken authentication = new TestingAuthenticationToken("user", "password");
+    authentication.setDetails(new DelegatedCredentialsDetails(Identity.from("test", "password")));
+    securityContext.setAuthentication(authentication);
     subject.acceptForm(requestParameters, async, request);
     verify(connector).accept(params.capture());
     assertThat(params.getValue().owner().get(), Matchers.<Principal>is(Identity.from("test", "password")));
