@@ -40,13 +40,13 @@ public class ReactiveInvokerTest {
 
   @Test
   public void should_execute_invocation_from_selected_engine() throws Exception {
-    subject.accept(CommandBuilder.dummy()).toBlocking().single();
+    subject.accept(CommandBuilder.empty().build()).toBlocking().single();
     verify(invocation).execute();
   }
 
   @Test
   public void should_subscribe_on_scheduler() throws Exception {
-    subject.accept(CommandBuilder.dummy()).subscribe(subscriber);
+    subject.accept(CommandBuilder.empty().build()).subscribe(subscriber);
     subscriber.awaitTerminalEvent(2, TimeUnit.SECONDS);
     assertThat(subscriber.getLastSeenThread(), is(not(Thread.currentThread())));
   }
@@ -56,21 +56,21 @@ public class ReactiveInvokerTest {
     final IllegalStateException cause = new IllegalStateException();
     when(engine.prepare(any(Command.class))).thenThrow(cause);
     error.expect(is(cause));
-    subject.accept(CommandBuilder.dummy()).toBlocking().single();
+    subject.accept(CommandBuilder.empty().build()).toBlocking().single();
   }
 
   @Test
   public void should_escalate_authorization_failure() throws Exception {
     doThrow(ForbiddenException.class).when(authorizer).check(any(Invocation.class));
     error.expect(ForbiddenException.class);
-    subject.accept(CommandBuilder.dummy()).toBlocking().single();
+    subject.accept(CommandBuilder.empty().build()).toBlocking().single();
   }
 
   @Test
   public void should_escalate_failure_if_command_is_invalid() throws Exception {
-    final IllegalStateException failure = new IllegalStateException("test");
-    error.expect(is(failure));
-    subject.accept(CommandBuilder.invalid(failure)).toBlocking().single();
+    error.expect(IllegalArgumentException.class);
+    error.expectMessage("test");
+    subject.accept(Command.invalid(new IllegalArgumentException("test"))).toBlocking().single();
   }
 
   @Test
@@ -78,7 +78,7 @@ public class ReactiveInvokerTest {
     final IllegalStateException failure = new IllegalStateException("test");
     when(router.select(any(Command.class))).thenThrow(failure);
     error.expect(is(failure));
-    subject.accept(CommandBuilder.dummy()).toBlocking().single();
+    subject.accept(CommandBuilder.empty().build()).toBlocking().single();
   }
 
   @Test
@@ -86,6 +86,6 @@ public class ReactiveInvokerTest {
     final IllegalStateException failure = new IllegalStateException("test");
     when(engine.prepare(any(Command.class))).thenThrow(failure);
     error.expect(is(failure));
-    subject.accept(CommandBuilder.dummy()).toBlocking().single();
+    subject.accept(CommandBuilder.empty().build()).toBlocking().single();
   }
 }

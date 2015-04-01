@@ -2,139 +2,121 @@ package at.ac.univie.isc.asio.engine;
 
 import at.ac.univie.isc.asio.DatasetUsageException;
 import at.ac.univie.isc.asio.Id;
-import com.google.common.base.Objects;
+import at.ac.univie.isc.asio.InvalidUsage;
+import com.google.auto.value.AutoValue;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
 
-import javax.annotation.concurrent.Immutable;
 import javax.ws.rs.core.MediaType;
 import java.security.Principal;
+import java.util.Collection;
 import java.util.List;
 
 /**
- * Hold properties extracted from a protocol request.
+ * Describe a dataset operation.
  */
-@Immutable
-public final class Command {
-  public static final String KEY_LANGUAGE = "language";
-  public static final String KEY_SCHEMA = "schema";
+@AutoValue
+public abstract class Command {
+  public static String KEY_LANGUAGE = "language";
+  public static String KEY_SCHEMA = "schema";
 
-
-  public static final class MissingParameter extends DatasetUsageException {
-    public MissingParameter(final String key) {
-      super("required parameter "+ key +" is missing");
-    }
-  }
-
-  public static final class DuplicatedParameter extends DatasetUsageException {
-    public DuplicatedParameter(final String key) {
-      super("duplicated parameter "+ key +" found");
-    }
-  }
-
-  public static final class IllegalParameter extends DatasetUsageException {
-    public IllegalParameter(final String key, final String reason) {
-      super("illegal parameter "+ key +" found : "+ reason);
-    }
-  }
-
-  private final ListMultimap<String, String> parameters;
-  private final List<MediaType> acceptableTypes;
-  private final Optional<Principal> owner;
-  private final RuntimeException cause;
-
-  public Command(final ListMultimap<String, String> parameters,
-                 final List<MediaType> acceptableTypes, final Principal owner,
-                 final RuntimeException cause) {
-    assert ((parameters != null && acceptableTypes != null) || cause != null)
-        : "invalid params but no cause given";
-    this.parameters = parameters;
-    this.acceptableTypes = acceptableTypes;
-    this.owner = Optional.fromNullable(owner);
-    this.cause = cause;
+  /** create a valid command with given arguments */
+  static Command create(final Multimap<String, String> properties,
+                        final List<MediaType> accepted,
+                        final Principal owner) {
+    return new AutoValue_Command(ImmutableMultimap.copyOf(properties),
+        ImmutableList.copyOf(accepted), Optional.fromNullable(owner));
   }
 
   /**
+   * A command that is invalid due to the given reason.
+   *
+   * @param cause describes why the command is invalid
+   * @return invalid command
+   */
+  public static Command invalid(final RuntimeException cause) {
+    return new InvalidCommand(cause);
+  }
+
+  /**
+   * Thrown if a command misses required parameters, a parameter has an illegal value or holds an
+   * invalid combination of parameters.
+   */
+  public static class IllegalCommand extends DatasetUsageException implements InvalidUsage {
+    public IllegalCommand(final String reason) {
+      super(reason);
+    }
+  }
+
+  Command() { /* prevent external sub-classes */ }
+
+  /**
+   * All captured command properties.
+   *
    * @return all captured parameters
    */
-  public Multimap<String, String> properties() {
-    return parameters;
-  }
+  public abstract Multimap<String, String> properties();
 
   /**
-   * @param key of required parameter
-   * @return the single value of the parameter
-   * @throws Command.MissingParameter if no value is given
-   * @throws Command.DuplicatedParameter if multiple values are given
-   * @throws Command.IllegalParameter if found value is an empty string
-   */
-  public String require(final String key) {
-    final List<String> values = parameters.get(key);
-    if (values.isEmpty()) {
-      throw new MissingParameter(key);
-    } else if (values.size() > 1) {
-      throw new DuplicatedParameter(key);
-    } else {
-      final String value = Iterables.getOnlyElement(values);
-      if (value.trim().isEmpty()) {
-        throw new IllegalParameter(key, "empty value");
-      }
-      return value;
-    }
-  }
-
-  /**
-   * Identical to <pre>Language.valueOf(this.require(KEY_LANGUAGE))</pre>
+   * Ordered list of result media types, which are accepted by the client.
    *
-   * @return requested language
+   * @return all accepted mime types sorted by preference
    */
-  public Language language() {
-    return Language.valueOf(require(KEY_LANGUAGE));
-  }
+  public abstract List<MediaType> acceptable();
 
   /**
-   * Identical to <pre>SchemaIdentifier.valueOf(require(KEY_SCHEMA))</pre>
+   * The identity of the client that issued this command, if it is known.
    *
-   * @return requested schema
+   * @return initiator of the request if known
    */
-  public Id schema() {
+  public abstract Optional<Principal> owner();
+
+  /**
+   * Validate the state of this command, if there are any inconsistencies or illegal values an
+   * exception is thrown, that indicates all violations.
+   *
+   * @throws IllegalArgumentException if this command is in an invalid state
+   */
+  public void failIfNotValid() throws IllegalCommand { /* no-op */ }
+
+  // === special property accessors
+
+  /**
+   * The target dataset of this command.
+   */
+  public final Id schema() {
     return Id.valueOf(require(KEY_SCHEMA));
   }
 
   /**
-   * @return initiator of the request if known
+   * The payload language of this command.
    */
-  public Optional<Principal> owner() {
-    return owner;
+  public final Language language() {
+    return Language.valueOf(require(KEY_LANGUAGE));
   }
 
   /**
-   * @return all accepted mime types sorted by preference
+   * Attempt to get the single command property with the given key, failing fast if the property is
+   * either missing or there is more than one value.
+   *
+   * @param key key of the required property
+   * @return the property value
    */
-  public List<MediaType> acceptable() {
-    return acceptableTypes;
-  }
-
-  /**
-   * Throw an exception, which may have occurred during construction.
-   * @throws java.lang.Exception any validation error
-   */
-  public void failIfNotValid() {
-    if (cause != null) {
-      throw cause;
+  public final String require(final String key) {
+    final Collection<String> values = properties().get(key);
+    if (values.isEmpty()) {
+      throw new IllegalCommand("required parameter " + key + " is missing");
+    } else if (values.size() > 1) {
+      throw new IllegalCommand("duplicated parameter " + key + " found");
+    } else {
+      final String value = Iterables.getOnlyElement(values);
+      if (value.trim().isEmpty()) {
+        throw new IllegalCommand("illegal parameter " + key + " found : empty value");
+      }
+      return value;
     }
   }
-
-  @Override
-  public String toString() {
-    return Objects.toStringHelper(this)
-        .omitNullValues()
-        .add("error", cause)
-        .addValue(parameters)
-        .add("owner", owner.orNull())
-        .toString();
-  }
-
 }

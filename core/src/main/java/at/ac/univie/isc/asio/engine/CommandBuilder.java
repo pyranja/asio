@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.engine;
 
+import at.ac.univie.isc.asio.Id;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 
@@ -10,42 +11,19 @@ import java.security.Principal;
  * Construct {@link Command} instances.
  */
 public final class CommandBuilder {
-  /**
-   * Initiate builder for request in given language.
-   *
-   * @param language of request
-   * @return builder instance
-   */
-  public static CommandBuilder with(final Language language) {
-    return new CommandBuilder(language);
-  }
 
   /**
-   * A command that is invalid due to the given cause.
-   *
-   * @param cause wrapped error
-   * @return invalid command
+   * Start building a command from an empty initial state.
    */
-  public static Command invalid(final RuntimeException cause) {
-    return new Command(null, null, null, cause);
+  public static CommandBuilder empty() {
+    return new CommandBuilder();
   }
 
-  /**
-   * An empty command with {@link at.ac.univie.isc.asio.engine.Language#UNKNOWN unknown language}.
-   *
-   * @return dummy command
-   */
-  public static Command dummy() {
-    return with(Language.UNKNOWN).build();
-  }
-
-  private final Language language;
   private final ImmutableListMultimap.Builder<String, String> arguments;
   private final ImmutableList.Builder<MediaType> accepted;
   private Principal owner;
 
-  private CommandBuilder(final Language language) {
-    this.language = language;
+  private CommandBuilder() {
     accepted = ImmutableList.builder();
     arguments = ImmutableListMultimap.builder();
   }
@@ -65,8 +43,17 @@ public final class CommandBuilder {
     return this;
   }
 
-  public Command build() {
+  public CommandBuilder language(final Language language) {
     arguments.put(Command.KEY_LANGUAGE, language.name());
-    return new Command(arguments.build(), accepted.build(), owner, null);
+    return this;
+  }
+
+  public CommandBuilder target(final Id target) {
+    arguments.put(Command.KEY_SCHEMA, target.asString());
+    return this;
+  }
+
+  public Command build() {
+    return Command.create(arguments.build(), accepted.build(), owner);
   }
 }

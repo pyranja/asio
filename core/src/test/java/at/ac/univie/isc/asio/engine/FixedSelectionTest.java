@@ -29,14 +29,14 @@ public class FixedSelectionTest {
 
   @Test
   public void should_yield_single_engine_that_supports_language_of_given_command() throws Exception {
-    final Engine selected = subject.select(CommandBuilder.with(Language.SQL).build());
+    final Engine selected = subject.select(CommandBuilder.empty().language(Language.SQL).build());
     assertThat(selected, is(sql));
   }
 
   @Test
   public void should_fail_if_no_engine_supports_given_command() throws Exception {
     error.expect(Language.NotSupported.class);
-    subject.select(CommandBuilder.with(Language.UNKNOWN).build());
+    subject.select(CommandBuilder.empty().language(Language.UNKNOWN).build());
   }
 
   @Test

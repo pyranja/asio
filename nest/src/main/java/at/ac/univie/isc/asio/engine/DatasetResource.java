@@ -147,7 +147,7 @@ public class DatasetResource {
   private ParseJaxrsCommand parse(final Params params) {
     Principal principal = AuthTools.findIdentity(security);
     return ParseJaxrsCommand.with(dataset.name(), params.language)
-        .including(params.headers).initiatedBy(principal);
+        .withHeaders(params.headers).withOwner(principal);
   }
 
   /**

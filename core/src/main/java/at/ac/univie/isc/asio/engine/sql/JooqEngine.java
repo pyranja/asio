@@ -118,7 +118,7 @@ public final class JooqEngine implements Engine {
     } else if (command.properties().containsKey(PARAM_UPDATE)) {
       invocation = createUpdate(command, execution);
     } else {
-      throw new Command.MissingParameter(PARAM_QUERY + " or " + PARAM_UPDATE);
+      throw new Command.IllegalCommand("parameter " + PARAM_QUERY + " or " + PARAM_UPDATE + " is required");
     }
     return invocation;
   }

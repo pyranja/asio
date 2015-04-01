@@ -2,8 +2,9 @@ package at.ac.univie.isc.asio.engine;
 
 import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.tool.ValueOrError;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.HttpHeaders;
@@ -17,21 +18,22 @@ import java.util.Map;
  * Build protocol request parameters from JAX-RS request elements.
  */
 public class ParseJaxrsCommand {
-  private final Id id;
+  private final Id target;
   private final Language language;
-  private final ImmutableListMultimap.Builder<String, String> params =
-      ImmutableListMultimap.builder();
-  private final ImmutableList.Builder<MediaType> acceptedTypes = ImmutableList.builder();
   private Principal owner;
+  private final List<MediaType> acceptedTypes = Lists.newArrayList();
+  private final Multimap<String, String> parameters =
+      MultimapBuilder.ListMultimapBuilder.hashKeys().arrayListValues(1).build();
+
   private RuntimeException cause;
 
-  private ParseJaxrsCommand(final Id id, final Language language) {
-    this.id = id;
+  private ParseJaxrsCommand(final Id target, final Language language) {
+    this.target = target;
     this.language = language;
   }
 
   public static ParseJaxrsCommand with(final Language language) {
-    return new ParseJaxrsCommand(Id.valueOf("default"), language);
+    return with(Id.valueOf("default"), language);
   }
 
   public static ParseJaxrsCommand with(final Id id, final Language language) {
@@ -41,7 +43,7 @@ public class ParseJaxrsCommand {
   public ParseJaxrsCommand argumentsFrom(final MultivaluedMap<String, String> map) {
     if (isNotNull(map, "parameters map")) {
       for (Map.Entry<String, List<String>> each : map.entrySet()) {
-        params.putAll(each.getKey(), each.getValue());
+        parameters.putAll(each.getKey(), each.getValue());
       }
     }
     return this;
@@ -54,33 +56,39 @@ public class ParseJaxrsCommand {
     }
     final ValueOrError<String> extracted = ExtractOperation.expect(language).from(content);
     if (extracted.hasValue()) {
-      params.put(extracted.get(), body);
+      parameters.put(extracted.get(), body);
     } else {
       cause = extracted.error();
     }
     return this;
   }
 
-  public ParseJaxrsCommand initiatedBy(final Principal owner) {
+  public ParseJaxrsCommand withOwner(final Principal owner) {
     if (isNotNull(owner, "owner")) {
       this.owner = owner;
     }
     return this;
   }
 
-  public ParseJaxrsCommand including(final HttpHeaders context) {
-    if (isNotNull(context, "http headers")) {
-      if (isNotNull(context.getAcceptableMediaTypes(), "accepted types")) {
-        acceptedTypes.addAll(context.getAcceptableMediaTypes());
+  public ParseJaxrsCommand withHeaders(final HttpHeaders headers) {
+    if (isNotNull(headers, "http headers")) {
+      if (isNotNull(headers.getAcceptableMediaTypes(), "accepted types")) {
+        acceptedTypes.addAll(headers.getAcceptableMediaTypes());
       }
     }
     return this;
   }
 
   public Command collect() {
-    params.put(Command.KEY_SCHEMA, id.asString());
-    params.put(Command.KEY_LANGUAGE, language.name());
-    return new Command(params.build(), acceptedTypes.build(), owner, cause);
+    if (isNotNull(target, "missing target")) {
+      parameters.put(Command.KEY_SCHEMA, target.asString());
+    }
+    if (isNotNull(language, "missing language")) {
+      parameters.put(Command.KEY_LANGUAGE, language.name());
+    }
+    return cause == null
+        ? Command.create(parameters, acceptedTypes, owner)
+        : Command.invalid(cause);
   }
 
   private boolean isNotNull(final Object that, final String message) {

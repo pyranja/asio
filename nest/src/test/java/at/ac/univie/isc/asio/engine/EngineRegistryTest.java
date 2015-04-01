@@ -6,13 +6,9 @@ import at.ac.univie.isc.asio.container.CatalogEvent;
 import at.ac.univie.isc.asio.container.Container;
 import at.ac.univie.isc.asio.container.StubContainer;
 import at.ac.univie.isc.asio.security.Identity;
-import com.google.common.collect.ArrayListMultimap;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
-import javax.ws.rs.core.MediaType;
-import java.util.Collections;
 
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
@@ -68,10 +64,10 @@ public class EngineRegistryTest {
   }
 
   private Command command(final Id id, final Language language) {
-    final ArrayListMultimap<String, String> params = ArrayListMultimap.create();
-    params.put(Command.KEY_SCHEMA, id.asString());
-    params.put(Command.KEY_LANGUAGE, language.name());
-    return new Command(params, Collections.<MediaType>emptyList(), Identity.undefined(), null);
+    return CommandBuilder.empty().language(language)
+        .single(Command.KEY_SCHEMA, id.asString())
+        .owner(Identity.undefined())
+        .build();
   }
 
   private static class StubEngine implements Engine {

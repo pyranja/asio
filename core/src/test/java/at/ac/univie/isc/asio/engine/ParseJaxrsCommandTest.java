@@ -53,48 +53,48 @@ public class ParseJaxrsCommandTest {
     final MultivaluedHashMap<String, String> map = new MultivaluedHashMap<>();
     map.putSingle("single", "value");
     map.put("multiple", Arrays.asList("one", "two"));
-    params = parser.argumentsFrom(map).including(headers).collect();
+    params = parser.argumentsFrom(map).withHeaders(headers).collect();
     assertThat(params.properties(), hasEntries("multiple", "one", "two"));
     assertThat(params.require("single"), is("value"));
   }
 
   @Test
   public void should_add_body_param() throws Exception {
-    params = parser.body("command", MediaType.valueOf("application/test-query")).including(headers).collect();
+    params = parser.body("command", MediaType.valueOf("application/test-query")).withHeaders(headers).collect();
     assertThat(params.require("query"), is("command"));
   }
 
   @Test
   public void should_fail_on_language_mismatch() throws Exception {
-    params = parser.body("command", MediaType.valueOf("application/sql-query")).including(headers).collect();
+    params = parser.body("command", MediaType.valueOf("application/sql-query")).withHeaders(headers).collect();
     error.expect(NotSupportedException.class);
     params.failIfNotValid();
   }
 
   @Test
   public void should_fail_on_malformed_content_type() throws Exception {
-    params = parser.body("command", MediaType.valueOf("application/json")).including(headers).collect();
+    params = parser.body("command", MediaType.valueOf("application/json")).withHeaders(headers).collect();
     error.expect(NotSupportedException.class);
     params.failIfNotValid();
   }
 
   @Test
   public void should_fail_on_null_body() throws Exception {
-    params = parser.body(null, MediaType.valueOf("application/test-update")).including(headers).collect();
+    params = parser.body(null, MediaType.valueOf("application/test-update")).withHeaders(headers).collect();
     error.expect(BadRequestException.class);
     params.failIfNotValid();
   }
 
   @Test
   public void should_fail_on_null_content_type() throws Exception {
-    params = parser.body("test", null).including(headers).collect();
+    params = parser.body("test", null).withHeaders(headers).collect();
     error.expect(NotSupportedException.class);
     params.failIfNotValid();
   }
 
   @Test
   public void should_fail_on_null_headers() throws Exception {
-    params = parser.including(null).collect();
+    params = parser.withHeaders(null).collect();
     error.expect(NullPointerException.class);
     params.failIfNotValid();
   }
@@ -104,7 +104,7 @@ public class ParseJaxrsCommandTest {
   public void should_add_accepted_from_headers() throws Exception {
     when(headers.getAcceptableMediaTypes())
         .thenReturn(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM_TYPE, MediaType.TEXT_XML_TYPE));
-    params = parser.including(headers).collect();
+    params = parser.withHeaders(headers).collect();
     assertThat(params.acceptable(),
         containsInAnyOrder(MediaType.APPLICATION_OCTET_STREAM_TYPE, MediaType.TEXT_XML_TYPE));
   }
