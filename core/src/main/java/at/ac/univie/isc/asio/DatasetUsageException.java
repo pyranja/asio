@@ -5,7 +5,7 @@ package at.ac.univie.isc.asio;
  * 
  * @author Chris Borckholder
  */
-public class DatasetUsageException extends DatasetException {
+public class DatasetUsageException extends DatasetException implements InvalidUsage {
 
   private static final long serialVersionUID = 1L;
 
