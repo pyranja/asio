@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.security;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -7,6 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.GrantedAuthoritiesContainer;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -18,14 +20,9 @@ import static java.util.Objects.requireNonNull;
  */
 public enum Role implements GrantedAuthority, GrantedAuthoritiesContainer {
 
-  NONE(null)
-  , USER(Role.NONE, Permission.ACCESS_METADATA, Permission.INVOKE_QUERY)
-  , OWNER(Role.USER, Permission.ACCESS_INTERNALS, Permission.INVOKE_UPDATE)
-  , ADMIN(Role.OWNER, Permission.ADMINISTRATE)
+  NONE(null), USER(Role.NONE, Permission.ACCESS_METADATA, Permission.INVOKE_QUERY), OWNER(Role.USER, Permission.ACCESS_INTERNALS, Permission.INVOKE_UPDATE), ADMIN(Role.OWNER, Permission.ADMINISTRATE)
   // alias for legacy compatibility
-  , READ(Role.USER)
-  , FULL(Role.OWNER)
-  ;
+  , READ(Role.USER), FULL(Role.OWNER);
 
   public static final String PREFIX = "ROLE_";
 
@@ -56,6 +53,7 @@ public enum Role implements GrantedAuthority, GrantedAuthoritiesContainer {
   }
 
   private static final Map<String, Role> LOOKUP;
+
   static {
     final ImmutableMap.Builder<String, Role> builder = ImmutableMap.builder();
     for (Role each : Role.values()) {
@@ -79,6 +77,7 @@ public enum Role implements GrantedAuthority, GrantedAuthoritiesContainer {
 
   /**
    * The authority name is the name of this role with a 'ROLE_' prefix.
+   *
    * @return this role as authority name
    */
   @Override
@@ -88,11 +87,22 @@ public enum Role implements GrantedAuthority, GrantedAuthoritiesContainer {
 
   /**
    * Get the set of {@link at.ac.univie.isc.asio.security.Permission permissions} granted to this role.
+   *
    * @return set of all granted permissions
    */
   @Override
   public Set<Permission> getGrantedAuthorities() {
     return permissions;
+  }
+
+  /**
+   * Get a list of this role authority and all granted permissions. The first authority in the list
+   * is this role, followed by the permissions in no specific order.
+   *
+   * @return set of all granted permissions plus this role itself
+   */
+  public List<GrantedAuthority> expand() {
+    return ImmutableList.<GrantedAuthority>builder().add(this).addAll(permissions).build();
   }
 
   /**
