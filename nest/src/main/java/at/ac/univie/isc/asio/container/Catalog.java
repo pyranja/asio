@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.container;
 
+import at.ac.univie.isc.asio.Brood;
 import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.Scope;
 import at.ac.univie.isc.asio.tool.TimeoutSpec;
@@ -13,7 +14,6 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.google.common.util.concurrent.UncheckedTimeoutException;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -31,7 +31,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  * Adding or removing a container will trigger {@code SchemaDeployed} and {@code SchemaDropped}
  * events respectively.
  */
-@Service
+@Brood
 /* final */ class Catalog<CONTAINER extends Container> {
   private static final Logger log = getLogger(Catalog.class);
 

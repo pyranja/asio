@@ -16,7 +16,7 @@ import java.net.URI;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({AllFeatures.class})
-public class NestIntegrationSuite {
+public class BroodIntegrationSuite {
   @ClassRule
   public static ApplicationRunner application = ApplicationRunner.run(Nest.class);
   @ClassRule
@@ -33,7 +33,7 @@ public class NestIntegrationSuite {
         "--asio.feature.vph-metadata=on",
         "--asio.metadata-repository=" + IntegrationTest.atos.address(),
     };
-    application.profile("std").run(args);
+    application.profile("std-test").run(args);
 
     IntegrationTest.configure()
         .baseService(URI.create("https://localhost:" + application.getPort() + "/"))

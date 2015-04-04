@@ -1,7 +1,10 @@
 package at.ac.univie.isc.asio;
 
 import at.ac.univie.isc.asio.container.DescriptorService;
-import at.ac.univie.isc.asio.engine.*;
+import at.ac.univie.isc.asio.engine.Connector;
+import at.ac.univie.isc.asio.engine.EngineRouter;
+import at.ac.univie.isc.asio.engine.EventfulConnector;
+import at.ac.univie.isc.asio.engine.ReactiveInvoker;
 import at.ac.univie.isc.asio.insight.EventBusEmitter;
 import at.ac.univie.isc.asio.metadata.AtosMetadataRepository;
 import at.ac.univie.isc.asio.metadata.DescriptorConversion;
@@ -28,7 +31,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.security.concurrent.DelegatingSecurityContextScheduledExecutorService;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.context.WebApplicationContext;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
@@ -36,8 +38,6 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import java.net.URI;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -80,22 +80,6 @@ public class Nest {
   }
 
   @Bean
-  public EventBus eventBus(final ScheduledExecutorService workerPool) {
-    return new AsyncEventBus("asio-events", workerPool);
-  }
-
-  @Bean(destroyMethod = "shutdown")
-  public ScheduledExecutorService workerPool() {
-    final ThreadFactory factory =
-        new ThreadFactoryBuilder().setNameFormat("asio-worker-%d").build();
-    final ScheduledExecutorService executor =
-        Executors.newSingleThreadScheduledExecutor(factory);
-    final DelegatingSecurityContextScheduledExecutorService secured =
-        new DelegatingSecurityContextScheduledExecutorService(executor);
-    return secured;
-  }
-
-  @Bean
   @ConditionalOnProperty(AsioFeatures.VPH_METADATA)
   public DescriptorService descriptorService(final Client http) {
     final WebTarget endpoint = http.target(config.getMetadataRepository());
@@ -115,19 +99,24 @@ public class Nest {
   }
 
   @Bean
-  public Path workingDirectory() {
-    return Paths.get(config.getHome());
+  public EventBus eventBus(final ScheduledExecutorService workerPool) {
+    return new AsyncEventBus("asio-events", workerPool);
+  }
+
+  @Bean(destroyMethod = "shutdown")
+  public ScheduledExecutorService workerPool() {
+    final ThreadFactory factory =
+        new ThreadFactoryBuilder().setNameFormat("asio-worker-%d").build();
+    final ScheduledExecutorService executor =
+        Executors.newSingleThreadScheduledExecutor(factory);
+    final DelegatingSecurityContextScheduledExecutorService secured =
+        new DelegatingSecurityContextScheduledExecutorService(executor);
+    return secured;
   }
 
   @Bean
   public TimeoutSpec globalTimeout() {
     return TimeoutSpec.from(config.timeout, TimeUnit.MILLISECONDS);
-  }
-
-  @Bean
-  @Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.INTERFACES)
-  public DatasetHolder activeDataset() {
-    return new DatasetHolder();
   }
 
   @Bean

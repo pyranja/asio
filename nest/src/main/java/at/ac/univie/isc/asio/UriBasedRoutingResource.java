@@ -6,7 +6,6 @@ import at.ac.univie.isc.asio.spring.Holder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.ws.rs.Path;
@@ -14,7 +13,7 @@ import javax.ws.rs.Path;
 /**
  * Add the ignored authority element to the dataset routing path.
  */
-@Component
+@Brood
 @Primary
 @ConditionalOnProperty(AsioFeatures.VPH_URI_AUTH)
 @Path("/{target}/{authority}")

@@ -1,10 +1,10 @@
 package at.ac.univie.isc.asio.engine;
 
+import at.ac.univie.isc.asio.Brood;
 import at.ac.univie.isc.asio.Scope;
 import at.ac.univie.isc.asio.container.CatalogEvent;
 import at.ac.univie.isc.asio.container.Container;
 import at.ac.univie.isc.asio.metadata.BaseContainerRegistry;
-import org.springframework.stereotype.Service;
 
 import java.util.Set;
 
@@ -13,7 +13,7 @@ import java.util.Set;
  * pairs to find the right {@code Engine}. The mapping may be modified by raising appropriate
  * {@link CatalogEvent events}.
  */
-@Service
+@Brood
 final class EngineRegistry extends BaseContainerRegistry implements EngineRouter {
   public EngineRegistry() {
     log.info(Scope.SYSTEM.marker(), "engine registry enabled");

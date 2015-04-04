@@ -5,7 +5,6 @@ import at.ac.univie.isc.asio.insight.EventResource;
 import at.ac.univie.isc.asio.security.WhoamiResource;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import javax.ws.rs.Path;
 
@@ -14,7 +13,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 /**
  * Entry point to the management api resources. Mainly to provide a common prefix.
  */
-@Component
+@Brood
 @Path("/api")
 public class ApiResource {
   private static final Logger log = getLogger(DefaultRoutingResource.class);

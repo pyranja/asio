@@ -1,7 +1,7 @@
 # nest server configuration
-spring.application.name: 'vph-integration'
+spring.application.name: 'std-integration'
+spring.profiles.include: 'brood'
 server.port: 0
-server.ssl.enabled: false
 
 security:
   user.name: 'root'
@@ -9,10 +9,10 @@ security:
 
 asio:
   timeout: 3000
-  secret: 'change'
+  api.delegate-authorization-header: 'Delegate-Authorization'
   feature:
     vph-metadata: on
-    vph-uri-auth: on
+    vph-uri-auth: off
     allow-federation: on
 
 logging.level.: 'OFF'  # root logger

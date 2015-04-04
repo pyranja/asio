@@ -1,5 +1,5 @@
 # core server settings - override only if you know what you are doing
-spring.application.name: 'asio-brood'
+spring.application.name: 'asio'
 # spring.pidfile: '/path'
 server.session-timeout: 0
 server.port: 8443

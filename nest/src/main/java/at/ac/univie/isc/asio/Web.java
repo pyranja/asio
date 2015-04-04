@@ -44,16 +44,9 @@ class Web {
   private static class Application extends ResourceConfig { /* just carries annotation */ }
 
   @Bean
-  public ResourceConfig jerseyConfiguration(final ObjectMapper mapper,
-                                            final Set<ContainerRequestFilter> filters) {
+  public ResourceConfig baseJerseyConfiguration(final ObjectMapper mapper,
+                                                final Set<ContainerRequestFilter> filters) {
     final ResourceConfig config = new Application();
-    config.setApplicationName("jersey-runtime");
-    config.register(ApiResource.class);
-    if (this.config.feature.isVphUriAuth()) {
-      config.register(UriBasedRoutingResource.class);
-    } else {
-      config.register(DefaultRoutingResource.class);
-    }
     config.register(DatasetExceptionMapper.class);
     config.register(AccessDeniedJaxrsHandler.class);
     log.info(Scope.SYSTEM.marker(), "registering jersey filters {}", filters);
@@ -77,7 +70,7 @@ class Web {
   }
 
   /**
-   * Order the redirecting ilter before the spring security filter chain
+   * Order the redirecting filter before the spring security filter chain
    */
   public static final int REDIRECT_FILTER_ORDER = SecurityProperties.DEFAULT_FILTER_ORDER - 5;
 

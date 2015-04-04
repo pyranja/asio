@@ -8,10 +8,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.io.ByteSource;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.dao.DataAccessResourceFailureException;
-import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -39,8 +37,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  * provided.
  * </p>
  */
-@Service
-final class FileSystemConfigStore implements ConfigStore {
+public final class FileSystemConfigStore implements ConfigStore {
   private static final Logger log = getLogger(FileSystemConfigStore.class);
 
   /**
@@ -64,8 +61,7 @@ final class FileSystemConfigStore implements ConfigStore {
    * @param root base working directory
    * @param timeout maximum time allowed to acquire internal lock
    */
-  @Autowired
-  FileSystemConfigStore(final Path root, final TimeoutSpec timeout) {
+  public FileSystemConfigStore(final Path root, final TimeoutSpec timeout) {
     this.timeout = timeout;
     log.info(Scope.SYSTEM.marker(), "initializing in <{}>", root);
     lock = new ReentrantLock();

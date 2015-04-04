@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.container.nest;
 
+import at.ac.univie.isc.asio.Brood;
 import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.Scope;
 import at.ac.univie.isc.asio.container.Assembler;
@@ -13,7 +14,6 @@ import com.hp.hpl.jena.rdf.model.Model;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -22,7 +22,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 /**
  * Create container based on the {@link at.ac.univie.isc.asio.container.nest.NestBluePrint}.
  */
-@Component
+@Brood
 final class D2rqNestAssembler implements Assembler {
   private static final Logger log = getLogger(D2rqNestAssembler.class);
 

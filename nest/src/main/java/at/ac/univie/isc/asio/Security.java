@@ -27,6 +27,8 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 
 import javax.servlet.http.HttpServletRequest;
 
+import java.util.UUID;
+
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Configuration
@@ -49,8 +51,6 @@ class Security {
   @Configuration
   static class Authentication extends GlobalAuthenticationConfigurerAdapter {
 
-    @Autowired
-    private AsioSettings config;
     @Autowired
     private SecurityProperties security;
 
@@ -154,11 +154,46 @@ class Security {
 
 
   /**
+   * Grant {@link Role#USER} access level to all dataset requests and support delegated credentials
+   * for anonymous requests.
+   */
+  @Configuration
+  @Order(DefaultDatasetAccessRules.OVERRIDE_DEFAULT_RULES)
+  @Flock
+  static class FlockAccessRules extends WebSecurityConfigurerAdapter {
+    @Autowired
+    private AuthenticationDetailsSource<HttpServletRequest, ?> detailsSource;
+
+    private final String anonAuthKey = UUID.randomUUID().toString();
+
+    @Override
+    protected void configure(final HttpSecurity http) throws Exception {
+      // @formatter:off
+      defaultHttpOptions(http);
+      http  // match any request
+          .anonymous().key(anonAuthKey).authenticationFilter(anonymousAuthentication())
+        .and()
+          .addFilterAfter(new HttpMethodRestrictionFilter(), AnonymousAuthenticationFilter.class)
+      ;
+      // @formatter:on
+    }
+
+    private AnonymousAuthenticationFilter anonymousAuthentication() {
+      final AnonymousAuthenticationFilter filter =
+          new AnonymousAuthenticationFilter(anonAuthKey, Identity.undefined(), Role.USER.expand());
+      filter.setAuthenticationDetailsSource(detailsSource);
+      return filter;
+    }
+  }
+
+
+  /**
    * Enable uri based authentication or dataset, anonymous access is not allowed, but authentication
    * can be overridden through basic auth.
    */
   @Configuration
   @Order(DefaultDatasetAccessRules.OVERRIDE_DEFAULT_RULES)
+  @Brood
   @ConditionalOnProperty(AsioFeatures.VPH_URI_AUTH)
   static class UriBasedDatasetAccessRules extends WebSecurityConfigurerAdapter {
     @Autowired

@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.container;
 
+import at.ac.univie.isc.asio.Brood;
 import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.Scope;
 import com.google.common.base.Optional;
@@ -7,7 +8,6 @@ import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
 import javax.ws.rs.*;
@@ -21,7 +21,7 @@ import java.util.concurrent.Callable;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-@Component
+@Brood
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)
 public class ContainerResource implements AutoCloseable {

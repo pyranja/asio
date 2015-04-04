@@ -5,7 +5,6 @@ import at.ac.univie.isc.asio.metadata.BaseContainerRegistry;
 import at.ac.univie.isc.asio.security.WhoamiResource;
 import at.ac.univie.isc.asio.spring.Holder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.ws.rs.Path;
@@ -14,7 +13,7 @@ import javax.ws.rs.PathParam;
 /**
  * Route requests to the correct dataset resource.
  */
-@Component
+@Brood
 @Path("/{target}")
 public class DefaultRoutingResource extends BaseContainerRegistry {
   private final DatasetResource dataset;
