@@ -30,11 +30,11 @@ public class AsioSettings {
 
   @NestedConfigurationProperty
   @NotNull
-  public AsioApi api;
+  public AsioApi api = new AsioApi();
 
   @NestedConfigurationProperty
   @NotNull
-  public AsioFeatures feature;
+  public AsioFeatures feature = new AsioFeatures();
 
   @Override
   public String toString() {
