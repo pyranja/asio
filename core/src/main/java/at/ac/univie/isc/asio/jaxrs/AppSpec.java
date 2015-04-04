@@ -4,10 +4,8 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import javax.ws.rs.core.MediaType;
+import java.util.*;
 
 /**
  * Define resources in a JAX-RS application.
@@ -21,8 +19,8 @@ public final class AppSpec extends Application {
    */
   public static AppSpec create(final Class<?>... resources) {
     return new AppSpec(Arrays.asList(resources))
-        .singleton(new ContentNegotiationOverrideFilter())
-        .singleton(new ContentNegotiationDefaultsFilter())
+        .singleton(new ContentNegotiationOverrideFilter(ContentNegotiationOverrideFilter.DEFAULT_PARAMETER_NAME))
+        .singleton(new ContentNegotiationDefaultsFilter(Collections.singletonList(MediaType.APPLICATION_XML), Locale.ENGLISH.getLanguage()))
         .singleton(new DatasetExceptionMapper())
         .singleton(new JacksonJaxbJsonProvider());
   }

@@ -1,12 +1,10 @@
 package at.ac.univie.isc.asio.jaxrs;
 
+import at.ac.univie.isc.asio.Scope;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.Priority;
 import javax.ws.rs.Priorities;
@@ -18,35 +16,26 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
 /**
  * Replace missing or empty Accept-* headers with default values.
  */
-@Component
 @Provider
 @PreMatching
 @Priority(Priorities.HEADER_DECORATOR)
 public final class ContentNegotiationDefaultsFilter implements ContainerRequestFilter {
   private static final Logger log = LoggerFactory.getLogger(ContentNegotiationDefaultsFilter.class);
 
-  public static final String WILDCARD_FALLBACK = MediaType.WILDCARD + "; q=0.5";
-
   private final String defaultLanguage;
   private final List<String> defaultMediaType;
 
-  @Autowired
-  ContentNegotiationDefaultsFilter(@Value("${nest.api.default-media-type}") final String mediaType,
-                                   @Value("${nest.api.default-language}") final String language) {
+  public ContentNegotiationDefaultsFilter(final List<String> mediaType, final String language) {
     this.defaultLanguage = language;
-    defaultMediaType = Arrays.asList(mediaType, WILDCARD_FALLBACK);
-  }
-
-  @Deprecated // FIXME : remove when not needed anymore
-  public ContentNegotiationDefaultsFilter() {
-    this(MediaType.APPLICATION_XML, Locale.ENGLISH.getLanguage());
+    defaultMediaType = mediaType;
+    log.info(Scope.SYSTEM.marker(), "initialize defaults filter with media types '{}' and language '{}'",
+        defaultMediaType, defaultLanguage);
   }
 
   @Override
@@ -54,11 +43,11 @@ public final class ContentNegotiationDefaultsFilter implements ContainerRequestF
     final MultivaluedMap<String, String> headers = context.getHeaders();
     if (headerNotDefined(HttpHeaders.ACCEPT, headers)
         || containsNoConcreteType(headers.get(HttpHeaders.ACCEPT))) {
-      log.debug("header {Accept} set to default '{}'", defaultMediaType);
+      log.debug(Scope.REQUEST.marker(), "header {Accept} set to default '{}'", defaultMediaType);
       headers.put(HttpHeaders.ACCEPT, defaultMediaType);
     }
     if (headerNotDefined(HttpHeaders.ACCEPT_LANGUAGE, headers)) {
-      log.debug("header {Accept-Language} set to default '{}'", Locale.ENGLISH.getLanguage());
+      log.debug(Scope.REQUEST.marker(), "header {Accept-Language} set to default '{}'", Locale.ENGLISH.getLanguage());
       headers.putSingle(HttpHeaders.ACCEPT_LANGUAGE, defaultLanguage);
     }
   }

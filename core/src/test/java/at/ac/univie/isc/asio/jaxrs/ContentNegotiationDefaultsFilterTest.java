@@ -14,10 +14,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -38,7 +35,10 @@ public class ContentNegotiationDefaultsFilterTest {
 
   @Before
   public void setup() {
-    subject = new ContentNegotiationDefaultsFilter(MediaType.APPLICATION_XML, Locale.ENGLISH.getLanguage());
+    subject = new ContentNegotiationDefaultsFilter(
+        Arrays.asList(MediaType.APPLICATION_XML, MediaType.WILDCARD),
+        Locale.ENGLISH.getLanguage()
+    );
     Mockito.when(context.getHeaders()).thenReturn(headers);
   }
 
