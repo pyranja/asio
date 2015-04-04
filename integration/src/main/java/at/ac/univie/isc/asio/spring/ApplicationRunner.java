@@ -7,6 +7,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext;
 import org.springframework.context.ApplicationContext;
 
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Objects.requireNonNull;
@@ -40,6 +41,7 @@ public final class ApplicationRunner extends ExternalResource {
     assert context == null : "application already started";
     context = builder.showBanner(false).run(args);
     Unchecked.sleep(100, TimeUnit.MILLISECONDS);  // brief pause to allow initialization to complete
+    System.out.printf(Locale.ENGLISH, ">> running application [%s (%s)]%n", context.getId(), context);
     return this;
   }
 
@@ -58,6 +60,7 @@ public final class ApplicationRunner extends ExternalResource {
 
   @Override
   protected void after() {
+    System.out.printf(Locale.ENGLISH, "<< stopping application [%s (%s)]%n", context.getId(), context);
     if (context != null) {
       SpringApplication.exit(context);
     }
