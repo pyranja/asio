@@ -4,6 +4,7 @@ import at.ac.univie.isc.asio.integration.IntegrationTest;
 import com.google.common.collect.ImmutableTable;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -20,6 +21,11 @@ public class FeatureSql extends IntegrationTest {
   
   private static final String NOOP_UPDATE = "DROP TABLE IF EXISTS test_table_gaga";
   private static final String NOOP_SELECT = "SELECT 1 AS RESULT";
+
+  @Before
+  public void skipIfUnsupported() {
+    ensureLanguageSupported("sql");
+  }
 
   // @formatter:off
 
