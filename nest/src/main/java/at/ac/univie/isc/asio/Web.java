@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio;
 
+import at.ac.univie.isc.asio.insight.ExplorerPageRedirectFilter;
 import at.ac.univie.isc.asio.jaxrs.DatasetExceptionMapper;
 import at.ac.univie.isc.asio.security.AccessDeniedJaxrsHandler;
 import at.ac.univie.isc.asio.tool.ExpandingQNameSerializer;
@@ -8,7 +9,9 @@ import com.fasterxml.jackson.datatype.threetenbp.ThreeTenModule;
 import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.boot.context.embedded.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +19,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
 
+import javax.servlet.DispatcherType;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.ext.ContextResolver;
@@ -31,6 +35,9 @@ class Web {
   @Value("${spring.jersey.debug:false}")
   private boolean debug;
 
+  @Autowired
+  private AsioSettings config;
+
   @ApplicationPath("/")
   private static class Application extends ResourceConfig { /* just carries annotation */ }
 
@@ -39,7 +46,12 @@ class Web {
                                             final Set<ContainerRequestFilter> filters) {
     final ResourceConfig config = new Application();
     config.setApplicationName("jersey-nest");
-    config.register(RoutingResource.class);
+    config.register(ApiResource.class);
+    if (this.config.feature.isVphUriAuth()) {
+      config.register(UriBasedRoutingResource.class);
+    } else {
+      config.register(DefaultRoutingResource.class);
+    }
     config.register(DatasetExceptionMapper.class);
     config.register(AccessDeniedJaxrsHandler.class);
     log.info(Scope.SYSTEM.marker(), "registering jersey filters {}", filters);
@@ -50,6 +62,23 @@ class Web {
       config.registerInstances(new LoggingFilter());
     }
     return config;
+  }
+
+  /**
+   * Order the redirecting ilter before the spring security filter chain
+   */
+  public static final int REDIRECT_FILTER_ORDER = SecurityProperties.DEFAULT_FILTER_ORDER - 5;
+
+  @Bean
+  public FilterRegistrationBean explorerPageRedirectFilter(@Value("${server.servletPath}") final String staticBasePath) {
+    final ExplorerPageRedirectFilter filter = ExplorerPageRedirectFilter.withStaticPath(staticBasePath);
+    final FilterRegistrationBean registration = new FilterRegistrationBean(filter);
+    registration.addUrlPatterns("/*");
+    registration.setDispatcherTypes(DispatcherType.REQUEST);
+    registration.setAsyncSupported(true);
+    registration.setOrder(REDIRECT_FILTER_ORDER);
+    registration.setName("explorer-redirect-filter");
+    return registration;
   }
 
   @Bean

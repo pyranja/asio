@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.security;
 
+import at.ac.univie.isc.asio.AsioSettings;
 import org.apache.http.HttpHeaders;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -64,6 +65,6 @@ public class TranslateToDelegateAuthorizationTest {
   }
 
   private Identity delegateAuth(final HttpServletRequest request) {
-    return BasicAuthConverter.fromString().convert(request.getHeader("Delegate-Authorization"));
+    return BasicAuthConverter.fromString().convert(request.getHeader(AsioSettings.DELEGATE_AUTHORIZATION_HEADER));
   }
 }

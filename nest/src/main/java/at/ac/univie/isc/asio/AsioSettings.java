@@ -3,6 +3,7 @@ package at.ac.univie.isc.asio;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
+import org.springframework.http.HttpHeaders;
 
 import javax.validation.constraints.NotNull;
 import java.net.URI;
@@ -14,7 +15,7 @@ import java.net.URI;
 public class AsioSettings {
 
   /** the http header used to transmit delegated credentials */
-  public static final String DELEGATE_AUTHORIZATION_HEADER = "Delegate-Authorization";
+  public static final String DELEGATE_AUTHORIZATION_HEADER = "Authorization";
   /**
    * BasicAuth password of role-based accounts.
    */
@@ -37,6 +38,13 @@ public class AsioSettings {
    */
   public URI metadataRepository;
 
+  /**
+   * The name of the http request head, which should be inspected for delegated credentials.
+   * (default = 'Authorization')
+   */
+  @NotEmpty
+  public String delegateAuthorizationHeader = HttpHeaders.AUTHORIZATION;
+
   @NestedConfigurationProperty
   @NotNull
   public AsioFeatures feature;
@@ -46,8 +54,9 @@ public class AsioSettings {
     return "AsioSettings{" +
         "secret='" + secret + '\'' +
         ", timeout=" + timeout +
-        ", home=" + home +
+        ", home='" + home + '\'' +
         ", metadataRepository=" + metadataRepository +
+        ", delegateAuthorizationHeader='" + delegateAuthorizationHeader + '\'' +
         ", feature=" + feature +
         '}';
   }
@@ -82,6 +91,14 @@ public class AsioSettings {
 
   public void setMetadataRepository(final URI metadataRepository) {
     this.metadataRepository = metadataRepository;
+  }
+
+  public String getDelegateAuthorizationHeader() {
+    return delegateAuthorizationHeader;
+  }
+
+  public void setDelegateAuthorizationHeader(final String delegateAuthorizationHeader) {
+    this.delegateAuthorizationHeader = delegateAuthorizationHeader;
   }
 
   public AsioFeatures getFeature() {

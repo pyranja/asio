@@ -1,0 +1,24 @@
+# nest server configuration
+spring.application.name: 'dev'
+server.port: 8443
+
+asio:
+  timeout: 3000
+  secret: 'change'
+  metadata-repository: 'http://localhost:8401/'
+  feature:
+    vph-metadata: on
+    vph-uri-auth: off
+    allow-federation: on
+
+logging.level.: 'INFO'  # root logger
+logging.level:
+  at.ac.univie.isc.asio: 'DEBUG'
+  at.ac.univie.isc.asio.events: 'OFF'
+  com.hp.hpl.jena.arq.exec: 'OFF'
+  org.d2rq.db.SQLIterator: 'OFF'
+  org.springframework.security: 'INFO'
+  org.springframework.boot.actuate.audit.listener.AuditListener: 'OFF'
+
+spring.security.debug: off
+spring.jersey.debug: off
