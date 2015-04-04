@@ -60,9 +60,11 @@ public final class ApplicationRunner extends ExternalResource {
 
   @Override
   protected void after() {
-    System.out.printf(Locale.ENGLISH, "<< stopping application [%s (%s)]%n", context.getId(), context);
     if (context != null) {
+      System.out.printf(Locale.ENGLISH, "<< stopping application [%s (%s)]%n", context.getId(), context);
       SpringApplication.exit(context);
+    } else {
+      System.err.printf(Locale.ENGLISH, "!! application has not been started - forgot ApplicationRunner#run()?");
     }
   }
 }
