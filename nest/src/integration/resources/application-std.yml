@@ -1,5 +1,5 @@
 # nest server configuration
-spring.application.name: 'vph-integration'
+spring.application.name: 'std-integration'
 server.port: 0
 
 security:
@@ -9,7 +9,7 @@ security:
 asio:
   timeout: 3000
   secret: 'change'
-  delegate-authorization-header: 'Delegate-Authorization'
+  api.delegate-authorization-header: 'Delegate-Authorization'
   feature:
     vph-metadata: on
     vph-uri-auth: off

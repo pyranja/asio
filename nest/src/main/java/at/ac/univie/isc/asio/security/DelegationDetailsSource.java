@@ -1,6 +1,5 @@
 package at.ac.univie.isc.asio.security;
 
-import at.ac.univie.isc.asio.AsioSettings;
 import com.google.common.base.Converter;
 import com.google.common.base.Objects;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
@@ -14,14 +13,6 @@ import javax.servlet.http.HttpServletRequest;
  */
 public final class DelegationDetailsSource
     implements AuthenticationDetailsSource<HttpServletRequest, DelegatedCredentialsDetails> {
-
-  /**
-   * Create the source with default settings.
-   */
-  @Deprecated
-  public static DelegationDetailsSource create() {
-    return new DelegationDetailsSource(AsioSettings.DELEGATE_AUTHORIZATION_HEADER, BasicAuthConverter.fromString());
-  }
 
   /**
    * Create a source, which reads the delegated credentials request header with the given name.

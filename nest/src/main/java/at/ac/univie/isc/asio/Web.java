@@ -1,6 +1,8 @@
 package at.ac.univie.isc.asio;
 
 import at.ac.univie.isc.asio.insight.ExplorerPageRedirectFilter;
+import at.ac.univie.isc.asio.jaxrs.ContentNegotiationDefaultsFilter;
+import at.ac.univie.isc.asio.jaxrs.ContentNegotiationOverrideFilter;
 import at.ac.univie.isc.asio.jaxrs.DatasetExceptionMapper;
 import at.ac.univie.isc.asio.security.AccessDeniedJaxrsHandler;
 import at.ac.univie.isc.asio.tool.ExpandingQNameSerializer;
@@ -45,7 +47,7 @@ class Web {
   public ResourceConfig jerseyConfiguration(final ObjectMapper mapper,
                                             final Set<ContainerRequestFilter> filters) {
     final ResourceConfig config = new Application();
-    config.setApplicationName("jersey-nest");
+    config.setApplicationName("jersey-runtime");
     config.register(ApiResource.class);
     if (this.config.feature.isVphUriAuth()) {
       config.register(UriBasedRoutingResource.class);
@@ -62,6 +64,16 @@ class Web {
       config.registerInstances(new LoggingFilter());
     }
     return config;
+  }
+
+  @Bean
+  public ContentNegotiationDefaultsFilter contentNegotiationDefaultsFilter() {
+    return new ContentNegotiationDefaultsFilter(config.api.defaultMediaType, config.api.defaultLanguage);
+  }
+
+  @Bean
+  public ContentNegotiationOverrideFilter contentNegotiationOverrideFilter() {
+    return new ContentNegotiationOverrideFilter(config.api.overrideAcceptParameter);
   }
 
   /**

@@ -1,9 +1,7 @@
 package at.ac.univie.isc.asio;
 
-import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
-import org.springframework.http.HttpHeaders;
 
 import javax.validation.constraints.NotNull;
 import java.net.URI;
@@ -13,14 +11,6 @@ import java.net.URI;
  */
 @ConfigurationProperties("asio")
 public class AsioSettings {
-
-  /** the http header used to transmit delegated credentials */
-  public static final String DELEGATE_AUTHORIZATION_HEADER = "Authorization";
-  /**
-   * BasicAuth password of role-based accounts.
-   */
-  @NotEmpty
-  public String secret;
 
   /**
    * default timeout value in milliseconds. (default = 5000ms)
@@ -38,12 +28,9 @@ public class AsioSettings {
    */
   public URI metadataRepository;
 
-  /**
-   * The name of the http request head, which should be inspected for delegated credentials.
-   * (default = 'Authorization')
-   */
-  @NotEmpty
-  public String delegateAuthorizationHeader = HttpHeaders.AUTHORIZATION;
+  @NestedConfigurationProperty
+  @NotNull
+  public AsioApi api;
 
   @NestedConfigurationProperty
   @NotNull
@@ -52,21 +39,11 @@ public class AsioSettings {
   @Override
   public String toString() {
     return "AsioSettings{" +
-        "secret='" + secret + '\'' +
-        ", timeout=" + timeout +
+        "timeout=" + timeout +
         ", home='" + home + '\'' +
         ", metadataRepository=" + metadataRepository +
-        ", delegateAuthorizationHeader='" + delegateAuthorizationHeader + '\'' +
         ", feature=" + feature +
         '}';
-  }
-
-  public String getSecret() {
-    return secret;
-  }
-
-  public void setSecret(final String secret) {
-    this.secret = secret;
   }
 
   public long getTimeout() {
@@ -93,12 +70,12 @@ public class AsioSettings {
     this.metadataRepository = metadataRepository;
   }
 
-  public String getDelegateAuthorizationHeader() {
-    return delegateAuthorizationHeader;
+  public AsioApi getApi() {
+    return api;
   }
 
-  public void setDelegateAuthorizationHeader(final String delegateAuthorizationHeader) {
-    this.delegateAuthorizationHeader = delegateAuthorizationHeader;
+  public void setApi(final AsioApi api) {
+    this.api = api;
   }
 
   public AsioFeatures getFeature() {

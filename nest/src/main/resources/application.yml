@@ -1,4 +1,6 @@
 # core server settings - override only if you know what you are doing
+spring.application.name: 'asio-brood'
+# spring.pidfile: '/path'
 server.session-timeout: 0
 server.port: 8443
 server.ssl:
@@ -29,14 +31,18 @@ asio:
   home: '${java.io.tmpdir}'
   timeout: 30000
   metadata-repository: 'http://vphshare.atosresearch.eu/metadata-extended/rest/'
-  delegate-authorization-header: 'Authorization'
-nest.api:
-  override-accept-parameter: '_type'
-  default-media-type: 'application/xml'
-  default-language: 'en'
+  api:
+    delegate-authorization-header: 'Authorization'
+    override-accept-parameter: '_type'
+    default-media-type: ['application/xml', '*/*;q=0.5']
+    default-language: 'en'
 
-# jackson global options
+# serialization settings
+spring.mvc:
+  locale: 'en_UK'
+  date-format: "yyyy-MM-dd'T'HH:mm:ss'Z'"
 spring.jackson:
+  date-format: 'com.fasterxml.jackson.databind.util.ISO8601DateFormat'
   serialization:
     WRITE_DATES_AS_TIMESTAMPS: false
   deserialization:

@@ -39,7 +39,7 @@ class Security {
 
   @Bean
   public AuthenticationDetailsSource<HttpServletRequest, ?> authDetailsSource() {
-    return DelegationDetailsSource.usingHeader(config.delegateAuthorizationHeader);
+    return DelegationDetailsSource.usingHeader(config.api.delegateAuthorizationHeader);
   }
 
   /**

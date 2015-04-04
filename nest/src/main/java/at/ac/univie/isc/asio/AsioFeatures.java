@@ -6,7 +6,6 @@ package at.ac.univie.isc.asio;
 public class AsioFeatures {
   public static final String VPH_METADATA = "asio.feature.vphMetadata";
   public static final String VPH_URI_AUTH = "asio.feature.vphUriAuth";
-  public static final String SIMPLE_AUTH = "asio.feature.simpleAuth";
   public static final String ALLOW_FEDERATION = "asio.feature.allowFederation";
 
   /**
@@ -25,15 +24,9 @@ public class AsioFeatures {
   public boolean vphUriAuth = false;
 
   /**
-   * Automatically create a user account for each {@link at.ac.univie.isc.asio.security.Role},
-   * with name equal to the role name.
-   */
-  public boolean simpleAuth = false;
-
-  /**
    * Allow SPARQL basic federated queries. If this feature is enabled, individual containers may
    * explicitly enable federated query support. If the feature is disabled, container settings are
-   * overrided and no federated queries are accepted.
+   * overridden and no federated queries are accepted.
    */
   public boolean allowFederation = false;
 
@@ -42,7 +35,6 @@ public class AsioFeatures {
     return "AsioFeatures{" +
         "vphMetadata=" + vphMetadata +
         ", vphUriAuth=" + vphUriAuth +
-        ", simpleAuth=" + simpleAuth +
         ", allowFederation=" + allowFederation +
         '}';
   }
@@ -53,14 +45,6 @@ public class AsioFeatures {
 
   public void setVphUriAuth(final boolean vphUriAuth) {
     this.vphUriAuth = vphUriAuth;
-  }
-
-  public boolean isSimpleAuth() {
-    return simpleAuth;
-  }
-
-  public void setSimpleAuth(final boolean simpleAuth) {
-    this.simpleAuth = simpleAuth;
   }
 
   public boolean isVphMetadata() {
