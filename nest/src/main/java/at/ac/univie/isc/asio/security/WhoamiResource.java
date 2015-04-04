@@ -11,7 +11,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 @Component
-@Path("/")
+@Path("/whoami")
 public class WhoamiResource {
   private final SecurityContext security;
 
