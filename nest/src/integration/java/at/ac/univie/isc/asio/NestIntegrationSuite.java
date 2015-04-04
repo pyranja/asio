@@ -33,15 +33,15 @@ public class NestIntegrationSuite {
         "--asio.feature.vph-metadata=on",
         "--asio.metadata-repository=" + IntegrationTest.atos.address(),
     };
-    application.profile("test").run(args);
+    application.profile("std").run(args);
 
     IntegrationTest.configure()
         .baseService(URI.create("https://localhost:" + application.getPort() + "/"))
-        .auth(AuthMechanism.basic(application.property("asio.secret", String.class))
-            .overrideCredentialDelegationHeader("Delegate-Authorization"))
+        .auth(AuthMechanism.basic("root", "change").overrideCredentialDelegationHeader("Delegate-Authorization"))
+        .rootCredentials("root", "change")
         .database(h2)
         .defaults().schema("public").role(Role.NONE.name());
 
-    IntegrationTest.deploy().d2rq("public", Classpath.load("config.integration.ttl"));
+    IntegrationTest.deploy("public", Classpath.load("config.integration.ttl"));
   }
 }

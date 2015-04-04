@@ -2,13 +2,16 @@
 spring.application.name: 'dev'
 server.port: 8443
 
+security:
+  user.name: 'root'
+  user.password: 'change'
+
 asio:
   timeout: 3000
-  secret: 'change'
   metadata-repository: 'http://localhost:8401/'
   feature:
     vph-metadata: on
-    vph-uri-auth: off
+    vph-uri-auth: on
     allow-federation: on
 
 logging.level.: 'INFO'  # root logger
@@ -17,8 +20,8 @@ logging.level:
   at.ac.univie.isc.asio.events: 'OFF'
   com.hp.hpl.jena.arq.exec: 'OFF'
   org.d2rq.db.SQLIterator: 'OFF'
-  org.springframework.security: 'INFO'
+  org.springframework.security: 'DEBUG'
   org.springframework.boot.actuate.audit.listener.AuditListener: 'OFF'
 
-spring.security.debug: off
-spring.jersey.debug: off
+spring.security.debug: on
+spring.jersey.debug: on

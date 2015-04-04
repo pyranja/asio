@@ -222,6 +222,11 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <!-- integration suites are forked into isolated jvm processes to allow multiple runs -->
+          <forkCount>2</forkCount>
+          <reuseForks>false</reuseForks>
+        </configuration>
       </plugin>
     </plugins>
   </build>

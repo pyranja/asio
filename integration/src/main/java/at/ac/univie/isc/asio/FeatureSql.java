@@ -25,6 +25,7 @@ public class FeatureSql extends IntegrationTest {
 
   @Test
   public void deny_update_with_read_permission() throws Exception {
+    ensureSecured();
     given().role("read").and()
       .formParam("update", NOOP_UPDATE)
     .when()

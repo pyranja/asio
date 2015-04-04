@@ -4,6 +4,7 @@ import at.ac.univie.isc.asio.security.AuthMechanism;
 import at.ac.univie.isc.asio.sql.Database;
 import at.ac.univie.isc.asio.web.Uris;
 import com.jayway.restassured.specification.RequestSpecification;
+import org.apache.http.auth.UsernamePasswordCredentials;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -20,6 +21,7 @@ public final class IntegrationSettings {
   URI serviceBase;
   URI eventService = URI.create("events/");
   URI managementService = URI.create("api/");
+  UsernamePasswordCredentials rootCredentials = new UsernamePasswordCredentials("anonymous", "");
   AuthMechanism auth = null;
   Database database = null;
   int timeoutInSeconds = 10;
@@ -57,6 +59,15 @@ public final class IntegrationSettings {
   @Nonnull
   public IntegrationSettings managementService(final URI managementService) {
     this.managementService = Uris.ensureDirectoryPath(managementService);
+    return this;
+  }
+
+  /**
+   * The login credentials for the management api.
+   */
+  @Nonnull
+  public IntegrationSettings rootCredentials(final String username, final String password) {
+    this.rootCredentials = new UsernamePasswordCredentials(username, password);
     return this;
   }
 

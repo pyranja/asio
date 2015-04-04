@@ -1,22 +1,28 @@
 # nest server configuration
-spring.application.name: 'nest-integration'
+spring.application.name: 'vph-integration'
 server.port: 0
+
+security:
+  user.name: 'root'
+  user.password: 'change'
 
 asio:
   timeout: 3000
   secret: 'change'
+  delegate-authorization-header: 'Delegate-Authorization'
   feature:
-    vph-metadata: off
+    vph-metadata: on
     vph-uri-auth: off
-    simple-auth: on
     allow-federation: on
 
 logging.level.: 'OFF'  # root logger
 logging.level:
   at.ac.univie.isc.asio: 'OFF'
   at.ac.univie.isc.asio.events: 'OFF'
+  at.ac.univie.isc.asio.security: 'OFF'
+  com.hp.hpl.jena.arq.exec: 'OFF'
+  org.d2rq.db.SQLIterator: 'OFF'
   org.springframework.boot.actuate.audit.listener.AuditListener: 'OFF'
-  org.springframework.security: 'OFF'
 
 spring.security.debug: off
 spring.jersey.debug: off

@@ -4,6 +4,8 @@ import at.ac.univie.isc.asio.io.Payload;
 import com.google.common.io.BaseEncoding;
 import com.jayway.restassured.builder.RequestSpecBuilder;
 import org.apache.http.HttpHeaders;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.impl.client.AbstractHttpClient;
 
 import java.net.URI;
@@ -16,18 +18,22 @@ import static java.util.Objects.requireNonNull;
  * {@link #configureUri(java.net.URI, String)} before resolving request specific path components.
  * Depending on the utilized client either
  * {@link #configureRequestSpec(com.jayway.restassured.builder.RequestSpecBuilder, String)} or
- * {@link #configureClient(org.apache.http.impl.client.AbstractHttpClient, String)}} {@code MUST} be
+ * {@link #applyBasicAuth(AbstractHttpClient, Credentials)}} {@code MUST} be
  * used to apply the mechanism to the client before invoking the request.
  */
 public abstract class AuthMechanism {
   /**
-   * Authenticate via basic authentication scheme, where the username is equal to the required role
-   * and the configured, fixed password.
-   *
-   * @param secret fixed authorization password
+   * Authorize requests by injecting the role into the request uri.
    */
-  public static AuthMechanism basic(final String secret) {
-    return new BasicAuthMechanism(secret);
+  public static AuthMechanism uri() {
+    return new UriAuthMechanism();
+  }
+
+  /**
+   * Authenticate via basic authentication scheme with fixed credentials.
+   */
+  public static AuthMechanism basic(final String username, final String password) {
+    return new BasicAuthMechanism(new UsernamePasswordCredentials(username, password));
   }
 
   /**
@@ -37,14 +43,7 @@ public abstract class AuthMechanism {
     return new NullAuthMechanism();
   }
 
-  /**
-   * Authorize requests by injecting the role into the request uri.
-   */
-  public static AuthMechanism uri() {
-    return new UriAuthMechanism();
-  }
-
-  protected String credentialDelegationHeader = HttpHeaders.AUTHORIZATION;
+  private String credentialDelegationHeader = HttpHeaders.AUTHORIZATION;
 
   public final AuthMechanism overrideCredentialDelegationHeader(final String headerName) {
     this.credentialDelegationHeader = requireNonNull(headerName);
@@ -54,13 +53,36 @@ public abstract class AuthMechanism {
   // === util ======================================================================================
 
   /**
-   * @return true if this mechanism performs authorization.
+   * Attach delegated credentials to the given request.
+   *
+   * @param username client id
+   * @param secret secret for authentication
+   * @return configured request
    */
-  public final boolean isAuthorizing() {
-    return ! (this instanceof NullAuthMechanism);
+  public final RequestSpecBuilder attachCredentials(final String username, final String secret, final RequestSpecBuilder request) {
+    final String credentials = BaseEncoding.base64().encode(Payload.encodeUtf8(username + ":" + secret));
+    return request.addHeader(credentialDelegationHeader, "Basic " + credentials);
+  }
+
+  /**
+   * Apply auth mechanism to apache http client.
+   *
+   * @param <CLIENT> concrete type of http client for type safe configuration
+   * @param client   apache client
+   * @param credentials     required role
+   * @return configured http client
+   */
+  public final <CLIENT extends AbstractHttpClient> CLIENT applyBasicAuth(final CLIENT client, final Credentials credentials) {
+    client.addRequestInterceptor(new PreemptiveAuthInterceptor(credentials));
+    return client;
   }
 
   // === contract ==================================================================================
+
+  /**
+   * @return true if this mechanism performs authorization.
+   */
+  public abstract boolean isAuthorizing();
 
   /**
    * Inject authentication information into the request URI. Must be applied to the base service URI,
@@ -70,9 +92,7 @@ public abstract class AuthMechanism {
    * @param role required role
    * @return uri with injected auth information
    */
-  public URI configureUri(URI uri, String role) {
-    return uri;
-  }
+  public abstract URI configureUri(URI uri, String role);
 
   /**
    * Apply authentication mechanism to rest-assured request spec.
@@ -81,31 +101,5 @@ public abstract class AuthMechanism {
    * @param role required role
    * @return configured request spec
    */
-  public RequestSpecBuilder configureRequestSpec(RequestSpecBuilder spec, String role) {
-    return spec;
-  }
-
-  /**
-   * Attach delegated credentials to the given request.
-   *
-   * @param username client id
-   * @param secret secret for authentication
-   * @return configured request
-   */
-  public RequestSpecBuilder attachCredentials(final String username, final String secret, final RequestSpecBuilder request) {
-    final String credentials = BaseEncoding.base64().encode(Payload.encodeUtf8(username + ":" + secret));
-    return request.addHeader(credentialDelegationHeader, "Basic " + credentials);
-  }
-
-  /**
-   * Apply auth mechanism to apache http client.
-   *
-   * @param client   apache client
-   * @param role     required role
-   * @param <CLIENT> concrete type of http client for type safe configuration
-   * @return configured http client
-   */
-  public <CLIENT extends AbstractHttpClient> CLIENT configureClient(CLIENT client, String role) {
-    return client;
-  }
+  public abstract RequestSpecBuilder configureRequestSpec(RequestSpecBuilder spec, String role);
 }

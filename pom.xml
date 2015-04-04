@@ -25,8 +25,6 @@
     <module>flock</module>
     <module>integration</module>
     <module>nest</module>
-    <module>vph</module>
-    <module>lair</module>
   </modules>
 
   <properties>
@@ -39,6 +37,7 @@
       <id>release</id>
       <modules>
         <module>flock-distribution</module>
+        <module>lair</module>
         <module>lair-distribution</module>
       </modules>
     </profile>

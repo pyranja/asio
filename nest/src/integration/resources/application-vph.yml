@@ -3,13 +3,16 @@ spring.application.name: 'vph-integration'
 server.port: 0
 server.ssl.enabled: false
 
+security:
+  user.name: 'root'
+  user.password: 'change'
+
 asio:
   timeout: 3000
   secret: 'change'
   feature:
     vph-metadata: on
     vph-uri-auth: on
-    simple-auth: off
     allow-federation: on
 
 logging.level.: 'OFF'  # root logger

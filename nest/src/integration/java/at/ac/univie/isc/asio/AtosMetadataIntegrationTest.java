@@ -1,6 +1,6 @@
-package at.ac.univie.isc.asio.metadata;
+package at.ac.univie.isc.asio;
 
-import at.ac.univie.isc.asio.Integration;
+import at.ac.univie.isc.asio.metadata.AtosMetadataRepository;
 import at.ac.univie.isc.asio.tool.Reactive;
 import net.atos.AtosDataset;
 import net.atos.AtosLink;
@@ -10,6 +10,7 @@ import org.glassfish.jersey.client.ClientProperties;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import rx.Observable;
 import rx.functions.Action1;
 import rx.functions.Func1;
@@ -27,7 +28,7 @@ import static org.junit.Assume.assumeThat;
 /**
  * Ensure the AtosMetadataRepository works with the actual endpoint.
  */
-@org.junit.experimental.categories.Category(Integration.class)
+@Category(Integration.class)
 public class AtosMetadataIntegrationTest {
   private static final URI ATOS_SERVICE_ADDRESS =
       URI.create("http://vphshare.atosresearch.eu/metadata-extended/rest");

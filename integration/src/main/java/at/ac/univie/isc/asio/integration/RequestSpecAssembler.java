@@ -3,6 +3,7 @@ package at.ac.univie.isc.asio.integration;
 import at.ac.univie.isc.asio.junit.Interactions;
 import at.ac.univie.isc.asio.restassured.ReportingFilter;
 import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.authentication.PreemptiveBasicAuthScheme;
 import com.jayway.restassured.builder.RequestSpecBuilder;
 import com.jayway.restassured.specification.RequestSpecification;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -23,25 +24,37 @@ class RequestSpecAssembler implements IntegrationDsl.SpecFactoryCallback {
 
   @Override
   public RequestSpecification requestFrom(final IntegrationDsl dsl) {
-    final URI baseUri;
+    RequestSpecBuilder request;
     if (dsl.isManage()) {
-      baseUri = config.serviceBase.resolve(config.managementService);
+      request = managementRequest(config.serviceBase.resolve(config.managementService));
     } else if (dsl.hasSchema()) {
-      baseUri = config.serviceBase.resolve(dsl.getSchemaPath());
+      request = datasetRequest(dsl, config.serviceBase.resolve(dsl.getSchemaPath()));
     } else {
-      baseUri = config.serviceBase;
+      request = datasetRequest(dsl, config.serviceBase);
     }
-    final URI authedBaseUri = config.auth.configureUri(baseUri, dsl.getRole());
+    final ReportingFilter reportingInterceptor = interactions.attached(ReportingFilter.create());
+    return RestAssured.given().spec(request.build()).filter(reportingInterceptor);
+  }
 
+  private RequestSpecBuilder datasetRequest(final IntegrationDsl dsl, final URI baseUri) {
+    final URI authedBaseUri = config.auth.configureUri(baseUri, dsl.getRole());
     RequestSpecBuilder request = new RequestSpecBuilder().setBaseUri(authedBaseUri.toString());
     request = config.auth.configureRequestSpec(request, dsl.getRole());
 
     final UsernamePasswordCredentials delegated = dsl.getDelegated();
-    request = delegated == null
-        ? request
-        : config.auth.attachCredentials(delegated.getUserName(), delegated.getPassword(), request);
+    if (delegated != null) {
+      request = config.auth.attachCredentials(delegated.getUserName(), delegated.getPassword(), request);
+    }
 
-    final ReportingFilter reportingInterceptor = interactions.attached(ReportingFilter.create());
-    return RestAssured.given().spec(request.build()).filter(reportingInterceptor);
+    return request;
+  }
+
+  private RequestSpecBuilder managementRequest(final URI baseUri) {
+    final PreemptiveBasicAuthScheme scheme = new PreemptiveBasicAuthScheme();
+    scheme.setUserName(config.rootCredentials.getUserName());
+    scheme.setPassword(config.rootCredentials.getPassword());
+    return new RequestSpecBuilder()
+        .setBaseUri(baseUri.toString())
+        .setAuth(scheme);
   }
 }

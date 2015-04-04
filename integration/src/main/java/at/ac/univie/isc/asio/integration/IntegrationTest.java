@@ -2,16 +2,20 @@ package at.ac.univie.isc.asio.integration;
 
 import at.ac.univie.isc.asio.Integration;
 import at.ac.univie.isc.asio.atos.FakeAtosService;
+import at.ac.univie.isc.asio.io.Payload;
 import at.ac.univie.isc.asio.junit.Interactions;
 import at.ac.univie.isc.asio.junit.Rules;
 import at.ac.univie.isc.asio.sql.Database;
 import at.ac.univie.isc.asio.web.EventSource;
 import at.ac.univie.isc.asio.web.HttpServer;
 import com.google.common.base.Charsets;
+import com.google.common.io.ByteSource;
+import com.google.common.net.HttpHeaders;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.EncoderConfig;
 import com.jayway.restassured.config.MatcherConfig;
 import com.jayway.restassured.config.SSLConfig;
+import com.jayway.restassured.filter.log.LogDetail;
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import org.apache.http.HttpStatus;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -71,23 +75,40 @@ public abstract class IntegrationTest {
   public static HttpServer atos = FakeAtosService.attachTo(HttpServer.create("atos-fake")).start(0);
 
   /**
+   * Create dsl from the current global settings.
+   */
+  private static IntegrationDsl init(final Interactions interactions) {
+    restAssuredDefaults();
+    validateConfiguration();
+    return new IntegrationDsl(new RequestSpecAssembler(config, interactions)).copy(config.dslDefaults);
+  }
+
+  /**
    * Deploy test container.
    */
-  public static IntegrationDeployer deploy() {
-    restAssuredDefaults();
-    return new IntegrationDeployer(new IntegrationDsl(new RequestSpecAssembler(config, Interactions.empty())));
+  public static void deploy(final String name, final ByteSource mapping) {
+    init(Interactions.empty()).manage()
+      .and()
+        .header(HttpHeaders.ACCEPT, "application/json")
+        .contentType("text/turtle")
+        .content(Payload.asArray(mapping))
+        .log().ifValidationFails(LogDetail.ALL)
+      .when()
+        .put("container/{schema}", name)
+      .then()
+        .log().ifValidationFails(LogDetail.ALL)
+      .statusCode(HttpStatus.SC_CREATED);
   }
 
   // === test case scope ===========================================================================
 
   @Rule
   public Timeout timeout = Rules.timeout(config.timeoutInSeconds, TimeUnit.SECONDS);
+
   @Rule
   public Interactions interactions = Rules.interactions().and(atos);
 
-  private final RequestSpecAssembler assembler = new RequestSpecAssembler(config, interactions);
-  // create dsl with global defaults
-  private final IntegrationDsl dsl = new IntegrationDsl(assembler).copy(config.dslDefaults);
+  private final IntegrationDsl dsl = init(interactions);
 
   // === test components ===========================================================================
 
@@ -107,10 +128,9 @@ public abstract class IntegrationTest {
    */
   protected final EventSource eventSource() {
     final URI managementEndpoint = config.serviceBase.resolve(config.managementService);
-    final URI endpoint =
-        config.auth.configureUri(managementEndpoint, "admin").resolve(config.eventService);
+    final URI endpoint = managementEndpoint.resolve(config.eventService);
     final DefaultHttpClient client =
-        config.auth.configureClient(EventSource.defaultClient(), "admin");
+        config.auth.applyBasicAuth(EventSource.defaultClient(), config.rootCredentials);
     return EventSource.listenTo(endpoint, client);
   }
 
