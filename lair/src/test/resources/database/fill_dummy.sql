@@ -1,3 +1,0 @@
--- test : table long_name_dummy
-
-INSERT INTO dummy_table_with_long_name_for_gui_testing_xoxoxoxoxoxoxoxoxoxoxoxoxoxoxoxoxoxoxo (id_of_very_long_named_table_dummy_iaiaiaiaiaiaiaiaiaiaiaiaiaiaiaiaiaiaiaia, column_with_long_but_reasonable_name) VALUES (1, 'long_test-value_hahahahahahahahahahahahahahahahahahahahahahahahahahahahaahahahahahaha');

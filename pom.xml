@@ -19,29 +19,17 @@
   <modules>
     <module>parent</module>
     <module>test</module>
-    <module>core</module>
+    <module>common</module>
     <module>d2rq</module>
     <module>ssl-fix</module>
-    <module>flock</module>
     <module>integration</module>
-    <module>nest</module>
+    <module>server</module>
   </modules>
 
   <properties>
     <!-- properties for filtered sites - dot notation not allowed -->
     <site-version>${project.version}</site-version>
   </properties>
-
-  <profiles>
-    <profile>
-      <id>release</id>
-      <modules>
-        <module>flock-distribution</module>
-        <module>lair</module>
-        <module>lair-distribution</module>
-      </modules>
-    </profile>
-  </profiles>
 
   <reporting>
     <plugins>
