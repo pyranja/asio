@@ -1,9 +1,9 @@
 package at.ac.univie.isc.asio.platform;
 
 import at.ac.univie.isc.asio.ConfigStore;
-import at.ac.univie.isc.asio.Pretty;
 import at.ac.univie.isc.asio.Scope;
 import at.ac.univie.isc.asio.tool.FindFiles;
+import at.ac.univie.isc.asio.tool.Pretty;
 import at.ac.univie.isc.asio.tool.Timeout;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.*;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -86,7 +86,8 @@ public final class FileSystemConfigStore implements ConfigStore {
    * @throws IOException if the marker file cannot be written
    */
   private void touch() throws IOException {
-    final List<String> content = Arrays.asList(Long.toString(System.currentTimeMillis()));
+    final List<String> content =
+        Collections.singletonList(Long.toString(System.currentTimeMillis()));
     Files.write(this.root.resolve(".asio"), content, Charsets.UTF_8);
   }
 

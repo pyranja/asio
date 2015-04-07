@@ -17,6 +17,7 @@
   <packaging>jar</packaging>
 
   <dependencies>
+
     <dependency>
       <groupId>at.ac.univie.isc</groupId>
       <artifactId>asio-test</artifactId>
@@ -27,45 +28,16 @@
       <groupId>com.jayway.restassured</groupId>
       <artifactId>rest-assured</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpcore</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>de.bechte.junit</groupId>
-      <artifactId>junit-hierarchicalcontextrunner</artifactId>
-    </dependency>
+
     <dependency>
       <groupId>io.takari.junit</groupId>
       <artifactId>takari-cpsuite</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-library</artifactId>
+      <groupId>de.bechte.junit</groupId>
+      <artifactId>junit-hierarchicalcontextrunner</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.netflix.rxjava</groupId>
-      <artifactId>rxjava-core</artifactId>
-    </dependency>
-
-    <!-- sparql specific -->
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-core</artifactId>
@@ -75,22 +47,23 @@
       <artifactId>jena-arq</artifactId>
     </dependency>
 
-    <!-- spring support -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-core</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot</artifactId>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-web</artifactId>
-      <optional>true</optional>
     </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot</artifactId>
+    </dependency>
+
   </dependencies>
 
   <build>

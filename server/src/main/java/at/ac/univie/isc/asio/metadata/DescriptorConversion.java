@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.metadata;
 
-import at.ac.univie.isc.asio.Pretty;
+import at.ac.univie.isc.asio.tool.Pretty;
 import at.ac.univie.isc.asio.tool.ValueOrError;
 import at.ac.univie.isc.asio.tool.Violations;
 import com.google.common.base.Splitter;

@@ -1,17 +1,17 @@
 package at.ac.univie.isc.asio.nest;
 
-import at.ac.univie.isc.asio.Pretty;
 import at.ac.univie.isc.asio.Scope;
 import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.container.DefinitionService;
 import at.ac.univie.isc.asio.container.DescriptorService;
 import at.ac.univie.isc.asio.d2rq.D2rqTools;
+import at.ac.univie.isc.asio.database.DatabaseInspector;
 import at.ac.univie.isc.asio.engine.sparql.JenaEngine;
 import at.ac.univie.isc.asio.engine.sql.JdbcSpec;
 import at.ac.univie.isc.asio.engine.sql.JooqEngine;
 import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
-import at.ac.univie.isc.asio.database.DatabaseInspector;
 import at.ac.univie.isc.asio.spring.ExplicitWiring;
+import at.ac.univie.isc.asio.tool.Pretty;
 import at.ac.univie.isc.asio.tool.Timeout;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.hp.hpl.jena.rdf.model.Model;
