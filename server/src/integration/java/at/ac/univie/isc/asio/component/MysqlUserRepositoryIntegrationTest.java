@@ -1,5 +1,7 @@
-package at.ac.univie.isc.asio.database;
+package at.ac.univie.isc.asio.component;
 
+import at.ac.univie.isc.asio.Integration;
+import at.ac.univie.isc.asio.database.MysqlUserRepository;
 import at.ac.univie.isc.asio.io.Classpath;
 import at.ac.univie.isc.asio.security.Identity;
 import at.ac.univie.isc.asio.sql.Database;
@@ -9,6 +11,7 @@ import com.google.common.collect.Table;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,7 +38,8 @@ import static org.hamcrest.text.MatchesPattern.matchesPattern;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeTrue;
 
-public class MysqlUserRepositoryTest {
+@Category(Integration.class)
+public class MysqlUserRepositoryIntegrationTest {
   private static final Database ROOT = Database.create("jdbc:mysql:///?allowMultiQueries=true")
       .credentials("root", "change")
       .build();

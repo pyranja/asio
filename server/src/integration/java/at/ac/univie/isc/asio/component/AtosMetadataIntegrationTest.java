@@ -1,5 +1,6 @@
-package at.ac.univie.isc.asio;
+package at.ac.univie.isc.asio.component;
 
+import at.ac.univie.isc.asio.Integration;
 import at.ac.univie.isc.asio.metadata.AtosMetadataRepository;
 import at.ac.univie.isc.asio.tool.Reactive;
 import net.atos.AtosDataset;
