@@ -6,7 +6,6 @@ import com.google.common.testing.ClassSanityTester;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.List;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -25,10 +24,12 @@ public class ErrorTest {
   @Test
   public void jackson_round_tripping() throws Exception {
     final Correlation correlation = Correlation.valueOf("correlation");
-    final List<StackTraceElement> traceList = Arrays.asList(Thread.currentThread().getStackTrace());
-    final Error.ErrorChainElement first = Error.ErrorChainElement.create("first-exception", traceList);
-    final Error.ErrorChainElement second = Error.ErrorChainElement.create("second-exception", traceList);
-    final Error original = Error.create("message", "cause", correlation, 1337, ImmutableList.of(first, second));
+    final Error.ErrorChainElement first =
+        Error.ErrorChainElement.create("first-exception", "first-location");
+    final Error.ErrorChainElement second =
+        Error.ErrorChainElement.create("second-exception", "second-location");
+    final Error original =
+        Error.create("message", "cause", correlation, 1337, ImmutableList.of(first, second));
     final ObjectMapper mapper = new ObjectMapper();
     final String json = mapper.writeValueAsString(original);
     final Error read = mapper.readValue(json, Error.class);

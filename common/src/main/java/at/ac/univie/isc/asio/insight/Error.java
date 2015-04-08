@@ -7,6 +7,8 @@ import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 
+import javax.annotation.Nonnull;
+import javax.annotation.concurrent.Immutable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -16,6 +18,7 @@ import java.util.Set;
  *
  * @see <a href='https://github.com/blongden/vnd.error'>vnd.error</a>
  */
+@Immutable
 @AutoValue
 public abstract class Error {
   /**
@@ -33,6 +36,7 @@ public abstract class Error {
    * @param includeTrace whether the full stack trace of the exception is included
    * @return initialized error
    */
+  @Nonnull
   public static Error from(final Throwable exception, final Correlation correlation, final long timestamp, final boolean includeTrace) {
     final Throwable root = findRoot(exception);
     final String message = exception.getMessage() == null
@@ -57,7 +61,7 @@ public abstract class Error {
     while ((cause = throwable.getCause()) != null) {
       throwable = cause;
       if (!seen.add(throwable)) {
-        return new AssertionError(Pretty.format(CIRUCLAR_TEMPLATE, throwable));
+        return circularPlaceholder(throwable);
       }
     }
     return throwable;
@@ -75,20 +79,20 @@ public abstract class Error {
     Throwable current = top;
     while (current != null) {
       if (!seen.add(current)) {
-        final AutoValue_Error_ErrorChainElement element = ErrorChainElement.create(
-            Pretty.format(CIRUCLAR_TEMPLATE, current), ImmutableList.<StackTraceElement>of());
+        final ErrorChainElement element = ErrorChainElement.from(circularPlaceholder(current));
         chain.add(element);
         break;  // circular reference in chain
       }
-      final AutoValue_Error_ErrorChainElement element =
-          ErrorChainElement.create(current.toString(), ImmutableList.copyOf(current.getStackTrace()));
+      final ErrorChainElement element = ErrorChainElement.from(current);
       chain.add(element);
       current = current.getCause();
     }
     return chain.build();
   }
 
-  private static final String CIRUCLAR_TEMPLATE = "[CIRCULAR REFERENCE : %s]";
+  private static AssertionError circularPlaceholder(final Throwable throwable) {
+    return new AssertionError(Pretty.format("[CIRCULAR REFERENCE : %s]", throwable));
+  }
 
   /**
    * internal use only!
@@ -139,10 +143,20 @@ public abstract class Error {
    */
   @AutoValue
   public static abstract class ErrorChainElement {
+    /**
+     * Create chain element from the given error's message and first stack trace element
+     */
+    @Nonnull
+    public static ErrorChainElement from(final Throwable error) {
+      final StackTraceElement[] trace = error.getStackTrace();
+      final String location = trace.length > 0 ? Objects.toString(trace[0]) : "null";
+      return create(error.toString(), location);
+    }
+
     @JsonCreator
-    static AutoValue_Error_ErrorChainElement create(@JsonProperty("exception") final String exception,
-                                                    @JsonProperty("trace") final List<StackTraceElement> trace) {
-      return new AutoValue_Error_ErrorChainElement(exception, trace);
+    static ErrorChainElement create(@JsonProperty("exception") final String exception,
+                                    @JsonProperty("location") final String location) {
+      return new AutoValue_Error_ErrorChainElement(exception, location);
     }
 
     ErrorChainElement() { /* prevent sub classes */ }
@@ -156,7 +170,7 @@ public abstract class Error {
     /**
      * Stacktrace of this chain element.
      */
-    @JsonProperty("trace")
-    public abstract List<StackTraceElement> getStackTrace();
+    @JsonProperty("location")
+    public abstract String getLocation();
   }
 }
