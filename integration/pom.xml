@@ -29,6 +29,20 @@
       <artifactId>rest-assured</artifactId>
     </dependency>
 
+    <dependency>  <!-- event stream -->
+      <groupId>org.glassfish.jersey.core</groupId>
+      <artifactId>jersey-client</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.media</groupId>
+      <artifactId>jersey-media-sse</artifactId>
+    </dependency>
+    <dependency>  <!-- echo server -->
+      <groupId>org.glassfish.jersey.containers</groupId>
+      <artifactId>jersey-container-grizzly2-http</artifactId>
+      <version>${jersey.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>io.takari.junit</groupId>
       <artifactId>takari-cpsuite</artifactId>
@@ -62,6 +76,12 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <optional>true</optional>
     </dependency>
 
   </dependencies>

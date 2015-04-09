@@ -10,13 +10,13 @@ import java.util.Arrays;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-public class ErrorTest {
+public class VndErrorTest {
   @Test
   public void sane_class() throws Exception {
     new ClassSanityTester()
         .setSampleInstances(Throwable.class, Arrays.asList(new RuntimeException("exception-one"), new RuntimeException("exception-two")))
         .setSampleInstances(Correlation.class, Arrays.asList(Correlation.valueOf("one"), Correlation.valueOf("two")))
-        .forAllPublicStaticMethods(Error.class)
+        .forAllPublicStaticMethods(VndError.class)
         .testEquals()
     ;
   }
@@ -24,15 +24,15 @@ public class ErrorTest {
   @Test
   public void jackson_round_tripping() throws Exception {
     final Correlation correlation = Correlation.valueOf("correlation");
-    final Error.ErrorChainElement first =
-        Error.ErrorChainElement.create("first-exception", "first-location");
-    final Error.ErrorChainElement second =
-        Error.ErrorChainElement.create("second-exception", "second-location");
-    final Error original =
-        Error.create("message", "cause", correlation, 1337, ImmutableList.of(first, second));
+    final VndError.ErrorChainElement first =
+        VndError.ErrorChainElement.create("first-exception", "first-location");
+    final VndError.ErrorChainElement second =
+        VndError.ErrorChainElement.create("second-exception", "second-location");
+    final VndError original =
+        VndError.create("message", "cause", correlation, 1337, ImmutableList.of(first, second));
     final ObjectMapper mapper = new ObjectMapper();
     final String json = mapper.writeValueAsString(original);
-    final Error read = mapper.readValue(json, Error.class);
+    final VndError read = mapper.readValue(json, VndError.class);
     assertThat(read, is(original));
   }
 
@@ -42,6 +42,6 @@ public class ErrorTest {
     final RuntimeException circular = new RuntimeException("circular");
     top.initCause(circular);
     circular.initCause(top);
-    Error.from(top, Correlation.valueOf("none"), -1L, true);
+    VndError.from(top, Correlation.valueOf("none"), -1L, true);
   }
 }

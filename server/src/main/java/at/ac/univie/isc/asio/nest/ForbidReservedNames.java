@@ -1,6 +1,7 @@
 package at.ac.univie.isc.asio.nest;
 
 import at.ac.univie.isc.asio.Id;
+import at.ac.univie.isc.asio.InvalidUsage;
 import com.google.common.collect.ImmutableSet;
 
 import javax.annotation.Nonnull;
@@ -14,7 +15,7 @@ public final class ForbidReservedNames implements Configurer {
   /**
    * Thrown if a container with a reserved name is assembled.
    */
-  public static class IllegalContainerName extends IllegalArgumentException {
+  public static class IllegalContainerName extends InvalidUsage {
     public IllegalContainerName(final Id illegal) {
       super("'" + illegal + "' is a reserved name");
     }

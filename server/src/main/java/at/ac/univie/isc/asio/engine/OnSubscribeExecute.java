@@ -1,6 +1,5 @@
 package at.ac.univie.isc.asio.engine;
 
-import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.tool.Closer;
 import rx.Observable;
 import rx.Subscriber;
@@ -114,7 +113,7 @@ public class OnSubscribeExecute implements Observable.OnSubscribe<StreamedResult
       }
 
       @Override
-      public void close() throws DatasetException {
+      public void close() {
         try {
           cancel(State.STREAM);
         } finally {

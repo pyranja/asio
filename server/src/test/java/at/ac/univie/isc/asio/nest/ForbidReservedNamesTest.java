@@ -19,7 +19,7 @@ public final class ForbidReservedNamesTest {
     assertThat(subject.apply(input), equalTo(input));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = ForbidReservedNames.IllegalContainerName.class)
   public void should_reject_config_with_reserved_name() throws Exception {
     final ForbidReservedNames subject =
         new ForbidReservedNames(Arrays.asList(Id.valueOf("reserved")));

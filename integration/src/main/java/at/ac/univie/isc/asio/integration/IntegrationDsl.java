@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.integration;
 
-import at.ac.univie.isc.asio.web.Uris;
+import at.ac.univie.isc.asio.web.WebTools;
 import com.jayway.restassured.specification.RequestSpecification;
 import org.apache.http.auth.UsernamePasswordCredentials;
 
@@ -99,7 +99,7 @@ public final class IntegrationDsl {
   }
 
   URI getSchemaPath() {
-    return Uris.ensureDirectoryPath(URI.create(schema));
+    return WebTools.ensureDirectoryPath(URI.create(schema));
   }
 
   boolean isManage() {

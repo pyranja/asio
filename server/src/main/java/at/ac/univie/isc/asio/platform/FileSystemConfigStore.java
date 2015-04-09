@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.platform;
 
+import at.ac.univie.isc.asio.AsioError;
 import at.ac.univie.isc.asio.ConfigStore;
 import at.ac.univie.isc.asio.Scope;
 import at.ac.univie.isc.asio.tool.FindFiles;
@@ -44,7 +45,7 @@ public final class FileSystemConfigStore implements ConfigStore {
   /**
    * Thrown if configuration files cannot be read from or written to the file system.
    */
-  public static final class FileSystemAccessFailure extends DataAccessResourceFailureException {
+  public static final class FileSystemAccessFailure extends DataAccessResourceFailureException implements AsioError {
     public FileSystemAccessFailure(final String msg, final Throwable cause) {
       super(msg, cause);
     }

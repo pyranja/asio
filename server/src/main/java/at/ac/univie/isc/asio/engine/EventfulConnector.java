@@ -1,7 +1,7 @@
 package at.ac.univie.isc.asio.engine;
 
 import at.ac.univie.isc.asio.insight.Emitter;
-import at.ac.univie.isc.asio.insight.Message;
+import at.ac.univie.isc.asio.insight.Operation;
 import rx.Observable;
 import rx.functions.Action0;
 import rx.functions.Action1;
@@ -36,7 +36,7 @@ public final class EventfulConnector implements Connector {
   @Nonnull
   @Override
   public Observable<StreamedResults> accept(@Nonnull final Command command) {
-    event.emit(Message.create("received").with(command));
+    event.emit(Operation.received(command));
     return delegate.accept(command)
         .doOnError(EmitError.to(event))
         .doOnNext(EmitExecuted.to(event))
@@ -61,13 +61,13 @@ public final class EventfulConnector implements Connector {
               new Action1<Throwable>() {
                 @Override
                 public void call(final Throwable throwable) {
-                  event.emit(Message.create("failed").with(throwable));
+                  event.emit(Operation.failure(throwable));
                 }
               },
               new Action0() {
                 @Override
                 public void call() {
-                  event.emit(Message.empty("completed"));
+                  event.emit(Operation.completed());
                 }
               });
       return results;
@@ -88,7 +88,7 @@ public final class EventfulConnector implements Connector {
 
     @Override
     public void call(final StreamedResults ignored) {
-      event.emit(Message.empty("executed"));
+      event.emit(Operation.executed());
     }
   }
 
@@ -105,7 +105,7 @@ public final class EventfulConnector implements Connector {
 
     @Override
     public void call(final Throwable throwable) {
-      event.emit(Message.create("failed").with(throwable));
+      event.emit(Operation.failure(throwable));
     }
   }
 }

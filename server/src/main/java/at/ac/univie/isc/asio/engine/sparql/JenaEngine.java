@@ -1,9 +1,9 @@
 package at.ac.univie.isc.asio.engine.sparql;
 
-import at.ac.univie.isc.asio.DatasetUsageException;
-import at.ac.univie.isc.asio.engine.Engine;
+import at.ac.univie.isc.asio.InvalidUsage;
 import at.ac.univie.isc.asio.Language;
 import at.ac.univie.isc.asio.engine.Command;
+import at.ac.univie.isc.asio.engine.Engine;
 import at.ac.univie.isc.asio.security.Identity;
 import at.ac.univie.isc.asio.tool.Timeout;
 import com.hp.hpl.jena.query.Query;
@@ -50,13 +50,13 @@ public final class JenaEngine implements Engine {
     this.state.close();
   }
 
-  public static final class UnknownQueryType extends DatasetUsageException {
+  public static final class UnknownQueryType extends InvalidUsage {
     public UnknownQueryType() {
       super("unknown SPARQL query type");
     }
   }
 
-  public static final class FederatedQueryLocked extends DatasetUsageException {
+  public static final class FederatedQueryLocked extends InvalidUsage {
     public FederatedQueryLocked() {
       super("execution of federated SPARQL queries is disabled");
     }

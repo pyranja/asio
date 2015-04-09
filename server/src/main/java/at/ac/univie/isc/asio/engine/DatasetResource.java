@@ -1,7 +1,6 @@
 package at.ac.univie.isc.asio.engine;
 
 import at.ac.univie.isc.asio.Dataset;
-import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.Language;
 import at.ac.univie.isc.asio.Scope;
 import at.ac.univie.isc.asio.SqlSchema;
@@ -184,8 +183,7 @@ public class DatasetResource {
    * @param error    failure that occurred
    */
   private void resumeWithError(final AsyncResponse response, final Throwable error) {
-    final Throwable wrapped = DatasetException.wrapIfNecessary(error);
-    if (!response.resume(wrapped)) { log.warn("request failed - could not send error response"); }
+    if (!response.resume(error)) { log.warn("request failed - could not send error response"); }
   }
 
   /**

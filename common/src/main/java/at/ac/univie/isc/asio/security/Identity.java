@@ -1,5 +1,7 @@
 package at.ac.univie.isc.asio.security;
 
+import at.ac.univie.isc.asio.AsioError;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -14,7 +16,7 @@ public final class Identity implements Principal {
   private static final Identity UNDEFINED = new Identity("anonymous", null);
 
   /** Thrown on illegal access to any property of an undefined identity */
-  public static final class UndefinedIdentity extends IllegalStateException {
+  public static final class UndefinedIdentity extends AsioError.Base {
     public UndefinedIdentity() {
       super("use of undefined identity");
     }

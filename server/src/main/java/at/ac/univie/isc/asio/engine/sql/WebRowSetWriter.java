@@ -1,11 +1,11 @@
 package at.ac.univie.isc.asio.engine.sql;
 
-import at.ac.univie.isc.asio.DatasetFailureException;
 import at.ac.univie.isc.asio.tool.Closer;
 import com.google.common.base.Charsets;
 import org.jooq.Cursor;
 import org.jooq.Record;
 import org.jooq.RecordMapper;
+import org.springframework.jdbc.UncategorizedSQLException;
 
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -56,7 +56,7 @@ final class WebRowSetWriter implements SelectInvocation.CursorWriter {
     } catch (XMLStreamException e) {
       throw new IOException(e);
     } catch (SQLException e) {
-      throw new DatasetFailureException(e);
+      throw new UncategorizedSQLException("webrowset serialization", statement, e);
     } finally {
       Closer.quietly(xml, Closer.xmlStreamWriter());
     }

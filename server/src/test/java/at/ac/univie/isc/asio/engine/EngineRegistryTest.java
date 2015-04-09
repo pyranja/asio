@@ -1,6 +1,5 @@
 package at.ac.univie.isc.asio.engine;
 
-import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.Language;
 import at.ac.univie.isc.asio.container.CatalogEvent;
@@ -83,7 +82,7 @@ public class EngineRegistryTest {
     }
 
     @Override
-    public void close() throws DatasetException {
+    public void close() {
 
     }
   }

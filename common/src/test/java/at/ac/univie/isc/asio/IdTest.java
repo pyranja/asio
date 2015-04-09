@@ -13,7 +13,7 @@ public class IdTest {
 
   @Test
   public void should_reject_empty_id() throws Exception {
-    error.expect(IllegalArgumentException.class);
+    error.expect(Id.IllegalIdentifier.class);
     Id.valueOf("");
   }
 
@@ -25,13 +25,13 @@ public class IdTest {
 
   @Test
   public void should_reject_leading_hyphen() throws Exception {
-    error.expect(IllegalArgumentException.class);
+    error.expect(Id.IllegalIdentifier.class);
     Id.valueOf("-test");
   }
 
   @Test
   public void should_reject_trailing_hyphen() throws Exception {
-    error.expect(IllegalArgumentException.class);
+    error.expect(Id.IllegalIdentifier.class);
     Id.valueOf("test-");
   }
 
@@ -67,7 +67,7 @@ public class IdTest {
 
   @Test
   public void should_reject_special_characters() throws Exception {
-    error.expect(IllegalArgumentException.class);
+    error.expect(Id.IllegalIdentifier.class);
     Id.valueOf("te/st");
   }
 

@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.metadata;
 
+import at.ac.univie.isc.asio.AsioError;
 import at.ac.univie.isc.asio.tool.Pretty;
 import at.ac.univie.isc.asio.tool.ValueOrError;
 import at.ac.univie.isc.asio.tool.Violations;
@@ -53,7 +54,7 @@ public final class DescriptorConversion {
     return new DescriptorConversion(input).result();
   }
 
-  public static class IllegalConversion extends IllegalArgumentException {
+  public static class IllegalConversion extends AsioError.Base {
     private final List<String> violations;
 
     public IllegalConversion(final List<String> violations) {

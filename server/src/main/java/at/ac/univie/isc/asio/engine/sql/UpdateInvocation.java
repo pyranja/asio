@@ -1,6 +1,5 @@
 package at.ac.univie.isc.asio.engine.sql;
 
-import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.engine.Invocation;
 import at.ac.univie.isc.asio.security.Permission;
 import at.ac.univie.isc.asio.tool.Closer;
@@ -30,24 +29,24 @@ final class UpdateInvocation extends SqlInvocation {
   }
 
   @Override
-  public void execute() throws DatasetException {
+  public void execute() {
     rowCount = jdbc.update(sql);
   }
 
   @Override
-  public void write(final OutputStream sink) throws IOException, DatasetException {
+  public void write(final OutputStream sink) throws IOException {
     writer.serialize(sink, sql, rowCount);
   }
 
   @Override
-  public void cancel() throws DatasetException {
+  public void cancel() {
     try (final Invocation me = this) {
       jdbc.cancel();
     }
   }
 
   @Override
-  public void close() throws DatasetException {
+  public void close() {
     jdbc.close();
   }
 

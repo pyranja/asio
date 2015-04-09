@@ -2,7 +2,7 @@ package at.ac.univie.isc.asio.integration;
 
 import at.ac.univie.isc.asio.security.AuthMechanism;
 import at.ac.univie.isc.asio.sql.Database;
-import at.ac.univie.isc.asio.web.Uris;
+import at.ac.univie.isc.asio.web.WebTools;
 import com.jayway.restassured.specification.RequestSpecification;
 import org.apache.http.auth.UsernamePasswordCredentials;
 
@@ -40,7 +40,7 @@ public final class IntegrationSettings {
    */
   @Nonnull
   public IntegrationSettings baseService(final URI serviceBase) {
-    this.serviceBase = Uris.ensureDirectoryPath(serviceBase);
+    this.serviceBase = WebTools.ensureDirectoryPath(serviceBase);
     return this;
   }
 
@@ -49,7 +49,7 @@ public final class IntegrationSettings {
    */
   @Nonnull
   public IntegrationSettings eventService(final URI eventService) {
-    this.eventService = Uris.ensureDirectoryPath(eventService);
+    this.eventService = WebTools.ensureDirectoryPath(eventService);
     return this;
   }
 
@@ -58,7 +58,7 @@ public final class IntegrationSettings {
    */
   @Nonnull
   public IntegrationSettings managementService(final URI managementService) {
-    this.managementService = Uris.ensureDirectoryPath(managementService);
+    this.managementService = WebTools.ensureDirectoryPath(managementService);
     return this;
   }
 

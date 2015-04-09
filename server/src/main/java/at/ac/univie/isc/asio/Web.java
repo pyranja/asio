@@ -3,9 +3,10 @@ package at.ac.univie.isc.asio;
 import at.ac.univie.isc.asio.insight.ExplorerPageRedirectFilter;
 import at.ac.univie.isc.asio.jaxrs.ContentNegotiationDefaultsFilter;
 import at.ac.univie.isc.asio.jaxrs.ContentNegotiationOverrideFilter;
-import at.ac.univie.isc.asio.jaxrs.DatasetExceptionMapper;
-import at.ac.univie.isc.asio.security.AccessDeniedJaxrsHandler;
+import at.ac.univie.isc.asio.jaxrs.VndErrorMapper;
 import at.ac.univie.isc.asio.tool.ExpandingQNameSerializer;
+import at.ac.univie.isc.asio.tool.MediaTypeSerializer;
+import at.ac.univie.isc.asio.tool.PrincipalMixin;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.threetenbp.ThreeTenModule;
 import org.glassfish.jersey.filter.LoggingFilter;
@@ -26,6 +27,7 @@ import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
+import java.security.Principal;
 import java.util.Set;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -47,8 +49,7 @@ class Web {
   public ResourceConfig baseJerseyConfiguration(final ObjectMapper mapper,
                                                 final Set<ContainerRequestFilter> filters) {
     final ResourceConfig config = new Application();
-    config.register(DatasetExceptionMapper.class);
-    config.register(AccessDeniedJaxrsHandler.class);
+    config.register(VndErrorMapper.class);
     log.info(Scope.SYSTEM.marker(), "registering jersey filters {}", filters);
     config.registerInstances(filters.toArray());
     log.info(Scope.SYSTEM.marker(), "registering jackson mapper {}", mapper);
@@ -105,7 +106,10 @@ class Web {
   @Primary
   public ObjectMapper customObjectMapper(final Jackson2ObjectMapperBuilder builder) {
     // create customized from preconfigured builder
-    return builder.createXmlMapper(false).serializers(new ExpandingQNameSerializer()).build();
+    return builder.createXmlMapper(false)
+        .serializers(new ExpandingQNameSerializer(), new MediaTypeSerializer())
+        .mixIn(Principal.class, PrincipalMixin.class)
+        .build();
   }
 
   /**

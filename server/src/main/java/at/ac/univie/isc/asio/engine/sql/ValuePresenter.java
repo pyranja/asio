@@ -1,5 +1,7 @@
 package at.ac.univie.isc.asio.engine.sql;
 
+import at.ac.univie.isc.asio.AsioError;
+import at.ac.univie.isc.asio.tool.Pretty;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 
@@ -16,7 +18,7 @@ final class ValuePresenter {
     @Nullable
     @Override
     public String apply(@Nullable final Object input) {
-      throw new NoRepresentationFound();
+      throw new NoRepresentationFound(input);
     }
   };
 
@@ -53,7 +55,11 @@ final class ValuePresenter {
     return representation;
   }
 
-  static final class NoRepresentationFound extends IllegalArgumentException {}
+  static final class NoRepresentationFound extends AsioError.Base {
+    protected NoRepresentationFound(final Object input) {
+      super(Pretty.format("found no representation converter for %s", input));
+    }
+  }
 
   static final class Builder {
     private final Function<Object, String> fallback;

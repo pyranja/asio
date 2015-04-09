@@ -22,7 +22,7 @@ import java.net.URI;
 @Suite.SuiteClasses(AllFeatures.class)
 public class VphIntegrationSuite {
   @ClassRule
-  public static ApplicationRunner application = ApplicationRunner.run(Nest.class);
+  public static ApplicationRunner application = ApplicationRunner.run(Asio.class);
 
   @BeforeClass
   public static void start() throws IOException {

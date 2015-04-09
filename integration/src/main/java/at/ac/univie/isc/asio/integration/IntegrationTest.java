@@ -1,29 +1,43 @@
 package at.ac.univie.isc.asio.integration;
 
 import at.ac.univie.isc.asio.Integration;
+import at.ac.univie.isc.asio.Unchecked;
 import at.ac.univie.isc.asio.atos.FakeAtosService;
+import at.ac.univie.isc.asio.insight.EventReport;
+import at.ac.univie.isc.asio.insight.EventStream;
 import at.ac.univie.isc.asio.io.Payload;
 import at.ac.univie.isc.asio.junit.Interactions;
 import at.ac.univie.isc.asio.junit.Rules;
 import at.ac.univie.isc.asio.sql.Database;
-import at.ac.univie.isc.asio.web.EventSource;
 import at.ac.univie.isc.asio.web.HttpServer;
+import at.ac.univie.isc.asio.web.WebTools;
 import com.google.common.base.Charsets;
 import com.google.common.io.ByteSource;
 import com.google.common.net.HttpHeaders;
 import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.config.*;
+import com.jayway.restassured.config.EncoderConfig;
+import com.jayway.restassured.config.HttpClientConfig;
+import com.jayway.restassured.config.MatcherConfig;
+import com.jayway.restassured.config.SSLConfig;
 import com.jayway.restassured.filter.log.LogDetail;
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import org.apache.http.HttpStatus;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.params.CoreConnectionPNames;
+import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
+import org.glassfish.jersey.media.sse.EventSource;
+import org.glassfish.jersey.media.sse.InboundEvent;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
+import rx.Observable;
+import rx.functions.Action0;
 
+import javax.net.ssl.SSLContext;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
@@ -128,6 +142,12 @@ public abstract class IntegrationTest {
 
   private final IntegrationDsl dsl = init(interactions);
 
+  // === endpoints =================================================================================
+
+  protected final URI eventsEndpoint() {
+    return config.serviceBase.resolve(config.managementService).resolve(config.eventService);
+  }
+
   // === test components ===========================================================================
 
   /**
@@ -140,16 +160,34 @@ public abstract class IntegrationTest {
   }
 
   /**
-   * Create an {@link at.ac.univie.isc.asio.web.EventSource}, listening to the tested asio instance.
-   *
-   * @return configured event source
+   * @return an observable yielding all events from the server on subscription
    */
-  protected final EventSource eventSource() {
-    final URI managementEndpoint = config.serviceBase.resolve(config.managementService);
-    final URI endpoint = managementEndpoint.resolve(config.eventService);
-    final DefaultHttpClient client =
-        config.auth.applyBasicAuth(EventSource.defaultClient(), config.rootCredentials);
-    return EventSource.listenTo(endpoint, client);
+  protected final Observable<InboundEvent> eventStream() {
+    final ClientBuilder clientConfig = ClientBuilder.newBuilder();
+    Unchecked.run(new Unchecked.Action() {
+      @Override
+      public void call() throws Exception {
+        final SSLContext ssl = SSLContext.getInstance("TLS");
+        ssl.init(null, WebTools.trustAnyManager(), null);
+        clientConfig.hostnameVerifier(WebTools.allowAllVerifier()).sslContext(ssl);
+      }
+    });
+    final Client client = clientConfig.build();
+
+    final UsernamePasswordCredentials credentials = config.rootCredentials;
+    final HttpAuthenticationFeature authentication =
+        HttpAuthenticationFeature.basic(credentials.getUserName(), credentials.getPassword());
+    client.register(authentication);
+
+    return EventStream
+        .listenTo(EventSource.target(client.target(eventsEndpoint())).build())
+        .doOnEach(interactions.attached(new EventReport()))
+        .finallyDo(new Action0() {
+          @Override
+          public void call() {
+            client.close();
+          }
+        });
   }
 
   // === assumptions ===============================================================================

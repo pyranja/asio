@@ -1,6 +1,7 @@
 package at.ac.univie.isc.asio.insight;
 
 import at.ac.univie.isc.asio.Scope;
+import at.ac.univie.isc.asio.platform.CurrentTime;
 import com.google.common.eventbus.Subscribe;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.OutboundEvent;
@@ -19,6 +20,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
 import java.io.IOException;
+import java.util.UUID;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -30,9 +32,17 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class EventResource implements AutoCloseable {
   private static final Logger log = getLogger(EventResource.class);
 
-  /** sent immediately on registration */
+  private static final Correlation STREAM_CORRELATION =
+      Correlation.valueOf(UUID.randomUUID().toString());
+
+  /**
+   * sent immediately on registration
+   */
   static final OutboundEvent SUBSCRIBED = new OutboundEvent.Builder()
-      .name("stream").data(String.class, "subscribed").mediaType(MediaType.TEXT_PLAIN_TYPE).build();
+      .data(Event.class, Event.simple("stream", "subscribed")
+              .init(STREAM_CORRELATION, CurrentTime.instance().read())
+      ).mediaType(MediaType.APPLICATION_JSON_TYPE)
+      .build();
 
   private final SseBroadcaster broadcaster = new SseBroadcaster();
 
@@ -50,9 +60,8 @@ public class EventResource implements AutoCloseable {
   @Subscribe
   public void publish(final Event event) {
     final OutboundEvent sse = new OutboundEvent.Builder()
-        .name(event.type())
-        .data(String.class, event.data())
-        .mediaType(MediaType.TEXT_PLAIN_TYPE)
+        .data(Event.class, event)
+        .mediaType(MediaType.APPLICATION_JSON_TYPE)
         .build();
     broadcaster.broadcast(sse);
   }

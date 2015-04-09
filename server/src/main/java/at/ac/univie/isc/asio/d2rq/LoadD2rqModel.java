@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.d2rq;
 
+import at.ac.univie.isc.asio.InvalidUsage;
 import at.ac.univie.isc.asio.tool.Pretty;
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
@@ -125,7 +126,7 @@ public final class LoadD2rqModel {
     }
   }
 
-  public static class RdfParseError extends IllegalArgumentException {
+  public static class RdfParseError extends InvalidUsage {
     public RdfParseError(final String source, final Throwable cause) {
       super(Pretty.format("failed to parse <%s> : %s", source, cause), cause);
     }

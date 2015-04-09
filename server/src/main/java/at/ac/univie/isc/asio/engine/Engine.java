@@ -1,6 +1,5 @@
 package at.ac.univie.isc.asio.engine;
 
-import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.Language;
 
 /**
@@ -22,9 +21,7 @@ public interface Engine extends AutoCloseable {
   /**
    * Dispose used resources. Preparing new {@code Invocations} will not be possible afterwards and
    * currently running executions may fail.
-   *
-   * @throws at.ac.univie.isc.asio.DatasetException
    */
   @Override
-  void close() throws DatasetException;
+  void close();
 }

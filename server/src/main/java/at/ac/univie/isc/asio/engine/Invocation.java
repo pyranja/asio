@@ -1,6 +1,5 @@
 package at.ac.univie.isc.asio.engine;
 
-import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.security.Permission;
 import com.google.common.collect.Multimap;
 
@@ -31,9 +30,8 @@ public interface Invocation extends AutoCloseable {
    * Perform the operation and prepare resources for result serialization.
    *
    * @throws java.lang.IllegalStateException        if this has already been {@link #execute() executed}
-   * @throws at.ac.univie.isc.asio.DatasetException on any error
    */
-  void execute() throws DatasetException;
+  void execute();
 
   /**
    * @return the MIME type of the serialized results.
@@ -45,24 +43,19 @@ public interface Invocation extends AutoCloseable {
    *
    * @param sink an {@link java.io.OutputStream}
    * @throws java.io.IOException                    if writing to the given {@code sink} fails.
-   * @throws at.ac.univie.isc.asio.DatasetException on any internal error
    */
-  void write(OutputStream sink) throws IOException, DatasetException;
+  void write(OutputStream sink) throws IOException;
 
   /**
    * Interrupt this invocation, if it is active. Concurrent {@link #execute()} or
    * {@link #write(java.io.OutputStream)} may fail due to interruption.
-   *
-   * @throws at.ac.univie.isc.asio.DatasetException on any internal error
    */
-  void cancel() throws DatasetException;
+  void cancel();
 
   /**
    * Free all resources associated with this invocation. If the invocation is {@code active} it may
    * be interrupted. Closing an already closed {@code Invocation} has no effect.
-   *
-   * @throws at.ac.univie.isc.asio.DatasetException on any internal error
    */
   @Override
-  void close() throws DatasetException;
+  void close();
 }

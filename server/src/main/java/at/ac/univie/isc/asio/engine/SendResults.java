@@ -1,7 +1,5 @@
 package at.ac.univie.isc.asio.engine;
 
-import at.ac.univie.isc.asio.DatasetException;
-import com.google.common.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Subscriber;
@@ -39,12 +37,11 @@ final class SendResults extends Subscriber<StreamedResults> {
   }
 
   @Override
-  public void onError(final Throwable e) {
+  public void onError(final Throwable error) {
     if (async.isSuspended()) {
-      final Throwable wrapped = DatasetException.wrapIfNecessary(e);
-      async.resume(wrapped);
+      async.resume(error);
     } else {
-      log.warn("must swallow error - response already resumed", e);
+      log.warn("must swallow error - response already resumed", error);
     }
   }
 

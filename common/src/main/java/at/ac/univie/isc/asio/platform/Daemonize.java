@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.platform;
 
+import at.ac.univie.isc.asio.AsioError;
 import at.ac.univie.isc.asio.tool.Pretty;
 import com.sun.akuma.CLibrary;
 import com.sun.akuma.Daemon;
@@ -81,9 +82,9 @@ public final class Daemonize extends Daemon {
   /**
    * Thrown if daemonizing a process fails for any reason.
    */
-  public static final class DaemonizeFailed extends IllegalStateException {
+  public static final class DaemonizeFailed extends AsioError.Base {
     public DaemonizeFailed(final Throwable cause) {
-      super(cause);
+      super("forking asio daemon failed", cause);
     }
   }
 }

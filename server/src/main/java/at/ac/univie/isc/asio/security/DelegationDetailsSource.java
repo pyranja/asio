@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.security;
 
+import at.ac.univie.isc.asio.InvalidUsage;
 import com.google.common.base.Converter;
 import com.google.common.base.Objects;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
@@ -38,7 +39,7 @@ public final class DelegationDetailsSource
     try {
       final String header = request.getHeader(delegatedCredentialsHeader);
       return Objects.firstNonNull(parser.convert(header), Identity.undefined());
-    } catch (IllegalArgumentException malformedCredentials) {
+    } catch (final InvalidUsage malformedCredentials) {
       throw new BadCredentialsException("illegal delegated credentials in '" + delegatedCredentialsHeader + "' header", malformedCredentials);
     }
   }

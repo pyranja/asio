@@ -25,7 +25,7 @@ public class D2rqJdbcModelTest {
     assertThat(subject.getUrl(), is("jdbc:db:test"));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = InvalidD2rqConfig.class)
   public void should_fail_if_jdbc_url_missing() throws Exception {
     subject.visit(new Database(ResourceFactory.createResource()));
   }
@@ -92,13 +92,13 @@ public class D2rqJdbcModelTest {
     subject.getProperties().put("should", "fail");
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = InvalidD2rqConfig.class)
   public void should_fail_on_multiple_configurations() throws Exception {
     subject.visit(db);
     subject.visit(db);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = InvalidD2rqConfig.class)
   public void should_fail_on_missing_config() throws Exception {
     D2rqJdbcModel.parse(new Mapping());
   }

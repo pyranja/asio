@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.security;
 
+import at.ac.univie.isc.asio.InvalidUsage;
 import com.google.common.base.Charsets;
 import com.google.common.base.Converter;
 import com.google.common.io.BaseEncoding;
@@ -120,7 +121,7 @@ public final class BasicAuthConverter extends Converter<String, Identity> {
    * Thrown if the given credentials cannot be converted, e.g. it is not the expected scheme on
    * parsing or it contains illegal characters during formatting.
    */
-  public static final class MalformedCredentials extends IllegalArgumentException {
+  public static final class MalformedCredentials extends InvalidUsage {
     public MalformedCredentials(final String reason) {
       super(reason);
     }

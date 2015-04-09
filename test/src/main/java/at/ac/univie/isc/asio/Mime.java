@@ -15,11 +15,14 @@ public enum Mime {
   , CSV(MediaType.valueOf("text/csv"))
   , XML(MediaType.APPLICATION_XML_TYPE)
   , JSON(MediaType.APPLICATION_JSON_TYPE)
+  // special types
+  , VND_ERROR(MediaType.valueOf("application/vnd.error+json"))
+  , EVENT_STREAM(MediaType.valueOf("text/event-stream"))
   ;
 
   private final MediaType type;
 
-  private Mime(final MediaType type) {
+  Mime(final MediaType type) {
     this.type = type;
   }
 

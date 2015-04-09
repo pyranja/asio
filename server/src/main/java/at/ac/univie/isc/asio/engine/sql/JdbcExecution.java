@@ -1,9 +1,10 @@
 package at.ac.univie.isc.asio.engine.sql;
 
-import at.ac.univie.isc.asio.DatasetFailureException;
 import at.ac.univie.isc.asio.tool.Closer;
 import org.jooq.Cursor;
 import org.jooq.Record;
+import org.springframework.dao.CleanupFailureDataAccessException;
+import org.springframework.jdbc.UncategorizedSQLException;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -31,7 +32,7 @@ final class JdbcExecution implements AutoCloseable {
       return create.lazy(rs);
     } catch (SQLException e) {
       close();  // eager clean up after error
-      throw new DatasetFailureException(e);
+      throw new UncategorizedSQLException("sql query", sql, e);
     }
   }
 
@@ -41,7 +42,7 @@ final class JdbcExecution implements AutoCloseable {
       connection.setReadOnly(false);
       return statement.executeUpdate(sql);
     } catch (SQLException e) {
-      throw new DatasetFailureException(e);
+      throw new UncategorizedSQLException("sql update", sql, e);
     } finally {
       // eager cleanup
       close();
@@ -60,7 +61,7 @@ final class JdbcExecution implements AutoCloseable {
         statement.cancel();
       }
     } catch (SQLException e) {
-      throw new DatasetFailureException(e);
+      throw new CleanupFailureDataAccessException("error when cancelling jdbc execution", e);
     } finally {
       close();
     }

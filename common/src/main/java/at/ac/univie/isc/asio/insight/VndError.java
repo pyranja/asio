@@ -20,7 +20,7 @@ import java.util.Set;
  */
 @Immutable
 @AutoValue
-public abstract class Error {
+public abstract class VndError {
   /**
    * Registered error media type name
    */
@@ -37,15 +37,23 @@ public abstract class Error {
    * @return initialized error
    */
   @Nonnull
-  public static Error from(final Throwable exception, final Correlation correlation, final long timestamp, final boolean includeTrace) {
+  public static VndError from(final Throwable exception, final Correlation correlation, final long timestamp, final boolean includeTrace) {
     final Throwable root = findRoot(exception);
-    final String message = exception.getMessage() == null
-        ? exception.getClass().getSimpleName()
-        : exception.getMessage();
+    final String message = labelFor(exception);
     final List<ErrorChainElement> errorChain = includeTrace
         ? collectCausalChain(exception)
         : ImmutableList.<ErrorChainElement>of();
     return create(message, Objects.toString(root), correlation, timestamp, errorChain);
+  }
+
+  /**
+   * Create a message for the given exception - either its message if present or the class name.
+   */
+  public static String labelFor(final Throwable error) {
+    final String message = error.getMessage();
+    return message == null
+        ? error.getClass().getSimpleName()
+        : message;
   }
 
   /**
@@ -98,15 +106,15 @@ public abstract class Error {
    * internal use only!
    */
   @JsonCreator
-  static Error create(@JsonProperty("message") final String message,
+  static VndError create(@JsonProperty("message") final String message,
                       @JsonProperty("cause") final String cause,
                       @JsonProperty("logref") final Correlation correlation,
                       @JsonProperty("timestamp") final long timestamp,
                       @JsonProperty("chain") final List<ErrorChainElement> chain) {
-    return new AutoValue_Error(message, cause, correlation, timestamp, ImmutableList.copyOf(chain));
+    return new AutoValue_VndError(message, cause, correlation, timestamp, ImmutableList.copyOf(chain));
   }
 
-  Error() { /* prevent sub classes */ }
+  VndError() { /* prevent sub classes */ }
 
   /**
    * Short description of the error and its cause if known.
@@ -156,7 +164,7 @@ public abstract class Error {
     @JsonCreator
     static ErrorChainElement create(@JsonProperty("exception") final String exception,
                                     @JsonProperty("location") final String location) {
-      return new AutoValue_Error_ErrorChainElement(exception, location);
+      return new AutoValue_VndError_ErrorChainElement(exception, location);
     }
 
     ErrorChainElement() { /* prevent sub classes */ }

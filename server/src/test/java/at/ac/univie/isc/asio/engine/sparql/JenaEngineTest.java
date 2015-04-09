@@ -1,12 +1,14 @@
 package at.ac.univie.isc.asio.engine.sparql;
 
-import at.ac.univie.isc.asio.DatasetUsageException;
+import at.ac.univie.isc.asio.InvalidUsage;
 import at.ac.univie.isc.asio.Language;
-import at.ac.univie.isc.asio.engine.*;
+import at.ac.univie.isc.asio.engine.Command;
+import at.ac.univie.isc.asio.engine.CommandBuilder;
+import at.ac.univie.isc.asio.engine.TypeMatchingResolver;
 import at.ac.univie.isc.asio.security.Identity;
-import at.ac.univie.isc.asio.tool.Timeout;
 import at.ac.univie.isc.asio.security.Permission;
 import at.ac.univie.isc.asio.sql.ConvertToTable;
+import at.ac.univie.isc.asio.tool.Timeout;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Table;
 import com.hp.hpl.jena.query.QueryCancelledException;
@@ -182,7 +184,7 @@ public class JenaEngineTest {
   public void fail_on_missing_query() throws Exception {
     final Command params =
         CommandBuilder.empty().language(Language.SPARQL).accept(MediaType.APPLICATION_XML_TYPE).build();
-    error.expect(DatasetUsageException.class);
+    error.expect(InvalidUsage.class);
     subject.prepare(params);
   }
 
@@ -191,7 +193,7 @@ public class JenaEngineTest {
     final Command params =
         CommandBuilder.empty().language(Language.SPARQL).accept(MediaType.APPLICATION_XML_TYPE)
             .single(JenaEngine.KEY_QUERY, "one").single(JenaEngine.KEY_QUERY, "two").build();
-    error.expect(DatasetUsageException.class);
+    error.expect(InvalidUsage.class);
     subject.prepare(params);
   }
 
@@ -219,7 +221,7 @@ public class JenaEngineTest {
     final Command params = CommandBuilder.empty().language(Language.SPARQL)
         .single(JenaEngine.KEY_QUERY, fedQuery)
         .accept(MediaType.WILDCARD_TYPE).build();
-    error.expect(DatasetUsageException.class);
+    error.expect(InvalidUsage.class);
     subject.prepare(params);
   }
 }

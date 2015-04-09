@@ -18,7 +18,7 @@ import java.net.URI;
 @Suite.SuiteClasses({AllFeatures.class})
 public class BroodIntegrationSuite {
   @ClassRule
-  public static ApplicationRunner application = ApplicationRunner.run(Nest.class);
+  public static ApplicationRunner application = ApplicationRunner.run(Asio.class);
   @ClassRule
   public static TransientFile keystore = TransientFile.from(Classpath.load("keystore.integration"));
 

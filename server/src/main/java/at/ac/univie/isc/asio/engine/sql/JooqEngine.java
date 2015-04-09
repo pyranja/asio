@@ -1,6 +1,6 @@
 package at.ac.univie.isc.asio.engine.sql;
 
-import at.ac.univie.isc.asio.DatasetFailureException;
+import at.ac.univie.isc.asio.AsioError;
 import at.ac.univie.isc.asio.Language;
 import at.ac.univie.isc.asio.engine.Command;
 import at.ac.univie.isc.asio.engine.Engine;
@@ -29,9 +29,9 @@ public final class JooqEngine implements Engine {
   /**
    * Indicate, that his invocation has been cancelled before completion.
    */
-  static final class Cancelled extends DatasetFailureException {
+  static final class Cancelled extends AsioError.Base {
     public Cancelled() {
-      super("query cancelled", null);
+      super("query cancelled");
     }
   }
 

@@ -1,13 +1,12 @@
 package at.ac.univie.isc.asio.engine.sql;
 
-import at.ac.univie.isc.asio.io.Classpath;
-import at.ac.univie.isc.asio.DatasetException;
-import at.ac.univie.isc.asio.DatasetUsageException;
-import at.ac.univie.isc.asio.SqlResult;
-import at.ac.univie.isc.asio.engine.Invocation;
+import at.ac.univie.isc.asio.InvalidUsage;
 import at.ac.univie.isc.asio.Language;
+import at.ac.univie.isc.asio.SqlResult;
 import at.ac.univie.isc.asio.engine.Command;
 import at.ac.univie.isc.asio.engine.CommandBuilder;
+import at.ac.univie.isc.asio.engine.Invocation;
+import at.ac.univie.isc.asio.io.Classpath;
 import at.ac.univie.isc.asio.security.Permission;
 import at.ac.univie.isc.asio.sql.ConvertToTable;
 import at.ac.univie.isc.asio.sql.Database;
@@ -17,6 +16,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.springframework.dao.DataAccessException;
 
 import javax.sql.rowset.RowSetProvider;
 import javax.sql.rowset.WebRowSet;
@@ -192,7 +192,7 @@ public class JooqEngineTest {
         .single(JooqEngine.PARAM_QUERY, REFERENCE_UPDATE)
         .accept(MediaType.WILDCARD_TYPE)
         .build();
-    error.expect(DatasetException.class);
+    error.expect(DataAccessException.class);
     performInvocationWith(params);
   }
 
@@ -201,7 +201,7 @@ public class JooqEngineTest {
     final Command params = CommandBuilder.empty().language(Language.SQL)
         .single(JooqEngine.PARAM_UPDATE, REFERENCE_SELECT)
         .accept(SQL_RESULTS_TYPE).build();
-    error.expect(DatasetException.class);
+    error.expect(DataAccessException.class);
     performInvocationWith(params);
   }
 
@@ -256,7 +256,7 @@ public class JooqEngineTest {
   public void missing_query() throws Exception {
     final Command params = CommandBuilder.empty().language(Language.SQL)
         .accept(MediaType.WILDCARD_TYPE).build();
-    error.expect(DatasetUsageException.class);
+    error.expect(InvalidUsage.class);
     subject.prepare(params);
   }
 
@@ -264,7 +264,7 @@ public class JooqEngineTest {
   public void no_format_accepted() throws Exception {
     final Command params = CommandBuilder.empty().language(Language.SPARQL)
         .single(JooqEngine.PARAM_QUERY, REFERENCE_SELECT).build();
-    error.expect(DatasetUsageException.class);
+    error.expect(InvalidUsage.class);
     subject.prepare(params);
   }
 
@@ -273,7 +273,7 @@ public class JooqEngineTest {
     final Command params = CommandBuilder.empty().language(Language.SPARQL)
         .single(JooqEngine.PARAM_QUERY, REFERENCE_SELECT)
         .accept(MediaType.valueOf("image/jpeg")).build();
-    error.expect(DatasetUsageException.class);
+    error.expect(InvalidUsage.class);
     subject.prepare(params);
   }
 }

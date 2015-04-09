@@ -1,6 +1,5 @@
 package at.ac.univie.isc.asio.engine;
 
-import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.jaxrs.AsyncResponseFake;
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,7 +13,7 @@ import java.io.OutputStream;
 
 import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.hasFamily;
 import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.hasStatus;
-import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
@@ -32,11 +31,10 @@ public class SendResultsTest {
   private SendResults subject = SendResults.to(async);
 
   @Test
-  public void should_resume_with_wrapped_exception_on_error() throws Exception {
+  public void should_resume_causing_exception_on_error() throws Exception {
     final Throwable failure = new IllegalStateException("TEST");
     Observable.<StreamedResults>error(failure).subscribe(subject);
-    assertThat(async.error(), instanceOf(DatasetException.class));
-    assertThat(async.error().getCause(), is(failure));
+    assertThat(async.error(), sameInstance(failure));
   }
 
   @Test

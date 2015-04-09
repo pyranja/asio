@@ -1,6 +1,5 @@
 package at.ac.univie.isc.asio.engine.sql;
 
-import at.ac.univie.isc.asio.DatasetException;
 import at.ac.univie.isc.asio.engine.Invocation;
 import at.ac.univie.isc.asio.security.Permission;
 import org.jooq.Cursor;
@@ -26,7 +25,7 @@ final class SelectInvocation extends SqlInvocation {
   }
 
   @Override
-  public final void execute() throws DatasetException {
+  public final void execute() {
     cursor = jdbc.query(sql);
   }
 

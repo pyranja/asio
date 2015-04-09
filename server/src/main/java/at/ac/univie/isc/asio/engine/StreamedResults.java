@@ -1,6 +1,5 @@
 package at.ac.univie.isc.asio.engine;
 
-import at.ac.univie.isc.asio.DatasetException;
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
 import rx.subjects.Subject;
@@ -34,11 +33,9 @@ public abstract class StreamedResults implements StreamingOutput, AutoCloseable 
    *
    * @param output the OutputStream to write to.
    * @throws java.io.IOException                    if an IO error is encountered
-   * @throws at.ac.univie.isc.asio.DatasetException if an internal error occurs
-   *                                                // @throws IllegalStateException if results already consumed //
    */
   @Override
-  public final void write(final OutputStream output) throws IOException, DatasetException {
+  public final void write(final OutputStream output) throws IOException {
     try {
       doWrite(output);
       progress.onCompleted();
@@ -53,11 +50,9 @@ public abstract class StreamedResults implements StreamingOutput, AutoCloseable 
    * <strong>may</strong> discard not yet consumed result data and abort an active serialization.
    *
    * The default is a no-op, implementations should override this method.
-   *
-   * @throws at.ac.univie.isc.asio.DatasetException if this resource cannot be closed
    */
   @Override
-  public void close() throws DatasetException {};
+  public void close() {};
 
   /**
    * Empty observable, which propagates errors during streaming and completes when all results were

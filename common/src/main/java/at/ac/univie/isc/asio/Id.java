@@ -24,7 +24,7 @@ public final class Id extends TypedValue<String> {
   /**
    * Thrown if a requested container is not deployed or not active.
    */
-  public static final class NotFound extends RuntimeException {
+  public static final class NotFound extends InvalidUsage {
     public NotFound(final Id id) {
       super(id + " not found");
     }
@@ -33,7 +33,7 @@ public final class Id extends TypedValue<String> {
   /**
    * Thrown if a given string is not a valid {@code Id}.
    */
-  public static final class IllegalIdentifier extends IllegalArgumentException {
+  public static final class IllegalIdentifier extends InvalidUsage {
     public IllegalIdentifier(final String raw) {
       super("<" + raw + "> is not a valid identifier");
     }

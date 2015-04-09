@@ -1,6 +1,5 @@
 package at.ac.univie.isc.asio.engine;
 
-import at.ac.univie.isc.asio.DatasetFailureException;
 import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.Language;
 import at.ac.univie.isc.asio.Mime;
@@ -218,7 +217,7 @@ public class DatasetResourceTest {
 
   @Test
   public void send_error_if_connector_fails_fatally() throws Exception {
-    final Throwable failure = new DatasetFailureException(new IllegalStateException());
+    final Throwable failure = new IllegalStateException();
     when(connector.accept(any(Command.class))).thenThrow(failure);
     try {
       subject.acceptBody("command", Mime.QUERY_SQL.type(), async, request);
@@ -229,7 +228,7 @@ public class DatasetResourceTest {
 
   @Test
   public void send_error_if_observable_fails() throws Exception {
-    final Throwable failure = new DatasetFailureException(new IllegalStateException());
+    final Throwable failure = new IllegalStateException();
     when(connector.accept(any(Command.class))).thenReturn(Observable.<StreamedResults>error(failure));
     subject.acceptBody("command", Mime.QUERY_SQL.type(), async, request);
     assertThat(async.error(), is(failure));

@@ -13,7 +13,7 @@ public final class Language extends TypedValue<String> {
   /**
    * Thrown if a requested {@link Language} is not supported.
    */
-  public static final class NotSupported extends DatasetUsageException {
+  public static final class NotSupported extends InvalidUsage {
     public NotSupported(final Language language) {
       super(language + " is not supported");
     }

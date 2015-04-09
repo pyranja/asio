@@ -55,7 +55,7 @@ public class IdentityTest {
 
   @Test
   public void cannot_get_secret_from_undefined() throws Exception {
-    error.expect(IllegalStateException.class);
+    error.expect(Identity.UndefinedIdentity.class);
     Identity.undefined().getSecret();
   }
 

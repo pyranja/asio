@@ -16,7 +16,7 @@ public class Runner {
 
     FakeAtosService.attachTo(HttpServer.create("atos-fake").enableLogging()).start(8401);
 
-    Nest.application()
+    Asio.application()
         .profiles("dev")
         .properties("server.ssl.key-store=integration/src/main/resources/keystore.integration")
         .logStartupInfo(true)

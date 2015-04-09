@@ -1,16 +1,14 @@
 package at.ac.univie.isc.asio.engine;
 
+import at.ac.univie.isc.asio.InvalidUsage;
+import at.ac.univie.isc.asio.tool.Pair;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;
 
-import java.util.Map;
-import java.util.Set;
-
 import javax.annotation.concurrent.ThreadSafe;
 import javax.ws.rs.core.MediaType;
-
-import at.ac.univie.isc.asio.DatasetUsageException;
-import at.ac.univie.isc.asio.tool.Pair;
+import java.util.Map;
+import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
 
@@ -48,8 +46,7 @@ public final class TypeMatchingResolver<T> {
     throw new NoMatchingFormat(accepted, available);
   }
 
-  public static final class NoMatchingFormat extends DatasetUsageException {
-
+  public static final class NoMatchingFormat extends InvalidUsage {
     public NoMatchingFormat(final Iterable<MediaType> accepted,
                             final Iterable<MediaType> registered) {
       super("no supported media type in " + accepted + " - expected one of " + registered);

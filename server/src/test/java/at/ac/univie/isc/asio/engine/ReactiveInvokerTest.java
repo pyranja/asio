@@ -1,11 +1,15 @@
 package at.ac.univie.isc.asio.engine;
 
 import at.ac.univie.isc.asio.security.Authorizer;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import rx.functions.Func1;
 import rx.observers.TestSubscriber;
 import rx.schedulers.Schedulers;
 
@@ -14,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -34,8 +39,14 @@ public class ReactiveInvokerTest {
 
   @Before
   public void setUp() throws Exception {
+    RequestContextHolder.setRequestAttributes(Mockito.mock(RequestAttributes.class));
     when(router.select(any(Command.class))).thenReturn(engine);
     when(engine.prepare(any(Command.class))).thenReturn(invocation);
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    RequestContextHolder.resetRequestAttributes();
   }
 
   @Test
@@ -49,6 +60,20 @@ public class ReactiveInvokerTest {
     subject.accept(CommandBuilder.empty().build()).subscribe(subscriber);
     subscriber.awaitTerminalEvent(2, TimeUnit.SECONDS);
     assertThat(subscriber.getLastSeenThread(), is(not(Thread.currentThread())));
+  }
+
+  @Test
+  public void should_execute_invocation_in_captured_context() throws Exception {
+    final Boolean contextPresent = subject.accept(CommandBuilder.empty().build())
+        .isEmpty()
+        .map(new Func1<Boolean, Boolean>() {
+          @Override
+          public Boolean call(final Boolean aBoolean) {
+            return RequestContextHolder.getRequestAttributes() != null;
+          }
+        }).toBlocking()
+        .single();
+    assertThat(contextPresent, equalTo(true));
   }
 
   @Test

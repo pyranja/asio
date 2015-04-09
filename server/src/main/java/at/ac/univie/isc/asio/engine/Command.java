@@ -1,9 +1,6 @@
 package at.ac.univie.isc.asio.engine;
 
-import at.ac.univie.isc.asio.DatasetUsageException;
-import at.ac.univie.isc.asio.Id;
-import at.ac.univie.isc.asio.InvalidUsage;
-import at.ac.univie.isc.asio.Language;
+import at.ac.univie.isc.asio.*;
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -46,7 +43,7 @@ public abstract class Command {
    * Thrown if a command misses required parameters, a parameter has an illegal value or holds an
    * invalid combination of parameters.
    */
-  public static class IllegalCommand extends DatasetUsageException implements InvalidUsage {
+  public static class IllegalCommand extends InvalidUsage {
     public IllegalCommand(final String reason) {
       super(reason);
     }
