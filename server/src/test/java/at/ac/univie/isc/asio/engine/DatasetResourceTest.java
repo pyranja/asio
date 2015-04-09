@@ -101,6 +101,11 @@ public class DatasetResourceTest {
     assertThat(subject.redirectFromDeprecatedDefinitionUri(uri), hasHeader(HttpHeaders.LOCATION, equalTo("http://localhost:8080/asio/public/read/schema")));
   }
 
+  @Test
+  public void should_send__OK__on_root_path() throws Exception {
+    assertThat(subject.info(), hasStatus(Response.Status.OK));
+  }
+
   // ===============================================================================================
   // HAPPY PATH
 

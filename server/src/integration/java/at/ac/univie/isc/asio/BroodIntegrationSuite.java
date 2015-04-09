@@ -43,5 +43,6 @@ public class BroodIntegrationSuite {
         .defaults().schema("public").role(Role.NONE.name());
 
     IntegrationTest.deploy("public", Classpath.load("config.integration.ttl"));
+    IntegrationTest.warmup();
   }
 }

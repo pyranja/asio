@@ -12,13 +12,12 @@ import com.google.common.base.Charsets;
 import com.google.common.io.ByteSource;
 import com.google.common.net.HttpHeaders;
 import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.config.EncoderConfig;
-import com.jayway.restassured.config.MatcherConfig;
-import com.jayway.restassured.config.SSLConfig;
+import com.jayway.restassured.config.*;
 import com.jayway.restassured.filter.log.LogDetail;
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import org.apache.http.HttpStatus;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.CoreConnectionPNames;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.experimental.categories.Category;
@@ -43,10 +42,14 @@ public abstract class IntegrationTest {
   @BeforeClass
   public static void restAssuredDefaults() {
     RestAssured.config = RestAssured.config()
+        .httpClient(HttpClientConfig.httpClientConfig()
+            .setParam(CoreConnectionPNames.CONNECTION_TIMEOUT, 30_000)
+            .setParam(CoreConnectionPNames.SO_TIMEOUT, 30_000)
+        )
         .encoderConfig(EncoderConfig.encoderConfig()
-                .defaultContentCharset(Charsets.UTF_8.name()).and()
-                .defaultQueryParameterCharset(Charsets.UTF_8.name()).and()
-                .appendDefaultContentCharsetToContentTypeIfUndefined(false)
+            .defaultContentCharset(Charsets.UTF_8.name()).and()
+            .defaultQueryParameterCharset(Charsets.UTF_8.name()).and()
+            .appendDefaultContentCharsetToContentTypeIfUndefined(false)
         )
         .matcherConfig(
             new MatcherConfig().errorDescriptionType(MatcherConfig.ErrorDescriptionType.HAMCREST)
@@ -100,6 +103,21 @@ public abstract class IntegrationTest {
       .statusCode(HttpStatus.SC_CREATED);
   }
 
+  /**
+   * Ensure the default schema is up and trigger lazy initialization of server components to avoid
+   * timeouts in test cases.
+   */
+  public static void warmup() {
+    // TODO : check supported languages when implemented
+    init(Interactions.empty())
+        .role("read").and()
+        .log().ifValidationFails(LogDetail.ALL)
+      .get()
+      .then()
+        .statusCode(HttpStatus.SC_OK)
+        .log().ifValidationFails(LogDetail.ALL);
+  }
+
   // === test case scope ===========================================================================
 
   @Rule
@@ -144,21 +162,27 @@ public abstract class IntegrationTest {
   protected final void ensureLanguageSupported(final String language) {
     final int responseCode =
         given().role("admin").spec().get("/{language}", language).then().extract().statusCode();
-    assumeThat(language + " not supported", responseCode, is(not(HttpStatus.SC_NOT_FOUND)));
+    assumeThat(language + " not supported", responseCode, not(HttpStatus.SC_NOT_FOUND));
   }
 
   /**
    * Skip test if the service is not enforcing authorization, e.g. uses a fixed permission.
    */
   protected final void ensureSecured() {
-    assumeThat("service is not secured", config.auth.isAuthorizing(), is(true));
+    assumeThat("service is not secured", config.auth.isAuthorizing(), equalTo(true));
   }
 
   /**
    * Skip test if the backing database is not configured, e.g. there is none.
    */
   protected final void ensureDatabaseAccessible() {
-    assumeThat("database not accessible", config.database, is(not(nullValue())));
+    assumeThat("database not accessible", config.database, not(nullValue()));
+  }
+
+  protected final void ensureContainerSupported() {
+    final int responseCode =
+        given().manage().spec().get("/container").then().extract().statusCode();
+    assumeThat("container not supported", responseCode, not(HttpStatus.SC_NOT_FOUND));
   }
 
   // === fluent test dsl ===========================================================================

@@ -51,6 +51,14 @@ public class DatasetResource {
 
   // === metadata ==================================================================================
 
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response info() {
+    // TODO : add info on supported languages, name, hyperlinks to response
+    log.trace(Scope.REQUEST.marker(), "serve info on {}", dataset.name());
+    return Response.ok().build();
+  }
+
   /**
    * Retrieve a descriptor of this dataset's metadata.
    */

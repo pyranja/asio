@@ -31,5 +31,7 @@ public class FlockIntegrationSuite {
         .rootCredentials("root", "change")
         .timeoutInSeconds(10)
         .defaults().noSchema().role(Role.NONE.name());
+
+    IntegrationTest.warmup();
   }
 }
