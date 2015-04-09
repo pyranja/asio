@@ -32,7 +32,7 @@ public class AsioFeatures {
 
   @Override
   public String toString() {
-    return "AsioFeatures{" +
+    return "{" +
         "vphMetadata=" + vphMetadata +
         ", vphUriAuth=" + vphUriAuth +
         ", allowFederation=" + allowFederation +

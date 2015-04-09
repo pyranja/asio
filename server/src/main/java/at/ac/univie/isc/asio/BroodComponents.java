@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio;
 
+import at.ac.univie.isc.asio.nest.ForbidReservedNames;
 import at.ac.univie.isc.asio.platform.FileSystemConfigStore;
 import at.ac.univie.isc.asio.engine.DatasetHolder;
 import at.ac.univie.isc.asio.tool.Timeout;
@@ -24,6 +25,11 @@ class BroodComponents {
   @Bean
   public FileSystemConfigStore fileSystemConfigStore(final Timeout timeout) {
     return new FileSystemConfigStore(Paths.get(config.getHome()), timeout);
+  }
+
+  @Bean
+  public ForbidReservedNames forbidReservedNames() {
+    return new ForbidReservedNames(config.api.getReservedContainerNames());
   }
 
   @Bean

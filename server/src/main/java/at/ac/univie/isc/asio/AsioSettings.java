@@ -38,10 +38,11 @@ public class AsioSettings {
 
   @Override
   public String toString() {
-    return "AsioSettings{" +
+    return "{" +
         "timeout=" + timeout +
         ", home='" + home + '\'' +
         ", metadataRepository=" + metadataRepository +
+        ", api=" + api +
         ", feature=" + feature +
         '}';
   }

@@ -36,6 +36,7 @@ asio:
     override-accept-parameter: '_type'
     default-media-type: ['application/xml', '*/*;q=0.5']
     default-language: 'en'
+    reserved-container-names: ['api', 'explore']
 
 # serialization settings
 spring.mvc:

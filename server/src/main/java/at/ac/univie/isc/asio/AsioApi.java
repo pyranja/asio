@@ -3,6 +3,7 @@ package at.ac.univie.isc.asio;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -33,13 +34,21 @@ public class AsioApi {
   @NotEmpty
   public String defaultLanguage;
 
+  /**
+   * Names that cannot be assigned to a container, e.g. because it would clash with another resource
+   * path in the REST api.
+   */
+  @NotNull
+  public List<Id> reservedContainerNames = new ArrayList<>();
+
   @Override
   public String toString() {
-    return "AsioApi{" +
+    return "{" +
         "delegateAuthorizationHeader='" + delegateAuthorizationHeader + '\'' +
         ", overrideAcceptParameter='" + overrideAcceptParameter + '\'' +
-        ", defaultMediaType='" + defaultMediaType + '\'' +
+        ", defaultMediaType=" + defaultMediaType +
         ", defaultLanguage='" + defaultLanguage + '\'' +
+        ", reservedContainerNames=" + reservedContainerNames +
         '}';
   }
 
@@ -73,5 +82,13 @@ public class AsioApi {
 
   public void setDefaultLanguage(final String defaultLanguage) {
     this.defaultLanguage = defaultLanguage;
+  }
+
+  public List<Id> getReservedContainerNames() {
+    return reservedContainerNames;
+  }
+
+  public void setReservedContainerNames(final List<Id> reservedContainerNames) {
+    this.reservedContainerNames = reservedContainerNames;
   }
 }
