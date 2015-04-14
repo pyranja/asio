@@ -11,7 +11,7 @@ asio:
   metadata-repository: 'http://localhost:8401/'
   feature:
     vph-metadata: on
-    vph-uri-auth: on
+    vph-uri-auth: off
     allow-federation: on
 
 logging.level.: 'INFO'  # root logger

@@ -17,7 +17,7 @@ public class Runner {
     FakeAtosService.attachTo(HttpServer.create("atos-fake").enableLogging()).start(8401);
 
     Asio.application()
-        .profiles("dev")
+        .profiles("brood", "dev")
         .properties("server.ssl.key-store=integration/src/main/resources/keystore.integration")
         .logStartupInfo(true)
         .run(args);

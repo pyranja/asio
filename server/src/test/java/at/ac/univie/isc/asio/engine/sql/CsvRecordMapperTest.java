@@ -113,6 +113,7 @@ public class CsvRecordMapperTest {
     final Record record = create.newRecord(DSL.fieldByName(SQLDataType.TIMESTAMP, "timestamp"));
     record.fromArray(new Timestamp(now.getTimeInMillis()));
     final String[] row = mapper.map(record);
+    // TODO : this may fail if the milliseconds == 0 - DatatypeConverter will omit the ms part
     final String expectedDateTime = DatatypeConverter.printDateTime(now);
     assertThat(Arrays.asList(row), everyItem(equalTo(expectedDateTime)));
   }
