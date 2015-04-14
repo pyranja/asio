@@ -3,12 +3,12 @@ package at.ac.univie.isc.asio.container;
 import at.ac.univie.isc.asio.Brood;
 import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.Scope;
+import at.ac.univie.isc.asio.insight.Emitter;
 import at.ac.univie.isc.asio.tool.Timeout;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.Striped;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.google.common.util.concurrent.UncheckedTimeoutException;
@@ -44,11 +44,11 @@ import static org.slf4j.LoggerFactory.getLogger;
   private final Striped<Lock> locks = Striped.lock(CONCURRENCY_LEVEL);
   private final AtomicBoolean closed = new AtomicBoolean(false);
 
-  private final EventBus events;
+  private final Emitter events;
   private final long maximalWaitingTimeInMilliseconds;
 
   @Autowired
-  public Catalog(final EventBus events, final Timeout timeout) {
+  public Catalog(final Emitter events, final Timeout timeout) {
     this.events = events;
     // 0 means 'do not wait at all'
     maximalWaitingTimeInMilliseconds = timeout.getAs(TimeUnit.MILLISECONDS, 0L);
@@ -68,8 +68,8 @@ import static org.slf4j.LoggerFactory.getLogger;
     requireNonNull(container);
     final Optional<CONTAINER> former =
         Optional.fromNullable(catalog.put(container.name(), container));
-    if (former.isPresent()) { events.post(dropEvent(former.get())); }
-    events.post(deployEvent(container));
+    if (former.isPresent()) { events.emit(dropEvent(former.get())); }
+    events.emit(deployEvent(container));
     return former;
   }
 
@@ -83,7 +83,7 @@ import static org.slf4j.LoggerFactory.getLogger;
     log.debug(Scope.SYSTEM.marker(), "drop <{}>", id);
     ensureOpen();
     final Optional<CONTAINER> removed = Optional.fromNullable(catalog.remove(id));
-    if (removed.isPresent()) { events.post(dropEvent(removed.get())); }
+    if (removed.isPresent()) { events.emit(dropEvent(removed.get())); }
     return removed;
   }
 
@@ -183,7 +183,7 @@ import static org.slf4j.LoggerFactory.getLogger;
     final Set<CONTAINER> remaining = ImmutableSet.copyOf(catalog.values());
     log.info(Scope.SYSTEM.marker(), "cleared - dropping all of {}", remaining);
     for (CONTAINER container : remaining) {
-      events.post(dropEvent(container));
+      events.emit(dropEvent(container));
     }
     return remaining;
   }
@@ -205,12 +205,12 @@ import static org.slf4j.LoggerFactory.getLogger;
 
   // === helper ====================================================================================
 
-  private CatalogEvent.SchemaDeployed deployEvent(final CONTAINER schema) {
-    return new CatalogEvent.SchemaDeployed(schema);
+  private ContainerEvent.Deployed deployEvent(final CONTAINER schema) {
+    return new ContainerEvent.Deployed(schema);
   }
 
-  private CatalogEvent.SchemaDropped dropEvent(final CONTAINER schema) {
-    return new CatalogEvent.SchemaDropped(schema);
+  private ContainerEvent.Dropped dropEvent(final CONTAINER schema) {
+    return new ContainerEvent.Dropped(schema);
   }
 
   private void ensureOpen() {

@@ -2,7 +2,7 @@ package at.ac.univie.isc.asio.engine;
 
 import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.Language;
-import at.ac.univie.isc.asio.container.CatalogEvent;
+import at.ac.univie.isc.asio.container.ContainerEvent;
 import at.ac.univie.isc.asio.container.Container;
 import at.ac.univie.isc.asio.container.StubContainer;
 import at.ac.univie.isc.asio.security.Identity;
@@ -26,7 +26,7 @@ public class EngineRegistryTest {
 
   @Test
   public void should_fail_if_language_not_supported() throws Exception {
-    subject.onDeploy(new CatalogEvent.SchemaDeployed(StubContainer.create("default")));
+    subject.onDeploy(new ContainerEvent.Deployed(StubContainer.create("default")));
     error.expect(Language.NotSupported.class);
     subject.select(command(Id.valueOf("default"), Language.UNKNOWN));
   }
@@ -35,7 +35,7 @@ public class EngineRegistryTest {
   public void should_find_engine_identified_by_schema_and_language() throws Exception {
     final Engine expected = new StubEngine();
     final Container container = StubContainer.create("default").withEngine(expected);
-    subject.onDeploy(new CatalogEvent.SchemaDeployed(container));
+    subject.onDeploy(new ContainerEvent.Deployed(container));
     final Engine selected = subject.select(command(Id.valueOf("default"), Language.UNKNOWN));
     assertThat(selected, sameInstance(expected));
   }
@@ -43,9 +43,9 @@ public class EngineRegistryTest {
   @Test
   public void should_forget_undeployed_schemas() throws Exception {
     final Container container = StubContainer.create("default").withEngine(new StubEngine());
-    subject.onDeploy(new CatalogEvent.SchemaDeployed(container));
+    subject.onDeploy(new ContainerEvent.Deployed(container));
     subject.select(command(Id.valueOf("default"), Language.UNKNOWN));
-    subject.onDrop(new CatalogEvent.SchemaDropped(container));
+    subject.onDrop(new ContainerEvent.Dropped(container));
     error.expect(Id.NotFound.class);
     subject.select(command(Id.valueOf("default"), Language.UNKNOWN));
   }
@@ -55,10 +55,10 @@ public class EngineRegistryTest {
     final Engine first = new StubEngine();
     final Engine second = new StubEngine();
     Engine selected;
-    subject.onDeploy(new CatalogEvent.SchemaDeployed(StubContainer.create("default").withEngine(first)));
+    subject.onDeploy(new ContainerEvent.Deployed(StubContainer.create("default").withEngine(first)));
     selected = subject.select(command(Id.valueOf("default"), Language.UNKNOWN));
     assertThat(selected, sameInstance(first));
-    subject.onDeploy(new CatalogEvent.SchemaDeployed(StubContainer.create("default").withEngine(second)));
+    subject.onDeploy(new ContainerEvent.Deployed(StubContainer.create("default").withEngine(second)));
     selected = subject.select(command(Id.valueOf("default"), Language.UNKNOWN));
     assertThat(selected, sameInstance(second));
   }

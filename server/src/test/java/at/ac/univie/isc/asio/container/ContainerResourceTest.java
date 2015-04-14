@@ -1,8 +1,8 @@
 package at.ac.univie.isc.asio.container;
 
-import at.ac.univie.isc.asio.CaptureEvents;
 import at.ac.univie.isc.asio.ConfigStore;
 import at.ac.univie.isc.asio.Id;
+import at.ac.univie.isc.asio.insight.Emitter;
 import at.ac.univie.isc.asio.io.Payload;
 import at.ac.univie.isc.asio.io.TransientFolder;
 import at.ac.univie.isc.asio.tool.Timeout;
@@ -10,6 +10,7 @@ import com.google.common.io.ByteSource;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import javax.ws.rs.core.Response;
@@ -19,12 +20,13 @@ import java.util.Collection;
 import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.hasStatus;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class ContainerResourceTest {
-  private final CaptureEvents<CatalogEvent> events = CaptureEvents.create(CatalogEvent.class);
-  private final Catalog<Container> catalog = new Catalog<>(events.bus(), Timeout.undefined());
+  private final Emitter events = Mockito.mock(Emitter.class);
+  private final Catalog<Container> catalog = new Catalog<>(events, Timeout.undefined());
   private final ConfigStore store = Mockito.mock(ConfigStore.class);
   private Assembler assembler = Mockito.mock(Assembler.class);
   private ContainerResource subject = new ContainerResource(catalog, store, assembler);
@@ -134,10 +136,10 @@ public class ContainerResourceTest {
   @Test
   public void should_drop_then_deploy_if_replacing() throws Exception {
     catalog.deploy(StubContainer.create("test"));
-    events.reset();
+    Mockito.reset(events);
     subject.deploy(StubContainer.create("test"), ByteSource.empty());
-    assertThat(events.captured(), contains(instanceOf(CatalogEvent.SchemaDropped.class),
-        instanceOf(CatalogEvent.SchemaDeployed.class)));
+    verify(events).emit(isA(ContainerEvent.Dropped.class));
+    verify(events).emit(isA(ContainerEvent.Deployed.class));
   }
 
   @Test
@@ -171,10 +173,12 @@ public class ContainerResourceTest {
   @Test
   public void should_deploy_container_from_assembler() throws Exception {
     final StubContainer created = StubContainer.create("created");
-    events.reset();
+    Mockito.reset(events);
+    final ArgumentCaptor<ContainerEvent> captor = ArgumentCaptor.forClass(ContainerEvent.class);
     subject.deploy(created, ByteSource.empty());
-    final CatalogEvent event = events.single();
-    assertThat(event, instanceOf(CatalogEvent.SchemaDeployed.class));
+    verify(events).emit(captor.capture());
+    final ContainerEvent event = captor.getValue();
+    assertThat(event, instanceOf(ContainerEvent.Deployed.class));
     assertThat(event.getName(), equalTo(Id.valueOf("created")));
     assertThat(event.getContainer(), Matchers.<Container>sameInstance(created));
   }

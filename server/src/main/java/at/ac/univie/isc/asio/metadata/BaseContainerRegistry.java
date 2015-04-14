@@ -2,7 +2,7 @@ package at.ac.univie.isc.asio.metadata;
 
 import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.Scope;
-import at.ac.univie.isc.asio.container.CatalogEvent;
+import at.ac.univie.isc.asio.container.ContainerEvent;
 import at.ac.univie.isc.asio.container.Container;
 import com.google.common.eventbus.Subscribe;
 import org.slf4j.Logger;
@@ -33,7 +33,7 @@ public abstract class BaseContainerRegistry {
   }
 
   @Subscribe
-  public final void onDeploy(final CatalogEvent.SchemaDeployed event) {
+  public final void onDeploy(final ContainerEvent.Deployed event) {
     log.debug(Scope.SYSTEM.marker(), "registering container <{}>", event.getName());
     final Container former = registry.put(event.getName(), event.getContainer());
     if (former != null) {
@@ -42,7 +42,7 @@ public abstract class BaseContainerRegistry {
   }
 
   @Subscribe
-  public final void onDrop(final CatalogEvent.SchemaDropped event) {
+  public final void onDrop(final ContainerEvent.Dropped event) {
     log.debug(Scope.SYSTEM.marker(), "removing container <{}>", event.getName());
     final Container removed = registry.remove(event.getName());
     if (removed == null) {

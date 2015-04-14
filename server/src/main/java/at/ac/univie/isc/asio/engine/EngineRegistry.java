@@ -3,7 +3,7 @@ package at.ac.univie.isc.asio.engine;
 import at.ac.univie.isc.asio.Brood;
 import at.ac.univie.isc.asio.Language;
 import at.ac.univie.isc.asio.Scope;
-import at.ac.univie.isc.asio.container.CatalogEvent;
+import at.ac.univie.isc.asio.container.ContainerEvent;
 import at.ac.univie.isc.asio.container.Container;
 import at.ac.univie.isc.asio.metadata.BaseContainerRegistry;
 
@@ -12,7 +12,7 @@ import java.util.Set;
 /**
  * An {@code EngineRouter}, that uses an internal mapping of {@code Schema} to {@code Container}
  * pairs to find the right {@code Engine}. The mapping may be modified by raising appropriate
- * {@link CatalogEvent events}.
+ * {@link ContainerEvent events}.
  */
 @Brood
 final class EngineRegistry extends BaseContainerRegistry implements EngineRouter {

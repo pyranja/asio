@@ -1,10 +1,9 @@
 package at.ac.univie.isc.asio.container;
 
-import at.ac.univie.isc.asio.CaptureEvents;
 import at.ac.univie.isc.asio.Id;
+import at.ac.univie.isc.asio.insight.Emitter;
 import at.ac.univie.isc.asio.tool.Timeout;
 import com.google.common.base.Optional;
-import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.google.common.util.concurrent.UncheckedTimeoutException;
 import org.junit.After;
@@ -13,6 +12,9 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.InOrder;
+import org.mockito.Matchers;
+import org.mockito.Mockito;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -23,16 +25,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.emptyIterable;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.sameInstance;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.*;
 
 @SuppressWarnings("unchecked")
 @RunWith(Enclosed.class)
@@ -45,12 +40,13 @@ public class CatalogTest {
     @Rule
     public ExpectedException error = ExpectedException.none();
 
-    private Catalog<Container> subject = new Catalog<>(new EventBus(), Timeout.undefined());
+    private Catalog<Container> subject =
+        new Catalog<>(Mockito.mock(Emitter.class), Timeout.undefined());
 
     @Test
     public void should_yield_absent_if_deploying_new_container() throws Exception {
       final Optional<Container> former = subject.deploy(StubContainer.create("test"));
-      assertThat(former.isPresent(), is(false));
+      assertThat(former.isPresent(), equalTo(false));
     }
 
     @Test
@@ -59,7 +55,7 @@ public class CatalogTest {
       subject.deploy(replaced);
       final Container replacement = StubContainer.create("test");
       final Optional<Container> former = subject.deploy(replacement);
-      assertThat(former.get(), is(replaced));
+      assertThat(former.get(), equalTo(replaced));
     }
 
     @Test
@@ -72,7 +68,7 @@ public class CatalogTest {
     @Test
     public void should_yield_absent_if_dropping_missing() throws Exception {
       final Optional<Container> dropped = subject.drop(Id.valueOf("name"));
-      assertThat(dropped.isPresent(), is(false));
+      assertThat(dropped.isPresent(), equalTo(false));
     }
 
     @Test
@@ -80,7 +76,7 @@ public class CatalogTest {
       final Container container = StubContainer.create("name");
       subject.deploy(container);
       final Optional<Container> dropped = subject.drop(Id.valueOf("name"));
-      assertThat(dropped.get(), is(container));
+      assertThat(dropped.get(), equalTo(container));
     }
 
     @Test
@@ -97,7 +93,8 @@ public class CatalogTest {
     @Rule
     public ExpectedException error = ExpectedException.none();
 
-    private Catalog<Container> subject = new Catalog<>(new EventBus(), Timeout.undefined());
+    private Catalog<Container> subject =
+        new Catalog<>(Mockito.mock(Emitter.class), Timeout.undefined());
 
     @Test
     public void should_reject_deploy_after_clear() throws Exception {
@@ -124,33 +121,38 @@ public class CatalogTest {
 
 
   public static class Eventing {
-    private final CaptureEvents<CatalogEvent> events = CaptureEvents.create(CatalogEvent.class);
-    private Catalog<Container> subject = new Catalog<>(events.bus(), Timeout.undefined());
+    private final Emitter events = Mockito.mock(Emitter.class);
+    private Catalog<Container> subject = new Catalog<>(events, Timeout.undefined());
 
     @Test
     public void emit_event_on_deploying_schema() throws Exception {
       subject.deploy(StubContainer.create("name"));
-      assertThat(events.captured(), contains(instanceOf(CatalogEvent.SchemaDeployed.class)));
+      verify(events).emit(Matchers.isA(ContainerEvent.Deployed.class));
     }
 
     @Test
     public void emit_event_on_dropping_schema() throws Exception {
       subject.deploy(StubContainer.create("name"));
       subject.drop(Id.valueOf("name"));
-      assertThat(events.captured(), contains(instanceOf(CatalogEvent.SchemaDeployed.class), instanceOf(CatalogEvent.SchemaDropped.class)));
+      final InOrder ordered = inOrder(events);
+      ordered.verify(events).emit(Matchers.isA(ContainerEvent.Deployed.class));
+      ordered.verify(events).emit(Matchers.isA(ContainerEvent.Dropped.class));
     }
 
     @Test
     public void emit_drop_and_deploy_when_replacing() throws Exception {
       subject.deploy(StubContainer.create("first"));
       subject.deploy(StubContainer.create("first"));
-      assertThat(events.captured(), contains(instanceOf(CatalogEvent.SchemaDeployed.class), instanceOf(CatalogEvent.SchemaDropped.class), instanceOf(CatalogEvent.SchemaDeployed.class)));
+      final InOrder ordered = inOrder(events);
+      ordered.verify(events).emit(Matchers.isA(ContainerEvent.Deployed.class));
+      ordered.verify(events).emit(Matchers.isA(ContainerEvent.Dropped.class));
+      ordered.verify(events).emit(Matchers.isA(ContainerEvent.Deployed.class));
     }
 
     @Test
     public void no_event_if_schema_not_present_on_drop() throws Exception {
       subject.drop(Id.valueOf("name"));
-      assertThat(events.captured(), is(emptyIterable()));
+      verifyZeroInteractions(events);
     }
 
     @Test
@@ -158,10 +160,9 @@ public class CatalogTest {
       subject.deploy(StubContainer.create("one"));
       subject.deploy(StubContainer.create("two"));
       subject.clear();
-      assertThat(events.captured(), contains(
-          instanceOf(CatalogEvent.SchemaDeployed.class), instanceOf(CatalogEvent.SchemaDeployed.class),
-          instanceOf(CatalogEvent.SchemaDropped.class), instanceOf(CatalogEvent.SchemaDropped.class)
-      ));
+      final InOrder ordered = inOrder(events);
+      ordered.verify(events, times(2)).emit(Matchers.isA(ContainerEvent.Deployed.class));
+      ordered.verify(events, times(2)).emit(Matchers.isA(ContainerEvent.Dropped.class));
     }
   }
 
@@ -171,7 +172,8 @@ public class CatalogTest {
     public final ExpectedException error = ExpectedException.none();
 
     private final ExecutorService exec = Executors.newSingleThreadExecutor();
-    private final Catalog<Container> subject = new Catalog<>(new EventBus(), Timeout.undefined());
+    private final Catalog<Container> subject =
+        new Catalog<>(Mockito.mock(Emitter.class), Timeout.undefined());
 
     @After
     public void shutdownExecutor() throws Exception {
@@ -303,7 +305,7 @@ public class CatalogTest {
   public static class Queries {
 
     private final Catalog<Container> subject =
-        new Catalog<>(new EventBus(), Timeout.undefined());
+        new Catalog<>(Mockito.mock(Emitter.class), Timeout.undefined());
 
     @Test
     public void yield_absent_if_no_container_with_id_deployed() throws Exception {
@@ -334,7 +336,8 @@ public class CatalogTest {
 
     @Test
     public void found_container_ids_are_a_snapshot() throws Exception {
-      final Catalog<Container> subject = new Catalog<>(new EventBus(), Timeout.undefined());
+      final Catalog<Container> subject =
+          new Catalog<>(Mockito.mock(Emitter.class), Timeout.undefined());
       subject.deploy(StubContainer.create("1"));
       subject.deploy(StubContainer.create("2"));
       final Collection<Id> keys = subject.findKeys();

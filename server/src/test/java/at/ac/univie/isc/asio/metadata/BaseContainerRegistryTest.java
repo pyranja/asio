@@ -1,7 +1,7 @@
 package at.ac.univie.isc.asio.metadata;
 
 import at.ac.univie.isc.asio.Id;
-import at.ac.univie.isc.asio.container.CatalogEvent;
+import at.ac.univie.isc.asio.container.ContainerEvent;
 import at.ac.univie.isc.asio.container.Container;
 import at.ac.univie.isc.asio.container.StubContainer;
 import org.junit.Rule;
@@ -28,15 +28,15 @@ public class BaseContainerRegistryTest {
   @Test
   public void should_find_deployed_schema() throws Exception {
     final Container expected = StubContainer.create("test");
-    subject.onDeploy(new CatalogEvent.SchemaDeployed(expected));
+    subject.onDeploy(new ContainerEvent.Deployed(expected));
     assertThat(subject.find(Id.valueOf("test")), sameInstance(expected));
   }
 
   @Test
   public void should_not_find_schema_after_dropping_it() throws Exception {
     final Container expected = StubContainer.create("test");
-    subject.onDeploy(new CatalogEvent.SchemaDeployed(expected));
-    subject.onDrop(new CatalogEvent.SchemaDropped(expected));
+    subject.onDeploy(new ContainerEvent.Deployed(expected));
+    subject.onDrop(new ContainerEvent.Dropped(expected));
     error.expect(Id.NotFound.class);
     subject.find(Id.valueOf("test"));
   }
