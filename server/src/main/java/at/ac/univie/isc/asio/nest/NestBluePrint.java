@@ -2,8 +2,8 @@ package at.ac.univie.isc.asio.nest;
 
 import at.ac.univie.isc.asio.Scope;
 import at.ac.univie.isc.asio.SqlSchema;
-import at.ac.univie.isc.asio.container.DefinitionService;
-import at.ac.univie.isc.asio.container.DescriptorService;
+import at.ac.univie.isc.asio.database.DefinitionService;
+import at.ac.univie.isc.asio.metadata.DescriptorService;
 import at.ac.univie.isc.asio.d2rq.D2rqTools;
 import at.ac.univie.isc.asio.database.DatabaseInspector;
 import at.ac.univie.isc.asio.engine.sparql.JenaEngine;

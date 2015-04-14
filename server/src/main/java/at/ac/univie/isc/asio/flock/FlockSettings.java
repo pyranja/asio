@@ -6,7 +6,7 @@ import javax.validation.constraints.NotNull;
 import java.net.URI;
 
 @ConfigurationProperties("flock")
-public class FlockSettings {
+class FlockSettings {
   /**
    * Global identifier of the flock service. (default = 'asio:///flock/')
    */

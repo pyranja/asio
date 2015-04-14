@@ -1,9 +1,7 @@
-package at.ac.univie.isc.asio.metadata;
+package at.ac.univie.isc.asio.brood;
 
+import at.ac.univie.isc.asio.Container;
 import at.ac.univie.isc.asio.Id;
-import at.ac.univie.isc.asio.container.ContainerEvent;
-import at.ac.univie.isc.asio.container.Container;
-import at.ac.univie.isc.asio.container.StubContainer;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

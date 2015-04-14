@@ -1,6 +1,5 @@
 package at.ac.univie.isc.asio;
 
-import at.ac.univie.isc.asio.container.DescriptorService;
 import at.ac.univie.isc.asio.engine.Connector;
 import at.ac.univie.isc.asio.engine.EngineRouter;
 import at.ac.univie.isc.asio.engine.EventfulConnector;
@@ -10,6 +9,7 @@ import at.ac.univie.isc.asio.insight.Emitter;
 import at.ac.univie.isc.asio.insight.EventBusEmitter;
 import at.ac.univie.isc.asio.metadata.AtosMetadataRepository;
 import at.ac.univie.isc.asio.metadata.DescriptorConversion;
+import at.ac.univie.isc.asio.metadata.DescriptorService;
 import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
 import at.ac.univie.isc.asio.platform.CurrentTime;
 import at.ac.univie.isc.asio.security.Authorizer;

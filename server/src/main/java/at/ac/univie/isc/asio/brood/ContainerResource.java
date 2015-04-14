@@ -1,9 +1,6 @@
-package at.ac.univie.isc.asio.container;
+package at.ac.univie.isc.asio.brood;
 
-import at.ac.univie.isc.asio.Brood;
-import at.ac.univie.isc.asio.ConfigStore;
-import at.ac.univie.isc.asio.Id;
-import at.ac.univie.isc.asio.Scope;
+import at.ac.univie.isc.asio.*;
 import com.google.common.base.Optional;
 import com.google.common.io.ByteSource;
 import com.google.common.io.Files;

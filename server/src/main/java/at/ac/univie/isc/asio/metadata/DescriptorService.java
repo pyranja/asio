@@ -1,6 +1,5 @@
-package at.ac.univie.isc.asio.container;
+package at.ac.univie.isc.asio.metadata;
 
-import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
 import rx.Observable;
 
 import java.net.URI;

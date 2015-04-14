@@ -1,9 +1,8 @@
-package at.ac.univie.isc.asio.metadata;
+package at.ac.univie.isc.asio.brood;
 
+import at.ac.univie.isc.asio.Container;
 import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.Scope;
-import at.ac.univie.isc.asio.container.ContainerEvent;
-import at.ac.univie.isc.asio.container.Container;
 import com.google.common.eventbus.Subscribe;
 import org.slf4j.Logger;
 
@@ -16,7 +15,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  * Skeleton of an event-aware registry service. Internally maps schema names to deployed containers,
  * and keeps the mapping up to date. Container registration and removal is driven by CatalogEvents.
  */
-public abstract class BaseContainerRegistry {
+abstract class BaseContainerRegistry {
   /**
    * non-static to allow subclass loggers to be distinguished by name
    */

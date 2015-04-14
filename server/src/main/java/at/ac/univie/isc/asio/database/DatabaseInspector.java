@@ -2,7 +2,6 @@ package at.ac.univie.isc.asio.database;
 
 import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.SqlSchema;
-import at.ac.univie.isc.asio.container.DefinitionService;
 import rx.Observable;
 import rx.Subscriber;
 

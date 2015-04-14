@@ -1,12 +1,11 @@
-package at.ac.univie.isc.asio;
+package at.ac.univie.isc.asio.flock;
 
-import at.ac.univie.isc.asio.container.DescriptorService;
+import at.ac.univie.isc.asio.Flock;
+import at.ac.univie.isc.asio.metadata.DescriptorService;
 import at.ac.univie.isc.asio.engine.DatasetResource;
 import at.ac.univie.isc.asio.engine.Engine;
 import at.ac.univie.isc.asio.engine.FixedSelection;
 import at.ac.univie.isc.asio.engine.sparql.JenaEngine;
-import at.ac.univie.isc.asio.flock.FlockDataset;
-import at.ac.univie.isc.asio.flock.FlockSettings;
 import at.ac.univie.isc.asio.insight.EventResource;
 import at.ac.univie.isc.asio.security.WhoamiResource;
 import at.ac.univie.isc.asio.tool.Timeout;

@@ -1,6 +1,7 @@
-package at.ac.univie.isc.asio;
+package at.ac.univie.isc.asio.brood;
 
-import at.ac.univie.isc.asio.container.ContainerResource;
+import at.ac.univie.isc.asio.Brood;
+import at.ac.univie.isc.asio.Scope;
 import at.ac.univie.isc.asio.insight.EventResource;
 import at.ac.univie.isc.asio.security.WhoamiResource;
 import org.slf4j.Logger;

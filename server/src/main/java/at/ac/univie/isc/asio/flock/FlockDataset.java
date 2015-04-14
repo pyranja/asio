@@ -3,7 +3,7 @@ package at.ac.univie.isc.asio.flock;
 import at.ac.univie.isc.asio.Dataset;
 import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.SqlSchema;
-import at.ac.univie.isc.asio.container.DescriptorService;
+import at.ac.univie.isc.asio.metadata.DescriptorService;
 import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
 import org.threeten.bp.ZoneOffset;
 import org.threeten.bp.ZonedDateTime;
@@ -16,7 +16,7 @@ import java.util.Collections;
 /**
  * Metadata on the virtual dataset in a flock server.
  */
-public final class FlockDataset implements Dataset {
+final class FlockDataset implements Dataset {
   private static final ZonedDateTime LOAD_DATE = ZonedDateTime.now(ZoneOffset.UTC);
 
   /**

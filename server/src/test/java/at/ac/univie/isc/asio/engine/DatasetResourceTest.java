@@ -4,7 +4,7 @@ import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.Language;
 import at.ac.univie.isc.asio.Mime;
 import at.ac.univie.isc.asio.SqlSchema;
-import at.ac.univie.isc.asio.container.StubContainer;
+import at.ac.univie.isc.asio.brood.StubContainer;
 import at.ac.univie.isc.asio.io.Payload;
 import at.ac.univie.isc.asio.jaxrs.AsyncResponseFake;
 import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
