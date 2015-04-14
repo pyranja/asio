@@ -15,6 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.stereotype.Component;
+import org.threeten.bp.Instant;
+import org.threeten.bp.ZoneOffset;
+import org.threeten.bp.ZonedDateTime;
+import rx.Observable;
 import rx.Subscription;
 
 import javax.ws.rs.*;
@@ -67,10 +71,23 @@ public class DatasetResource {
   @PreAuthorize("hasAuthority('PERMISSION_ACCESS_METADATA')")
   public Response fetchMetadata() {
     log.trace(Scope.REQUEST.marker(), "serve descriptor of {}", dataset.name());
-    final Optional<SchemaDescriptor> descriptor = Reactive.asOptional(dataset.metadata());
+    final Optional<SchemaDescriptor> descriptor =
+        Reactive.asOptional(dataset.metadata().onErrorResumeNext(fallbackMetadata()));
     return descriptor.isPresent()
         ? Response.ok(descriptor.get()).build()
         : Response.status(Response.Status.NOT_FOUND).build();
+  }
+
+  static final ZonedDateTime UTC_EPOCH = ZonedDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC);
+
+  private Observable<SchemaDescriptor> fallbackMetadata() {
+    return Observable.just(
+        SchemaDescriptor.empty("unknown")
+            .withLabel(dataset.name().asString()).withActive(true)
+            .withAuthor("n/a").withDescription("no metadata on this dataset found")
+            .withCreated(UTC_EPOCH).withUpdated(UTC_EPOCH)
+            .build()
+    );
   }
 
   /**
