@@ -23,7 +23,7 @@ security:
   # user.password: 'password'
   basic.realm: 'asio'
   basic.enabled: false
-  ignored: ['/*.html', '/css/**', '/js/**', '/img/**', '/fonts/**', '/snorql/**', '/insight/*.js', '/**/favicon.ico']
+  ignored: ['/*.html', '/css/**', '/js/**', '/img/**', '/fonts/**', '/snorql/**', '/**/favicon.ico']
   require-ssl: '${server.ssl.enabled:false}'
 
 # asio default settings
