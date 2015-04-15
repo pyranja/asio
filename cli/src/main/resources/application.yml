@@ -1,0 +1,19 @@
+# base configuration of munin
+---
+spring.application.name: 'munin'
+spring.jmx.enabled: false
+
+munin:
+  insecure-connection: false
+
+logging.level.: 'ERROR'
+---
+# settings for dev environment
+spring.profiles: 'dev'
+munin:
+  server-address: 'https://localhost:8443/'
+  insecure-connection: true
+  username: root
+  password: change
+
+logging.level.: 'INFO'

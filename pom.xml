@@ -24,6 +24,7 @@
     <module>ssl-fix</module>
     <module>integration</module>
     <module>server</module>
+    <module>cli</module>
   </modules>
 
   <properties>
