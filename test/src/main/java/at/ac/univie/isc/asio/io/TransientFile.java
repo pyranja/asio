@@ -10,7 +10,7 @@ import java.nio.file.Path;
 /**
  * Dump packaged data into a temporary file during a test run.
  */
-public final class TransientFile extends ExternalResource {
+public final class TransientFile extends ExternalResource implements AutoCloseable {
   /**
    * Create a rule, that creates a temporary file with given content before each test and deletes
    * it afterwards.
@@ -20,6 +20,13 @@ public final class TransientFile extends ExternalResource {
    */
   public static TransientFile from(final ByteSource content) {
     return new TransientFile(content);
+  }
+
+  /**
+   * Create the transient file immediately (cannot be used as rule).
+   */
+  public static TransientFile create(final ByteSource content) {
+    return new TransientFile(content).init();
   }
 
   private final ByteSource content;
@@ -40,13 +47,7 @@ public final class TransientFile extends ExternalResource {
   }
 
   @Override
-  protected void before() throws Throwable {
-    dump = Files.createTempFile("file-dump-", ".tmp");
-    Files.write(dump, content.read());
-  }
-
-  @Override
-  protected void after() {
+  public void close() {
     if (dump != null) {
       Unchecked.run(new Unchecked.Action() {
         @Override
@@ -55,5 +56,27 @@ public final class TransientFile extends ExternalResource {
         }
       });
     }
+  }
+
+  public TransientFile init() {
+    assert dump == null : "already initialized";
+    Unchecked.run(new Unchecked.Action() {
+      @Override
+      public void call() throws Exception {
+        dump = Files.createTempFile("file-dump-", ".tmp");
+        Files.write(dump, content.read());
+      }
+    });
+    return this;
+  }
+
+  @Override
+  protected void before() {
+    init();
+  }
+
+  @Override
+  protected void after() {
+    close();
   }
 }

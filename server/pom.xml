@@ -190,9 +190,6 @@
         <configuration>
           <mainClass>at.ac.univie.isc.asio.Runner</mainClass>
           <classpathScope>test</classpathScope>
-          <arguments>
-            <argument>--server.ssl.key-store=${basedir}/src/test/resources/keystore</argument>
-          </arguments>
         </configuration>
       </plugin>
       <plugin>

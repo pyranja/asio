@@ -2,6 +2,7 @@ package at.ac.univie.isc.asio;
 
 import at.ac.univie.isc.asio.atos.FakeAtosService;
 import at.ac.univie.isc.asio.io.Classpath;
+import at.ac.univie.isc.asio.io.TransientFile;
 import at.ac.univie.isc.asio.sql.Database;
 import at.ac.univie.isc.asio.web.HttpServer;
 
@@ -16,10 +17,12 @@ public class Runner {
 
     FakeAtosService.attachTo(HttpServer.create("atos-fake").enableLogging()).start(8401);
 
-    Asio.application()
-        .profiles("brood", "dev")
-        .properties("server.ssl.key-store=integration/src/main/resources/keystore.integration")
-        .logStartupInfo(true)
-        .run(args);
+    try (final TransientFile keystore = TransientFile.create(Classpath.load("keystore.integration"))) {
+      Asio.application()
+          .profiles("brood", "dev")
+          .properties("server.ssl.key-store:" + keystore.path())
+          .logStartupInfo(true)
+          .run(args);
+    }
   }
 }
