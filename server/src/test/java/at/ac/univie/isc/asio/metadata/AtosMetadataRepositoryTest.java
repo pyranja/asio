@@ -7,9 +7,13 @@ import at.ac.univie.isc.asio.junit.Rules;
 import at.ac.univie.isc.asio.web.CaptureHttpExchange;
 import at.ac.univie.isc.asio.web.HttpServer;
 import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import net.atos.*;
-import org.apache.http.HttpHeaders;
+import net.atos.AtosDataset;
+import net.atos.AtosLink;
+import net.atos.AtosRelatedResource;
+import net.atos.AtosResourceMetadata;
+import net.atos.AtosSemanticConcept;
 import org.apache.http.HttpStatus;
 import org.glassfish.jersey.client.ClientProperties;
 import org.hamcrest.Matchers;
@@ -28,13 +32,16 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.xml.bind.JAXB;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 @RunWith(HierarchicalContextRunner.class)
@@ -57,6 +64,11 @@ public class AtosMetadataRepositoryTest {
 
   private AtosMetadataRepository subject;
 
+  static HttpHandler serverFromClasspath(final String pathToResponse) throws IOException {
+    final byte[] data = Classpath.load(pathToResponse).read();
+    return HttpServer.staticContent(HttpStatus.SC_OK, "application/xml", data);
+  }
+
   @Before
   public void createRepository() {
     final WebTarget endpoint = client.target(http.address());
@@ -70,12 +82,12 @@ public class AtosMetadataRepositoryTest {
 
   @Test
   public void should_timeout_if_server_does_not_respond() throws Exception {
-    http.with("/", new CaptureHttpExchange() {
+    http.with("/", CaptureHttpExchange.create().delegateTo(new HttpHandler() {
       @Override
-      protected void doRespond(final HttpExchange exchange) throws IOException {
+      public void handle(final HttpExchange httpExchange) throws IOException {
         Unchecked.sleep(5, TimeUnit.SECONDS);
       }
-    });
+    }));
     error.expect(RepositoryFailure.class);
     subject.findOne("global-id").toBlocking().single();
   }
@@ -116,7 +128,7 @@ public class AtosMetadataRepositoryTest {
 
     @Test
     public void should_succeed_if_single_matching_dataset_found() throws Exception {
-      http.with("/", StaticHandler.fromClasspath("atos-metadata/AtosMetadataRepositoryTest-dataset_resource.xml"));
+      http.with("/", serverFromClasspath("atos-metadata/AtosMetadataRepositoryTest-dataset_resource.xml"));
       final AtosDataset expected = new AtosDataset()
           .withAuthor("author")
           .withCategory("category")
@@ -146,7 +158,7 @@ public class AtosMetadataRepositoryTest {
 
     @Test
     public void should_yield_empty_if_no_dataset_with_matching_id_found() throws Exception {
-      http.with("/", StaticHandler.fromClasspath("atos-metadata/AtosMetadataRepositoryTest-empty_dataset_resource.xml"));
+      http.with("/", serverFromClasspath("atos-metadata/AtosMetadataRepositoryTest-empty_dataset_resource.xml"));
       final List<AtosDataset> found = subject.findOne("349c9448-310c-4b2b-bd65-621db0950042").toList().toBlocking().single();
       assertThat(found, is(empty()));
     }
@@ -199,7 +211,7 @@ public class AtosMetadataRepositoryTest {
 
     @Test
     public void should_succeed_if_single_matching_dataset_found() throws Exception {
-      http.with("/", StaticHandler.fromClasspath("atos-metadata/AtosMetadataRepositoryTest-single_dataset.xml"));
+      http.with("/", serverFromClasspath("atos-metadata/AtosMetadataRepositoryTest-single_dataset.xml"));
       final AtosDataset expected = new AtosDataset()
           .withAuthor("author")
           .withCategory("category")
@@ -229,21 +241,21 @@ public class AtosMetadataRepositoryTest {
 
     @Test
     public void should_yield_empty_if_no_dataset_with_matching_id_found() throws Exception {
-      http.with("/", StaticHandler.fromClasspath("atos-metadata/AtosMetadataRepositoryTest-no_dataset.xml"));
+      http.with("/", serverFromClasspath("atos-metadata/AtosMetadataRepositoryTest-no_dataset.xml"));
       final List<AtosDataset> found = subject.findByLocalId("http://example.com/test-id").toList().toBlocking().single();
       assertThat(found, is(empty()));
     }
 
     @Test
     public void should_yield_empty_on_missing_resource_metadata() throws Exception {
-      http.with("/", StaticHandler.fromClasspath("atos-metadata/AtosMetadataRepositoryTest-empty_resource_metadata.xml"));
+      http.with("/", serverFromClasspath("atos-metadata/AtosMetadataRepositoryTest-empty_resource_metadata.xml"));
       final List<AtosDataset> found = subject.findByLocalId("http://example.com/test-id").toList().toBlocking().single();
       assertThat(found, is(empty()));
     }
 
     @Test
     public void should_yield_all_datasets_with_matching_id() throws Exception {
-      http.with("/", StaticHandler.fromClasspath("atos-metadata/AtosMetadataRepositoryTest-multiple_dataset.xml"));
+      http.with("/", serverFromClasspath("atos-metadata/AtosMetadataRepositoryTest-multiple_dataset.xml"));
       final List<AtosDataset> found = subject.findByLocalId("http://example.com/test-id").toList().toBlocking().single();
       assertThat(found, hasSize(2));
     }
@@ -390,31 +402,6 @@ public class AtosMetadataRepositoryTest {
       error.expect(RepositoryFailure.class);
       error.expectCause(Matchers.<Throwable>instanceOf(InternalServerErrorException.class));
       subject.delete("349c9448-310c-4b2b-bd65-621db0950042").toBlocking().single();
-    }
-  }
-
-  static class StaticHandler extends CaptureHttpExchange {
-    private final byte[] response;
-
-    private StaticHandler(final byte[] response) {
-      this.response = response;
-    }
-
-    static StaticHandler fromJaxbBean(final Object entity) {
-      final ByteArrayOutputStream content = new ByteArrayOutputStream();
-      JAXB.marshal(entity, content);
-      return new StaticHandler(content.toByteArray());
-    }
-
-    static StaticHandler fromClasspath(final String pathToResponse) throws IOException {
-      return new StaticHandler(Classpath.load(pathToResponse).read());
-    }
-
-    @Override
-    protected void doRespond(final HttpExchange exchange) throws IOException {
-      exchange.getResponseHeaders().set(HttpHeaders.CONTENT_TYPE, "application/xml");
-      exchange.sendResponseHeaders(HttpStatus.SC_OK, response.length);
-      exchange.getResponseBody().write(response);
     }
   }
 }

@@ -39,12 +39,45 @@ import static java.lang.String.format;
  */
 public final class HttpServer extends ExternalResource implements Interactions.Report, AutoCloseable {
 
-  private static final Splitter.MapSplitter PARAMETER_PARSER =
-      Splitter.on('&').trimResults().omitEmptyStrings().withKeyValueSeparator('=');
+  // === tools =====================================================================================
 
-  private static final int THREAD_COUNT = 2;
-  private static final ThreadFactory THREAD_FACTORY =
-      new ThreadFactoryBuilder().setNameFormat("embedded-http-worker-%d").build();
+  /** send 204 status and no response body */
+  public static HttpHandler noContent() {
+    return new HttpHandler() {
+      @Override
+      public void handle(final HttpExchange exchange) throws IOException {
+        exchange.sendResponseHeaders(HttpStatus.SC_NO_CONTENT, -1);
+      }
+    };
+  }
+
+  /** send given http status and no response body */
+  public static HttpHandler fixedStatus(final int status) {
+    return new HttpHandler() {
+      @Override
+      public void handle(final HttpExchange exchange) throws IOException {
+        exchange.sendResponseHeaders(status, -1);
+      }
+    };
+  }
+
+  /** send given http status and raw data as response body */
+  public static HttpHandler staticContent(final int status, final String mime, final byte[] payload) {
+    return new HttpHandler() {
+      @Override
+      public void handle(final HttpExchange exchange) throws IOException {
+        exchange.getResponseHeaders().set(HttpHeaders.CONTENT_TYPE, mime);
+        exchange.sendResponseHeaders(status, payload.length);
+        exchange.getResponseBody().write(payload);
+        exchange.getResponseBody().flush();
+      }
+    };
+  }
+
+  /** send given http status and text as json content */
+  public static HttpHandler jsonContent(final int status, final String json) {
+    return staticContent(status, "application/json", Payload.encodeUtf8(json));
+  }
 
   /**
    * Attempt to parse request parameters from the query string and the request body in case of a
@@ -79,6 +112,15 @@ public final class HttpServer extends ExternalResource implements Interactions.R
     return "POST".equalsIgnoreCase(method)
         && "application/x-www-form-urlencoded".equalsIgnoreCase(contentType);
   }
+
+  // === http server implementation ================================================================
+
+  private static final Splitter.MapSplitter PARAMETER_PARSER =
+      Splitter.on('&').trimResults().omitEmptyStrings().withKeyValueSeparator('=');
+  private static final int THREAD_COUNT = 2;
+
+  private static final ThreadFactory THREAD_FACTORY =
+      new ThreadFactoryBuilder().setNameFormat("embedded-http-worker-%d").build();
 
   private final com.sun.net.httpserver.HttpServer server;
   private final String label;

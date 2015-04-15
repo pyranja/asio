@@ -5,7 +5,6 @@ import at.ac.univie.isc.asio.io.TeeOutputStream;
 import com.google.common.collect.Iterables;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import org.apache.http.HttpStatus;
 
 import java.io.IOException;
 import java.util.List;
@@ -16,7 +15,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * asserting on them. May be extended to add actual request processing, the base version always
  * responds 204 'no content' and an empty body.
  */
-public class CaptureHttpExchange implements HttpHandler {
+public final class CaptureHttpExchange implements HttpHandler {
   /**
    * A {@code HttpHandler} that always sends a 'no content' response.
    */
@@ -29,12 +28,7 @@ public class CaptureHttpExchange implements HttpHandler {
    * @param status fixed http response code
    */
   public static CaptureHttpExchange fixedStatus(final int status) {
-    return new CaptureHttpExchange() {
-      @Override
-      protected void doRespond(final HttpExchange exchange) throws IOException {
-        exchange.sendResponseHeaders(status, -1);
-      }
-    };
+    return create().delegateTo(HttpServer.fixedStatus(status));
   }
 
   public static class ExchangeAndContents {
@@ -49,6 +43,7 @@ public class CaptureHttpExchange implements HttpHandler {
     }
   }
 
+  private HttpHandler delegate = HttpServer.noContent();
   private final List<ExchangeAndContents> exchanges;
 
   protected CaptureHttpExchange() {
@@ -62,17 +57,18 @@ public class CaptureHttpExchange implements HttpHandler {
     httpExchange.setStreams(requestBody, responseBody);
     exchanges.add(new ExchangeAndContents(httpExchange, requestBody, responseBody));
     try {
-      doRespond(httpExchange);
+      delegate.handle(httpExchange);
     } finally {
       httpExchange.close();
     }
   }
 
   /**
-   * Override this method to add actual request processing as needed.
+   * Request processing will be delegated to given handler after capturing the exchange.
    */
-  protected void doRespond(final HttpExchange exchange) throws IOException {
-    exchange.sendResponseHeaders(HttpStatus.SC_NO_CONTENT, -1);
+  public CaptureHttpExchange delegateTo(final HttpHandler delegate) {
+    this.delegate = delegate;
+    return this;
   }
 
   /**
