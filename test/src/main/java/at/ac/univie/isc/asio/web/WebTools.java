@@ -1,12 +1,7 @@
 package at.ac.univie.isc.asio.web;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.cert.X509Certificate;
 
 /**
  * Helpers for working with URIs.
@@ -39,31 +34,4 @@ public final class WebTools {
     }
   }
 
-  /** a ssl hostname verifier, that will verify any hostname */
-  public static HostnameVerifier allowAllVerifier() {
-    return new AllowAllVerifier();
-  }
-
-  /** array containing a ssl trust manager, that will trust any server certificate */
-  public static TrustManager[] trustAnyManager() {
-    return new TrustManager[] { new NoopTrustManager() };
-  }
-
-  private static final class AllowAllVerifier implements HostnameVerifier {
-    @Override
-    public boolean verify(final String s, final SSLSession sslSession) {
-      return true;
-    }
-
-  }
-  private static final class NoopTrustManager implements X509TrustManager {
-    @Override
-    public void checkClientTrusted(final X509Certificate[] x509Certificates, final String s) {}
-    @Override
-    public void checkServerTrusted(final X509Certificate[] x509Certificates, final String s) {}
-    @Override
-    public X509Certificate[] getAcceptedIssuers() {
-      return new X509Certificate[0];
-    }
-  }
 }

@@ -8,9 +8,10 @@ import at.ac.univie.isc.asio.insight.EventStream;
 import at.ac.univie.isc.asio.io.Payload;
 import at.ac.univie.isc.asio.junit.Interactions;
 import at.ac.univie.isc.asio.junit.Rules;
+import at.ac.univie.isc.asio.security.AllowAllVerifier;
+import at.ac.univie.isc.asio.security.NoopTrustManager;
 import at.ac.univie.isc.asio.sql.Database;
 import at.ac.univie.isc.asio.web.HttpServer;
-import at.ac.univie.isc.asio.web.WebTools;
 import com.google.common.base.Charsets;
 import com.google.common.io.ByteSource;
 import com.google.common.net.HttpHeaders;
@@ -168,8 +169,8 @@ public abstract class IntegrationTest {
       @Override
       public void call() throws Exception {
         final SSLContext ssl = SSLContext.getInstance("TLS");
-        ssl.init(null, WebTools.trustAnyManager(), null);
-        clientConfig.hostnameVerifier(WebTools.allowAllVerifier()).sslContext(ssl);
+        ssl.init(null, NoopTrustManager.asArray(), null);
+        clientConfig.hostnameVerifier(AllowAllVerifier.instance()).sslContext(ssl);
       }
     });
     final Client client = clientConfig.build();
