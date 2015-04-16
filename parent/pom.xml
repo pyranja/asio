@@ -366,6 +366,15 @@
     <pluginManagement>
       <plugins>
 
+        <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <configuration>
+            <finalName>${project.artifactId}</finalName>
+            <classifier>exec</classifier>
+          </configuration>
+        </plugin>
+
         <plugin> <!-- xml dto generation -->
           <groupId>org.jvnet.jaxb2.maven2</groupId>
           <artifactId>maven-jaxb2-plugin</artifactId>
