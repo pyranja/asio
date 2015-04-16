@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.testing.FakeTicker;
 import org.junit.Test;
 
+import javax.inject.Provider;
 import java.util.Random;
 
 import static at.ac.univie.isc.asio.tool.EventMatchers.correlated;
@@ -23,8 +24,20 @@ public class EventBusEmitterTest {
   private final FakeTicker time = new FakeTicker().advance(new Random().nextLong());
   private final Correlation correlation = Correlation.valueOf(Payload.randomText(30));
 
-  private final EventBusEmitter subject = new EventBusEmitter(events.bus(), time, correlation);
+  private final EventBusEmitter subject = EventBusEmitter.create(events.bus(), time, correlation);
 
+  @Test
+  public void should_fallback_to_fixed_uuid_if_provider_fails() throws Exception {
+    final EventBusEmitter subject = new EventBusEmitter(events.bus(), time, new Provider<Correlation>() {
+          @Override
+          public Correlation get() {
+            throw new IllegalStateException("test");
+          }
+        });
+    subject.emit(new TestEvent());
+    assertThat(events.single().getCorrelation(), equalTo(EventBusEmitter.SYSTEM_CORRELATION));
+  }
+  
   @Test
   public void should_publish_event_to_bus() throws Exception {
     final Event event = new TestEvent();
@@ -53,8 +66,8 @@ public class EventBusEmitterTest {
 
   @Test
   public void should_use_different_correlations_in_different_instances() throws Exception {
-    final EventBusEmitter first = new EventBusEmitter(events.bus(), time, Correlation.valueOf("one"));
-    final EventBusEmitter second = new EventBusEmitter(events.bus(), time, Correlation.valueOf("two"));
+    final EventBusEmitter first = EventBusEmitter.create(events.bus(), time, Correlation.valueOf("one"));
+    final EventBusEmitter second = EventBusEmitter.create(events.bus(), time, Correlation.valueOf("two"));
     first.emit(new TestEvent());
     second.emit(new TestEvent());
     assertThat(events.captured(), not(correlated()));

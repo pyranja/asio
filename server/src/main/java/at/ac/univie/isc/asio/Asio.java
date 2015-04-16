@@ -6,7 +6,6 @@ import at.ac.univie.isc.asio.engine.EventfulConnector;
 import at.ac.univie.isc.asio.engine.ReactiveInvoker;
 import at.ac.univie.isc.asio.insight.Correlation;
 import at.ac.univie.isc.asio.insight.Emitter;
-import at.ac.univie.isc.asio.insight.EventBusEmitter;
 import at.ac.univie.isc.asio.metadata.AtosMetadataRepository;
 import at.ac.univie.isc.asio.metadata.DescriptorConversion;
 import at.ac.univie.isc.asio.metadata.DescriptorService;
@@ -18,6 +17,7 @@ import at.ac.univie.isc.asio.spring.ExplicitWiring;
 import at.ac.univie.isc.asio.spring.JerseyLogInitializer;
 import at.ac.univie.isc.asio.spring.SpringAutoFactory;
 import at.ac.univie.isc.asio.tool.Timeout;
+import com.google.common.base.Ticker;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -28,8 +28,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.security.concurrent.DelegatingSecurityContextScheduledExecutorService;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -65,8 +69,6 @@ public class Asio {
         .listeners(new JerseyLogInitializer());
   }
 
-  public static final IdGenerator ID_GENERATOR = new AlternativeJdkIdGenerator();
-
   @Bean
   public static EventBusAutoRegistrar eventBusAutoRegistrar(final EventBus eventBus) {
     return new EventBusAutoRegistrar(eventBus);
@@ -96,13 +98,6 @@ public class Asio {
    };
   }
 
-  @Bean
-  @Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.INTERFACES)
-  public EventBusEmitter eventBusEmitter(final EventBus eventBus) {
-    final Correlation correlation = Correlation.valueOf(ID_GENERATOR.generateId().toString());
-    return EventBusEmitter.create(eventBus, CurrentTime.instance(), correlation);
-  }
-
   @Bean(destroyMethod = "close")
   @Lazy
   public Client httpClient() {
@@ -125,14 +120,27 @@ public class Asio {
     return secured;
   }
 
+  public static final IdGenerator ID_GENERATOR = new AlternativeJdkIdGenerator();
+
   @Bean
-  public Timeout globalTimeout() {
-    return Timeout.from(config.timeout, TimeUnit.MILLISECONDS);
+  @Scope(WebApplicationContext.SCOPE_REQUEST)
+  public Correlation correlation() {
+    return Correlation.valueOf(ID_GENERATOR.generateId().toString());
   }
 
   @Bean
   @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE, proxyMode = ScopedProxyMode.INTERFACES)
   public SecurityContext currentUser() {
     return SecurityContextHolder.getContext();
+  }
+
+  @Bean
+  public Timeout globalTimeout() {
+    return Timeout.from(config.timeout, TimeUnit.MILLISECONDS);
+  }
+
+  @Bean
+  public Ticker time() {
+    return CurrentTime.instance();
   }
 }
