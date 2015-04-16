@@ -101,5 +101,13 @@ public final class EventStream {
     public void onNext(final ELEMENTS event) {
       received.add(event);
     }
+
+    @Override
+    public String toString() {
+      return "Collector{" +
+          "received=" + received +
+          ", error=" + error +
+          '}';
+    }
   }
 }
