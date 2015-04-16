@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.SimpleFileVisitor;
@@ -31,12 +33,19 @@ public final class FindFiles extends SimpleFileVisitor<Path> {
    * @return a visitor that collects any encountered file
    */
   public static FindFiles any() {
-    return new FindFiles(new PathMatcher() {
-      @Override
-      public boolean matches(final Path path) {
-        return true;
-      }
-    });
+    return new FindFiles(new Any());
+  }
+
+  /**
+   * Create a composite path matcher with the given condition. The result will match only if the
+   * input is a {@link Files#isRegularFile(Path, LinkOption...) regular files} <strong>and</strong>
+   * matches the supplied delegate condition.
+   *
+   * @param condition other match condition
+   * @return composite matcher
+   */
+  public static PathMatcher matchOnlyRegularFilesAnd(final PathMatcher condition) {
+    return new RestrictToRegularFiles(condition);
   }
 
   private final PathMatcher condition;
@@ -62,5 +71,27 @@ public final class FindFiles extends SimpleFileVisitor<Path> {
       found.add(file);
     }
     return FileVisitResult.CONTINUE;
+  }
+
+  /** path matcher that delegates to another but excludes anything that is not a regular file */
+  private static class RestrictToRegularFiles implements PathMatcher {
+    private final PathMatcher condition;
+
+    public RestrictToRegularFiles(final PathMatcher condition) {
+      this.condition = condition;
+    }
+
+    @Override
+    public boolean matches(final Path path) {
+      return Files.isRegularFile(path) && condition.matches(path);
+    }
+  }
+
+  /** path matcher that always returns true */
+  private static class Any implements PathMatcher {
+    @Override
+    public boolean matches(final Path path) {
+      return true;
+    }
   }
 }

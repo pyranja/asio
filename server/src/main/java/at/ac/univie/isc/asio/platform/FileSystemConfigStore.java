@@ -2,15 +2,18 @@ package at.ac.univie.isc.asio.platform;
 
 import at.ac.univie.isc.asio.AsioError;
 import at.ac.univie.isc.asio.ConfigStore;
+import at.ac.univie.isc.asio.InvalidUsage;
 import at.ac.univie.isc.asio.Scope;
 import at.ac.univie.isc.asio.tool.FindFiles;
 import at.ac.univie.isc.asio.tool.Pretty;
 import at.ac.univie.isc.asio.tool.Timeout;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteSource;
 import org.slf4j.Logger;
 import org.springframework.dao.CannotAcquireLockException;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataAccessResourceFailureException;
 
 import java.io.IOException;
@@ -19,12 +22,15 @@ import java.net.URI;
 import java.nio.file.*;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
+import static com.google.common.io.Files.asByteSource;
 import static java.util.Objects.requireNonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -51,8 +57,8 @@ public final class FileSystemConfigStore implements ConfigStore {
     }
   }
 
-
-  private static final Path STORE_FOLDER = Paths.get("config");
+  /** The sub-folder of the working directory used to store configuration files. */
+  public static final Path STORE_FOLDER = Paths.get("config");
 
   private final Path root;
   private final Timeout timeout;
@@ -93,6 +99,28 @@ public final class FileSystemConfigStore implements ConfigStore {
   }
 
   @Override
+  public Map<String, ByteSource> findAllWithIdentifier(final String identifier) throws DataAccessException {
+    final FindFiles collector = FindFiles.filter(filesWithIdentifier(identifier));
+    Map<String, ByteSource> found = new HashMap<>();
+    try {
+      log.debug(Scope.SYSTEM.marker(), "searching items with identifier <{}>", identifier);
+      lock();
+      Files.walkFileTree(root, EnumSet.noneOf(FileVisitOption.class), 1, collector);
+      for (final Path path : collector.found()) {
+        log.debug(Scope.SYSTEM.marker(), "found <{}>", path);
+        final Path fileName = path.getFileName();
+        final String[] parts = fileName.toString().split("\\#\\#");
+        found.put(parts[0], asByteSource(path.toFile()));
+      }
+    } catch (IOException e) {
+      throw new FileSystemAccessFailure("finding items of type <" + identifier + "> failed", e);
+    } finally {
+      lock.unlock();
+    }
+    return ImmutableMap.copyOf(found);
+  }
+
+  @Override
   public URI save(final String qualifier, final String identifier, final ByteSource content) {
     requireNonNull(content, "file content");
     final Path file = resolve(qualifier, identifier);
@@ -112,7 +140,7 @@ public final class FileSystemConfigStore implements ConfigStore {
 
   @Override
   public void clear(final String qualifier) {
-    final FindFiles collector = FindFiles.filter(filesOf(qualifier));
+    final FindFiles collector = FindFiles.filter(filesWithQualifier(qualifier));
     try {
       log.debug(Scope.SYSTEM.marker(), "clearing configuration of <{}>", qualifier);
       lock();
@@ -138,11 +166,16 @@ public final class FileSystemConfigStore implements ConfigStore {
     }
   }
 
-  // MUST keep qualifier - identifier separator in sync in glob and resolver
+  // MUST keep qualifier - identifier separator in sync in globs and resolver
 
-  private PathMatcher filesOf(final String qualifier) {
+  private PathMatcher filesWithIdentifier(final String identifier) {
+    final String glob = Pretty.format("glob:**/*##%s", validate(identifier));
+    return FindFiles.matchOnlyRegularFilesAnd(root.getFileSystem().getPathMatcher(glob));
+  }
+
+  private PathMatcher filesWithQualifier(final String qualifier) {
     final String glob = Pretty.format("glob:**/%s##*", validate(qualifier));
-    return root.getFileSystem().getPathMatcher(glob);
+    return FindFiles.matchOnlyRegularFilesAnd(root.getFileSystem().getPathMatcher(glob));
   }
 
   private Path resolve(final String qualifier, final String name) {
@@ -156,12 +189,16 @@ public final class FileSystemConfigStore implements ConfigStore {
   static final Pattern LEGAL_IDENTIFIER = Pattern.compile("^[\\w][\\w\\.-]+$");
 
   private String validate(final String raw) {
-    if (!LEGAL_IDENTIFIER.matcher(raw).matches()) {
-      final String message =
-          Pretty.format("illegal characters in identifier <%s> - allowed are [a-z, A-Z, 0-9, _, ., -]", raw);
-      throw new IllegalArgumentException(message);
+    if (raw == null || !LEGAL_IDENTIFIER.matcher(raw).matches()) {
+      throw new IllegalConfigStoreLabel(raw);
     }
     return raw;
+  }
+
+  static final class IllegalConfigStoreLabel extends InvalidUsage {
+    public IllegalConfigStoreLabel(final String label) {
+      super(Pretty.format("illegal characters in label <%s> - allowed are [a-z, A-Z, 0-9, _, ., -]", label));
+    }
   }
 
   @Override

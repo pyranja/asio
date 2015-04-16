@@ -37,6 +37,14 @@ final class D2rqNestAssembler implements Assembler {
   }
 
   @Override
+  public String toString() {
+    return "D2rqNestAssembler{" +
+        "create=" + create +
+        ", configurers=" + configurers +
+        '}';
+  }
+
+  @Override
   public Container assemble(final Id name, final ByteSource source) {
     log.debug(Scope.SYSTEM.marker(), "assemble <{}> from {}", name, source);
     final Model model = LoadD2rqModel.inferBaseUri().parse(source);

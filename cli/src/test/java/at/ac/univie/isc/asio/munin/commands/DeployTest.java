@@ -2,9 +2,8 @@ package at.ac.univie.isc.asio.munin.commands;
 
 import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.io.Payload;
-import at.ac.univie.isc.asio.io.TransientFile;
+import at.ac.univie.isc.asio.io.TransientPath;
 import at.ac.univie.isc.asio.munin.Pigeon;
-import com.google.common.io.ByteSource;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,8 +23,7 @@ import static org.mockito.Mockito.verify;
 
 public class DeployTest {
   @Rule
-  public final TransientFile mapping =
-      TransientFile.from(ByteSource.wrap(Payload.randomWithLength(24)));
+  public final TransientPath mapping = TransientPath.file(Payload.randomWithLength(24));
 
   private List<String> validArguments;
 

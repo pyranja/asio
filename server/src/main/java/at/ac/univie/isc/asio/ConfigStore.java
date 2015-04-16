@@ -4,6 +4,7 @@ import com.google.common.io.ByteSource;
 import org.springframework.dao.DataAccessException;
 
 import java.net.URI;
+import java.util.Map;
 
 /**
  * Provide access to persistent storage for configuration data. Each data item is identified by a
@@ -11,6 +12,20 @@ import java.net.URI;
  * combination of qualifier and name must be unique for different items.
  */
 public interface ConfigStore {
+
+  /**
+   * Find all currently stored configuration items with the given identifier as a mapping of
+   * {@code qualifier} to content.
+   * <p>The mapping is a snapshot of currently stored items - items may be removed and the mapping is
+   * <strong>not</strong> updated. Therefore always expect the mapped {@link ByteSource} to throw
+   * an exception on access.</p>
+   *
+   * @param identifier the identifier of the required items, e.g. a special config file suffix
+   * @return mapping of qualifier to {@code ByteSource}
+   * @throws DataAccessException if the backing storage cannot be accessed
+   */
+  Map<String, ByteSource> findAllWithIdentifier(final String identifier) throws DataAccessException;
+
   /**
    * Persist the given binary content as a configuration item with given name and qualifier. If an
    * item with the same identifier already exists, it will be overwritten.

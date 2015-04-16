@@ -2,6 +2,8 @@ package at.ac.univie.isc.asio;
 
 import at.ac.univie.isc.asio.integration.IntegrationTest;
 import at.ac.univie.isc.asio.io.Classpath;
+import at.ac.univie.isc.asio.io.TransientPath;
+import at.ac.univie.isc.asio.platform.FileSystemConfigStore;
 import at.ac.univie.isc.asio.security.AuthMechanism;
 import at.ac.univie.isc.asio.security.Role;
 import at.ac.univie.isc.asio.spring.ApplicationRunner;
@@ -23,6 +25,8 @@ import java.net.URI;
 public class VphIntegrationSuite {
   @ClassRule
   public static ApplicationRunner application = ApplicationRunner.run(Asio.class);
+  @ClassRule
+  public static TransientPath workDirectory = TransientPath.folder();
 
   @BeforeClass
   public static void start() throws IOException {
@@ -30,7 +34,13 @@ public class VphIntegrationSuite {
         .credentials("root", "change").build()
         .execute(Classpath.read("sql/database.integration.sql"));
 
+    workDirectory.add(
+        FileSystemConfigStore.STORE_FOLDER.resolve("public##config"),
+        Classpath.load("config.integration.ttl").read()
+    );
+
     final String[] args = new String[] {
+        "--asio.home=" + workDirectory.path(),
         "--asio.metadata-repository=" + IntegrationTest.atos.address()
     };
     application.profile("vph-test").run(args);
@@ -43,7 +53,6 @@ public class VphIntegrationSuite {
         .timeoutInSeconds(10)
         .defaults().schema("public").role(Role.NONE.name());
 
-    IntegrationTest.deploy("public", Classpath.load("config.integration.ttl"));
     IntegrationTest.warmup();
   }
 }

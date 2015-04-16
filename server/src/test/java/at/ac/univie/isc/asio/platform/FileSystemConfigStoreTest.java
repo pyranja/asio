@@ -1,7 +1,8 @@
 package at.ac.univie.isc.asio.platform;
 
+import at.ac.univie.isc.asio.InvalidUsage;
 import at.ac.univie.isc.asio.io.Payload;
-import at.ac.univie.isc.asio.io.TransientFolder;
+import at.ac.univie.isc.asio.io.TransientPath;
 import at.ac.univie.isc.asio.tool.Timeout;
 import com.google.common.io.ByteSource;
 import com.google.common.io.ByteStreams;
@@ -17,6 +18,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 
 import static at.ac.univie.isc.asio.io.PathMatchers.aDirectory;
 import static at.ac.univie.isc.asio.io.PathMatchers.aFile;
@@ -27,7 +29,7 @@ public class FileSystemConfigStoreTest {
   @Rule
   public ExpectedException error = ExpectedException.none();
   @Rule
-  public TransientFolder root = TransientFolder.create();
+  public TransientPath root = TransientPath.folder();
 
   private FileSystemConfigStore subject;
 
@@ -47,6 +49,54 @@ public class FileSystemConfigStoreTest {
     assertThat("sub-folder already existed", folder, not(aDirectory()));
     new FileSystemConfigStore(folder, Timeout.undefined());
     assertThat(folder, aDirectory());
+  }
+
+  @Test
+  public void should_yield_an_empty_mapping_if_no_items_stored_currently() throws Exception {
+    assertThat(subject.findAllWithIdentifier("test").keySet(), empty());
+  }
+
+  @Test
+  public void should_reject_illegal_identifier() throws Exception {
+    error.expect(InvalidUsage.class);
+    subject.findAllWithIdentifier(null);
+  }
+
+  @Test
+  public void should_find_present_config_items() throws Exception {
+    Files.write(subject.getRoot().resolve("first##test"), Payload.randomWithLength(24));
+    Files.write(subject.getRoot().resolve("second##test"), Payload.randomWithLength(24));
+    assertThat(subject.findAllWithIdentifier("test").keySet(), containsInAnyOrder("first", "second"));
+  }
+
+  @Test
+  public void should_find_only_items_with_correct_identifier() throws Exception {
+    Files.write(subject.getRoot().resolve("first##other"), Payload.randomWithLength(24));
+    Files.write(subject.getRoot().resolve("second##test"), Payload.randomWithLength(24));
+    assertThat(subject.findAllWithIdentifier("test").keySet(), containsInAnyOrder("second"));
+  }
+
+  @Test
+  public void should_yield_ByteSource_ref_to_correct_content() throws Exception {
+    final byte[] firstContent = Payload.randomWithLength(1024);
+    Files.write(subject.getRoot().resolve("first##test"), firstContent);
+    final byte[] secondContent = Payload.randomWithLength(256);
+    Files.write(subject.getRoot().resolve("second##test"), secondContent);
+    final Map<String, ByteSource> found = subject.findAllWithIdentifier("test");
+    assertThat(found.get("first").read(), equalTo(firstContent));
+    assertThat(found.get("second").read(), equalTo(secondContent));
+  }
+
+  @Test
+  public void should_not_find_directories() throws Exception {
+    Files.createDirectories(subject.getRoot().resolve("directory##test"));
+    assertThat(subject.findAllWithIdentifier("test").keySet(), empty());
+  }
+
+  @Test
+  public void should_reject_identifier_with_illegal_characters() throws Exception {
+    error.expect(InvalidUsage.class);
+    subject.findAllWithIdentifier("123##test");
   }
 
   @Test
@@ -91,37 +141,37 @@ public class FileSystemConfigStoreTest {
 
   @Test
   public void should_reject_unsafe_qualifier_with_path_separator() throws Exception {
-    error.expect(IllegalArgumentException.class);
+    error.expect(InvalidUsage.class);
     subject.save("illegal" + File.pathSeparator + "qualifier", ".legal", ByteSource.empty());
   }
 
   @Test
   public void should_reject_unsafe_qualifier_with_separator() throws Exception {
-    error.expect(IllegalArgumentException.class);
+    error.expect(InvalidUsage.class);
     subject.save("illegal" + File.separator + "qualifier", ".legal", ByteSource.empty());
   }
 
   @Test
   public void should_reject_unsafe_name_with_path_separator() throws Exception {
-    error.expect(IllegalArgumentException.class);
+    error.expect(InvalidUsage.class);
     subject.save("test", "illegal" + File.pathSeparator + "path", ByteSource.empty());
   }
 
   @Test
   public void should_reject_unsafe_name_with_separator() throws Exception {
-    error.expect(IllegalArgumentException.class);
+    error.expect(InvalidUsage.class);
     subject.save("test", "illegal" + File.separator + "path", ByteSource.empty());
   }
 
   @Test
-  public void should_reject_unsage_qualifier_with_hash_pound() throws Exception {
-    error.expect(IllegalArgumentException.class);
+  public void should_reject_unsafe_qualifier_with_hash_pound() throws Exception {
+    error.expect(InvalidUsage.class);
     subject.save("illegal##qualifier", "test", ByteSource.empty());
   }
 
   @Test
   public void should_reject_unsafe_name_with_hash_pound() throws Exception {
-    error.expect(IllegalArgumentException.class);
+    error.expect(InvalidUsage.class);
     subject.save("test", "illegal##path", ByteSource.empty());
   }
 
@@ -141,7 +191,7 @@ public class FileSystemConfigStoreTest {
 
   @Test
   public void should_reject_unsafe_qualifier_with_glob_star() throws Exception {
-    error.expect(IllegalArgumentException.class);
+    error.expect(InvalidUsage.class);
     subject.clear("*");
   }
 

@@ -2,7 +2,7 @@ package at.ac.univie.isc.asio;
 
 import at.ac.univie.isc.asio.integration.IntegrationTest;
 import at.ac.univie.isc.asio.io.Classpath;
-import at.ac.univie.isc.asio.io.TransientFile;
+import at.ac.univie.isc.asio.io.TransientPath;
 import at.ac.univie.isc.asio.security.AuthMechanism;
 import at.ac.univie.isc.asio.security.Role;
 import at.ac.univie.isc.asio.spring.ApplicationRunner;
@@ -20,7 +20,8 @@ public class BroodIntegrationSuite {
   @ClassRule
   public static ApplicationRunner application = ApplicationRunner.run(Asio.class);
   @ClassRule
-  public static TransientFile keystore = TransientFile.from(Classpath.load("keystore.integration"));
+  public static TransientPath keystore =
+      TransientPath.file(Classpath.toArray("keystore.integration"));
 
   @BeforeClass
   public static void start() {

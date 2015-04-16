@@ -5,69 +5,46 @@ import at.ac.univie.isc.asio.Container;
 import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.Scope;
 import at.ac.univie.isc.asio.insight.Emitter;
-import at.ac.univie.isc.asio.tool.Timeout;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.util.concurrent.Striped;
-import com.google.common.util.concurrent.UncheckedExecutionException;
-import com.google.common.util.concurrent.UncheckedTimeoutException;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Lock;
+import java.util.*;
 
 import static java.util.Objects.requireNonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * Central registry to look up and manage deployed {@link Container}.
- * Adding or removing a container will trigger {@code SchemaDeployed} and {@code SchemaDropped}
- * events respectively.
+ * Adding or removing a container will trigger {@code Deployed} and {@code Dropped} events
+ * respectively.
  */
 @Brood
-/* final */ class Catalog<CONTAINER extends Container> {
+/* final */ class Catalog {
   private static final Logger log = getLogger(Catalog.class);
 
-  private static final int INITIAL_CAPACITY = 8;
-  private static final float LOAD_FACTOR = 0.75f;
-  private static final int CONCURRENCY_LEVEL = 4;
-
-  private final ConcurrentMap<Id, CONTAINER> catalog =
-      new ConcurrentHashMap<>(INITIAL_CAPACITY, LOAD_FACTOR, CONCURRENCY_LEVEL);
-  private final Striped<Lock> locks = Striped.lock(CONCURRENCY_LEVEL);
-  private final AtomicBoolean closed = new AtomicBoolean(false);
-
+  private final Map<Id, Container> catalog;
   private final Emitter events;
-  private final long maximalWaitingTimeInMilliseconds;
 
   @Autowired
-  public Catalog(final Emitter events, final Timeout timeout) {
+  public Catalog(final Emitter events) {
+    catalog = new HashMap<>();
     this.events = events;
-    // 0 means 'do not wait at all'
-    maximalWaitingTimeInMilliseconds = timeout.getAs(TimeUnit.MILLISECONDS, 0L);
   }
 
   // === public api ================================================================================
 
   /**
-   * Add the given schema to this catalog, replacing any schema with the same name.
+   * Add the given container to this catalog, replacing any schema with the same name.
    *
    * @param container schema that will be deployed
    * @return the replaced schema if one existed
    */
-  public Optional<CONTAINER> deploy(final CONTAINER container) {
+  public Optional<Container> deploy(final Container container) {
     log.debug(Scope.SYSTEM.marker(), "deploy {} as <{}>", container, container.name());
-    ensureOpen();
     requireNonNull(container);
-    final Optional<CONTAINER> former =
+    final Optional<Container> former =
         Optional.fromNullable(catalog.put(container.name(), container));
     if (former.isPresent()) { events.emit(dropEvent(former.get())); }
     events.emit(deployEvent(container));
@@ -80,143 +57,43 @@ import static org.slf4j.LoggerFactory.getLogger;
    * @param id name of the schema that will be dropped
    * @return the removed schema if one existed
    */
-  public Optional<CONTAINER> drop(final Id id) {
+  public Optional<Container> drop(final Id id) {
     log.debug(Scope.SYSTEM.marker(), "drop <{}>", id);
-    ensureOpen();
-    final Optional<CONTAINER> removed = Optional.fromNullable(catalog.remove(id));
+    final Optional<Container> removed = Optional.fromNullable(catalog.remove(id));
     if (removed.isPresent()) { events.emit(dropEvent(removed.get())); }
     return removed;
   }
 
   /**
-   * Execute the given callback while holding the lock of given container.
+   * {@link #drop(Id) Drop} all present containers.
    *
-   * @param name     name of container that must be locked during the execution
-   * @param action   the callback that should be executed atomically
-   * @param <RESULT> type of return value of the callable
-   * @return the value returned by the callback
-   * @throws RuntimeException            unchecked exceptions are propagated as is from the callback
-   * @throws UncheckedExecutionException if the callback throws a checked exception
-   * @throws UncheckedTimeoutException   if the lock cannot be acquired in the maximal allowed time
+   * @return all container that were present when closing
    */
-  public <RESULT> RESULT atomic(final Id name, final Callable<RESULT> action)
-      throws UncheckedTimeoutException, UncheckedExecutionException {
-    lock(name);
-    try {
-      return action.call();
-    } catch (Exception failure) {
-      Throwables.propagateIfPossible(failure);
-      throw new UncheckedExecutionException(failure);
-    } finally {
-      unlock(name);
+  Set<Container> clear() {
+    log.info(Scope.SYSTEM.marker(), "clear - dropping all of {}", catalog.keySet());
+    final Set<Container> dropped = new HashSet<>();
+    final Iterator<Container> present = catalog.values().iterator();
+    while (present.hasNext()) {
+      final Container next = present.next();
+      events.emit(dropEvent(next));
+      dropped.add(next);
+      present.remove();
     }
-  }
-
-  // === queries ===================================================================================
-
-  /**
-   * Find a deployed container with given id.
-   *
-   * @param id id of container
-   * @return deployed container if present
-   */
-  Optional<CONTAINER> find(final Id id) {
-    ensureOpen();
-    return Optional.fromNullable(catalog.get(id));
-  }
-
-  /**
-   * Find the names of all currently deployed containers.
-   *
-   * @return snapshot of all present container names.
-   */
-  Set<Id> findKeys() {
-    ensureOpen();
-    return ImmutableSet.copyOf(catalog.keySet());
-  }
-
-  /**
-   * Find all schemas currently deployed.
-   *
-   * @return snapshot of all present schemas
-   */
-  Set<CONTAINER> findAll() {
-    ensureOpen();
-    return ImmutableSet.copyOf(catalog.values());
-  }
-
-  // === controller handles ========================================================================
-
-  /**
-   * Attempt to lock the given schema.
-   *
-   * @param id name of schema that should be locked
-   * @throws UncheckedTimeoutException if the lock cannot be acquired in the granted time span
-   */
-  void lock(final Id id) throws UncheckedTimeoutException {
-    final Lock lock = locks.get(id);
-    try {
-      if (!lock.tryLock(maximalWaitingTimeInMilliseconds, TimeUnit.MILLISECONDS)) {
-        throw new UncheckedTimeoutException("timed out while locking " + id);
-      }
-    } catch (InterruptedException e) {
-      throw new UncheckedTimeoutException("interrupted while locking " + id, e);
-    }
-  }
-
-  /**
-   * Unlock the given schema
-   *
-   * @param id name of schema that should be unlocked.
-   */
-  void unlock(final Id id) {
-    locks.get(id).unlock();
-  }
-
-  /**
-   * Disable this catalog, all existing schemas are dropped and future calls to
-   * {@link #deploy(Container)} or {@link #drop(Id)} will fail.
-   *
-   * @return all schemas that were present when closing
-   */
-  Set<CONTAINER> clear() {
-    closed.set(true);
-    final Set<CONTAINER> remaining = ImmutableSet.copyOf(catalog.values());
-    log.info(Scope.SYSTEM.marker(), "cleared - dropping all of {}", remaining);
-    for (CONTAINER container : remaining) {
-      events.emit(dropEvent(container));
-    }
-    return remaining;
-  }
-
-  /**
-   * Whether this catalog has been closed.
-   */
-  boolean isClosed() {
-    return closed.get();
-  }
-
-  /**
-   * The internal locking mechanism.
-   */
-  @VisibleForTesting
-  Striped<Lock> locks() {
-    return locks;
+    return dropped;
   }
 
   // === helper ====================================================================================
 
-  private ContainerEvent.Deployed deployEvent(final CONTAINER schema) {
+  private ContainerEvent.Deployed deployEvent(final Container schema) {
     return new ContainerEvent.Deployed(schema);
   }
 
-  private ContainerEvent.Dropped dropEvent(final CONTAINER schema) {
+  private ContainerEvent.Dropped dropEvent(final Container schema) {
     return new ContainerEvent.Dropped(schema);
   }
 
-  private void ensureOpen() {
-    if (closed.get()) {
-      throw new IllegalStateException("catalog already closed");
-    }
+  @VisibleForTesting
+  Map<Id, Container> internal() {
+    return catalog;
   }
 }

@@ -1,18 +1,15 @@
 package at.ac.univie.isc.asio.io;
 
 import at.ac.univie.isc.asio.Unchecked;
+import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.io.ByteSource;
-import com.google.common.io.CharStreams;
 import com.google.common.io.Resources;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 
 /**
  * Load a file from the test classpath and handle safe provisioning of the data as a
@@ -28,7 +25,8 @@ public final class Classpath {
    * @return contents of the resource as a stream
    * @throws at.ac.univie.isc.asio.Unchecked.UncheckedIOException if opening the resource fails
    */
-  public static InputStream fetch(final String name) {
+  @Nonnull
+  public static InputStream fetch(@Nonnull final String name) {
     try {
       return load(name).openStream();
     } catch (IOException e) {
@@ -43,9 +41,26 @@ public final class Classpath {
    * @return contents of the resource as a string
    * @throws at.ac.univie.isc.asio.Unchecked.UncheckedIOException if reading the resource fails
    */
+  @Nonnull
   public static String read(final String name) {
-    try (final Reader source = new InputStreamReader(fetch(name), StandardCharsets.UTF_8)) {
-      return CharStreams.toString(source);
+    try {
+      return load(name).asCharSource(Charsets.UTF_8).read();
+    } catch (IOException e) {
+      throw new Unchecked.UncheckedIOException(e);
+    }
+  }
+
+  /**
+   * Load a classpath resource into a byte array.
+   *
+   * @param name reference to the resource
+   * @return contents of the resource as a byte array
+   * @throws at.ac.univie.isc.asio.Unchecked.UncheckedIOException if reading the resource fails
+   */
+  @Nonnull
+  public static byte[] toArray(@Nonnull final String name) {
+    try {
+      return load(name).read();
     } catch (IOException e) {
       throw new Unchecked.UncheckedIOException(e);
     }
