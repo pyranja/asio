@@ -432,8 +432,17 @@
         <!-- testing -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <enableAssertions>true</enableAssertions>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-failsafe-plugin</artifactId>
           <configuration>
+            <enableAssertions>true</enableAssertions>
             <skipTests>${quick}</skipTests>
             <failIfNoTests>true</failIfNoTests>
             <includes>
