@@ -5,18 +5,24 @@ import at.ac.univie.isc.asio.security.AllowAllVerifier;
 import at.ac.univie.isc.asio.security.NoopTrustManager;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.PropertyPlaceholderAutoConfiguration;
+import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import java.security.GeneralSecurityException;
 
-@SpringBootApplication
+@Configuration
+@ComponentScan("at.ac.univie.isc.asio.munin")
 @EnableConfigurationProperties(MuninSettings.class)
+@Import({PropertyPlaceholderAutoConfiguration.class, JacksonAutoConfiguration.class})
 public class Munin {
 
   @Autowired
