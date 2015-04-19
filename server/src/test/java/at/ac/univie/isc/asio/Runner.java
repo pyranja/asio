@@ -20,7 +20,7 @@ public class Runner {
 
     FakeAtosService.attachTo(HttpServer.create("atos-fake").enableLogging()).start(8401);
 
-    try (final TransientPath keystore = TransientPath.file(Classpath.toArray("keystore.integration"));
+    try (final TransientPath keystore = TransientPath.file(Classpath.toArray("keystore.integration")).init();
          final TransientPath workingDirectory = TransientPath.folder().init()) {
 
       workingDirectory.add(
