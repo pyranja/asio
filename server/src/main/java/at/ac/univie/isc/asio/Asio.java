@@ -11,6 +11,7 @@ import at.ac.univie.isc.asio.metadata.DescriptorConversion;
 import at.ac.univie.isc.asio.metadata.DescriptorService;
 import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
 import at.ac.univie.isc.asio.platform.CurrentTime;
+import at.ac.univie.isc.asio.platform.Launcher;
 import at.ac.univie.isc.asio.security.Authorizer;
 import at.ac.univie.isc.asio.spring.EventBusAutoRegistrar;
 import at.ac.univie.isc.asio.spring.ExplicitWiring;
@@ -26,6 +27,7 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.actuate.autoconfigure.ManagementSecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -52,7 +54,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-@SpringBootApplication(exclude = {ManagementSecurityAutoConfiguration.class})
+@SpringBootApplication(exclude = {
+    ManagementSecurityAutoConfiguration.class,
+    DataSourceAutoConfiguration.class
+})
 @EnableConfigurationProperties({AsioSettings.class})
 @ComponentScan(
     includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = SpringAutoFactory.class)
@@ -61,6 +66,7 @@ import java.util.concurrent.TimeUnit;
 public class Asio {
 
   public static void main(String[] args) {
+    Launcher.currentProcess().daemonize();
     application().run(args);
   }
 
