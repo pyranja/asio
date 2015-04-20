@@ -2,16 +2,17 @@ package at.ac.univie.isc.asio.nest;
 
 import at.ac.univie.isc.asio.Scope;
 import at.ac.univie.isc.asio.SqlSchema;
-import at.ac.univie.isc.asio.database.DefinitionService;
-import at.ac.univie.isc.asio.database.Jdbc;
-import at.ac.univie.isc.asio.metadata.DescriptorService;
 import at.ac.univie.isc.asio.d2rq.D2rqTools;
 import at.ac.univie.isc.asio.database.DatabaseInspector;
+import at.ac.univie.isc.asio.database.DefinitionService;
+import at.ac.univie.isc.asio.database.Jdbc;
 import at.ac.univie.isc.asio.engine.sparql.JenaEngine;
 import at.ac.univie.isc.asio.engine.sql.JdbcSpec;
 import at.ac.univie.isc.asio.engine.sql.JooqEngine;
+import at.ac.univie.isc.asio.metadata.DescriptorService;
 import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
 import at.ac.univie.isc.asio.spring.ExplicitWiring;
+import at.ac.univie.isc.asio.tool.Beans;
 import at.ac.univie.isc.asio.tool.Pretty;
 import at.ac.univie.isc.asio.tool.Timeout;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -30,6 +31,7 @@ import rx.functions.Func0;
 
 import javax.sql.DataSource;
 import java.net.URI;
+import java.sql.SQLException;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -94,8 +96,16 @@ class NestBluePrint {
   }
 
   @Bean(destroyMethod = "close")
-  public SQLConnection d2rqConnection(final Jdbc jdbc) {
-    return new SQLConnection(jdbc.getUrl(), jdbc.getDriver(), jdbc.getUsername(), jdbc.getPassword());
+  public SQLConnection d2rqConnection(final Jdbc jdbc) throws SQLException {
+    final SQLConnection connection = new SQLConnection(
+        jdbc.getUrl(), jdbc.getDriver(),
+        jdbc.getUsername(), jdbc.getPassword(),
+        Beans.asProperties(jdbc.getProperties())
+    );
+    if (jdbc.getSchema() != null) {
+      connection.connection().setCatalog(jdbc.getSchema());
+    }
+    return connection;
   }
 
   @Bean(destroyMethod = "close")

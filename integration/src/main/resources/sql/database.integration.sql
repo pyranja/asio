@@ -6,16 +6,16 @@ DROP TABLE IF EXISTS person, patient, datetimes;
 
 CREATE TABLE person (
   id INT NOT NULL,
-  firstname varchar(255) default NULL,
-  lastname varchar(255) default NULL,
-  age varchar(50) default NULL,
-  postalcode varchar(10) default NULL,
+  firstname VARCHAR(255) DEFAULT NULL,
+  lastname VARCHAR(255) DEFAULT NULL,
+  age VARCHAR(50) DEFAULT NULL,
+  postalcode VARCHAR(10) DEFAULT NULL,
   PRIMARY KEY (id)
 );
 
 CREATE TABLE patient (
   id INT NOT NULL,
-  name varchar(255) default NULL,
+  name VARCHAR(255) DEFAULT NULL,
   PRIMARY KEY (id)
 );
 

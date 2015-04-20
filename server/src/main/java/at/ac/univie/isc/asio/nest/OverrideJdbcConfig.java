@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.nest;
 
+import at.ac.univie.isc.asio.AsioFeatures;
 import at.ac.univie.isc.asio.AsioSettings;
 import at.ac.univie.isc.asio.Brood;
 import at.ac.univie.isc.asio.database.Jdbc;
@@ -19,7 +20,7 @@ import static java.util.Objects.requireNonNull;
  */
 @Brood
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@ConditionalOnProperty("asio.jdbc")
+@ConditionalOnProperty(AsioFeatures.GLOBAL_DATASOURCE)
 final class OverrideJdbcConfig implements Configurer {
   private final Jdbc override;
 

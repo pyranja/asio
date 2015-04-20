@@ -15,9 +15,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
 import static org.jooq.impl.DSL.field;
 import static org.junit.Assert.assertThat;
 
@@ -26,12 +24,16 @@ import static org.junit.Assert.assertThat;
  */
 @Ignore("explorative - depends on external setup")
 public class MysqlSchemaExploration {
+  /** set to an existing database (will not be modified) */
+  static final String DATABASE_NAME = "public";
+
   private Connection connection;
   private DSLContext db;
 
   @Before
   public void connect() throws SQLException {
-    connection = DriverManager.getConnection("jdbc:mysql://localhost:3350/test", "root", "change");
+    connection = DriverManager.getConnection("jdbc:mysql:///", "root", "change");
+    connection.setCatalog(DATABASE_NAME);
     db = DSL.using(connection);
   }
 
@@ -59,6 +61,6 @@ public class MysqlSchemaExploration {
   public void can_fetch_active_database() throws Exception {
     final Field<String> activeSchema = field("DATABASE()", String.class).as("schema");
     final String schema = db.select(activeSchema).fetchOne(activeSchema);
-    assertThat(schema, is("test"));
+    assertThat(schema, is(DATABASE_NAME));
   }
 }

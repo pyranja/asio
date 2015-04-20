@@ -1,13 +1,13 @@
 -- gui test reference data
 
-DROP TABLE IF EXISTS urls, dummy_table_with_long_name_for_gui_testing_xoxoxoxoxoxoxoxoxoxoxoxoxoxoxoxoxoxoxo;
+DROP TABLE IF EXISTS urls, dummy_table_with_long_name_for_gui_testing_xoxoxoxoxoxoxoxoxoxox;
 
 -- SCHEMA
 
-CREATE TABLE dummy_table_with_long_name_for_gui_testing_xoxoxoxoxoxoxoxoxoxoxoxoxoxoxoxoxoxoxo (
-  id_of_very_long_named_table_dummy_iaiaiaiaiaiaiaiaiaiaiaiaiaiaiaiaiaiaiaia INT NOT NULL,
+CREATE TABLE dummy_table_with_long_name_for_gui_testing_xoxoxoxoxoxoxoxoxoxox (
+  id_of_very_long_named_table_dummy_iaiaiaiaiaiaiaiaiaiaiaiaiaiaia INT NOT NULL,
   column_with_long_but_reasonable_name VARCHAR(255) DEFAULT NULL,
-  PRIMARY KEY(id_of_very_long_named_table_dummy_iaiaiaiaiaiaiaiaiaiaiaiaiaiaiaiaiaiaiaia)
+  PRIMARY KEY(id_of_very_long_named_table_dummy_iaiaiaiaiaiaiaiaiaiaiaiaiaiaia)
 );
 
 CREATE TABLE urls (
@@ -31,4 +31,4 @@ INSERT INTO urls (id, link, comment) VALUES (8, 'http://example.com?val=test%20m
 INSERT INTO urls (id, link, comment) VALUES (9, '<a href="http://example.com">link</a>', 'a html link tag');
 INSERT INTO urls (id, link, comment) VALUES (10, '<script>alert("XSS INJECTION!");</script>', 'script injection attempt');
 
-INSERT INTO dummy_table_with_long_name_for_gui_testing_xoxoxoxoxoxoxoxoxoxoxoxoxoxoxoxoxoxoxo (id_of_very_long_named_table_dummy_iaiaiaiaiaiaiaiaiaiaiaiaiaiaiaiaiaiaiaia, column_with_long_but_reasonable_name) VALUES (1, 'long_test-value_hahahahahahahahahahahahahahahahahahahahahahahahahahahahaahahahahahaha');
+INSERT INTO dummy_table_with_long_name_for_gui_testing_xoxoxoxoxoxoxoxoxoxox (id_of_very_long_named_table_dummy_iaiaiaiaiaiaiaiaiaiaiaiaiaiaia, column_with_long_but_reasonable_name) VALUES (1, 'long_test-value_hahahahahahahahahahahahahahahahahahahahahahahahahahahahaahahahahahaha');

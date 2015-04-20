@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio;
 
+import at.ac.univie.isc.asio.integration.IntegrationDatabase;
 import at.ac.univie.isc.asio.integration.IntegrationTest;
 import at.ac.univie.isc.asio.io.Classpath;
 import at.ac.univie.isc.asio.io.TransientPath;
@@ -14,6 +15,9 @@ import org.junit.runners.Suite;
 
 import java.net.URI;
 
+/**
+ * Run integration tests against a standard deployment.
+ */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({AllFeatures.class})
 public class BroodIntegrationSuite {
@@ -25,22 +29,22 @@ public class BroodIntegrationSuite {
 
   @BeforeClass
   public static void start() {
-    final Database h2 = Database.create("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1")
-        .credentials("root", "change").build()
+
+    final Database h2 = IntegrationDatabase.catalog("public").h2InMemory()
         .execute(Classpath.read("sql/database.integration.sql"));
 
     final String[] args = new String[] {
         "--server.ssl.key-store=" + keystore.path(),
-        "--asio.feature.vph-metadata=on",
         "--asio.metadata-repository=" + IntegrationTest.atos.address(),
     };
-    application.profile("std-test").run(args);
+    application.profile("std-test").profile(h2.getType()).run(args);
 
     IntegrationTest.configure()
         .baseService(URI.create("https://localhost:" + application.getPort() + "/"))
         .auth(AuthMechanism.basic("root", "change").overrideCredentialDelegationHeader("Delegate-Authorization"))
         .rootCredentials("root", "change")
         .database(h2)
+        .timeoutInSeconds(10)
         .defaults().schema("public").role(Role.NONE.name());
 
     IntegrationTest.deploy("public", Classpath.load("config.integration.ttl"));

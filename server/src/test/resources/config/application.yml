@@ -1,0 +1,87 @@
+--- # common integration test settings
+server.port: 0
+
+security:
+  user.name: 'root'
+  user.password: 'change'
+
+asio.timeout: 3000
+
+logging.level.: 'OFF'  # be quiet during test runs
+logging.level:  # must override explicit base settings
+  at.ac.univie.isc.asio.events: 'OFF'
+  org.springframework.boot.actuate.audit.listener.AuditListener: 'OFF'
+
+spring.security.debug: off
+spring.jersey.debug: off
+
+--- # std deployment
+spring.profiles: 'std-test'
+spring.application.name: 'std-integration'
+spring.profiles.include: 'brood'
+
+asio.api.delegate-authorization-header: 'Delegate-Authorization'
+asio.feature:
+    vph-metadata: on
+    allow-federation: on
+
+--- # vph deployment
+spring.profiles: 'vph-test'
+spring.application.name: 'vph-integration'
+spring.profiles.include: 'brood'
+server.ssl.enabled: false
+
+asio.feature:
+    vph-metadata: on
+    vph-uri-auth: on
+    allow-federation: on
+
+--- # flock node
+spring.profiles: 'flock-test'
+spring.application.name: 'flock-integration'
+spring.profiles.include: 'flock'
+server.ssl.enabled: false
+
+asio.feature:
+    vph-metadata: on
+    allow-federation: on
+
+flock.identifier: 'urn:asio:dataset:integration'
+
+--- # override jdbc if mysql available
+spring.profiles: 'mysql'
+
+asio.feature.global-datasource: on
+asio.jdbc:
+    url: 'jdbc:mysql:///'
+    username: 'root'
+    password: 'change'
+
+--- # config for development server
+spring.profiles: 'dev'
+spring.application.name: 'dev'
+server.port: 8443
+
+security:
+  user.name: 'root'
+  user.password: 'change'
+
+asio:
+  metadata-repository: 'http://localhost:8401/'
+  feature:
+    vph-metadata: on
+    vph-uri-auth: off
+    allow-federation: on
+    global-datasource: off
+
+logging.level.: 'INFO'  # root logger
+logging.level:
+  at.ac.univie.isc.asio: 'DEBUG'
+  at.ac.univie.isc.asio.events: 'OFF'
+  com.hp.hpl.jena.arq.exec: 'OFF'
+  org.d2rq.db.SQLIterator: 'OFF'
+  org.springframework.security: 'DEBUG'
+  org.springframework.boot.actuate.audit.listener.AuditListener: 'OFF'
+
+spring.security.debug: on
+spring.jersey.debug: on

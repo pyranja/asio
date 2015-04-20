@@ -6,12 +6,17 @@ import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
+import org.hamcrest.CustomMatcher;
+import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import java.util.Map;
+
 import static at.ac.univie.isc.asio.matcher.RestAssuredMatchers.*;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -38,17 +43,16 @@ public class ReferenceSql extends IntegrationTest {
       .then()
         .statusCode(is(HttpStatus.SC_OK))
         .contentType(compatibleTo("application/xml"))
-        .root("schema.table.find { it.@name == 'PATIENT' }")
-        .content("@schema", is("PUBLIC"))
-        .content("@catalog", is("TEST"))
-        .root("schema.table.find { it.@name == 'PATIENT' }.column.find { it.@name == 'ID' }")
+        .root("schema.table.find { it.@name == 'patient' }")
+        .content("@schema", is("public"))
+        .root("schema.table.find { it.@name == 'patient' }.column.find { it.@name == 'id' }")
 //      namespace prefix is non-deterministic
-//        .content("@type", is("xsi:long"))
-        .content("@sqlType", is("integer"))
+        .content("@type", endsWith("long"))
+        .content("@sqlType", startsWith("int"))
         .content("@length", is("10"))
-        .root("schema.table.find { it.@name == 'PATIENT' }.column.find { it.@name == 'NAME' }")
+        .root("schema.table.find { it.@name == 'patient' }.column.find { it.@name == 'name' }")
 //      namespace prefix is non-deterministic
-//        .content("@type", is("xsi:string"))
+        .content("@type", endsWith("string"))
         .content("@sqlType", is("varchar"))
         .content("@length", is("255"));
     }
@@ -62,14 +66,13 @@ public class ReferenceSql extends IntegrationTest {
       .then()
         .statusCode(is(HttpStatus.SC_OK))
         .contentType(compatibleTo("application/json"))
-        .root("table.find { it.name == 'PATIENT' }")
-        .content("schema", is("PUBLIC"))
-        .content("catalog", is("TEST"))
-        .root("table.find { it.name == 'PATIENT' }.column.find { it.name == 'ID' }")
+        .root("table.find { it.name == 'patient' }")
+        .content("schema", is("public"))
+        .root("table.find { it.name == 'patient' }.column.find { it.name == 'id' }")
         .content("type", is("http://www.w3.org/2001/XMLSchema#long"))
-        .content("sqlType", is("integer"))
+        .content("sqlType", startsWith("int"))
         .content("length", is(10))
-        .root("table.find { it.name == 'PATIENT' }.column.find { it.name == 'NAME' }")
+        .root("table.find { it.name == 'patient' }.column.find { it.name == 'name' }")
         .content("type", is("http://www.w3.org/2001/XMLSchema#string"))
         .content("sqlType", is("varchar"))
         .content("length", is(255))
@@ -107,12 +110,6 @@ public class ReferenceSql extends IntegrationTest {
 
   public class Update {
 
-    private final Table<Integer, String, String> EXPECTED_INSERTION =
-        ImmutableTable.<Integer, String, String>builder()
-            .put(0, "ID", "42")
-            .put(0, "NAME", "test-name")
-            .build();
-
     @Test
     public void insert_as_xml() throws Exception {
       given().role("full").and()
@@ -125,7 +122,7 @@ public class ReferenceSql extends IntegrationTest {
         .contentType(compatibleTo("application/sql-results+xml"))
         .content("sql.head.@statement", is("INSERT INTO PATIENT VALUES(42, 'test-name')"))
         .content("sql.update.@affected", is("1"));
-      assertThat(database().reference("SELECT * FROM PATIENT"), is(EXPECTED_INSERTION));
+      assertThat(database().reference("SELECT * FROM PATIENT"), is(expectedInsertion()));
     }
 
     private final Table<Integer, String, String> EXPECTED_CSV_RESPONSE =
@@ -145,7 +142,24 @@ public class ReferenceSql extends IntegrationTest {
         .statusCode(is(HttpStatus.SC_OK))
         .contentType(compatibleTo("text/csv"))
         .content(is(sqlCsvEqualTo(EXPECTED_CSV_RESPONSE)));
-      assertThat(database().reference("SELECT * FROM PATIENT"), is(EXPECTED_INSERTION));
+      assertThat(database().reference("SELECT * FROM PATIENT"), is(expectedInsertion()));
+    }
+
+    // @formatter:on
+
+    private Matcher<? super Table<Integer, String, String>> expectedInsertion() {
+      return new CustomMatcher<Table<Integer, String, String>>("expect inserted row {id=42, name=test-name}") {
+        @Override
+        public boolean matches(final Object item) {
+          final Table<Integer, String, String> result = (Table<Integer, String, String>) item;
+          assertThat("unexpected row count", result.rowKeySet(), hasSize(1));
+          final Map<String, String> row = result.row(0);
+          assertThat("unexpected column count", row.entrySet(), hasSize(2));
+          assertThat(row, hasEntry(equalToIgnoringCase("id"), equalTo("42")));
+          assertThat(row, hasEntry(equalToIgnoringCase("name"), equalTo("test-name")));
+          return true;
+        }
+      };
     }
   }
 }

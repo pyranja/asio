@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio;
 
+import at.ac.univie.isc.asio.integration.IntegrationDatabase;
 import at.ac.univie.isc.asio.integration.IntegrationTest;
 import at.ac.univie.isc.asio.io.Classpath;
 import at.ac.univie.isc.asio.io.TransientPath;
@@ -30,8 +31,8 @@ public class VphIntegrationSuite {
 
   @BeforeClass
   public static void start() throws IOException {
-    final Database h2 = Database.create("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1")
-        .credentials("root", "change").build()
+
+    final Database database = IntegrationDatabase.catalog("public").mysqlIfAvailable()
         .execute(Classpath.read("sql/database.integration.sql"));
 
     workDirectory.add(
@@ -43,13 +44,13 @@ public class VphIntegrationSuite {
         "--asio.home=" + workDirectory.path(),
         "--asio.metadata-repository=" + IntegrationTest.atos.address()
     };
-    application.profile("vph-test").run(args);
+    application.profile("vph-test").profile(database.getType()).run(args);
 
     IntegrationTest.configure()
         .baseService(URI.create("http://localhost:" + application.getPort() + "/"))
         .auth(AuthMechanism.uri().overrideCredentialDelegationHeader(HttpHeaders.AUTHORIZATION))
         .rootCredentials("root", "change")
-        .database(h2)
+        .database(database)
         .timeoutInSeconds(10)
         .defaults().schema("public").role(Role.NONE.name());
 

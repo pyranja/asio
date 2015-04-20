@@ -7,6 +7,7 @@ public class AsioFeatures {
   public static final String VPH_METADATA = "asio.feature.vphMetadata";
   public static final String VPH_URI_AUTH = "asio.feature.vphUriAuth";
   public static final String ALLOW_FEDERATION = "asio.feature.allowFederation";
+  public static final String GLOBAL_DATASOURCE = "asio.feature.globalDatasource";
 
   /**
    * Enable metadata lookup in the vph metadata repository. If enabled, the repository http endpoint
@@ -30,12 +31,21 @@ public class AsioFeatures {
    */
   public boolean allowFederation = false;
 
+  /**
+   * Enable global configuration of the database connection. Implies, that there is a single
+   * backing relational database. If enabled, the global jdbc connection settings
+   * <strong>must</strong> be provided as {@code asio.jdbc} properties. Container specific settings
+   * will be overridden.
+   */
+  public boolean globalDatasource = false;
+
   @Override
   public String toString() {
-    return "{" +
+    return "AsioFeatures{" +
         "vphMetadata=" + vphMetadata +
         ", vphUriAuth=" + vphUriAuth +
         ", allowFederation=" + allowFederation +
+        ", globalDatasource=" + globalDatasource +
         '}';
   }
 
@@ -61,5 +71,13 @@ public class AsioFeatures {
 
   public void setAllowFederation(final boolean allowFederation) {
     this.allowFederation = allowFederation;
+  }
+
+  public boolean isGlobalDatasource() {
+    return globalDatasource;
+  }
+
+  public void setGlobalDatasource(final boolean globalDatasource) {
+    this.globalDatasource = globalDatasource;
   }
 }

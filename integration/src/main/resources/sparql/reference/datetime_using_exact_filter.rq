@@ -1,7 +1,7 @@
 SELECT ?id ?date 
 WHERE {
   []
-    <http://example.com/asio/integration/vocab/PUBLIC_DATETIMES_MOMENT> ?date;
-    <http://example.com/asio/integration/vocab/PUBLIC_DATETIMES_ID> ?id.
+    <http://example.com/asio/integration/vocab/public_datetimes_moment> ?date;
+    <http://example.com/asio/integration/vocab/public_datetimes_id> ?id.
   FILTER (?date = '1984-11-28T12:00:00'^^xsd:dateTime)
 }

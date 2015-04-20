@@ -1,125 +1,124 @@
-@prefix map: <#> .
-@prefix db: <> .
+@prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#>.
 @prefix d2r: <http://sites.wiwiss.fu-berlin.de/suhl/bizer/d2r-server/config.rdf#> .
-@prefix vocab: <vocab/> .
-@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#> .
-@prefix jdbc: <http://d2rq.org/terms/jdbc/> .
 @prefix sd: <http://www.w3.org/ns/sparql-service-description#> .
+@prefix jdbc: <http://d2rq.org/terms/jdbc/>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix vocab: <vocab/>.
+@prefix map: <#>.
 
-# includes all information required for deployment, as in VPH deployments
+# integration test mapping - support confirmed for MySql and H2
 
 <urn:asio:dataset:integration> a d2r:Server;
-  rdfs:label "integration_test_dataset";
-  d2r:baseURI <http://example.com/asio/integration/>;
-  a sd:Service;
-  sd:feature sd:BasicFederatedQuery;
-  .
+    rdfs:label "integration_test_dataset";
+    d2r:baseURI <http://example.com/asio/integration/>;
+    a sd:Service;
+    sd:feature sd:BasicFederatedQuery;
+    .
 
 map:database a d2rq:Database;
-  jdbc:schema "public";
-  d2rq:jdbcDriver "org.h2.Driver";
-	d2rq:jdbcDSN "jdbc:h2:mem:test";
-	d2rq:username "root";
-	d2rq:password "change";
-	.
+    jdbc:schema "PUBLIC";
+    d2rq:jdbcURL "jdbc:h2:mem:public;MODE=MYSQL;DATABASE_TO_UPPER=false;";
+    d2rq:jdbcDriver "org.h2.Driver";
+    d2rq:username "root";
+    d2rq:password "change";
+    d2rq:fetchSize 500;
+    .
 
-# Table PUBLIC.DATETIMES
-map:PUBLIC_DATETIMES a d2rq:ClassMap;
-	d2rq:dataStorage map:database;
-	d2rq:uriPattern "PUBLIC/DATETIMES/@@PUBLIC.DATETIMES.ID@@";
-	d2rq:class vocab:PUBLIC_DATETIMES;
-	d2rq:classDefinitionLabel "PUBLIC.DATETIMES";
-	.
-map:PUBLIC_DATETIMES__label a d2rq:PropertyBridge;
-	d2rq:belongsToClassMap map:PUBLIC_DATETIMES;
-	d2rq:property rdfs:label;
-	d2rq:pattern "DATETIMES #@@PUBLIC.DATETIMES.ID@@";
-	.
-map:PUBLIC_DATETIMES_ID a d2rq:PropertyBridge;
-	d2rq:belongsToClassMap map:PUBLIC_DATETIMES;
-	d2rq:property vocab:PUBLIC_DATETIMES_ID;
-	d2rq:propertyDefinitionLabel "DATETIMES ID";
-	d2rq:column "PUBLIC.DATETIMES.ID";
-	d2rq:datatype xsd:integer;
-	.
-map:PUBLIC_DATETIMES_MOMENT a d2rq:PropertyBridge;
-	d2rq:belongsToClassMap map:PUBLIC_DATETIMES;
-	d2rq:property vocab:PUBLIC_DATETIMES_MOMENT;
-	d2rq:propertyDefinitionLabel "DATETIMES MOMENT";
-	d2rq:column "PUBLIC.DATETIMES.MOMENT";
-	d2rq:datatype xsd:dateTime;
-	.
+# Table PUBLIC.datetimes
+map:public_datetimes a d2rq:ClassMap;
+    d2rq:dataStorage map:database;
+    d2rq:class vocab:public_datetimes;
+    d2rq:uriPattern "public/datetimes/@@PUBLIC.datetimes.id@@";
+    d2rq:classDefinitionLabel "public.datetimes";
+    .
+map:public_datetimes__label a d2rq:PropertyBridge;
+    d2rq:belongsToClassMap map:public_datetimes;
+    d2rq:property rdfs:label;
+    d2rq:pattern "datetimes #@@PUBLIC.datetimes.id@@";
+    .
+map:public_datetimes_id a d2rq:PropertyBridge;
+    d2rq:belongsToClassMap map:public_datetimes;
+    d2rq:property vocab:public_datetimes_id;
+    d2rq:column "PUBLIC.datetimes.id";
+    d2rq:datatype xsd:integer;
+    d2rq:propertyDefinitionLabel "datetimes id";
+    .
+map:public_datetimes_moment a d2rq:PropertyBridge;
+    d2rq:belongsToClassMap map:public_datetimes;
+    d2rq:property vocab:public_datetimes_moment;
+    d2rq:column "PUBLIC.datetimes.moment";
+    d2rq:datatype xsd:dateTime;
+    d2rq:propertyDefinitionLabel "datetimes moment";
+    .
 
-# Table PUBLIC.PATIENT
-map:PUBLIC_PATIENT a d2rq:ClassMap;
-	d2rq:dataStorage map:database;
-	d2rq:uriPattern "PUBLIC/PATIENT/@@PUBLIC.PATIENT.ID@@";
-	d2rq:class vocab:PUBLIC_PATIENT;
-	d2rq:classDefinitionLabel "PUBLIC.PATIENT";
-	.
-map:PUBLIC_PATIENT__label a d2rq:PropertyBridge;
-	d2rq:belongsToClassMap map:PUBLIC_PATIENT;
-	d2rq:property rdfs:label;
-	d2rq:pattern "PATIENT #@@PUBLIC.PATIENT.ID@@";
-	.
-map:PUBLIC_PATIENT_ID a d2rq:PropertyBridge;
-	d2rq:belongsToClassMap map:PUBLIC_PATIENT;
-	d2rq:property vocab:PUBLIC_PATIENT_ID;
-	d2rq:propertyDefinitionLabel "PATIENT ID";
-	d2rq:column "PUBLIC.PATIENT.ID";
-	d2rq:datatype xsd:integer;
-	.
-map:PUBLIC_PATIENT_NAME a d2rq:PropertyBridge;
-	d2rq:belongsToClassMap map:PUBLIC_PATIENT;
-	d2rq:property vocab:PUBLIC_PATIENT_NAME;
-	d2rq:propertyDefinitionLabel "PATIENT NAME";
-	d2rq:column "PUBLIC.PATIENT.NAME";
-	.
+# Table public.person
+map:public_person a d2rq:ClassMap;
+    d2rq:dataStorage map:database;
+    d2rq:class vocab:public_person;
+    d2rq:uriPattern "public/person/@@PUBLIC.person.id@@";
+    d2rq:classDefinitionLabel "public.person";
+    .
+map:public_person__label a d2rq:PropertyBridge;
+    d2rq:belongsToClassMap map:public_person;
+    d2rq:property rdfs:label;
+    d2rq:pattern "person #@@PUBLIC.person.id@@";
+    .
+map:public_person_id a d2rq:PropertyBridge;
+    d2rq:belongsToClassMap map:public_person;
+    d2rq:property vocab:public_person_id;
+    d2rq:column "PUBLIC.person.id";
+    d2rq:datatype xsd:integer;
+    d2rq:propertyDefinitionLabel "person id";
+    .
+map:public_person_firstname a d2rq:PropertyBridge;
+    d2rq:belongsToClassMap map:public_person;
+    d2rq:property vocab:public_person_firstname;
+    d2rq:column "PUBLIC.person.firstname";
+    d2rq:propertyDefinitionLabel "person firstname";
+    .
+map:public_person_lastname a d2rq:PropertyBridge;
+    d2rq:belongsToClassMap map:public_person;
+    d2rq:property vocab:public_person_lastname;
+    d2rq:column "PUBLIC.person.lastname";
+    d2rq:propertyDefinitionLabel "person lastname";
+    .
+map:public_person_age a d2rq:PropertyBridge;
+    d2rq:belongsToClassMap map:public_person;
+    d2rq:property vocab:public_person_age;
+    d2rq:column "PUBLIC.person.age";
+    d2rq:propertyDefinitionLabel "person age";
+    .
+map:public_person_postalcode a d2rq:PropertyBridge;
+    d2rq:belongsToClassMap map:public_person;
+    d2rq:property vocab:public_person_postalcode;
+    d2rq:column "PUBLIC.person.postalcode";
+    d2rq:propertyDefinitionLabel "person postalcode";
+    .
 
-# Table PUBLIC.PERSON
-map:PUBLIC_PERSON a d2rq:ClassMap;
-	d2rq:dataStorage map:database;
-	d2rq:uriPattern "PUBLIC/PERSON/@@PUBLIC.PERSON.ID@@";
-	d2rq:class vocab:PUBLIC_PERSON;
-	d2rq:classDefinitionLabel "PUBLIC.PERSON";
-	.
-map:PUBLIC_PERSON__label a d2rq:PropertyBridge;
-	d2rq:belongsToClassMap map:PUBLIC_PERSON;
-	d2rq:property rdfs:label;
-	d2rq:pattern "PERSON #@@PUBLIC.PERSON.ID@@";
-	.
-map:PUBLIC_PERSON_ID a d2rq:PropertyBridge;
-	d2rq:belongsToClassMap map:PUBLIC_PERSON;
-	d2rq:property vocab:PUBLIC_PERSON_ID;
-	d2rq:propertyDefinitionLabel "PERSON ID";
-	d2rq:column "PUBLIC.PERSON.ID";
-	d2rq:datatype xsd:integer;
-	.
-map:PUBLIC_PERSON_FIRSTNAME a d2rq:PropertyBridge;
-	d2rq:belongsToClassMap map:PUBLIC_PERSON;
-	d2rq:property vocab:PUBLIC_PERSON_FIRSTNAME;
-	d2rq:propertyDefinitionLabel "PERSON FIRSTNAME";
-	d2rq:column "PUBLIC.PERSON.FIRSTNAME";
-	.
-map:PUBLIC_PERSON_LASTNAME a d2rq:PropertyBridge;
-	d2rq:belongsToClassMap map:PUBLIC_PERSON;
-	d2rq:property vocab:PUBLIC_PERSON_LASTNAME;
-	d2rq:propertyDefinitionLabel "PERSON LASTNAME";
-	d2rq:column "PUBLIC.PERSON.LASTNAME";
-	.
-map:PUBLIC_PERSON_AGE a d2rq:PropertyBridge;
-	d2rq:belongsToClassMap map:PUBLIC_PERSON;
-	d2rq:property vocab:PUBLIC_PERSON_AGE;
-	d2rq:propertyDefinitionLabel "PERSON AGE";
-	d2rq:column "PUBLIC.PERSON.AGE";
-	.
-map:PUBLIC_PERSON_POSTALCODE a d2rq:PropertyBridge;
-	d2rq:belongsToClassMap map:PUBLIC_PERSON;
-	d2rq:property vocab:PUBLIC_PERSON_POSTALCODE;
-	d2rq:propertyDefinitionLabel "PERSON POSTALCODE";
-	d2rq:column "PUBLIC.PERSON.POSTALCODE";
-	.
-
+# Table public.patient
+map:public_patient a d2rq:ClassMap;
+    d2rq:dataStorage map:database;
+    d2rq:class vocab:public_patient;
+    d2rq:uriPattern "public/patient/@@PUBLIC.patient.id@@";
+    d2rq:classDefinitionLabel "public.patient";
+    .
+map:public_patient__label a d2rq:PropertyBridge;
+    d2rq:belongsToClassMap map:public_patient;
+    d2rq:property rdfs:label;
+    d2rq:pattern "patient #@@PUBLIC.patient.id@@";
+    .
+map:public_patient_id a d2rq:PropertyBridge;
+    d2rq:belongsToClassMap map:public_patient;
+    d2rq:property vocab:public_patient_id;
+    d2rq:column "PUBLIC.patient.id";
+    d2rq:datatype xsd:integer;
+    d2rq:propertyDefinitionLabel "patient id";
+    .
+map:public_patient_name a d2rq:PropertyBridge;
+    d2rq:belongsToClassMap map:public_patient;
+    d2rq:property vocab:public_patient_name;
+    d2rq:column "PUBLIC.patient.name";
+    d2rq:propertyDefinitionLabel "patient name";
+    .

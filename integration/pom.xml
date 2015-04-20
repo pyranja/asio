@@ -89,6 +89,13 @@
       <optional>true</optional>
     </dependency>
 
+    <!-- jdbc drivers -->
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <optional>true</optional>
+    </dependency>
+
   </dependencies>
 
   <build>

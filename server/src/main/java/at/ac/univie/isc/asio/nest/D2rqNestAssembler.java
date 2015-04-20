@@ -34,7 +34,6 @@ final class D2rqNestAssembler implements Assembler {
   public D2rqNestAssembler(final SpringContextFactory create, final List<Configurer> configurers) {
     this.create = create;
     this.configurers = configurers;
-    log.info(Scope.SYSTEM.marker(), "d2rq assembler active - context-factory: {}, post-processors: {}");
   }
 
   @Override
