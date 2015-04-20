@@ -1,8 +1,11 @@
 package at.ac.univie.isc.asio.nest;
 
+import at.ac.univie.isc.asio.AsioSettings;
+import at.ac.univie.isc.asio.Brood;
 import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.InvalidUsage;
 import com.google.common.collect.ImmutableSet;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
@@ -11,7 +14,9 @@ import java.util.Set;
 /**
  * Prevent assembly of containers with names of system resource paths.
  */
-public final class ForbidReservedNames implements Configurer {
+@Brood
+final class ForbidReservedNames implements Configurer {
+
   /**
    * Thrown if a container with a reserved name is assembled.
    */
@@ -23,8 +28,13 @@ public final class ForbidReservedNames implements Configurer {
 
   private final Set<Id> reserved;
 
-  public ForbidReservedNames(final Collection<Id> reserved) {
-    this.reserved = ImmutableSet.copyOf(reserved);
+  @Autowired
+  ForbidReservedNames(final AsioSettings config) {
+    this(config.api.getReservedContainerNames());
+  }
+
+  ForbidReservedNames(final Collection<Id> reservedContainerNames) {
+    this.reserved = ImmutableSet.copyOf(reservedContainerNames);
   }
 
   @Nonnull

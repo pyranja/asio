@@ -1,9 +1,11 @@
 package at.ac.univie.isc.asio.nest;
 
+import at.ac.univie.isc.asio.Brood;
 import at.ac.univie.isc.asio.database.Jdbc;
 import at.ac.univie.isc.asio.tool.JdbcTools;
 import com.google.common.base.Optional;
-import org.springframework.stereotype.Component;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 
 import javax.annotation.Nonnull;
 
@@ -11,7 +13,8 @@ import javax.annotation.Nonnull;
  * If the jdbc driver name is not configured, attempt to infer it from the jdbc url.
  * Fails immediately if the driver name cannot be inferred.
  */
-@Component
+@Brood
+@Order(Ordered.LOWEST_PRECEDENCE)
 final class InferJdbcDriver implements Configurer {
   @Nonnull
   @Override
