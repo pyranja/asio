@@ -1,9 +1,13 @@
 package at.ac.univie.isc.asio.tool;
 
+import com.google.common.collect.ImmutableMap;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.Properties;
 
 import static org.hamcrest.Matchers.*;
@@ -11,6 +15,23 @@ import static org.junit.Assert.assertThat;
 
 @RunWith(Enclosed.class)
 public class BeansTest {
+
+  public static class AsProperties {
+    @Test
+    public void should_create_empty_properties_from_empty_map() throws Exception {
+      final Properties result = Beans.asProperties(Collections.<String, String>emptyMap());
+      assertThat(result.values(), empty());
+    }
+
+    @Test
+    public void should_have_all_entries_from_input_map() throws Exception {
+      final ImmutableMap<String, String> input =
+          ImmutableMap.of("first", "val-one", "second", "val-two");
+      final Map<Object, Object> result = Beans.asProperties(input);
+      assertThat(result, Matchers.<Object, Object>hasEntry("first", "val-one"));
+      assertThat(result, Matchers.<Object, Object>hasEntry("second", "val-two"));
+    }
+  }
 
   public static class CopyToMap {
 

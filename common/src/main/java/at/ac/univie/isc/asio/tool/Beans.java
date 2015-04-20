@@ -29,4 +29,16 @@ public final class Beans {
     }
     return clone.build();
   }
+
+  /**
+   * Create a {@link Properties} instance holding all entries from the given map.
+   *
+   * @param map source map
+   * @return properties with all entries of input map
+   */
+  public static Properties asProperties(final Map<String, String> map) {
+    final Properties result = new Properties();
+    result.putAll(map);
+    return result;
+  }
 }
