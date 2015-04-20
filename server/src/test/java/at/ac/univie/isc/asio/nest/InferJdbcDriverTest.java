@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.nest;
 
+import at.ac.univie.isc.asio.InvalidUsage;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -24,13 +25,13 @@ public class InferJdbcDriverTest {
     assertThat(config.getJdbc().getDriver(), equalTo("com.mysql.jdbc.Driver"));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = InvalidUsage.class)
   public void should_fail_fast_if_driver_unknown() throws Exception {
     config.getJdbc().setUrl("jdbc:unknown:test");
     subject.apply(config);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = InvalidUsage.class)
   public void should_fail_fast_if_driver_and_url_missing() throws Exception {
     subject.apply(config);
   }

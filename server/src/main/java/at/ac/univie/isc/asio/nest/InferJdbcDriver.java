@@ -1,6 +1,7 @@
 package at.ac.univie.isc.asio.nest;
 
 import at.ac.univie.isc.asio.Brood;
+import at.ac.univie.isc.asio.InvalidUsage;
 import at.ac.univie.isc.asio.database.Jdbc;
 import at.ac.univie.isc.asio.tool.JdbcTools;
 import com.google.common.base.Optional;
@@ -16,6 +17,15 @@ import javax.annotation.Nonnull;
 @Brood
 @Order(Ordered.LOWEST_PRECEDENCE)
 final class InferJdbcDriver implements Configurer {
+  /**
+   * Thrown if no jdbc driver class is known for a jdbc url.
+   */
+  public static final class UnknownJdbcDriver extends InvalidUsage {
+    protected UnknownJdbcDriver(final String jdbcUrl) {
+      super("no jdbc driver found for <" + jdbcUrl + ">");
+    }
+  }
+
   @Nonnull
   @Override
   public NestConfig apply(final NestConfig input) {
@@ -26,7 +36,7 @@ final class InferJdbcDriver implements Configurer {
       if (driver.isPresent()) {
         jdbc.setDriver(driver.get());
       } else {
-        throw new IllegalArgumentException("no jdbc driver found for <" + url + ">");
+        throw new UnknownJdbcDriver(url);
       }
     }
     return input;
