@@ -37,6 +37,8 @@ asio:
     default-media-type: ['application/xml', '*/*;q=0.5']
     default-language: 'en'
     reserved-container-names: ['api', 'explore']
+  # override jdbc settings of containers
+  # jdbc:
 
 # serialization settings
 spring.mvc:

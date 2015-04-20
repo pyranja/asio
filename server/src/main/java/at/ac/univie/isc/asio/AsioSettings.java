@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio;
 
+import at.ac.univie.isc.asio.database.Jdbc;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
@@ -36,14 +37,19 @@ public class AsioSettings {
   @NotNull
   public AsioFeatures feature = new AsioFeatures();
 
+  /** optional */
+  @NestedConfigurationProperty
+  public Jdbc jdbc;
+
   @Override
   public String toString() {
-    return "{" +
+    return "AsioSettings{" +
         "timeout=" + timeout +
         ", home='" + home + '\'' +
         ", metadataRepository=" + metadataRepository +
         ", api=" + api +
         ", feature=" + feature +
+        ", jdbc=" + jdbc +
         '}';
   }
 
@@ -85,5 +91,13 @@ public class AsioSettings {
 
   public void setFeature(final AsioFeatures feature) {
     this.feature = feature;
+  }
+
+  public Jdbc getJdbc() {
+    return jdbc;
+  }
+
+  public void setJdbc(final Jdbc jdbc) {
+    this.jdbc = jdbc;
   }
 }

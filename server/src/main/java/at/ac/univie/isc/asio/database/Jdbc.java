@@ -14,9 +14,8 @@ import static java.util.Objects.requireNonNull;
 public final class Jdbc {
   /**
    * The name of the schema in the backing database, in MySQL the database name.
-   * May be null if the connection is grants global access to the database.
+   * May be null if the connection grants global access.
    */
-  @NotNull
   @Pattern(regexp = "^[\\w-]+$")
   private String schema;
   /**
@@ -25,9 +24,8 @@ public final class Jdbc {
   @NotNull
   private String url;
   /**
-   * The class name of the JDBC driver.
+   * The class name of the JDBC driver. Inferred from the connection url if missing.
    */
-  @NotNull
   private String driver;
   /**
    * The login username. (default: '')
