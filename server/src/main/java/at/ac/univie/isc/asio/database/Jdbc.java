@@ -1,4 +1,4 @@
-package at.ac.univie.isc.asio.nest;
+package at.ac.univie.isc.asio.database;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -11,7 +11,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Jdbc connection settings.
  */
-final class Jdbc {
+public final class Jdbc {
   /**
    * The name of the schema in the backing database, in MySQL the database name.
    * May be null if the connection is grants global access to the database.

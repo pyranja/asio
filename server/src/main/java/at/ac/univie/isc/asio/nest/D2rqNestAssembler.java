@@ -8,6 +8,7 @@ import at.ac.univie.isc.asio.Container;
 import at.ac.univie.isc.asio.d2rq.D2rqConfigModel;
 import at.ac.univie.isc.asio.d2rq.D2rqJdbcModel;
 import at.ac.univie.isc.asio.d2rq.LoadD2rqModel;
+import at.ac.univie.isc.asio.database.Jdbc;
 import at.ac.univie.isc.asio.spring.SpringContextFactory;
 import com.google.common.io.ByteSource;
 import com.hp.hpl.jena.rdf.model.Model;

@@ -1,6 +1,7 @@
 package at.ac.univie.isc.asio.nest;
 
 import at.ac.univie.isc.asio.Id;
+import at.ac.univie.isc.asio.database.Jdbc;
 import at.ac.univie.isc.asio.spring.SpringContextFactory;
 import com.google.common.collect.Lists;
 import com.hp.hpl.jena.rdf.model.Model;

@@ -1,5 +1,6 @@
 package at.ac.univie.isc.asio.nest;
 
+import at.ac.univie.isc.asio.database.Jdbc;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.google.auto.value.AutoValue;
