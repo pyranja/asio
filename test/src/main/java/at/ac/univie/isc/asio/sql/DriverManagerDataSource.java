@@ -25,7 +25,8 @@ public class DriverManagerDataSource implements DataSource, AutoCloseable {
   private final String jdbcUrl;
   private final Properties defaults;
 
-  public DriverManagerDataSource(@Nonnull final String jdbcUrl, @Nonnull final Properties settings)
+  public DriverManagerDataSource(@Nonnull final String jdbcUrl,
+                                 @Nonnull final Properties settings)
       throws IllegalArgumentException {
     this.jdbcUrl = requireNonNull(jdbcUrl);
     // must clone, as HashTable methods on Properties do not honor defaults

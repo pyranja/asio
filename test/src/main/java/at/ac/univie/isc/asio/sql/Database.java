@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Locale;
 import java.util.Properties;
 
 import static java.util.Objects.requireNonNull;
@@ -19,6 +20,7 @@ import static java.util.Objects.requireNonNull;
 @ThreadSafe
 public final class Database {
   private final DriverManagerDataSource datasource;
+  private String catalog;
 
   public static Builder create(final String jdbcUrl) {
     return new Builder(jdbcUrl);
@@ -26,6 +28,11 @@ public final class Database {
 
   private Database(@Nonnull final DriverManagerDataSource datasource) {
     this.datasource = datasource;
+  }
+
+  public Database switchCatalog(final String catalog) {
+    this.catalog = catalog;
+    return this;
   }
 
   /**
@@ -36,16 +43,35 @@ public final class Database {
     return datasource;
   }
 
+  private Connection connect() throws SQLException {
+    final Connection connection = datasource.getConnection();
+    if (catalog != null) { connection.setCatalog(catalog); }
+    return connection;
+  }
+
   /**
    * Tests whether a valid connection can be obtained from the backing datasource.
    *
    * @return true if database seems to be reachable
    */
   public boolean isAvailable() {
-    try (final Connection connection = datasource.getConnection()) {
+    try (final Connection connection = connect()) {
       return connection.isValid(5);
     } catch (SQLException ignored) {
       return false;
+    }
+  }
+
+  /**
+   * Name of the database product, e.g. {@code mysql}.
+   *
+   * @return lower case name of the database
+   */
+  public String getType() {
+    try (final Connection connection = connect()) {
+      return connection.getMetaData().getDatabaseProductName().toLowerCase(Locale.ENGLISH);
+    } catch (SQLException e) {
+      throw Throwables.propagate(e);
     }
   }
 
@@ -63,7 +89,7 @@ public final class Database {
   public Table<Integer, String, String> reference(@Nonnull final String query) {
     requireNonNull(query);
     try (
-        final Connection connection = datasource.getConnection();
+        final Connection connection = connect();
         final Statement statement = connection.createStatement();
         final ResultSet resultSet = statement.executeQuery(query)
     ) {
@@ -82,7 +108,7 @@ public final class Database {
   public Database execute(@Nonnull final String query) {
     requireNonNull(query);
     try (
-        final Connection connection = datasource.getConnection();
+        final Connection connection = connect();
         final Statement statement = connection.createStatement();
     ) {
       statement.execute(query);
@@ -96,17 +122,19 @@ public final class Database {
     private final String jdbcUrl;
     private final Properties props;
 
-    public Builder(final String jdbcUrl) {
+    private Builder(final String jdbcUrl) {
       this.jdbcUrl = jdbcUrl;
       this.props = new Properties();
     }
 
+    /** set the database authentication credentials */
     public Builder credentials(final String username, final String password) {
       props.setProperty("user", username);
       props.setProperty("password", password);
       return this;
     }
 
+    /** finish building the database */
     public Database build() {
       final DriverManagerDataSource pool = new DriverManagerDataSource(jdbcUrl, props);
       return new Database(pool);
