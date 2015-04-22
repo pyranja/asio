@@ -16,13 +16,15 @@ import java.util.List;
  * Start with fixed port
  */
 public class Runner {
-  /** active profiles */
+  /**
+   * active profiles
+   */
   static final List<String> profiles = Lists.newArrayList("brood", "dev");
 
   public static void main(final String[] args) throws IOException {
     final Database database = IntegrationDatabase.catalog("public")
-         .mysqlIfAvailable();
-//        .h2InMemory();
+        .mysqlIfAvailable();
+    //        .h2InMemory();
 
     database.execute(Classpath.read("sql/database.integration.sql"));
     database.execute(Classpath.read("sql/gui.integration.sql"));
@@ -45,6 +47,9 @@ public class Runner {
           )
           .logStartupInfo(true)
           .run(args);
+
+      System.out.println("  ===  running...  ===  ");
+      System.in.read();
     }
   }
 }

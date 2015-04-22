@@ -47,10 +47,10 @@ public class AsioSettings {
         "timeout=" + timeout +
         ", home='" + home + '\'' +
         ", metadataRepository=" + metadataRepository +
-        ", api=" + api +
-        ", feature=" + feature +
-        ", jdbc=" + jdbc +
-        '}';
+        System.lineSeparator() + ", api=" + api +
+        System.lineSeparator() + ", feature=" + feature +
+        System.lineSeparator() + ", jdbc=" + jdbc +
+        System.lineSeparator() + '}';
   }
 
   public long getTimeout() {

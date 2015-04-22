@@ -28,7 +28,7 @@ final class ReportSettings {
   }
 
   private static final String MESSAGE_TEMPLATE =
-      "%n%n ===== active settings ===== active profiles: %s ===== %n%s%n%n";
+      "%n%n ===== active profiles: %s ===== %n%s%n%n";
 
   @PostConstruct
   public void report() {
