@@ -8,17 +8,10 @@ import at.ac.univie.isc.asio.sql.Database;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Table;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.experimental.categories.Category;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,14 +19,7 @@ import static at.ac.univie.isc.asio.tool.Pretty.substitute;
 import static com.google.common.base.Predicates.containsPattern;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.getOnlyElement;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.equalToIgnoringCase;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.text.MatchesPattern.matchesPattern;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeTrue;
@@ -44,6 +30,7 @@ public class MysqlUserRepositoryIntegrationTest {
       .credentials("root", "change")
       .build();
   public static final String TEST_SCHEMA_NAME = "test_authorization";
+  public static final Collection<String> TEST_PRIVILEGES = Arrays.asList("SELECT", "INSERT", "UPDATE", "DELETE");
 
   @BeforeClass
   public static void ensureMysqlAvailable() {
@@ -60,7 +47,12 @@ public class MysqlUserRepositoryIntegrationTest {
 
   private final Database db = Database.create("jdbc:mysql:///test_authorization")
       .credentials("authorizer", "authorizer").build();
-  private final MysqlUserRepository subject = new MysqlUserRepository(db.datasource());
+  private final MysqlUserRepository subject = new MysqlUserRepository(db.datasource(), TEST_PRIVILEGES);
+
+  @Before
+  public void tearDown() throws Exception {
+    subject.dropUserOf(TEST_SCHEMA_NAME);
+  }
 
   @Test
   public void can_connect_to_test_database() throws Exception {
@@ -110,6 +102,14 @@ public class MysqlUserRepositoryIntegrationTest {
   public void should_assign_write_privilege() throws Exception {
     final Identity user = subject.createUserFor(TEST_SCHEMA_NAME);
     assertThat(findPrivilegesOf(user), hasItems("INSERT", "UPDATE", "DELETE"));
+  }
+
+  @Test
+  public void should_assign_custom_privileges() throws Exception {
+    final MysqlUserRepository custom =
+        new MysqlUserRepository(db.datasource(), Arrays.asList("DROP"));
+    final Identity user = custom.createUserFor(TEST_SCHEMA_NAME);
+    assertThat(findPrivilegesOf(user), contains("DROP"));
   }
 
   @Test

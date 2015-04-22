@@ -1,7 +1,10 @@
 package at.ac.univie.isc.asio.database;
 
 import at.ac.univie.isc.asio.security.Identity;
+import at.ac.univie.isc.asio.tool.Pretty;
 import com.google.common.base.Charsets;
+import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
 import com.google.common.hash.Hashing;
 import com.google.common.io.BaseEncoding;
 import org.jooq.DSLContext;
@@ -10,8 +13,8 @@ import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
 
 import javax.sql.DataSource;
-
 import java.sql.SQLException;
+import java.util.Collection;
 
 import static org.jooq.impl.DSL.inline;
 import static org.jooq.impl.DSL.name;
@@ -19,14 +22,26 @@ import static org.jooq.impl.DSL.name;
 /**
  * Manage MySql users, segregated by schema.
  */
-public final class MysqlUserRepository {
+public /* final */ class MysqlUserRepository {
   /** only allows login through socket file from same machine */
   static final String USER_HOST = "localhost";
+  static final String GRANT_TEMPLATE = "GRANT %s ON {0}.* TO {1}@{2} IDENTIFIED BY {3}";
 
+  private final String grantStatement;
   private final DSLContext create;
 
-  public MysqlUserRepository(final DataSource dataSource) {
+  public MysqlUserRepository(final DataSource dataSource, final Collection<String> privileges) {
+    Preconditions.checkArgument(!privileges.isEmpty(), "no privileges given");
     create = DSL.using(dataSource, SQLDialect.MYSQL);
+    // build grant statement with given privileges
+    grantStatement = Pretty.format(GRANT_TEMPLATE, Joiner.on(',').join(privileges));
+  }
+
+  @Override
+  public String toString() {
+    return "MysqlUserRepository{" +
+        "grantStatement='" + grantStatement + '\'' +
+        '}';
   }
 
   /**
@@ -37,8 +52,8 @@ public final class MysqlUserRepository {
    */
   public Identity createUserFor(final String schema) {
     final Identity user = translateToCredentials(schema);
-    create.execute("GRANT SELECT, INSERT, UPDATE, DELETE ON {0}.* TO {1}@{2} IDENTIFIED BY {3}",
-        name(schema), name(user.getName()), name(USER_HOST), inline(user.getSecret()));
+    // GRANT [privileges] ON {0}.* TO {1}@{2} IDENTIFIED BY {3}
+    create.execute(grantStatement, name(schema), name(user.getName()), name(USER_HOST), inline(user.getSecret()));
     return user;
   }
 

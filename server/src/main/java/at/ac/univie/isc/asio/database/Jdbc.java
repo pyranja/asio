@@ -2,9 +2,7 @@ package at.ac.univie.isc.asio.database;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static java.util.Objects.requireNonNull;
 
@@ -42,6 +40,11 @@ public final class Jdbc {
    */
   @NotNull
   private Map<String, String> properties = new HashMap<>();
+  /**
+   * Privileges that are granted to the user. If multi-tenancy is enabled, these are propagated to
+   * the segragated users.
+   */
+  private List<String> privileges = new ArrayList<>();
 
   public String getSchema() {
     return schema;
@@ -104,6 +107,20 @@ public final class Jdbc {
     return this;
   }
 
+  public List<String> getPrivileges() {
+    return privileges;
+  }
+
+  public Jdbc setPrivileges(final List<String> privileges) {
+    this.privileges = privileges;
+    return this;
+  }
+
+  public Jdbc addPrivilege(final String privilege) {
+    this.privileges.add(privilege);
+    return this;
+  }
+
   @Override
   public String toString() {
     return "Jdbc{" +
@@ -113,6 +130,7 @@ public final class Jdbc {
         ", username='" + username + '\'' +
         ", password='" + password + '\'' +
         ", properties=" + properties +
+        ", privileges=" + privileges +
         '}';
   }
 
@@ -128,11 +146,12 @@ public final class Jdbc {
         Objects.equals(driver, jdbc.driver) &&
         Objects.equals(username, jdbc.username) &&
         Objects.equals(password, jdbc.password) &&
-        Objects.equals(properties, jdbc.properties);
+        Objects.equals(properties, jdbc.properties) &&
+        Objects.equals(privileges, jdbc.privileges);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(schema, url, driver, username, password, properties);
+    return Objects.hash(schema, url, driver, username, password, properties, privileges);
   }
 }

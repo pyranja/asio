@@ -8,6 +8,7 @@ public class AsioFeatures {
   public static final String VPH_URI_AUTH = "asio.feature.vphUriAuth";
   public static final String ALLOW_FEDERATION = "asio.feature.allowFederation";
   public static final String GLOBAL_DATASOURCE = "asio.feature.globalDatasource";
+  public static final String MULTI_TENANCY = "asio.feature.multiTenancy";
 
   /**
    * Enable metadata lookup in the vph metadata repository. If enabled, the repository http endpoint
@@ -39,6 +40,15 @@ public class AsioFeatures {
    */
   public boolean globalDatasource = false;
 
+  /**
+   * Enable injection of schema specific jdbc credentials into deployed containers. This requires
+   * the {@link #GLOBAL_DATASOURCE global datasource feature} to be enabled and mysql as backing
+   * database. The user set on the global datasource must have sufficient permissions to create
+   * new users with read and write permissions. Generally that means it must be a root account.
+   * The global connections will <strong>never</strong> be used to execute client request.
+   */
+  public boolean multiTenancy = false;
+
   @Override
   public String toString() {
     return "AsioFeatures{" +
@@ -46,6 +56,7 @@ public class AsioFeatures {
         ", vphUriAuth=" + vphUriAuth +
         ", allowFederation=" + allowFederation +
         ", globalDatasource=" + globalDatasource +
+        ", multiTenancy=" + multiTenancy +
         '}';
   }
 
@@ -79,5 +90,13 @@ public class AsioFeatures {
 
   public void setGlobalDatasource(final boolean globalDatasource) {
     this.globalDatasource = globalDatasource;
+  }
+
+  public boolean isMultiTenancy() {
+    return multiTenancy;
+  }
+
+  public void setMultiTenancy(final boolean multiTenancy) {
+    this.multiTenancy = multiTenancy;
   }
 }

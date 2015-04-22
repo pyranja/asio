@@ -52,10 +52,12 @@ flock.identifier: 'urn:asio:dataset:integration'
 spring.profiles: 'mysql'
 
 asio.feature.global-datasource: on
+asio.feature.multi-tenancy: on
 asio.jdbc:
     url: 'jdbc:mysql:///'
     username: 'root'
     password: 'change'
+    privileges: ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'DROP']
 
 --- # config for development server
 spring.profiles: 'dev'

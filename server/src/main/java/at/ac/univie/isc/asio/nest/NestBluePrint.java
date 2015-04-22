@@ -13,15 +13,15 @@ import at.ac.univie.isc.asio.metadata.DescriptorService;
 import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
 import at.ac.univie.isc.asio.spring.ExplicitWiring;
 import at.ac.univie.isc.asio.tool.Beans;
-import at.ac.univie.isc.asio.tool.Pretty;
+import at.ac.univie.isc.asio.tool.JdbcTools;
 import at.ac.univie.isc.asio.tool.Timeout;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import de.fuberlin.wiwiss.d2rq.map.Mapping;
 import de.fuberlin.wiwiss.d2rq.sql.ConnectedDB;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,11 +29,11 @@ import org.springframework.context.annotation.Primary;
 import rx.Observable;
 import rx.functions.Func0;
 
+import javax.annotation.PreDestroy;
 import javax.sql.DataSource;
 import java.net.URI;
 import java.sql.SQLException;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -104,23 +104,11 @@ class NestBluePrint {
   }
 
   @Bean(destroyMethod = "close")
+  @Primary
   public DataSource dataSource(final Dataset dataset,
                                final Jdbc jdbc,
                                final Timeout timeout) {
-    final HikariConfig config = new HikariConfig();
-    config.setJdbcUrl(jdbc.getUrl());
-    config.setCatalog(jdbc.getSchema());
-    config.setUsername(jdbc.getUsername());
-    config.setPassword(jdbc.getPassword());
-    final Properties properties = new Properties();
-    properties.putAll(jdbc.getProperties());
-    config.setDataSourceProperties(properties);
-    if (jdbc.getDriver() != null) { config.setDriverClassName(jdbc.getDriver()); }
-    config.setConnectionTimeout(timeout.getAs(TimeUnit.MILLISECONDS, 0));
-    final String poolName = Pretty.format("%s-hikari-pool", dataset.getName());
-    config.setPoolName(poolName);
-    config.setThreadFactory(new ThreadFactoryBuilder()
-        .setNameFormat(poolName + "-thread-%d").build());
+    final HikariConfig config = JdbcTools.hikariConfig(dataset.getName().asString(), jdbc, timeout);
     return new HikariDataSource(config);
   }
 
@@ -130,6 +118,30 @@ class NestBluePrint {
     final Timeout local = dataset.getTimeout();
     log.debug(Scope.SYSTEM.marker(), "choosing timeout (local:{}) (global:{})", local, global);
     return local.orIfUndefined(global);
+  }
+
+  // container clean up
+
+  @Autowired(required = false)
+  private List<OnClose> closeListeners;
+  @Autowired
+  private NestConfig config;
+
+  @Bean
+  public NestConfig config(final Dataset dataset, final Jdbc jdbc, final Mapping mapping) {
+    return NestConfig.create(dataset, jdbc, mapping);
+  }
+
+  @PreDestroy
+  public void performCleanUp() {
+    log.info(Scope.SYSTEM.marker(), "cleaning up destroyed container using {}", closeListeners);
+    for (OnClose listener : closeListeners) {
+      try {
+        listener.cleanUp(config);
+      } catch (final RuntimeException e) {
+        log.info(Scope.SYSTEM.marker(), "error during container clean up", e);
+      }
+    }
   }
 
   // Observable factories as nest static classes to avoid inner classes with implicit references.
