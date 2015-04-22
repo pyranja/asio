@@ -7,9 +7,9 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
-import org.d2rq.lang.D2RQReader;
-import org.d2rq.lang.Mapping;
-import org.d2rq.vocab.D2RConfig;
+import de.fuberlin.wiwiss.d2rq.map.Mapping;
+import de.fuberlin.wiwiss.d2rq.parser.MapParser;
+import de.fuberlin.wiwiss.d2rq.vocab.D2RConfig;
 
 import javax.annotation.Nullable;
 import java.net.URI;
@@ -40,7 +40,7 @@ public final class D2rqConfigModel {
 
   private Mapping readMapping(final Model model) {
     final String base = D2rqTools.findEmbeddedBaseUri(model).or(D2rqTools.DEFAULT_BASE);
-    final Mapping mapping = new D2RQReader(model, base).getMapping();
+    final Mapping mapping = new MapParser(model, base).parse();
     mapping.configuration().setUseAllOptimizations(true);
     return mapping;
   }

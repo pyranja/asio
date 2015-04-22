@@ -19,11 +19,10 @@
 
 map:database a d2rq:Database;
     jdbc:schema "PUBLIC";
-    d2rq:jdbcURL "jdbc:h2:mem:public;MODE=MYSQL;DATABASE_TO_UPPER=false;";
+    d2rq:jdbcDSN "jdbc:h2:mem:public;MODE=MYSQL;DATABASE_TO_UPPER=false;";
     d2rq:jdbcDriver "org.h2.Driver";
     d2rq:username "root";
     d2rq:password "change";
-    d2rq:fetchSize 500;
     .
 
 # Table PUBLIC.datetimes

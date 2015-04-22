@@ -4,7 +4,7 @@ import at.ac.univie.isc.asio.database.Jdbc;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.google.auto.value.AutoValue;
-import org.d2rq.lang.Mapping;
+import de.fuberlin.wiwiss.d2rq.map.Mapping;
 
 @AutoValue
 abstract class NestConfig {

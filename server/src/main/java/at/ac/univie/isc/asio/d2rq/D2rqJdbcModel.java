@@ -2,17 +2,16 @@ package at.ac.univie.isc.asio.d2rq;
 
 import at.ac.univie.isc.asio.tool.Beans;
 import at.ac.univie.isc.asio.tool.JdbcTools;
-import org.d2rq.lang.D2RQMappingVisitor;
-import org.d2rq.lang.Database;
-import org.d2rq.lang.Mapping;
-import org.d2rq.vocab.D2RQ;
+import de.fuberlin.wiwiss.d2rq.map.Database;
+import de.fuberlin.wiwiss.d2rq.map.Mapping;
+import de.fuberlin.wiwiss.d2rq.vocab.D2RQ;
 
 import java.util.Map;
 
 /**
  * Extract jdbc database from a d2rq mapping. Expect a single jdbc configuration block.
  */
-public final class D2rqJdbcModel extends D2RQMappingVisitor.Default {
+public final class D2rqJdbcModel {
   /**
    * Create new mapping visitor, that finds jdbc database.
    *
@@ -20,7 +19,9 @@ public final class D2rqJdbcModel extends D2RQMappingVisitor.Default {
    */
   public static D2rqJdbcModel parse(final Mapping mapping) {
     final D2rqJdbcModel finder = new D2rqJdbcModel();
-    mapping.accept(finder);
+    for (Database database : mapping.databases()) {
+      finder.visit(database);
+    }
     if (!finder.visited) { throw new InvalidD2rqConfig(D2RQ.Database, "missing"); }
     return finder;
   }
@@ -36,25 +37,19 @@ public final class D2rqJdbcModel extends D2RQMappingVisitor.Default {
 
   D2rqJdbcModel() { /* --- */ }
 
-  @Override
-  public boolean visitEnter(final Mapping mapping) {
-    assert !visited : "JdbcFinder reuse is illegal";
-    return true;
-  }
-
-  @Override
   public void visit(final Database database) {
     if (visited) { throw new InvalidD2rqConfig(D2RQ.Database, "found more than one"); }
     visited = true;
-    url = database.getJdbcURL();
+    url = database.getJDBCDSN();
     driver = database.getJDBCDriver();
     username = nullToEmpty(database.getUsername());
     password = nullToEmpty(database.getPassword());
     schema = database.getConnectionProperties().getProperty("schema");
     properties = Beans.copyToMap(database.getConnectionProperties(), "schema");
     if (!JdbcTools.isValidJdbcUrl(url)) {
-      throw new InvalidD2rqConfig(D2RQ.jdbcURL, "<" + url + "> is not valid");
+      throw new InvalidD2rqConfig(D2RQ.jdbcDSN, "<" + url + "> is not valid");
     }
+    visited = true;
   }
 
   public String getSchema() {

@@ -12,9 +12,8 @@
   </parent>
 
   <!--
-    This build performs full compilation and tests (minus functional ones) of D2RQ, but excludes
-     server specific code from the packaged .jar.
-     All server specific dependencies are declared as optional.
+    Compile and test an embeddable D2RQ version, where server specific code and command line tools
+    are excluded. Run all engine tests (minus functional ones).
   -->
 
   <artifactId>asio-d2rq</artifactId>
@@ -26,14 +25,8 @@
     <module.basedir>${project.basedir}/module</module.basedir>
   </properties>
 
-  <repositories>
-    <repository>
-      <id>d2rq-local</id>
-      <url>file://${project.basedir}/d2r-repo</url>
-    </repository>
-  </repositories>
-
   <dependencies>
+
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-core</artifactId>
@@ -42,47 +35,19 @@
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-arq</artifactId>
     </dependency>
-    <!-- logging impl and bridges expected to be provided by container -->
-    <dependency> <!-- org.d2rq.Log4jHelper -->
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>1.2.17</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
+
+    <dependency>  <!-- equivalent to commons-logging api, but allows simpler config in tests -->
       <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-      <version>1.7.5</version>
-      <scope>test</scope>
+      <artifactId>jcl-over-slf4j</artifactId>
+      <scope>provided</scope>
     </dependency>
-    <!-- optional server dependencies -->
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-server</artifactId>
-      <optional>true</optional>
+
+    <dependency>  <!-- required for lower-case-identifier check in ConnectedDB -->
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <scope>provided</scope>
     </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-security</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-webapp</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.velocity</groupId>
-      <artifactId>velocity</artifactId>
-      <version>1.7</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.jena</groupId>
-      <artifactId>joseki</artifactId>
-      <version>3.4.4</version>
-      <optional>true</optional>
-    </dependency>
+
     <!-- test -->
     <dependency>
       <groupId>junit</groupId>
@@ -95,9 +60,38 @@
       <version>2.2.9</version>
       <scope>test</scope>
     </dependency>
+
+    <dependency>  <!-- commons-logging fails to find log4j -->
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>  <!-- log4j is used by QueryLanguageTestFramework -->
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>1.2.17</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- jena test utils that were moved out of the jena-core -->
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-core</artifactId>
+      <type>test-jar</type>
+      <version>2.7.4</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-sdb</artifactId>
+      <version>1.3.5</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <build>
+
     <sourceDirectory>${module.basedir}/src</sourceDirectory>
     <testSourceDirectory>${module.basedir}/test</testSourceDirectory>
     <testResources>
@@ -109,25 +103,31 @@
       </testResource>
     </testResources>
     <plugins>
-      <plugin>
+
+      <plugin>  <!-- minify resulting .jar -->
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
+        <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
           <excludes>
-            <exclude>org/d2rq/Log4jHelper*</exclude>
+            <exclude>**/d2rq/Log4jHelper.java</exclude>
             <!-- CLI tools and examples -->
             <exclude>d2rq/*</exclude>
-            <exclude>org/d2rq/CommandLineTool*</exclude>
-            <exclude>org/d2rq/examples*</exclude>
+            <exclude>**/d2rq/CommandLineTool.java</exclude>
             <!-- SystemLoader and friends -->
-            <exclude>org/d2rq/SystemLoader*</exclude>
-            <exclude>org/d2rq/jena/ModelD2RQ*</exclude>
-            <exclude>org/d2rq/assembler*</exclude>
+            <exclude>**/d2rq/SystemLoader.java</exclude>
+            <exclude>**/d2rq/assembler/*.java</exclude>
             <!-- D2R server -->
-            <exclude>org/d2rq/server/*</exclude>
+            <exclude>**/d2rq/server/*.java</exclude>
+            <exclude>**/pubby/negotiation/**</exclude>
           </excludes>
+          <testExcludes>
+            <!-- these reference excluded sources -->
+            <exclude>**/AllTests.java</exclude>
+            <exclude>**/d2rq/examples/*.java</exclude>
+          </testExcludes>
         </configuration>
       </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
@@ -136,10 +136,18 @@
           <!-- d2rq loads files from relative locations -->
           <workingDirectory>${module.basedir}</workingDirectory>
           <excludes>
+            <!-- maven discovers all test classes -->
+            <exclude>**/AllTests.java</exclude>
+            <!-- exclude test that require a mysql database -->
             <exclude>**/functional_tests/*.java</exclude>
+            <exclude>**/d2rq_sdb/*.java</exclude>
+            <exclude>**/MySQLDatatypeTest.java</exclude>
+            <exclude>**/DBConnectionTest.java</exclude>
+            <exclude>**/ISWCSchemaTest.java</exclude>
           </excludes>
         </configuration>
       </plugin>
+
     </plugins>
   </build>
 </project>

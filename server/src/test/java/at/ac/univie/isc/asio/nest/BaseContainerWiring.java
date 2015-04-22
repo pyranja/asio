@@ -1,12 +1,12 @@
 package at.ac.univie.isc.asio.nest;
 
-import at.ac.univie.isc.asio.engine.Engine;
 import at.ac.univie.isc.asio.Language;
+import at.ac.univie.isc.asio.engine.Engine;
 import at.ac.univie.isc.asio.tool.Timeout;
 import com.google.common.collect.Iterables;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
-import org.d2rq.lang.Database;
-import org.d2rq.lang.Mapping;
+import de.fuberlin.wiwiss.d2rq.map.Database;
+import de.fuberlin.wiwiss.d2rq.map.Mapping;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.context.annotation.Bean;

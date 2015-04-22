@@ -11,9 +11,9 @@ import com.hp.hpl.jena.rdf.model.RDFReader;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.shared.JenaException;
 import com.hp.hpl.jena.vocabulary.RDF;
-import org.d2rq.D2RQException;
-import org.d2rq.vocab.D2RConfig;
-import org.d2rq.vocab.VocabularySummarizer;
+import de.fuberlin.wiwiss.d2rq.D2RQException;
+import de.fuberlin.wiwiss.d2rq.vocab.D2RConfig;
+import de.fuberlin.wiwiss.d2rq.vocab.VocabularySummarizer;
 import org.openjena.atlas.AtlasException;
 import org.openjena.riot.RiotException;
 import org.openjena.riot.system.JenaReaderTurtle2;
@@ -89,8 +89,8 @@ public final class LoadD2rqModel {
   }
 
   /**
-   * Replace any existing {@link org.d2rq.vocab.D2RConfig#baseURI} with the given.
-   * If no {@link org.d2rq.vocab.D2RConfig#Server} is present, create one and attach the given uri.
+   * Replace any existing {@link de.fuberlin.wiwiss.d2rq.vocab.D2RConfig#baseURI} with the given.
+   * If no {@link de.fuberlin.wiwiss.d2rq.vocab.D2RConfig#Server} is present, create one and attach the given uri.
    *
    * @param model   given configuration
    * @param baseUri uri that should be injected

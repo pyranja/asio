@@ -19,8 +19,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import org.d2rq.db.SQLConnection;
-import org.d2rq.lang.Mapping;
+import de.fuberlin.wiwiss.d2rq.map.Mapping;
+import de.fuberlin.wiwiss.d2rq.sql.ConnectedDB;
 import org.slf4j.Logger;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -58,7 +58,7 @@ class NestBluePrint {
   @Bean(destroyMethod = "close")
   public JenaEngine jenaEngine(final Dataset dataset,
                                final Mapping mapping,
-                               final SQLConnection connection,
+                               final ConnectedDB connection,
                                final Timeout timeout) {
     final Model model = D2rqTools.compile(mapping, connection);
     return JenaEngine.create(model, timeout, dataset.isFederationEnabled());
@@ -96,15 +96,10 @@ class NestBluePrint {
   }
 
   @Bean(destroyMethod = "close")
-  public SQLConnection d2rqConnection(final Jdbc jdbc) throws SQLException {
-    final SQLConnection connection = new SQLConnection(
-        jdbc.getUrl(), jdbc.getDriver(),
-        jdbc.getUsername(), jdbc.getPassword(),
-        Beans.asProperties(jdbc.getProperties())
-    );
-    if (jdbc.getSchema() != null) {
-      connection.connection().setCatalog(jdbc.getSchema());
-    }
+  public ConnectedDB d2rqConnection(final Jdbc jdbc) throws SQLException {
+    final ConnectedDB connection = D2rqTools.createSqlConnection(jdbc.getUrl(),
+        jdbc.getUsername(), jdbc.getPassword(), Beans.asProperties(jdbc.getProperties()));
+    connection.switchCatalog(jdbc.getSchema());
     return connection;
   }
 

@@ -6,9 +6,9 @@ import at.ac.univie.isc.asio.spring.SpringContextFactory;
 import com.google.common.collect.Lists;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
-import org.d2rq.lang.Mapping;
-import org.d2rq.vocab.D2RConfig;
-import org.d2rq.vocab.D2RQ;
+import de.fuberlin.wiwiss.d2rq.map.Mapping;
+import de.fuberlin.wiwiss.d2rq.vocab.D2RConfig;
+import de.fuberlin.wiwiss.d2rq.vocab.D2RQ;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -44,7 +44,7 @@ public class D2rqNestAssemblerTest {
     // test with minimal accepted config model
     final Model model = ModelFactory.createDefaultModel();
     model.createResource("urn:test:server", D2RConfig.Server);
-    model.createResource("", D2RQ.Database).addProperty(D2RQ.jdbcURL, "jdbc:test://localhost/");
+    model.createResource("", D2RQ.Database).addProperty(D2RQ.jdbcDSN, "jdbc:test://localhost/");
     final NestConfig parsed = subject.parse(model);
     assertThat(parsed.getDataset().getIdentifier(), equalTo(URI.create("urn:test:server")));
     assertThat(parsed.getJdbc().getUrl(), equalTo("jdbc:test://localhost/"));
@@ -66,7 +66,7 @@ public class D2rqNestAssemblerTest {
 
   @Test
   public void should_fail_fast_if_dataset_name_not_set() throws Exception {
-    error.handleAssertionErrors().expect(AssertionError.class);
+    error.expect(AssertionError.class);
     subject.postProcess(NestConfig.empty(), Collections.<Configurer>emptyList());
   }
 

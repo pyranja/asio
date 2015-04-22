@@ -3,15 +3,13 @@ package at.ac.univie.isc.asio.d2rq;
 import at.ac.univie.isc.asio.tool.Timeout;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
-import org.d2rq.vocab.D2RConfig;
+import de.fuberlin.wiwiss.d2rq.vocab.D2RConfig;
 import org.junit.Test;
 
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 public class D2rqConfigModelTest {

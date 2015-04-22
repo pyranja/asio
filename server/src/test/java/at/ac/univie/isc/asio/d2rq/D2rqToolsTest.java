@@ -7,17 +7,18 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.shared.PrefixMapping;
 import com.hp.hpl.jena.vocabulary.OWL2;
-import org.d2rq.db.SQLConnection;
-import org.d2rq.jena.GraphD2RQ;
-import org.d2rq.lang.Database;
-import org.d2rq.lang.Mapping;
-import org.d2rq.vocab.D2RConfig;
+import de.fuberlin.wiwiss.d2rq.jena.GraphD2RQ;
+import de.fuberlin.wiwiss.d2rq.map.Database;
+import de.fuberlin.wiwiss.d2rq.map.Mapping;
+import de.fuberlin.wiwiss.d2rq.sql.ConnectedDB;
+import de.fuberlin.wiwiss.d2rq.vocab.D2RConfig;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -81,8 +82,8 @@ public class D2rqToolsTest {
 
   public static class CompileMapping {
 
-    private final SQLConnection conn = Mockito.mock(SQLConnection.class);
-    private final Mapping mapping = new Mapping();
+    private final ConnectedDB conn = Mockito.mock(ConnectedDB.class);
+    private Mapping mapping = new Mapping();
 
     @Before
     public void prepareMocks() {
@@ -103,6 +104,18 @@ public class D2rqToolsTest {
     }
 
     @Test
+    public void should_set_limit_and_fetch_size_on_connection() throws Exception {
+      final Database database = new Database(ResourceFactory.createResource());
+      database.setResultSizeLimit(12);
+      database.setFetchSize(33);
+      mapping = new Mapping();
+      mapping.addDatabase(database);
+      D2rqTools.compile(mapping, conn);
+      verify(conn).setLimit(12);
+      verify(conn).setFetchSize(33);
+    }
+
+    @Test
     public void should_set_extended_prefixes() throws Exception {
       final Model compiled = D2rqTools.compile(mapping, conn);
       final Set<Map.Entry<String, String>> actual = compiled.getNsPrefixMap().entrySet();
@@ -115,9 +128,17 @@ public class D2rqToolsTest {
     public void should_hold_given_connection_in_model() throws Exception {
       final Model compiled = D2rqTools.compile(mapping, conn);
       assertThat(compiled.getGraph(), instanceOf(GraphD2RQ.class));
-      final Collection<SQLConnection> sqlConnections =
-          ((GraphD2RQ) compiled.getGraph()).getMapping().getSQLConnections();
-      assertThat(sqlConnections, contains(conn));
+      final Collection<ConnectedDB> connections = new ArrayList<>();
+      for (Database database : ((GraphD2RQ) compiled.getGraph()).getMapping().databases()) {
+        connections.add(database.connectedDB());
+      }
+      assertThat(connections, contains(conn));
+    }
+
+    @Test(expected = InvalidD2rqConfig.class)
+    public void should_fail_on_multiple_databases() throws Exception {
+      mapping.addDatabase(new Database(ResourceFactory.createResource()));
+      D2rqTools.compile(mapping, conn);
     }
   }
 }

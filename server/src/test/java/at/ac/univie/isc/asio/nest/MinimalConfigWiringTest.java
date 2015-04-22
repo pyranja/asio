@@ -7,7 +7,7 @@ import at.ac.univie.isc.asio.database.Jdbc;
 import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
 import at.ac.univie.isc.asio.tool.Timeout;
 import com.zaxxer.hikari.HikariConfig;
-import org.d2rq.db.SQLConnection;
+import de.fuberlin.wiwiss.d2rq.sql.ConnectedDB;
 import org.junit.Test;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -66,9 +66,9 @@ public class MinimalConfigWiringTest extends BaseContainerWiring {
 
   @Test
   public void should_define_SQLConnection_with_defaults() throws Exception {
-    final SQLConnection conn = applicationContext.getBean(SQLConnection.class);
+    final ConnectedDB conn = applicationContext.getBean(ConnectedDB.class);
     assertThat(conn.getJdbcURL(), equalTo("jdbc:h2:mem:"));
-    assertThat(conn.getJdbcDriverClass(), nullValue());
+//    assertThat(conn.getJdbcDriverClass(), nullValue());
     assertThat(conn.getUsername(), isEmptyString());
     assertThat(conn.getPassword(), isEmptyString());
   }

@@ -7,12 +7,17 @@ import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.shared.PrefixMapping;
 import com.hp.hpl.jena.vocabulary.RDF;
-import org.d2rq.CompiledMapping;
-import org.d2rq.db.SQLConnection;
-import org.d2rq.jena.GraphD2RQ;
-import org.d2rq.lang.D2RQCompiler;
-import org.d2rq.lang.Mapping;
-import org.d2rq.vocab.D2RConfig;
+import de.fuberlin.wiwiss.d2rq.jena.GraphD2RQ;
+import de.fuberlin.wiwiss.d2rq.map.Database;
+import de.fuberlin.wiwiss.d2rq.map.Mapping;
+import de.fuberlin.wiwiss.d2rq.sql.ConnectedDB;
+import de.fuberlin.wiwiss.d2rq.sql.types.DataType;
+import de.fuberlin.wiwiss.d2rq.vocab.D2RConfig;
+import de.fuberlin.wiwiss.d2rq.vocab.D2RQ;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Properties;
 
 /**
  * Utility methods for working with d2rq.
@@ -63,21 +68,50 @@ public final class D2rqTools {
   }
 
   /**
+   * Create a sql connection for d2r from the given settings.
+   *
+   * @param url jdbc url
+   * @param username username
+   * @param password password
+   * @param properties additional jdbc settings
+   * @return a d2r sql connection
+   */
+  public static ConnectedDB createSqlConnection(final String url,
+                                                final String username,
+                                                final String password,
+                                                final Properties properties) {
+    return new ConnectedDB(url, username, password,
+        Collections.<String, DataType.GenericType>emptyMap(),
+        Database.NO_LIMIT, Database.NO_FETCH_SIZE,
+        properties);
+  }
+
+  /**
    * Create a d2rq-jena model from the given mapping, using the given connection to a database.
    * The supplied connection will override jdbc configuration in the mapping.
    * An {@link PrefixMapping#Extended extended set} of standard prefixes is added to the model.
+   * Expects to find a single configured database.
    *
    * @param mapping    d2rq mapping that should be compiled
    * @param connection connection to the backing database
    * @return a jena model connected to the relational database via d2rq.
    */
-  public static Model compile(final Mapping mapping, final SQLConnection connection) {
-    final D2RQCompiler compiler = new D2RQCompiler(mapping);
-    compiler.useConnection(connection);
-    final CompiledMapping compiled = compiler.getResult();
-    final GraphD2RQ graph = new GraphD2RQ(compiled);
+  public static Model compile(final Mapping mapping, final ConnectedDB connection) {
+    final Database database = expectSingle(mapping.databases());
+    database.useConnectedDB(connection);
+    connection.setLimit(database.getResultSizeLimit());
+    connection.setFetchSize(database.getFetchSize());
+    mapping.connect();
+    final GraphD2RQ graph = new GraphD2RQ(mapping);
     final Model model = ModelFactory.createModelForGraph(graph);
     model.withDefaultMappings(PrefixMapping.Extended);
     return model;
+  }
+
+  private static Database expectSingle(final Collection<Database> databases) {
+    if (databases.size() != 1) {
+      throw new InvalidD2rqConfig(D2RQ.Database, "found more than one");
+    }
+    return databases.iterator().next();
   }
 }

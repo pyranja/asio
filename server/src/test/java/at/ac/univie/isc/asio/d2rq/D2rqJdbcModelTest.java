@@ -1,8 +1,8 @@
 package at.ac.univie.isc.asio.d2rq;
 
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
-import org.d2rq.lang.Database;
-import org.d2rq.lang.Mapping;
+import de.fuberlin.wiwiss.d2rq.map.Database;
+import de.fuberlin.wiwiss.d2rq.map.Mapping;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -16,7 +16,7 @@ public class D2rqJdbcModelTest {
 
   @Before
   public void injectTestUrlAndDriver() {
-    db.setJdbcURL("jdbc:db:test");
+    db.setJDBCDSN("jdbc:db:test");
   }
 
   @Test
@@ -101,13 +101,5 @@ public class D2rqJdbcModelTest {
   @Test(expected = InvalidD2rqConfig.class)
   public void should_fail_on_missing_config() throws Exception {
     D2rqJdbcModel.parse(new Mapping());
-  }
-
-  @Test(expected = AssertionError.class)
-  public void should_fail_on_reuse() throws Exception {
-    final Mapping mapping = new Mapping();
-    mapping.addDatabase(db);
-    mapping.accept(subject);
-    mapping.accept(subject);
   }
 }
