@@ -4,7 +4,8 @@ import at.ac.univie.isc.asio.tool.Closer;
 import org.jooq.Cursor;
 import org.jooq.Record;
 import org.springframework.dao.CleanupFailureDataAccessException;
-import org.springframework.jdbc.UncategorizedSQLException;
+import org.springframework.jdbc.support.SQLExceptionSubclassTranslator;
+import org.springframework.jdbc.support.SQLExceptionTranslator;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -17,11 +18,13 @@ import java.sql.Statement;
 final class JdbcExecution implements AutoCloseable {
   private final JdbcFactory create;
 
+  private final SQLExceptionTranslator translator;
   private Connection connection;
   private Statement statement;
 
   JdbcExecution(final JdbcFactory create) {
     this.create = create;
+    translator = new SQLExceptionSubclassTranslator();
   }
 
   public Cursor<Record> query(final String sql) {
@@ -32,7 +35,7 @@ final class JdbcExecution implements AutoCloseable {
       return create.lazy(rs);
     } catch (SQLException e) {
       close();  // eager clean up after error
-      throw new UncategorizedSQLException("sql query", sql, e);
+      throw translator.translate("sql-query", sql, e);
     }
   }
 
@@ -42,10 +45,9 @@ final class JdbcExecution implements AutoCloseable {
       connection.setReadOnly(false);
       return statement.executeUpdate(sql);
     } catch (SQLException e) {
-      throw new UncategorizedSQLException("sql update", sql, e);
+      throw translator.translate("sql-update", sql, e);
     } finally {
-      // eager cleanup
-      close();
+      close();  // eager cleanup
     }
   }
 
