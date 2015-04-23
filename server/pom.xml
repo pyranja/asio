@@ -16,6 +16,10 @@
   <description>sparql/sql endpoint server</description>
   <packaging>jar</packaging>
 
+  <properties>
+    <start-class>at.ac.univie.isc.asio.Asio</start-class>
+  </properties>
+
   <dependencies>
 
     <dependency>
@@ -185,9 +189,6 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
-        <configuration>
-          <mainClass>at.ac.univie.isc.asio.Asio</mainClass>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
