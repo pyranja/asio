@@ -41,10 +41,10 @@ public class FeatureContainerManagement extends IntegrationTest {
     final Iterable<InboundEvent> received = EventStream.collectAll(eventStream().skip(1).take(2));
     given().manage().and().contentType("text/turtle").content(mapping)
       .when().put("container/{name}", name)
-      .then().statusCode(HttpStatus.SC_CREATED).log().all();
+      .then().statusCode(HttpStatus.SC_CREATED);
     given().manage().spec()
       .when().delete("container/{name}", name)
-      .then().statusCode(HttpStatus.SC_OK).log().all();
+      .then().statusCode(HttpStatus.SC_OK);
     assertThat(received, hasItems(
         payload(containsString("\"subject\":\"deployed\"")),
         payload(containsString("\"subject\":\"dropped\"")))
