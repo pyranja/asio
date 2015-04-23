@@ -2,14 +2,15 @@ package at.ac.univie.isc.asio.component;
 
 import at.ac.univie.isc.asio.Integration;
 import at.ac.univie.isc.asio.metadata.AtosMetadataRepository;
-import at.ac.univie.isc.asio.tool.Reactive;
 import net.atos.AtosDataset;
 import net.atos.AtosLink;
 import net.atos.AtosRelatedResource;
 import net.atos.AtosSemanticConcept;
 import org.glassfish.jersey.client.ClientProperties;
+import org.glassfish.jersey.filter.LoggingFilter;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import rx.Observable;
@@ -20,6 +21,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.util.logging.Logger;
 
 import static at.ac.univie.isc.asio.jaxrs.ResponseMatchers.hasStatus;
 import static org.hamcrest.Matchers.is;
@@ -29,6 +31,7 @@ import static org.junit.Assume.assumeThat;
 /**
  * Ensure the AtosMetadataRepository works with the actual endpoint.
  */
+@Ignore("verify deletion actually works ???")
 @Category(Integration.class)
 public class AtosMetadataIntegrationTest {
   private static final URI ATOS_SERVICE_ADDRESS =
@@ -36,8 +39,8 @@ public class AtosMetadataIntegrationTest {
 
   private final Client client = ClientBuilder.newBuilder()
       .property(ClientProperties.CONNECT_TIMEOUT, 2_000)
-      .property(ClientProperties.READ_TIMEOUT, 10_000)
-          //      .register(new LoggingFilter(Logger.getLogger("jersey.client"), true))
+      .property(ClientProperties.READ_TIMEOUT, 30_000)
+//      .register(new LoggingFilter(Logger.getLogger("jersey.client"), true))
       .build();
 
   private final AtosMetadataRepository repo =
@@ -78,7 +81,12 @@ public class AtosMetadataIntegrationTest {
           public void call(final AtosDataset atosDataset) {
             repo.delete(atosDataset.getGlobalID());
           }
-        }, Reactive.ignoreErrors());
+        }, new Action1<Throwable>() {
+          @Override
+          public void call(final Throwable throwable) {
+            System.err.println("!! failed to clear test metadata - " + throwable);
+          }
+        });
     client.close();
   }
 
@@ -112,6 +120,35 @@ public class AtosMetadataIntegrationTest {
       assertThat(retrieved.getProvenance(), is("modified provenance"));
     } finally {
       repo.delete(saved.getGlobalID());
+    }
+  }
+
+  /** run main to try and clean up all test metadata */
+  public static void main(String[] args) {
+    final Client client = ClientBuilder.newBuilder()
+        .property(ClientProperties.CONNECT_TIMEOUT, 2_000)
+        .property(ClientProperties.READ_TIMEOUT, 0)
+        .register(new LoggingFilter(Logger.getLogger("jersey.client"), true))
+        .build();
+    try {
+      final AtosMetadataRepository repo =
+          new AtosMetadataRepository(client.target(ATOS_SERVICE_ADDRESS));
+      repo.findByLocalId("http://example.com/test/local-id/")
+          .subscribe(new Action1<AtosDataset>() {
+            @Override
+            public void call(final AtosDataset atosDataset) {
+              System.out.println(">> delete " + atosDataset.getGlobalID());
+              repo.delete(atosDataset.getGlobalID());
+              System.out.println("<< deleted " + atosDataset.getGlobalID());
+            }
+          }, new Action1<Throwable>() {
+            @Override
+            public void call(final Throwable throwable) {
+              System.err.println("!! failed to clear test metadata - " + throwable);
+            }
+          });
+    } finally {
+      client.close();
     }
   }
 }
