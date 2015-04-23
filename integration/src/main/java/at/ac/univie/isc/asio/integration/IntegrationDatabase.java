@@ -6,6 +6,11 @@ import at.ac.univie.isc.asio.sql.Database;
  * Setup a database with the integration reference data.
  */
 public final class IntegrationDatabase {
+  /** use fixed integration database schema name 'public' */
+  public static IntegrationDatabase defaultCatalog() {
+    return catalog("PUBLIC");
+  }
+
   public static IntegrationDatabase catalog(final String catalog) {
     return new IntegrationDatabase(catalog);
   }

@@ -22,7 +22,7 @@ public class Runner {
   static final List<String> profiles = Lists.newArrayList("brood", "dev");
 
   public static void main(final String[] args) throws IOException {
-    final Database database = IntegrationDatabase.catalog("public")
+    final Database database = IntegrationDatabase.defaultCatalog()
         .mysqlIfAvailable();
     //        .h2InMemory();
 

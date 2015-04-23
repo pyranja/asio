@@ -30,7 +30,7 @@ public class BroodIntegrationSuite {
   @BeforeClass
   public static void start() {
 
-    final Database h2 = IntegrationDatabase.catalog("public").h2InMemory()
+    final Database h2 = IntegrationDatabase.defaultCatalog().h2InMemory()
         .execute(Classpath.read("sql/database.integration.sql"));
 
     final String[] args = new String[] {
