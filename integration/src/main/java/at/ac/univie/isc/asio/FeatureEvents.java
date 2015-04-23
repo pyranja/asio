@@ -21,6 +21,7 @@ import org.junit.runners.Parameterized;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
+import static at.ac.univie.isc.asio.insight.Events.only;
 import static at.ac.univie.isc.asio.insight.Events.payload;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.Is.is;
@@ -66,7 +67,7 @@ public class FeatureEvents extends IntegrationTest {
   @Test
   public void successful_query_event_sequence() throws Exception {
     final Iterable<InboundEvent> received =
-        EventStream.collectAll(eventStream().skip(1).take(3));
+        EventStream.collectAll(eventStream().filter(only("operation", "error")).take(3));
     given().role("admin").and().param(operation, noop).post("/{language}", language)
         .then().statusCode(is(HttpStatus.SC_OK));
     assertThat(received, both(sequence("received", "executed", "completed")).and(correlated()));
@@ -75,7 +76,7 @@ public class FeatureEvents extends IntegrationTest {
   @Test
   public void failed_query_event_sequence() throws Exception {
     final Iterable<InboundEvent> received =
-        EventStream.collectAll(eventStream().skip(1).take(3));
+        EventStream.collectAll(eventStream().filter(only("operation", "error")).take(3));
     final String invalidCommand =
         Hashing.md5().hashString(noop, Charsets.UTF_8).toString();
     given().role("admin").and().param(operation, invalidCommand).post("/{language}", language);
@@ -85,7 +86,7 @@ public class FeatureEvents extends IntegrationTest {
   @Test
   public void rejected_query_event_sequence() throws Exception {
     final Iterable<InboundEvent> received =
-        EventStream.collectAll(eventStream().skip(1).take(3));
+        EventStream.collectAll(eventStream().filter(only("operation", "error")).take(3));
     given().role("admin").and().param(operation).post("/{language}", language);
     assertThat(received, both(sequence("received", "failed", "error")).and(correlated()));
   }

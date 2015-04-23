@@ -59,3 +59,17 @@ logging.level:
   org.springframework.boot.actuate.audit.listener.AuditListener: 'INFO'
   com.hp.hpl.jena.arq.exec: 'OFF'
   org.d2rq.db.SQLIterator: 'OFF'
+
+--- # recommended mysql properties
+spring.profiles: 'mysql'
+
+asio.jdbc.properties:
+  zeroDateTimeBehavior: 'convertToNull'
+  cachePrepStmts: 'true'
+  prepStmtCacheSize: '200'
+  prepStmtCacheSqlLimit: '2048'
+  logger: 'com.mysql.jdbc.log.Slf4JLogger'
+  statementInterceptors: 'at.ac.univie.isc.asio.database.EventfulMysqlInterceptor'
+#  useLegacyDatetimeCode=false
+#  serverTimezone=UTC
+#  logSlowQueries: 'true'

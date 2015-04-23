@@ -1,6 +1,7 @@
 package at.ac.univie.isc.asio.engine;
 
 import at.ac.univie.isc.asio.insight.Emitter;
+import at.ac.univie.isc.asio.tool.EventMatchers;
 import at.ac.univie.isc.asio.tool.Reactive;
 import com.google.common.io.ByteStreams;
 import org.junit.Test;
@@ -12,7 +13,6 @@ import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import static at.ac.univie.isc.asio.tool.EventMatchers.event;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.argThat;
@@ -44,14 +44,14 @@ public class EventfulConnectorTest {
   public void should_emit_initial_received_event() throws Exception {
     when(delegate.accept(NULL_PARAMS)).thenReturn(Observable.<StreamedResults>empty());
     subject.accept(NULL_PARAMS);
-    verify(emitter).emit(argThat(event("received")));
+    verify(emitter).emit(argThat(EventMatchers.hasSubject("received")));
   }
 
   @Test
   public void should_emit_executed_on_after_yielding_streamed_results() throws Exception {
     when(delegate.accept(NULL_PARAMS)).thenReturn(Observable.just(DUMMY_RESULTS));
     subject.accept(NULL_PARAMS).subscribe();
-    verify(emitter).emit(argThat(event("executed")));
+    verify(emitter).emit(argThat(EventMatchers.hasSubject("executed")));
   }
 
   @Test
@@ -59,14 +59,14 @@ public class EventfulConnectorTest {
     final IllegalStateException failure = new IllegalStateException("test");
     when(delegate.accept(NULL_PARAMS)).thenReturn(Observable.<StreamedResults>error(failure));
     subject.accept(NULL_PARAMS).subscribe(Actions.empty(), Reactive.ignoreErrors());
-    verify(emitter).emit(argThat(event("failed")));
+    verify(emitter).emit(argThat(EventMatchers.hasSubject("failed")));
   }
 
   @Test
   public void should_emit_completed_after_streaming_ended() throws Exception {
     when(delegate.accept(NULL_PARAMS)).thenReturn(Observable.just(DUMMY_RESULTS));
     subject.accept(NULL_PARAMS).toBlocking().single().write(ByteStreams.nullOutputStream());
-    verify(emitter).emit(argThat(event("completed")));
+    verify(emitter).emit(argThat(EventMatchers.hasSubject("completed")));
   }
 
   @Test
@@ -82,6 +82,6 @@ public class EventfulConnectorTest {
     try {
       subject.accept(NULL_PARAMS).toBlocking().single().write(ByteStreams.nullOutputStream());
     } catch (Exception ignored) {}
-    verify(emitter).emit(argThat(event("failed")));
+    verify(emitter).emit(argThat(EventMatchers.hasSubject("failed")));
   }
 }

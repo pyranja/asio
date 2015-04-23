@@ -54,7 +54,7 @@ spring.profiles: 'mysql'
 asio.feature.global-datasource: on
 asio.feature.multi-tenancy: on
 asio.jdbc:
-    url: 'jdbc:mysql:///'
+    url: 'jdbc:mysql:///?statementInterceptors=at.ac.univie.isc.asio.database.EventfulMysqlInterceptor'
     username: 'root'
     password: 'change'
     privileges: ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'DROP']

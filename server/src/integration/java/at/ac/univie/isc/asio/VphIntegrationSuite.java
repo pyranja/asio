@@ -33,7 +33,7 @@ public class VphIntegrationSuite {
   public static void start() throws IOException {
 
     final Database database = IntegrationDatabase.defaultCatalog()
-        .mysqlIfAvailable()
+        .auto()
         .execute(Classpath.read("sql/database.integration.sql"));
 
     workDirectory.add(

@@ -1,7 +1,10 @@
-package at.ac.univie.isc.asio.metadata.sql;
+package at.ac.univie.isc.asio.database;
 
-import at.ac.univie.isc.asio.*;
-import at.ac.univie.isc.asio.database.H2SchemaService;
+import at.ac.univie.isc.asio.Column;
+import at.ac.univie.isc.asio.Id;
+import at.ac.univie.isc.asio.ObjectFactory;
+import at.ac.univie.isc.asio.SqlSchema;
+import at.ac.univie.isc.asio.Table;
 import at.ac.univie.isc.asio.engine.sql.XmlSchemaType;
 import at.ac.univie.isc.asio.io.Classpath;
 import at.ac.univie.isc.asio.sql.Database;

@@ -3,6 +3,7 @@ package at.ac.univie.isc.asio.brood;
 import at.ac.univie.isc.asio.AsioFeatures;
 import at.ac.univie.isc.asio.AsioSettings;
 import at.ac.univie.isc.asio.Brood;
+import at.ac.univie.isc.asio.database.EventfulMysqlInterceptor;
 import at.ac.univie.isc.asio.database.MysqlUserRepository;
 import at.ac.univie.isc.asio.engine.DatasetHolder;
 import at.ac.univie.isc.asio.platform.FileSystemConfigStore;
@@ -63,6 +64,8 @@ class BroodComponents {
   @ConditionalOnProperty(AsioFeatures.GLOBAL_DATASOURCE)
   public DataSource globalDatasource(final Timeout timeout) {
     final HikariConfig config = JdbcTools.hikariConfig("global", this.config.jdbc, timeout);
+    config.getDataSourceProperties()
+        .setProperty("statementInterceptors", EventfulMysqlInterceptor.class.getName());
     config.setCatalog(null);
     // expect infrequent usage
     config.setMaximumPoolSize(5);

@@ -3,11 +3,30 @@ package at.ac.univie.isc.asio.insight;
 import org.glassfish.jersey.media.sse.InboundEvent;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
+import rx.functions.Func1;
+
+import java.util.Map;
+
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
 
 /**
  * Hamcrest matchers for jersey server-sent-events.
  */
 public final class Events {
+  /**
+   * Predicate for rxJava streams - filters on event type
+   */
+  public static Func1<InboundEvent, Boolean> only(final String... types) {
+    final Matcher<InboundEvent> condition = attribute("type", Matchers.<Object>isOneOf(types));
+    return new Func1<InboundEvent, Boolean>() {
+      @Override
+      public Boolean call(final InboundEvent inboundEvent) {
+        return condition.matches(inboundEvent);
+      }
+    };
+  }
 
   /**
    * Match if the name of the event satisfies the expectation.
@@ -21,6 +40,14 @@ public final class Events {
    */
   public static Matcher<InboundEvent> payload(final Matcher<? super String> expected) {
     return new EventWithText(expected);
+  }
+
+  /**
+   * Match if the event has an attribute with the given value.
+   */
+  public static Matcher<InboundEvent> attribute(final String key, final Matcher<? super Object> value) {
+    final Matcher<? super Map<String, Object>> matcher = hasEntry(equalTo(key), value);
+    return new EventWithAttribute(matcher);
   }
 
   /**
@@ -50,6 +77,18 @@ public final class Events {
     @Override
     protected String featureValueOf(final InboundEvent actual) {
       return actual.readData();
+    }
+  }
+
+  private static class EventWithAttribute extends FeatureMatcher<InboundEvent, Map<String, Object>> {
+    public EventWithAttribute(final Matcher<? super Map<String, Object>> subMatcher) {
+      super(subMatcher, "event with attributes", "attributes of event");
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    protected Map<String, Object> featureValueOf(final InboundEvent actual) {
+      return actual.readData(Map.class);
     }
   }
 

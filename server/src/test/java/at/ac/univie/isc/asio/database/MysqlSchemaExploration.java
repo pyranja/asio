@@ -1,4 +1,4 @@
-package at.ac.univie.isc.asio.engine.sql;
+package at.ac.univie.isc.asio.database;
 
 import com.google.common.collect.Iterables;
 import org.jooq.Catalog;

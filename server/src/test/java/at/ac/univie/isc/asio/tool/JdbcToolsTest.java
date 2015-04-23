@@ -1,8 +1,14 @@
 package at.ac.univie.isc.asio.tool;
 
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -53,6 +59,22 @@ public class JdbcToolsTest {
     @Test
     public void should_return_absent_if_url_null() throws Exception {
       assertThat(JdbcTools.inferDriverClass(null).isPresent(), equalTo(false));
+    }
+  }
+
+  public static class InjectRequiredJdbcProperties {
+    @Test
+    public void should_force_h2_properties() throws Exception {
+      final Map<String, String> original = new HashMap<>();
+      original.put("MODE", "wrong");
+      original.put("DATABASE_TO_UPPER", "true");
+      final Properties injected = JdbcTools.injectRequiredProperties(original, "jdbc:h2:mem");
+      assertThat(injected, has("MODE", "MYSQL"));
+      assertThat(injected, has("DATABASE_TO_UPPER", "false"));
+    }
+
+    private Matcher<? super Map<?,?>> has(final String key, final String value) {
+      return Matchers.<Object, Object>hasEntry(key, value);
     }
   }
 }

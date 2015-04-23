@@ -5,6 +5,7 @@ import com.google.common.base.Optional;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.zaxxer.hikari.HikariConfig;
 
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -59,8 +60,7 @@ public final class JdbcTools {
     config.setCatalog(jdbc.getSchema());
     config.setUsername(jdbc.getUsername());
     config.setPassword(jdbc.getPassword());
-    final Properties properties = new Properties();
-    properties.putAll(jdbc.getProperties());
+    final Properties properties = injectRequiredProperties(jdbc.getProperties(), jdbc.getUrl());
     config.setDataSourceProperties(properties);
     if (jdbc.getDriver() != null) { config.setDriverClassName(jdbc.getDriver()); }
     config.setConnectionTimeout(timeout.getAs(TimeUnit.MILLISECONDS, 0));
@@ -68,5 +68,18 @@ public final class JdbcTools {
     config.setPoolName(poolName);
     config.setThreadFactory(new ThreadFactoryBuilder().setNameFormat(poolName + "-thread-%d").build());
     return config;
+  }
+
+
+  public static Properties injectRequiredProperties(final Map<String, String> original,
+                                                   final String url) {
+    final Properties result = Beans.asProperties(original);
+    if (url.startsWith("jdbc:mysql")) {
+//      result.setProperty("statementInterceptors", EventfulMysqlInterceptor.class.getName());
+    } else if (url.startsWith("jdbc:h2:")) {
+      result.setProperty("MODE", "MYSQL");
+      result.setProperty("DATABASE_TO_UPPER", "false");
+    }
+    return result;
   }
 }

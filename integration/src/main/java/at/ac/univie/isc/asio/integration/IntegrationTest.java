@@ -26,6 +26,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.params.CoreConnectionPNames;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
+import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.sse.EventSource;
 import org.glassfish.jersey.media.sse.InboundEvent;
 import org.junit.BeforeClass;
@@ -180,8 +181,11 @@ public abstract class IntegrationTest {
         HttpAuthenticationFeature.basic(credentials.getUserName(), credentials.getPassword());
     client.register(authentication);
 
+    client.register(new JacksonFeature());
+
     return EventStream
         .listenTo(EventSource.target(client.target(eventsEndpoint())).build())
+//        .doOnEach(new EventLogger())
         .doOnEach(interactions.attached(new EventReport()))
         .finallyDo(new Action0() {
           @Override

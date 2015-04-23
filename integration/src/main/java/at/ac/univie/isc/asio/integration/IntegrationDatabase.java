@@ -21,19 +21,18 @@ public final class IntegrationDatabase {
     this.catalog = catalog;
   }
 
-  public Database mysqlIfAvailable() {
+  public Database mysql() {
     final Database mysql = Database
         .create("jdbc:mysql://localhost:" + port() + "/?allowMultiQueries=true")
         .credentials(username(), password())
         .build();
     if (mysql.isAvailable()) {
-      return mysql
+      mysql
           .execute("DROP DATABASE IF EXISTS `" + catalog + "`;")
           .execute("CREATE DATABASE `" + catalog + "`;")
           .switchCatalog(catalog);
-    } else {
-      return h2InMemory();
     }
+    return mysql;
   }
 
   public Database h2InMemory() {
@@ -41,9 +40,19 @@ public final class IntegrationDatabase {
         .create("jdbc:h2:mem:public;DB_CLOSE_DELAY=-1;MODE=MYSQL;DATABASE_TO_UPPER=false;")
         .credentials(username(), password())
         .build()
+        // .execute("DROP SCHEMA \"PUBLIC\"")
         .execute("CREATE SCHEMA IF NOT EXISTS " + catalog)
         .execute("SET SCHEMA " + catalog)
         ;
+  }
+
+  public Database auto() {
+    final Database mysql = mysql();
+    if (mysql.isAvailable()) {
+      return mysql;
+    } else {
+      return h2InMemory();
+    }
   }
 
   private String username() {

@@ -23,7 +23,7 @@ public class Runner {
 
   public static void main(final String[] args) throws IOException {
     final Database database = IntegrationDatabase.defaultCatalog()
-        .mysqlIfAvailable();
+        .auto();
     //        .h2InMemory();
 
     database.execute(Classpath.read("sql/database.integration.sql"));
