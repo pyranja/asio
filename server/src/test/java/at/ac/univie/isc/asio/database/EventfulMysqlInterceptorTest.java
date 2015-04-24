@@ -32,18 +32,26 @@ public class EventfulMysqlInterceptorTest {
 
   private final Emitter events = Mockito.mock(Emitter.class);
   private final FakeTicker time = new FakeTicker();
-  private final EventfulMysqlInterceptor subject = new EventfulMysqlInterceptor(time);
+  private final EventfulMysqlInterceptor subject = new EventfulMysqlInterceptor(time, events);
 
   @Before
   public void startQuerySimulation() throws SQLException {
-    EventfulMysqlInterceptor.sharedEmitterInstance = events;
+    //    EventfulMysqlInterceptor.sharedEmitterInstance = events;
     // pre-process should ignore all input - no need to change call in tests
     subject.preProcess(null, null, null);
   }
 
   @After
   public void cleanUp() {
-    EventfulMysqlInterceptor.sharedEmitterInstance = new EventfulMysqlInterceptor.DummyEmitter();
+    new EventfulMysqlInterceptor.Wiring().resetSharedEmitter();
+  }
+
+  @Test
+  public void should_use_emitter_from_global_handover_variable() throws Exception {
+    final EventfulMysqlInterceptor selfInitializing = new EventfulMysqlInterceptor();
+    assertThat(selfInitializing.events(), not(sameInstance(events)));
+    EventfulMysqlInterceptor.sharedEmitterInstance = events;
+    assertThat(selfInitializing.events(), sameInstance(events));
   }
 
   @Test
@@ -94,6 +102,7 @@ public class EventfulMysqlInterceptorTest {
     }
   }
 
+
   public class OnSuccess {
     @Before
     public void simulateSuccessfulQuery() throws SQLException {
@@ -126,6 +135,7 @@ public class EventfulMysqlInterceptorTest {
       assertThat(emitted().isNoIndex(), equalTo(false));
     }
   }
+
 
   public class OnFailure {
     @Before

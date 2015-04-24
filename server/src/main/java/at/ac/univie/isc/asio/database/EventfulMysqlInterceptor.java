@@ -29,16 +29,29 @@ import static org.slf4j.LoggerFactory.getLogger;
 public final class EventfulMysqlInterceptor implements StatementInterceptorV2 {
   private static final Logger log = getLogger(EventfulMysqlInterceptor.class);
 
+  /*
+   * this implementation relies on invariants maintained by the mysql driver and the general usage
+   * pattern of the mysql, specifically :
+   *  - there is a 1:1 relation between connections and interceptors
+   *  - execution of a single sql query is performed by a single thread
+   *  - a connection must not perform concurrent sql queries
+   * Additionally the shared, global Emitter instance is assumed to be written exactly once,
+   * sometime during application startup. Changes to the shared instance will most likely not be
+   * picked up by existing interceptors.
+   */
+
   // stopwatch is not thread-safe, assumes external sync by mysql driver
   private final Stopwatch time;
+  private Emitter events;
 
   /** used by mysql connector/j driver */
   public EventfulMysqlInterceptor() {
-    this(Ticker.systemTicker());
+    this(Ticker.systemTicker(), NO_INIT_SENTINEL);
   }
 
   @VisibleForTesting
-  EventfulMysqlInterceptor(final Ticker time) {
+  EventfulMysqlInterceptor(final Ticker time, final Emitter events) {
+    this.events = events;
     this.time = Stopwatch.createUnstarted(time);
   }
 
@@ -58,14 +71,25 @@ public final class EventfulMysqlInterceptor implements StatementInterceptorV2 {
   public ResultSetInternalMethods postProcess(final String sql, final Statement interceptedStatement, final ResultSetInternalMethods originalResultSet, final Connection connection, final int warningCount, final boolean noIndexUsed, final boolean noGoodIndexUsed, final SQLException error) throws SQLException {
     final String sqlCommand = findSqlCommand(sql, interceptedStatement);
     if (isNotDriverInitialization(sqlCommand)) {
-      final Emitter events = sharedEmitterInstance;
       final Sql.SqlEvent event = error == null ? Sql.success(sqlCommand) : Sql.failure(sqlCommand, error);
       event.setBadIndex(noGoodIndexUsed);
       event.setNoIndex(noIndexUsed);
       event.setDuration(time.elapsed(TimeUnit.MILLISECONDS));
-      events.emit(event);
+      events().emit(event);
     }
     return null;
+  }
+
+  /** check the global handover variable if necessary */
+  @VisibleForTesting
+  Emitter events() {
+    /* expected is a deferred initialization exactly once during startup - checking against the
+     * constant sentinel avoids a volatile read on every query after init has happened
+     */
+    if (events == NO_INIT_SENTINEL) {
+      events = sharedEmitterInstance;
+    }
+    return events;
   }
 
   private String findSqlCommand(final String provided, final Statement statement) {
@@ -96,10 +120,13 @@ public final class EventfulMysqlInterceptor implements StatementInterceptorV2 {
 
   // === obtain event emitter via static handover from spring context
 
-  static volatile Emitter sharedEmitterInstance = new DummyEmitter();
+  /** signals that initialization has not yet happened */
+  private static final DummyEmitter NO_INIT_SENTINEL = new DummyEmitter();
+
+  static volatile Emitter sharedEmitterInstance = NO_INIT_SENTINEL;
 
   @Configuration
-  static class MysqlInterceptorWiring {
+  static class Wiring {
     @Autowired
     private Emitter emitter;
 
@@ -111,7 +138,7 @@ public final class EventfulMysqlInterceptor implements StatementInterceptorV2 {
     @PreDestroy
     public void resetSharedEmitter() {
       log.info(Scope.SYSTEM.marker(), "resetting shared emitter");
-      sharedEmitterInstance = new DummyEmitter();
+      sharedEmitterInstance = NO_INIT_SENTINEL;
     }
   }
 
