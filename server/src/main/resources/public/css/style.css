@@ -50,7 +50,7 @@
 }
 
 .textcrop_tables {
-	width:320px;
+	width:300px;
 	height:18px;
 	line-height:15px;
 	overflow:hidden;
@@ -122,6 +122,8 @@ select{
 	margin:5px;
 }
 
+th, td { white-space: nowrap; }
+
 #metadata {
 	overflow: hidden;
 	padding-left: 20px;
@@ -138,6 +140,8 @@ select{
 	padding-top: 0px;
 	padding-bottom: 0px;
 	width: 480px;
+	max-height:500px;	
+	overflow:auto;
 }
 
 #query {
@@ -375,12 +379,22 @@ header #login a img{
 
 #zebra-table
 {
-	width: 100%;
-	max-width:940px;
 	text-align: left;
-	border-collapse: collapse;
-	overflow:hidden;
+	max-width:940px;
+	table-layout: fixed;
+	width: 940px !Important;
+	
+    overflow-x: scroll;
+	overflow-y: hidden;
+	display: block;
+    white-space: nowrap;
 }
+
+div.dataTables_wrapper {
+	width: 940px;
+	margin: 0 auto;
+}
+
 #zebra-table thead
 {
 	font-size: 14px;

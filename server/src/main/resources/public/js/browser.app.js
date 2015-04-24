@@ -20,6 +20,7 @@ var ExplorerView = new function () {
   };
 };
 
+var fieldview = false;
 var ResultView = new function () {
   this.update = function (model) {
     var content = ich.template_result(model.result);
@@ -30,12 +31,17 @@ var ResultView = new function () {
 	});
 	
 	$('#sql-result').empty().append(content);	
-	$('#zebra-table').dataTable({
-        aoColumns: columnWidths()
+	var dtable = $('#zebra-table').dataTable({
+        aoColumns: columnWidths(),
+		"scrollX": true
     });
 	$('#zebra-table > tbody  > tr').each(function() {
 		$(this).linkify();
 	});
+	
+	if(fieldview) dtable.fnSort([[0,'desc']]);
+	
+	//dtable.fnAdjustColumnSizing();
 	
 	addColumnFilterUI();
 	for (var key in fieldArray) {
@@ -79,6 +85,7 @@ var Controller = new function () {
 		this.executeQuery("SELECT * FROM `" + table +"`");
 	
 	$("#selectedTable").val(table);
+	fieldview = false;
   };
   
   this.fetchTableField = function (table, field) {
@@ -88,6 +95,7 @@ var Controller = new function () {
 		this.executeQuery("SELECT DISTINCT COUNT(`" + field + "`) AS occurence, `" + field +"` FROM `" + table +"` GROUP BY `"+ field +"` ORDER BY occurence DESC");
 	
 	$("#selectedTable").val(table);
+	fieldview = true;
   };
   
   this.onCheckLimitBox = function () {
@@ -253,7 +261,7 @@ function printMetadata()
         propertyValueCell.appendChild(document.createTextNode(value));
 				row.appendChild(propertyValueCell);
       });
-      container.appendChild(table);
+      //container.appendChild(table);
     }
 		else
 		{
@@ -281,7 +289,7 @@ function columnWidths() {
 function addColumnFilterUI(){
 	var buttonCell = document.getElementById("zebra-table").createTFoot().insertRow(0).insertCell(0);
 	buttonCell.colSpan = 999;
-	buttonCell.innerHTML = '<table><tr><td id="andoropcell"><input id="andor" type="checkbox" name="andor" value="limit" onchange="setAndOrOperator()" checked> OR operator</td><td><button id="columnfilter" title="Column filter" type="submit" class="btn btn-default btn-lg" onclick="onFilterByColumns();" value="Column filter"><span class="glyphicon glyphicon-download"></span> Column filter</button></td><td><button title="Reset table" type="submit" class="btn btn-default btn-lg" onclick="resetTable();" value="Reset table"><span class="glyphicon glyphicon-download"></span> Reset table</button></td></tr></table>';
+	buttonCell.innerHTML = '<table><tr><td id="andoropcell"><input id="andor" type="checkbox" name="andor" value="limit" onchange="setAndOrOperator()" checked> AND operator</td><td><button id="columnfilter" title="Apply filter" type="submit" class="btn btn-default btn-lg" onclick="onFilterByColumns();" value="Apply filter"><span class="glyphicon glyphicon-download"></span> Apply filter</button></td><td><button title="Reset table" type="submit" class="btn btn-default btn-lg" onclick="resetTable();" value="Reset table"><span class="glyphicon glyphicon-download"></span> Reset table</button></td></tr></table>';
 	
 	var searchRow = document.getElementById("zebra-table").tFoot.insertRow(0);	
 	$($("#zebra-table thead tr th").get().reverse()).each(function(){	
@@ -293,11 +301,11 @@ function addColumnFilterUI(){
 function setAndOrOperator(){
 	var isChecked = $("#andor").prop('checked');
 	if(isChecked) {
-		$("#andoropcell").html('<input id="andor" type="checkbox" name="andor" onchange="setAndOrOperator()" checked> OR operator');
-		$("#filterOperator").val("OR");
-	} else {
-		$("#andoropcell").html('<input id="andor" type="checkbox" name="andor" onchange="setAndOrOperator()"> AND operator');
+		$("#andoropcell").html('<input id="andor" type="checkbox" name="andor" onchange="setAndOrOperator()" checked> AND operator');
 		$("#filterOperator").val("AND");
+	} else {
+		$("#andoropcell").html('<input id="andor" type="checkbox" name="andor" onchange="setAndOrOperator()"> OR operator');
+		$("#filterOperator").val("OR");
 	}
 }
 

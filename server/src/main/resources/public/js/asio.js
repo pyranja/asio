@@ -99,7 +99,7 @@ var asio = (function() {
   exports.endpoint = function() {
     return endpoint();
   }
-
+  
   // parse a xml webrowset into a SqlResult object
   exports.parseWebrowset = function(xml) {
     var table = new SqlResult();
@@ -118,8 +118,14 @@ var asio = (function() {
   };
 
   // parse an OGSADAI xml database schema into a list of table names
+  
+  /**
+  * WARNING: jQuery selector inconsistency bug still unsolved http://bugs.jquery.com/ticket/4208
+  * Firefox/IE required namespace, while chrome apprerently doesn't need namespace specification!
+  * added $.find("ns2\\:table, table")
+  */
   exports.parseDatabaseSchema = function(xml) {
-    var datasource = $(xml).find('table').map(function() {
+    var datasource = $(xml).find('ns2\\:table, table').map(function() {
       var dsName = $(this).attr('schema');
       if (dsName == 'null') {
         dsName = $(this).attr('catalog');
@@ -129,9 +135,9 @@ var asio = (function() {
       }
     }).get();
 
-    var tables = $(xml).find('table').map(function() {
+    var tables = $(xml).find('ns2\\:table, table').map(function() {
       var tableName = $(this).attr('name');
-      var columns = $(this).find('column').map(function() {
+      var columns = $(this).find('ns2\\:column,column').map(function() {
         var columnType = $(this).attr('sqlType');
         var columnName = $(this).attr('name');
 		    return { name: columnName, type: columnType };
