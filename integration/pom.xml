@@ -33,8 +33,29 @@
       <groupId>com.jayway.restassured</groupId>
       <artifactId>rest-assured</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpcore</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.netflix.rxjava</groupId>
+      <artifactId>rxjava-core</artifactId>
+    </dependency>
 
     <dependency>  <!-- event stream -->
+      <groupId>javax.ws.rs</groupId>
+      <artifactId>javax.ws.rs-api</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.glassfish.jersey.core</groupId>
       <artifactId>jersey-client</artifactId>
     </dependency>
@@ -47,6 +68,10 @@
       <artifactId>jersey-media-json-jackson</artifactId>
     </dependency>
     <dependency>  <!-- echo server -->
+      <groupId>org.glassfish.jersey.core</groupId>
+      <artifactId>jersey-server</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.glassfish.jersey.containers</groupId>
       <artifactId>jersey-container-grizzly2-http</artifactId>
       <version>${jersey.version}</version>
@@ -89,15 +114,7 @@
 
     <dependency>
       <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-      <optional>true</optional>
-    </dependency>
-
-    <!-- jdbc drivers -->
-    <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
-      <optional>true</optional>
+      <artifactId>slf4j-api</artifactId>
     </dependency>
 
   </dependencies>
@@ -116,6 +133,21 @@
           <skipTests>true</skipTests>
         </configuration>
       </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>2.10</version>
+        <configuration>
+          <ignoredUsedUndeclaredDependencies>
+            <ignoredUsedUndeclaredDependency>org.glassfish.*</ignoredUsedUndeclaredDependency>
+          </ignoredUsedUndeclaredDependencies>
+          <usedDependencies>
+            <usedDependency>org.springframework:spring-web</usedDependency>
+          </usedDependencies>
+        </configuration>
+      </plugin>
+
     </plugins>
   </build>
 
