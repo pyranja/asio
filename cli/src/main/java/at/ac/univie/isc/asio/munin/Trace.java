@@ -1,30 +1,26 @@
-package at.ac.univie.isc.asio.munin.commands;
+package at.ac.univie.isc.asio.munin;
 
-import at.ac.univie.isc.asio.munin.Command;
-import at.ac.univie.isc.asio.munin.Pigeon;
+import at.ac.univie.isc.asio.Pigeon;
 import org.glassfish.jersey.media.sse.EventListener;
 import org.glassfish.jersey.media.sse.EventSource;
 import org.glassfish.jersey.media.sse.InboundEvent;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-@Component
 final class Trace implements Command {
   private static final Logger log = getLogger(Trace.class);
 
   private final Appendable console;
   private final Pigeon pigeon;
 
-  @Autowired
   public Trace(final Appendable sink, final Pigeon pigeon) {
     console = sink;
     this.pigeon = pigeon;
@@ -40,14 +36,15 @@ final class Trace implements Command {
     final EventSource events = pigeon.eventStream();
     final ConsoleListener listener = new ConsoleListener(console);
     events.register(listener);
-    log.info("subscribing to event-trace {}", events);
-    events.open();
     try {
+      log.info("subscribing to event-trace {}", events);
+      events.open();
       listener.stop.await();
     } catch (InterruptedException e) {
       log.info("event-trace interrupted");
     } finally {
       log.info("event-trace stopping");
+      events.close(0, TimeUnit.MILLISECONDS);
     }
     return 0;
   }

@@ -1,21 +1,16 @@
-package at.ac.univie.isc.asio.munin.commands;
+package at.ac.univie.isc.asio.munin;
 
 import at.ac.univie.isc.asio.Id;
-import at.ac.univie.isc.asio.munin.Command;
-import at.ac.univie.isc.asio.munin.Pigeon;
+import at.ac.univie.isc.asio.Pigeon;
 import at.ac.univie.isc.asio.tool.Pretty;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.List;
 
-@Component
 final class Undeploy implements Command {
   private final Appendable console;
   private final Pigeon pigeon;
 
-  @Autowired
   Undeploy(final Appendable console, final Pigeon pigeon) {
     this.console = console;
     this.pigeon = pigeon;

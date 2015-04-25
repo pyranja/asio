@@ -1,6 +1,5 @@
-package at.ac.univie.isc.asio.munin;
+package at.ac.univie.isc.asio;
 
-import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.io.Payload;
 import at.ac.univie.isc.asio.web.CaptureHttpExchange;
 import at.ac.univie.isc.asio.web.HttpServer;

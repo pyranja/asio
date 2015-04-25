@@ -1,14 +1,11 @@
-package at.ac.univie.isc.asio.munin.commands;
+package at.ac.univie.isc.asio.munin;
 
 import at.ac.univie.isc.asio.Id;
-import at.ac.univie.isc.asio.munin.Command;
-import at.ac.univie.isc.asio.munin.Pigeon;
-import at.ac.univie.isc.asio.munin.ServerStatus;
+import at.ac.univie.isc.asio.Pigeon;
+import at.ac.univie.isc.asio.ServerStatus;
 import at.ac.univie.isc.asio.tool.Pretty;
 import com.google.common.base.Joiner;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -19,7 +16,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 /**
  * Determine the server status.
  */
-@Component
 final class Status implements Command {
   private static final Logger log = getLogger(Status.class);
 
@@ -31,7 +27,6 @@ final class Status implements Command {
   private final Appendable report;
   private final Pigeon pigeon;
 
-  @Autowired
   public Status(final Appendable sink, final Pigeon pigeon) {
     report = sink;
     this.pigeon = pigeon;

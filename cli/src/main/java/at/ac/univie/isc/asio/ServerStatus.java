@@ -1,4 +1,4 @@
-package at.ac.univie.isc.asio.munin;
+package at.ac.univie.isc.asio;
 
 import at.ac.univie.isc.asio.tool.TypedValue;
 import com.fasterxml.jackson.annotation.JsonCreator;

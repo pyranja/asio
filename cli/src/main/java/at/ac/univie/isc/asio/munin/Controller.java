@@ -2,11 +2,6 @@ package at.ac.univie.isc.asio.munin;
 
 import at.ac.univie.isc.asio.tool.Pretty;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.ExitCodeGenerator;
-import org.springframework.stereotype.Component;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -19,8 +14,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  * Expect one non-option argument (i.e. no leading hyphens) as command name, maybe followed by
  * additional non-option arguments. Dispatch execution with parsed arguments to requested command.
  */
-@Component
-class Controller implements CommandLineRunner, ExitCodeGenerator {
+class Controller {
   private static final Logger log = getLogger(Controller.class);
 
   private static final String UNKNOWN_COMMAND = "[ERROR] unknown command '%s'%n%s%n";
@@ -40,20 +34,17 @@ class Controller implements CommandLineRunner, ExitCodeGenerator {
 
   private int exitCode = CODE_ERROR;
 
-  @Autowired
   public Controller(final Appendable sink, final Map<String, Command> commands) {
     this.sink = sink;
     this.commands = commands;
   }
 
-  @Override
   public int getExitCode() {
     return exitCode;
   }
 
-  @Override
   public void run(final String... args) throws Exception {
-    log.debug("parsing command line {}", args);
+    log.debug("parsing command line {}", (Object) args);
     parse(args);
     log.info("dispatching command {} with arguments {}", commandName, commandArguments);
     dispatch(commandName, commandArguments);

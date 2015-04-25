@@ -1,9 +1,9 @@
-package at.ac.univie.isc.asio.munin.commands;
+package at.ac.univie.isc.asio.munin;
 
 import at.ac.univie.isc.asio.Id;
+import at.ac.univie.isc.asio.Pigeon;
 import at.ac.univie.isc.asio.io.Payload;
 import at.ac.univie.isc.asio.io.TransientPath;
-import at.ac.univie.isc.asio.munin.Pigeon;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

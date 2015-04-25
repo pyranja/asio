@@ -1,21 +1,25 @@
-package at.ac.univie.isc.asio;
-
-import org.springframework.boot.context.properties.ConfigurationProperties;
+package at.ac.univie.isc.asio.munin;
 
 import javax.annotation.Nonnull;
-import javax.validation.constraints.NotNull;
 import java.net.URI;
+import java.util.Properties;
 
 /**
  * Configuration attributes of the munin client application.
  */
-@ConfigurationProperties("munin")
-public class MuninSettings {
+class Settings {
+  public static Settings fromProperties(final Properties input) {
+    final Settings it = new Settings();
+    it.setServerAddress(URI.create(input.getProperty("server-address", "server address is missing")));
+    it.setUsername(input.getProperty("username"));
+    it.setPassword(input.getProperty("password"));
+    it.setInsecureConnection(Boolean.parseBoolean(input.getProperty("insecure-connection")));
+    return it;
+  }
 
   /**
    * http endpoint of the asio server.
    */
-  @NotNull
   public URI serverAddress;
 
   /**
@@ -27,13 +31,11 @@ public class MuninSettings {
   /**
    * basic auth username.
    */
-  @NotNull
   public String username;
 
   /**
    * basic auth password.
    */
-  @NotNull
   public String password;
 
   @Override

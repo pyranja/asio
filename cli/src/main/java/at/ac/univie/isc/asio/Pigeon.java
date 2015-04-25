@@ -1,7 +1,5 @@
-package at.ac.univie.isc.asio.munin;
+package at.ac.univie.isc.asio;
 
-import at.ac.univie.isc.asio.AsioError;
-import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.insight.VndError;
 import com.google.common.collect.ImmutableList;
 import org.glassfish.jersey.media.sse.EventSource;
