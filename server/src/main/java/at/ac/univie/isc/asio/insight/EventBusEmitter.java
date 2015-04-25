@@ -58,21 +58,20 @@ public final class EventBusEmitter implements Emitter {
   }
 
   @PostConstruct
-  public void emitTestEvent() {
-    final Correlation correlation = findCorrelation();
-    log.info(Scope.SYSTEM.marker(), "eventbus-emitter active - resolved system correlation to {}", correlation);
+  public void reportInitialization() {
+    log.info(Scope.SYSTEM.marker(), "eventbus-emitter active - resolved system correlation to {}", correlation());
   }
 
   @Override
   public Event emit(final Event event) {
-    event.init(findCorrelation(), time.read());
+    event.init(correlation(), time.read());
     bus.post(event);
     return event;
   }
 
   @Override
   public VndError emit(final Throwable exception) {
-    final VndError error = VndError.from(exception, findCorrelation(), time.read(), true);
+    final VndError error = VndError.from(exception, correlation(), time.read(), true);
     final ErrorEvent event = new ErrorEvent(error);
     emit(event);
     return error;
@@ -82,7 +81,7 @@ public final class EventBusEmitter implements Emitter {
    * Attempt to resolve a possibly scoped correlation from the provide. Fall back to system
    * correlation if resolving fails (e.g. not in a request context).
    */
-  private Correlation findCorrelation() {
+  private Correlation correlation() {
     try {
       return correlationProvider.get();
     } catch (final BeanCreationException e) {

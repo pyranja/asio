@@ -1,33 +1,22 @@
 package at.ac.univie.isc.asio.insight;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 import org.glassfish.jersey.media.sse.InboundEvent;
-import org.hamcrest.FeatureMatcher;
-import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
+import org.hamcrest.*;
 import rx.functions.Func1;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.*;
 
 /**
  * Hamcrest matchers for jersey server-sent-events.
  */
 public final class Events {
-  /**
-   * Predicate for rxJava streams - filters on event type
-   */
-  public static Func1<InboundEvent, Boolean> only(final String... types) {
-    final Matcher<InboundEvent> condition = attribute("type", Matchers.<Object>isOneOf(types));
-    return new Func1<InboundEvent, Boolean>() {
-      @Override
-      public Boolean call(final InboundEvent inboundEvent) {
-        return condition.matches(inboundEvent);
-      }
-    };
-  }
-
   /**
    * Match if the name of the event satisfies the expectation.
    */
@@ -43,6 +32,29 @@ public final class Events {
   }
 
   /**
+   * Match if the payload of the event can be converted to the given type and satisfies the expectation.
+   */
+  public static <PAYLOAD> Matcher<InboundEvent> payload(final Class<PAYLOAD> type,
+                                                        final Matcher<? super PAYLOAD> expected) {
+    return new EventWithPayload<>(type, expected);
+  }
+
+  // === json event matchers
+
+  /**
+   * Predicate for rxJava streams - filters on event type
+   */
+  public static Func1<InboundEvent, Boolean> only(final String... types) {
+    final Matcher<InboundEvent> condition = attribute("type", Matchers.<Object>isOneOf(types));
+    return new Func1<InboundEvent, Boolean>() {
+      @Override
+      public Boolean call(final InboundEvent inboundEvent) {
+        return condition.matches(inboundEvent);
+      }
+    };
+  }
+
+  /**
    * Match if the event has an attribute with the given value.
    */
   public static Matcher<InboundEvent> attribute(final String key, final Matcher<? super Object> value) {
@@ -51,11 +63,29 @@ public final class Events {
   }
 
   /**
-   * Match if the payload of the event can be converted to the given type and satisfies the expectation.
+   * Match if a sequence of events shares a correlation id. Actual value of the correlation is
+   * irrelevant. The matched sequence must contain at least one event.
    */
-  public static <PAYLOAD> Matcher<InboundEvent> payload(final Class<PAYLOAD> type,
-                                                        final Matcher<? super PAYLOAD> expected) {
-    return new EventWithPayload<>(type, expected);
+  public static Matcher<Iterable<? extends InboundEvent>> correlated() {
+    return new CorrelatedEvents(null);
+  }
+
+  /**
+   * Match if each element of a sequence of events has the given correlation.
+   */
+  public static Matcher<Iterable<? extends InboundEvent>> correlated(final String expected) {
+    return new CorrelatedEvents(expected);
+  }
+
+  /**
+   * Match if the event sequence contains events with the given subjects in order.
+   */
+  public static Matcher<Iterable<? extends InboundEvent>> sequence(final String... subjects) {
+    final List<Matcher<? super InboundEvent>> subjectMatchers = new ArrayList<>();
+    for (final String expected : subjects) {
+      subjectMatchers.add(attribute("subject", Matchers.<Object>equalTo(expected)));
+    }
+    return Matchers.contains(subjectMatchers);
   }
 
   private static class EventWithName extends FeatureMatcher<InboundEvent, String> {
@@ -69,6 +99,7 @@ public final class Events {
     }
   }
 
+
   private static class EventWithText extends FeatureMatcher<InboundEvent, String> {
     public EventWithText(final Matcher<? super String> subMatcher) {
       super(subMatcher, "event with text payload", "text of event payload");
@@ -79,6 +110,7 @@ public final class Events {
       return actual.readData();
     }
   }
+
 
   private static class EventWithAttribute extends FeatureMatcher<InboundEvent, Map<String, Object>> {
     public EventWithAttribute(final Matcher<? super Map<String, Object>> subMatcher) {
@@ -92,6 +124,7 @@ public final class Events {
     }
   }
 
+
   private static class EventWithPayload<PAYLOAD> extends FeatureMatcher<InboundEvent, PAYLOAD> {
     private final Class<PAYLOAD> type;
 
@@ -103,6 +136,44 @@ public final class Events {
     @Override
     protected PAYLOAD featureValueOf(final InboundEvent actual) {
       return actual.readData(type);
+    }
+  }
+
+
+  private static class CorrelatedEvents extends TypeSafeDiagnosingMatcher<Iterable<? extends InboundEvent>> {
+    private final String fixedCorrelation;
+
+    private CorrelatedEvents(final String fixedCorrelation) {
+      this.fixedCorrelation = fixedCorrelation;
+    }
+
+    @Override
+    protected boolean matchesSafely(final Iterable<? extends InboundEvent> item,
+                                    final Description mismatch) {
+      final Iterable<String> ids = Iterables.transform(item, new Function<InboundEvent, String>() {
+        @Override
+        public String apply(final InboundEvent input) {
+          return Objects.toString(input.readData(Map.class).get("correlation"));
+        }
+      });
+      final String expected = fixedCorrelation == null
+          ? Iterables.getFirst(ids, null)
+          : fixedCorrelation;
+      final Matcher<Iterable<String>> subMatcher = everyItem(equalTo(expected));
+      final boolean success = subMatcher.matches(ids);
+      if (!success) {
+        mismatch.appendText("correlations were ");
+        subMatcher.describeMismatch(ids, mismatch);
+      }
+      return success;
+    }
+
+    @Override
+    public void describeTo(final Description description) {
+      description.appendText("correlated event sequence");
+      if (fixedCorrelation != null) {
+        description.appendText(" sharing id ").appendValue(fixedCorrelation);
+      }
     }
   }
 
