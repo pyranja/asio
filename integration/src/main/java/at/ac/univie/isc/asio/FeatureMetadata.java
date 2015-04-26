@@ -1,10 +1,13 @@
 package at.ac.univie.isc.asio;
 
 import at.ac.univie.isc.asio.integration.IntegrationTest;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import java.io.InputStream;
 
 import static at.ac.univie.isc.asio.matcher.RestAssuredMatchers.compatibleTo;
 import static org.hamcrest.CoreMatchers.*;
@@ -15,6 +18,24 @@ import static org.hamcrest.Matchers.isEmptyOrNullString;
 public class FeatureMetadata extends IntegrationTest {
 
   // @formatter:off
+
+  public class Mapping {
+    
+    @Test
+    public void endpoint_is_present() throws Exception {
+      ensureDatabaseAccessible();
+      ensureLanguageSupported("sparql");
+      final InputStream mapping = given().role("read").and()
+        .header(HttpHeaders.ACCEPT, "text/turtle")
+      .when()
+        .get("/mapping")
+      .then()
+        .statusCode(equalTo(HttpStatus.SC_OK))
+        .extract().asInputStream();
+      // just check response is parsable
+      ModelFactory.createDefaultModel().read(mapping, null, "TURTLE");
+    }
+  }
 
   public class SchemaDescriptor {
 

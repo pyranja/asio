@@ -1,14 +1,14 @@
 package at.ac.univie.isc.asio.nest;
 
 import at.ac.univie.isc.asio.Id;
-import at.ac.univie.isc.asio.database.Jdbc;
 import at.ac.univie.isc.asio.spring.SpringContextFactory;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import de.fuberlin.wiwiss.d2rq.map.Mapping;
+import com.hp.hpl.jena.rdf.model.*;
+import com.hp.hpl.jena.vocabulary.RDF;
 import de.fuberlin.wiwiss.d2rq.vocab.D2RConfig;
 import de.fuberlin.wiwiss.d2rq.vocab.D2RQ;
+import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -35,7 +35,7 @@ public class D2rqNestAssemblerTest {
       new SpringContextFactory(new StaticApplicationContext());
 
   private final D2rqNestAssembler subject =
-      new D2rqNestAssembler(factory, Collections.<Configurer>emptyList());
+      new D2rqNestAssembler(factory, Collections.<Configurer>emptyList(), Collections.<OnClose>emptyList());
 
   // === parse configuration model
 
@@ -76,17 +76,16 @@ public class D2rqNestAssemblerTest {
       Mockito.mock(DefaultListableBeanFactory.class);
   private final AnnotationConfigApplicationContext context =
       Mockito.spy(new AnnotationConfigApplicationContext(beanFactory));
+  private final NestConfig holder = NestConfig.empty();
 
   @Test
   public void should_build_from_nest_blue_print() throws Exception {
-    subject.inject(context, NestConfig.create(new Dataset(), new Jdbc(), new Mapping()));
+    subject.inject(context, NestConfig.empty());
     verify(context).register(NestBluePrint.class);
   }
 
   @Test
   public void should_inject_config_beans() throws Exception {
-    final NestConfig holder =
-        NestConfig.create(new Dataset(), new Jdbc(), new Mapping());
     subject.inject(context, holder);
     verify(beanFactory).registerSingleton("dataset", holder.getDataset());
     verify(beanFactory).registerSingleton("jdbc", holder.getJdbc());
@@ -94,8 +93,69 @@ public class D2rqNestAssemblerTest {
 
   @Test
   public void should_inject_d2rq_mapping() throws Exception {
-    final Mapping mapping = new Mapping();
-    subject.inject(context, NestConfig.create(new Dataset(), new Jdbc(), mapping));
-    verify(beanFactory).registerSingleton("mapping", mapping);
+    subject.inject(context, holder);
+    verify(beanFactory).registerSingleton("mapping", holder.getMapping());
+  }
+
+  @Test
+  public void should_inject_mapping_model_holder() throws Exception {
+    subject.inject(context, holder);
+    verify(beanFactory).registerSingleton("mappingModel", holder.getMappingModel());
+  }
+
+  // === clean mapping model
+
+  private final Model input = ModelFactory.createDefaultModel();
+
+  @Test
+  public void should_provide_a_copy_of_the_input_model() throws Exception {
+    final Model held = subject.cleanMappingModel(input);
+    assertThat(held, not(sameInstance(input)));
+    final Resource anon = input.createResource();
+    assertThat(held.containsResource(anon), equalTo(false));
+  }
+
+  @Test
+  public void should_keep_top_level_server_resources() throws Exception {
+    final Resource server = input.createResource(D2RConfig.Server);
+    final Model held = subject.cleanMappingModel(input);
+    assertThat(held.containsResource(server), equalTo(true));
+  }
+
+  @Test
+  public void should_hide_database_properties() throws Exception {
+    final Resource original = input.createResource(D2RQ.Database);
+    original.addProperty(D2RQ.jdbcDSN, "jdbc:mysql:///");
+    original.addProperty(D2RQ.username, "username");
+    original.addProperty(D2RQ.password, "password");
+    final Model held = subject.cleanMappingModel(input);
+    final Resource copied =
+        Iterators.getOnlyElement(held.listResourcesWithProperty(RDF.type, D2RQ.Database));
+    assertThat(Iterators.size(copied.listProperties()), equalTo(1));
+    final Statement typeProperty = Iterators.getOnlyElement(copied.listProperties());
+    assertThat(typeProperty.getPredicate(), equalTo(RDF.type));
+    assertThat(typeProperty.getObject(), Matchers.<RDFNode>equalTo(D2RQ.Database));
+    assertThat(copied, not(equalTo(original)));
+  }
+
+  @Test
+  public void should_keep_prefixes_in_model_creator_method() throws Exception {
+    input.setNsPrefix("my", "urn:test:my-prefix");
+    final Model model = subject.cleanMappingModel(input);
+    assertThat(model.getNsPrefixURI("my"), equalTo("urn:test:my-prefix"));
+  }
+
+  // === optional listener wiring
+
+  @Test
+  public void should_create_singleton_assembler_if_no_optional_listeners_present() throws Exception {
+    final StaticApplicationContext parent = new StaticApplicationContext();
+    final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+    context.getEnvironment().addActiveProfile("brood");
+    context.getBeanFactory().registerSingleton("factory", new SpringContextFactory(parent));
+    context.register(D2rqNestAssembler.class);
+    context.refresh();
+    final D2rqNestAssembler actual = context.getBean(D2rqNestAssembler.class);
+    assertThat(actual, notNullValue());
   }
 }

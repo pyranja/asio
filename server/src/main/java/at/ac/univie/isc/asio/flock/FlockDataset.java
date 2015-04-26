@@ -5,6 +5,7 @@ import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.metadata.DescriptorService;
 import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
+import com.hp.hpl.jena.rdf.model.Model;
 import org.threeten.bp.ZoneOffset;
 import org.threeten.bp.ZonedDateTime;
 import rx.Observable;
@@ -60,6 +61,11 @@ final class FlockDataset implements Dataset {
 
   @Override
   public Observable<SqlSchema> definition() {
+    return Observable.empty();
+  }
+
+  @Override
+  public Observable<Model> mapping() {
     return Observable.empty();
   }
 

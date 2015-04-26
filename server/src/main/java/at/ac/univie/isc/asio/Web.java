@@ -4,6 +4,7 @@ import at.ac.univie.isc.asio.insight.ExplorerPageRedirectFilter;
 import at.ac.univie.isc.asio.jaxrs.ContentNegotiationDefaultsFilter;
 import at.ac.univie.isc.asio.jaxrs.ContentNegotiationOverrideFilter;
 import at.ac.univie.isc.asio.jaxrs.VndErrorMapper;
+import at.ac.univie.isc.asio.metadata.JenaModelWriter;
 import at.ac.univie.isc.asio.tool.ExpandingQNameSerializer;
 import at.ac.univie.isc.asio.tool.MediaTypeSerializer;
 import at.ac.univie.isc.asio.tool.PrincipalMixin;
@@ -50,6 +51,7 @@ class Web {
                                                 final Set<ContainerRequestFilter> filters) {
     final ResourceConfig config = new Application();
     config.register(VndErrorMapper.class);
+    config.register(JenaModelWriter.class);
     log.info(Scope.SYSTEM.marker(), "registering jersey filters {}", filters);
     config.registerInstances(filters.toArray());
     log.info(Scope.SYSTEM.marker(), "registering jackson mapper {}", mapper);

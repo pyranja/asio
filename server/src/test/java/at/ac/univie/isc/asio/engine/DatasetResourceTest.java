@@ -2,15 +2,17 @@ package at.ac.univie.isc.asio.engine;
 
 import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.Language;
-import at.ac.univie.isc.asio.Mime;
 import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.brood.StubContainer;
 import at.ac.univie.isc.asio.io.Payload;
 import at.ac.univie.isc.asio.jaxrs.AsyncResponseFake;
+import at.ac.univie.isc.asio.jaxrs.Mime;
 import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
 import at.ac.univie.isc.asio.security.DelegatedCredentialsDetails;
 import at.ac.univie.isc.asio.security.Identity;
 import at.ac.univie.isc.asio.tool.Timeout;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -98,6 +100,20 @@ public class DatasetResourceTest {
     assertThat(subject.redirectFromDeprecatedDefinitionUri(uri), hasHeader(HttpHeaders.LOCATION, equalTo("http://localhost:8080/asio/meta/read/schema")));
     when(uri.getAbsolutePath()).thenReturn(URI.create("http://localhost:8080/asio/public/read/meta/schema/"));
     assertThat(subject.redirectFromDeprecatedDefinitionUri(uri), hasHeader(HttpHeaders.LOCATION, equalTo("http://localhost:8080/asio/public/read/schema")));
+  }
+
+  @Test
+  public void should_respond_with_mapping_model() throws Exception {
+    final Model mappingModel = ModelFactory.createDefaultModel();
+    dataset.withMapping(Observable.just(mappingModel));
+    final Response response = subject.fetchMapping();
+    assertThat(response, hasStatus(Response.Status.OK));
+    assertThat(response.getEntity(), Matchers.<Object>equalTo(mappingModel));
+  }
+
+  @Test
+  public void should_respond_with_NOT_FOUND_if_dataset_has_no_mapping() throws Exception {
+    assertThat(subject.fetchMapping(), hasStatus(Response.Status.NOT_FOUND));
   }
 
   @Test

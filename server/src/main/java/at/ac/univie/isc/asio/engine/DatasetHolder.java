@@ -5,6 +5,7 @@ import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.SqlSchema;
 import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
 import at.ac.univie.isc.asio.spring.Holder;
+import com.hp.hpl.jena.rdf.model.Model;
 import rx.Observable;
 
 /**
@@ -43,5 +44,10 @@ public final class DatasetHolder implements Dataset, Holder<Dataset> {
   @Override
   public Observable<SqlSchema> definition() {
     return delegate().definition();
+  }
+
+  @Override
+  public Observable<Model> mapping() {
+    return delegate().mapping();
   }
 }

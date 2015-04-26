@@ -4,6 +4,8 @@ import at.ac.univie.isc.asio.Language;
 import at.ac.univie.isc.asio.engine.Engine;
 import at.ac.univie.isc.asio.tool.Timeout;
 import com.google.common.collect.Iterables;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import de.fuberlin.wiwiss.d2rq.map.Database;
 import de.fuberlin.wiwiss.d2rq.map.Mapping;
@@ -38,6 +40,11 @@ public abstract class BaseContainerWiring extends AbstractJUnit4SpringContextTes
       final Mapping mapping = new Mapping();
       mapping.addDatabase(new Database(ResourceFactory.createResource()));
       return mapping;
+    }
+
+    @Bean
+    public Model mappingModel() {
+      return ModelFactory.createDefaultModel();
     }
 
     @Bean

@@ -9,6 +9,7 @@ import at.ac.univie.isc.asio.security.AuthTools;
 import at.ac.univie.isc.asio.tool.Reactive;
 import at.ac.univie.isc.asio.tool.Timeout;
 import com.google.common.base.Optional;
+import com.hp.hpl.jena.rdf.model.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -114,6 +115,17 @@ public class DatasetResource {
     assert requested.endsWith("/meta/schema") || requested.endsWith("/meta/schema/")
         : "check @Path annotation - unexpected request to " + requested;
     return Response.status(Response.Status.MOVED_PERMANENTLY).location(URI.create(redirect)).build();
+  }
+
+  @GET
+  @Path("/mapping")
+  @PreAuthorize("hasAuthority('PERMISSION_ACCESS_METADATA')")
+  public Response fetchMapping() {
+    log.trace(Scope.REQUEST.marker(), "serve mapping of {}", dataset.name());
+    final Optional<Model> mapping = Reactive.asOptional(dataset.mapping());
+    return mapping.isPresent()
+        ? Response.ok(mapping.get()).build()
+        : Response.status(Response.Status.NOT_FOUND).build();
   }
 
   // === query operations ==========================================================================

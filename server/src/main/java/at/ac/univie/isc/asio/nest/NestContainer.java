@@ -1,14 +1,15 @@
 package at.ac.univie.isc.asio.nest;
 
+import at.ac.univie.isc.asio.Container;
 import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.SqlSchema;
-import at.ac.univie.isc.asio.Container;
 import at.ac.univie.isc.asio.engine.Engine;
 import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableSet;
+import com.hp.hpl.jena.rdf.model.Model;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import rx.Observable;
@@ -85,6 +86,11 @@ abstract class NestContainer implements Container, AutoCloseable {
   @Override
   public Observable<SchemaDescriptor> metadata() {
     return context().getBean(NestBluePrint.BEAN_DESCRIPTOR_SOURCE, Observable.class);
+  }
+
+  @Override
+  public Observable<Model> mapping() {
+    return Observable.just(context().getBean(Model.class));
   }
 
   @Override

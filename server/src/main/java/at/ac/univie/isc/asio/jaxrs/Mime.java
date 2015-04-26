@@ -1,4 +1,4 @@
-package at.ac.univie.isc.asio;
+package at.ac.univie.isc.asio.jaxrs;
 
 import javax.ws.rs.core.MediaType;
 
@@ -6,16 +6,25 @@ import javax.ws.rs.core.MediaType;
  * Common request and response types supported in asio.
  */
 public enum Mime {
-  // request types
+
+  // === operation request types
   QUERY_SQL(MediaType.valueOf("application/sql-query"))
   , QUERY_SPARQL(MediaType.valueOf("application/sparql-query"))
   , UPDATE_SQL(MediaType.valueOf("application/sql-update"))
   , UPDATE_SPARQL(MediaType.valueOf("application/sparql-update"))
-  // response types
-  , CSV(MediaType.valueOf("text/csv"))
-  , XML(MediaType.APPLICATION_XML_TYPE)
-  , JSON(MediaType.APPLICATION_JSON_TYPE)
-  // special types
+
+  // === specialized operation response types
+  , RESULTS_SPARQL_XML(MediaType.valueOf("application/sparql-results+xml"))
+  , RESULTS_SPARQL_JSON(MediaType.valueOf("application/sparql-results+json"))
+
+  , GRAPH_XML(MediaType.valueOf("application/rdf+xml"))
+  , GRAPH_JSON(MediaType.valueOf("application/rdf+json"))
+  , GRAPH_TURTLE(MediaType.valueOf("text/turtle"))
+
+  , RESULTS_SQL_XML(MediaType.valueOf("application/sql-results+xml"))
+  , RESULTS_SQL_WEBROWSET(MediaType.valueOf("application/webrowset+xml"))
+
+  // === other
   , VND_ERROR(MediaType.valueOf("application/vnd.error+json"))
   , EVENT_STREAM(MediaType.valueOf("text/event-stream"))
   ;

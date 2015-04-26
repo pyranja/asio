@@ -1,10 +1,10 @@
 package at.ac.univie.isc.asio.nest;
 
 import at.ac.univie.isc.asio.Brood;
+import at.ac.univie.isc.asio.Container;
 import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.Scope;
 import at.ac.univie.isc.asio.brood.Assembler;
-import at.ac.univie.isc.asio.Container;
 import at.ac.univie.isc.asio.d2rq.D2rqConfigModel;
 import at.ac.univie.isc.asio.d2rq.D2rqJdbcModel;
 import at.ac.univie.isc.asio.d2rq.LoadD2rqModel;
@@ -12,10 +12,21 @@ import at.ac.univie.isc.asio.database.Jdbc;
 import at.ac.univie.isc.asio.spring.SpringContextFactory;
 import com.google.common.io.ByteSource;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.ResIterator;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.vocabulary.RDF;
+import de.fuberlin.wiwiss.d2rq.vocab.D2RQ;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.event.ContextClosedEvent;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -29,11 +40,21 @@ final class D2rqNestAssembler implements Assembler {
 
   private final SpringContextFactory create;
   private final List<Configurer> configurers;
+  private final List<OnClose> cleaners;
+
+  /** Ensure there is always at least on Configurer and OnClose available. */
+  @Bean
+  public static ListenerDummy dummyConfigurer() {
+    return new ListenerDummy();
+  }
 
   @Autowired
-  public D2rqNestAssembler(final SpringContextFactory create, final List<Configurer> configurers) {
+  public D2rqNestAssembler(final SpringContextFactory create,
+                           final List<Configurer> configurers,
+                           final List<OnClose> cleaners) {
     this.create = create;
     this.configurers = configurers;
+    this.cleaners = cleaners;
   }
 
   @Override
@@ -75,7 +96,8 @@ final class D2rqNestAssembler implements Assembler {
         .setUsername(jdbcConfig.getUsername())
         .setPassword(jdbcConfig.getPassword())
         .setProperties(jdbcConfig.getProperties());
-    return NestConfig.create(dataset, jdbc, d2rq.getMapping());
+    final Model cleanedModel = cleanMappingModel(model);
+    return NestConfig.create(dataset, jdbc, d2rq.getMapping(), cleanedModel);
   }
 
   final NestConfig postProcess(final NestConfig initial, final List<Configurer> configurers) {
@@ -88,11 +110,73 @@ final class D2rqNestAssembler implements Assembler {
     return processed;
   }
 
-  final void inject(final AnnotationConfigApplicationContext context,
-                    final NestConfig config) {
+  final void inject(final AnnotationConfigApplicationContext context, final NestConfig config) {
     context.register(NestBluePrint.class);
-    context.getBeanFactory().registerSingleton("dataset", config.getDataset());
-    context.getBeanFactory().registerSingleton("jdbc", config.getJdbc());
-    context.getBeanFactory().registerSingleton("mapping", config.getMapping());
+    final ConfigurableListableBeanFactory beans = context.getBeanFactory();
+    beans.registerSingleton("container-cleanup", new ContainerCleanUp(context, config, cleaners));
+    beans.registerSingleton("dataset", config.getDataset());
+    beans.registerSingleton("jdbc", config.getJdbc());
+    beans.registerSingleton("mapping", config.getMapping());
+    beans.registerSingleton("mappingModel", config.getMappingModel());
+  }
+
+  final Model cleanMappingModel(final Model original) {
+    final Model cleaned = ModelFactory.createDefaultModel();
+    cleaned.add(original);
+    cleaned.setNsPrefixes(original.getNsPrefixMap());
+    final ResIterator databases = cleaned.listResourcesWithProperty(RDF.type, D2RQ.Database);
+    while (databases.hasNext()) {
+      final Resource next = databases.next();
+      cleaned.removeAll(next, null, null);
+      cleaned.removeAll(null, null, next);
+    }
+    cleaned.createResource(D2RQ.Database);
+    return cleaned;
+  }
+
+  /** attach OnClose listeners to a container */
+  static final class ContainerCleanUp implements ApplicationListener<ContextClosedEvent> {
+    private final ApplicationContext target;
+    private final NestConfig config;
+    private final List<OnClose> actions;
+
+    ContainerCleanUp(final ApplicationContext target, final NestConfig config, final List<OnClose> actions) {
+      this.target = target;
+      this.config = config;
+      this.actions = actions;
+    }
+
+    @Override
+    public void onApplicationEvent(final ContextClosedEvent event) {
+      if (event.getSource() == target) {
+        log.info(Scope.SYSTEM.marker(), "cleaning up destroyed container using {}", actions);
+        for (final OnClose listener : actions) {
+          try {
+            listener.cleanUp(config);
+          } catch (final RuntimeException e) {
+            log.info(Scope.SYSTEM.marker(), "error during container clean up", e);
+          }
+        }
+      } else {
+        log.debug(Scope.SYSTEM.marker(), "ignoring destruction of {}", event.getSource());
+      }
+    }
+  }
+
+  /** used to prevent wiring failure if no Configurer or OnClose present */
+  static final class ListenerDummy implements Configurer, OnClose {
+    @Nonnull
+    @Override
+    public NestConfig apply(final NestConfig input) {
+      return input;
+    }
+
+    @Override
+    public void cleanUp(final NestConfig spec) throws RuntimeException {}
+
+    @Override
+    public String toString() {
+      return "Dummy{}";
+    }
   }
 }

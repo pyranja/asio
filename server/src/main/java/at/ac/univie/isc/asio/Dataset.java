@@ -1,6 +1,7 @@
 package at.ac.univie.isc.asio;
 
 import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
+import com.hp.hpl.jena.rdf.model.Model;
 import rx.Observable;
 
 /**
@@ -28,4 +29,11 @@ public interface Dataset {
    * @return single or zero element sequence of sql definition
    */
   Observable<SqlSchema> definition();
+
+  /**
+   * The mapping of relational data to rdf, if this dataset provides such a mapping.
+   *
+   * @return single or zero element sequence of mapping model
+   */
+  Observable<Model> mapping();
 }
