@@ -1,9 +1,12 @@
 package at.ac.univie.isc.asio.d2rq;
 
 import at.ac.univie.isc.asio.tool.Timeout;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.google.common.collect.Iterators;
+import com.hp.hpl.jena.rdf.model.*;
+import com.hp.hpl.jena.vocabulary.RDF;
 import de.fuberlin.wiwiss.d2rq.vocab.D2RConfig;
+import de.fuberlin.wiwiss.d2rq.vocab.D2RQ;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import java.net.URI;
@@ -86,5 +89,43 @@ public class D2rqConfigModelTest {
     model.createResource("urn:asio:service", SparqlServiceDescription.Service)
         .addProperty(SparqlServiceDescription.feature, SparqlServiceDescription.BasicFederatedQuery);
     assertThat(subject.isFederationEnabled(), equalTo(true));
+  }
+
+  @Test
+  public void should_provide_a_copy_of_the_input_model() throws Exception {
+    final Model held = subject.getDefinition();
+    assertThat(held, not(sameInstance(model)));
+    final Resource anon = model.createResource();
+    assertThat(held.containsResource(anon), equalTo(false));
+  }
+
+  @Test
+  public void should_keep_top_level_server_resources() throws Exception {
+    final Resource server = model.createResource(D2RConfig.Server);
+    final Model held = subject.getDefinition();
+    assertThat(held.containsResource(server), equalTo(true));
+  }
+
+  @Test
+  public void should_hide_database_properties() throws Exception {
+    final Resource original = model.createResource(D2RQ.Database);
+    original.addProperty(D2RQ.jdbcDSN, "jdbc:mysql:///");
+    original.addProperty(D2RQ.username, "username");
+    original.addProperty(D2RQ.password, "password");
+    final Model held = subject.getDefinition();
+    final Resource copied =
+        Iterators.getOnlyElement(held.listResourcesWithProperty(RDF.type, D2RQ.Database));
+    assertThat(Iterators.size(copied.listProperties()), equalTo(1));
+    final Statement typeProperty = Iterators.getOnlyElement(copied.listProperties());
+    assertThat(typeProperty.getPredicate(), equalTo(RDF.type));
+    assertThat(typeProperty.getObject(), Matchers.<RDFNode>equalTo(D2RQ.Database));
+    assertThat(copied, not(equalTo(original)));
+  }
+
+  @Test
+  public void should_keep_prefixes_in_model_creator_method() throws Exception {
+    model.setNsPrefix("my", "urn:test:my-prefix");
+    final Model model = subject.getDefinition();
+    assertThat(model.getNsPrefixURI("my"), equalTo("urn:test:my-prefix"));
   }
 }

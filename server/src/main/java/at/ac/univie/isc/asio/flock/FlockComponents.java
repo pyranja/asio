@@ -1,15 +1,16 @@
 package at.ac.univie.isc.asio.flock;
 
 import at.ac.univie.isc.asio.Flock;
-import at.ac.univie.isc.asio.metadata.DescriptorService;
 import at.ac.univie.isc.asio.engine.DatasetResource;
 import at.ac.univie.isc.asio.engine.Engine;
 import at.ac.univie.isc.asio.engine.FixedSelection;
+import at.ac.univie.isc.asio.engine.sparql.DefaultJenaFactory;
 import at.ac.univie.isc.asio.engine.sparql.JenaEngine;
+import at.ac.univie.isc.asio.engine.sparql.JenaFactory;
 import at.ac.univie.isc.asio.insight.EventResource;
+import at.ac.univie.isc.asio.metadata.DescriptorService;
 import at.ac.univie.isc.asio.security.WhoamiResource;
 import at.ac.univie.isc.asio.tool.Timeout;
-import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,13 +50,13 @@ class FlockComponents {
   }
 
   @Bean
-  public JenaEngine jenaEngine(final Model model, final Timeout timeout) {
-    return JenaEngine.create(model, timeout, true);
+  public JenaEngine jenaEngine(final JenaFactory factory) {
+    return JenaEngine.using(factory, true);
   }
 
-  @Bean(destroyMethod = "close")
-  public Model emptyModel() {
-    return ModelFactory.createDefaultModel();
+  @Bean
+  public JenaFactory simpleJenaState(final Timeout timeout) {
+    return new DefaultJenaFactory(ModelFactory.createDefaultModel(), timeout);
   }
 
   @Bean

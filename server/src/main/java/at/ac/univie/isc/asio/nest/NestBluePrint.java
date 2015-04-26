@@ -2,35 +2,34 @@ package at.ac.univie.isc.asio.nest;
 
 import at.ac.univie.isc.asio.Scope;
 import at.ac.univie.isc.asio.SqlSchema;
-import at.ac.univie.isc.asio.d2rq.D2rqTools;
+import at.ac.univie.isc.asio.d2rq.D2rqConfigModel;
+import at.ac.univie.isc.asio.d2rq.pool.PooledD2rqFactory;
 import at.ac.univie.isc.asio.database.DatabaseInspector;
 import at.ac.univie.isc.asio.database.DefinitionService;
 import at.ac.univie.isc.asio.database.Jdbc;
 import at.ac.univie.isc.asio.engine.sparql.JenaEngine;
+import at.ac.univie.isc.asio.engine.sparql.JenaFactory;
 import at.ac.univie.isc.asio.engine.sql.JdbcSpec;
 import at.ac.univie.isc.asio.engine.sql.JooqEngine;
 import at.ac.univie.isc.asio.metadata.DescriptorService;
 import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
 import at.ac.univie.isc.asio.spring.ExplicitWiring;
-import at.ac.univie.isc.asio.tool.Beans;
 import at.ac.univie.isc.asio.tool.JdbcTools;
 import at.ac.univie.isc.asio.tool.Timeout;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import de.fuberlin.wiwiss.d2rq.map.Mapping;
-import de.fuberlin.wiwiss.d2rq.sql.ConnectedDB;
 import org.slf4j.Logger;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.env.Environment;
 import rx.Observable;
 import rx.functions.Func0;
 
 import javax.sql.DataSource;
 import java.net.URI;
-import java.sql.SQLException;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -41,6 +40,7 @@ class NestBluePrint {
 
   static final String BEAN_DEFINITION_SOURCE = "definition";
   static final String BEAN_DESCRIPTOR_SOURCE = "metadata";
+  static final String BEAN_MAPPING_SOURCE = "mapping";
 
   @Bean(destroyMethod = "close")
   public JooqEngine jooqEngine(final Jdbc jdbc,
@@ -54,11 +54,13 @@ class NestBluePrint {
 
   @Bean(destroyMethod = "close")
   public JenaEngine jenaEngine(final Dataset dataset,
-                               final Mapping mapping,
-                               final ConnectedDB connection,
-                               final Timeout timeout) {
-    final Model model = D2rqTools.compile(mapping, connection);
-    return JenaEngine.create(model, timeout, dataset.isFederationEnabled());
+                               final D2rqConfigModel d2rq,
+                               final Jdbc jdbc,
+                               final Timeout timeout,
+                               final Environment env) {
+    final Integer poolSize = env.getProperty("asio.d2rq.pool-size", Integer.class, 1);
+    final JenaFactory factory = PooledD2rqFactory.using(d2rq, jdbc, timeout, poolSize);
+    return JenaEngine.using(factory, dataset.isFederationEnabled());
   }
 
   @Bean(name = BEAN_DEFINITION_SOURCE)
@@ -71,6 +73,11 @@ class NestBluePrint {
   public Observable<SchemaDescriptor> metadata(final Dataset dataset,
                                                final DescriptorService descriptorService) {
     return Observable.defer(new CallDescriptorService(descriptorService, dataset.getIdentifier()));
+  }
+
+  @Bean(name = BEAN_MAPPING_SOURCE)
+  public Observable<Model> mapping(final D2rqConfigModel d2rq) {
+    return Observable.just(d2rq.getDefinition());
   }
 
   @Bean
@@ -90,14 +97,6 @@ class NestBluePrint {
   public DefinitionService localDefinitionService(final Jdbc jdbc, final DataSource dataSource) {
     log.info(Scope.SYSTEM.marker(), "creating local DefinitionService from {}", jdbc);
     return DatabaseInspector.create(jdbc.getUrl(), dataSource);
-  }
-
-  @Bean(destroyMethod = "close")
-  public ConnectedDB d2rqConnection(final Jdbc jdbc) throws SQLException {
-    final ConnectedDB connection = D2rqTools.createSqlConnection(jdbc.getUrl(),
-        jdbc.getUsername(), jdbc.getPassword(), Beans.asProperties(jdbc.getProperties()));
-    connection.switchCatalog(jdbc.getSchema());
-    return connection;
   }
 
   @Bean(destroyMethod = "close")

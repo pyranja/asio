@@ -7,10 +7,10 @@ import at.ac.univie.isc.asio.database.Jdbc;
 import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
 import at.ac.univie.isc.asio.tool.Timeout;
 import com.zaxxer.hikari.HikariConfig;
-import de.fuberlin.wiwiss.d2rq.sql.ConnectedDB;
 import org.junit.Test;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
@@ -30,7 +30,8 @@ public class MinimalConfigWiringTest extends BaseContainerWiring {
 
   @Configuration
   @Profile("wiring-test")
-  public static class MinimalConfig extends BaseContainerWiring.BaseWiringConfig {
+  @Import(BaseContainerWiring.BaseWiringConfig.class)
+  public static class MinimalConfig {
     @Bean
     public Dataset datasetConfig() {
       return new Dataset()
@@ -62,15 +63,6 @@ public class MinimalConfigWiringTest extends BaseContainerWiring {
     final Observable<SchemaDescriptor> metadata =
         applicationContext.getBean(NestBluePrint.BEAN_DESCRIPTOR_SOURCE, Observable.class);
     assertThat(metadata.isEmpty().toBlocking().single(), equalTo(true));
-  }
-
-  @Test
-  public void should_define_SQLConnection_with_defaults() throws Exception {
-    final ConnectedDB conn = applicationContext.getBean(ConnectedDB.class);
-    assertThat(conn.getJdbcURL(), equalTo("jdbc:h2:mem:"));
-//    assertThat(conn.getJdbcDriverClass(), nullValue());
-    assertThat(conn.getUsername(), isEmptyString());
-    assertThat(conn.getPassword(), isEmptyString());
   }
 
   @Test

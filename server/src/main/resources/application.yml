@@ -39,6 +39,7 @@ asio:
     reserved-container-names: ['api', 'explore']
   # override jdbc settings of containers
   # jdbc:
+  d2rq.pool-size: 5
 
 # serialization settings
 spring.mvc:

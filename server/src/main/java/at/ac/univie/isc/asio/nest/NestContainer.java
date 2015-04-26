@@ -88,9 +88,10 @@ abstract class NestContainer implements Container, AutoCloseable {
     return context().getBean(NestBluePrint.BEAN_DESCRIPTOR_SOURCE, Observable.class);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public Observable<Model> mapping() {
-    return Observable.just(context().getBean(Model.class));
+    return context().getBean(NestBluePrint.BEAN_MAPPING_SOURCE, Observable.class);
   }
 
   @Override

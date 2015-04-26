@@ -252,6 +252,13 @@
         <version>1.9</version>
       </dependency>
 
+      <!-- object pool -->
+      <dependency>
+        <groupId>com.github.chrisvest</groupId>
+        <artifactId>stormpot</artifactId>
+        <version>2.3</version>
+      </dependency>
+
       <!-- jooq -->
       <dependency>
         <groupId>org.jooq</groupId>

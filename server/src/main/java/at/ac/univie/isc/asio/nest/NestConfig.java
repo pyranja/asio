@@ -1,12 +1,11 @@
 package at.ac.univie.isc.asio.nest;
 
+import at.ac.univie.isc.asio.d2rq.D2rqConfigModel;
 import at.ac.univie.isc.asio.database.Jdbc;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.google.auto.value.AutoValue;
-import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
-import de.fuberlin.wiwiss.d2rq.map.Mapping;
 
 @AutoValue
 abstract class NestConfig {
@@ -14,14 +13,14 @@ abstract class NestConfig {
    * Create config holder with default settings only.
    */
   static NestConfig empty() {
-    return create(new Dataset(), new Jdbc(), new Mapping(), ModelFactory.createDefaultModel());
+    return create(new Dataset(), new Jdbc(), D2rqConfigModel.wrap(ModelFactory.createDefaultModel()));
   }
 
   /**
    * Create holder with given config beans.
    */
-  static NestConfig create(final Dataset dataset, final Jdbc jdbc, final Mapping mapping, final Model model) {
-    return new AutoValue_NestConfig(dataset, jdbc, mapping, model);
+  static NestConfig create(final Dataset dataset, final Jdbc jdbc, final D2rqConfigModel d2rq) {
+    return new AutoValue_NestConfig(dataset, jdbc, d2rq);
   }
 
   /**
@@ -36,14 +35,8 @@ abstract class NestConfig {
   public abstract Jdbc getJdbc();
 
   /**
-   * Mapping rules for d2rq.
+   * The d2rq configuration.
    */
   @JsonIgnore
-  public abstract Mapping getMapping();
-
-  /**
-   * Definition of d2rq mapping.
-   */
-  @JsonIgnore
-  public abstract Model getMappingModel();
+  public abstract D2rqConfigModel getD2rq();
 }

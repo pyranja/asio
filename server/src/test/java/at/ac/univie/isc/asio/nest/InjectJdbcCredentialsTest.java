@@ -25,10 +25,9 @@ public class InjectJdbcCredentialsTest {
   }
 
   @Test
-  public void should_keep_dataset_and_mapping() throws Exception {
+  public void should_keep_dataset() throws Exception {
     final NestConfig processed = subject.apply(input);
     assertThat(processed.getDataset(), sameInstance(input.getDataset()));
-    assertThat(processed.getMapping(), sameInstance(input.getMapping()));
   }
 
   @Test

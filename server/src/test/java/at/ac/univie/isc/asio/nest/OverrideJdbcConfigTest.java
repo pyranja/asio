@@ -12,12 +12,11 @@ import static org.junit.Assert.assertThat;
 public class OverrideJdbcConfigTest {
 
   @Test
-  public void should_keep_dataset_and_mapping() throws Exception {
+  public void should_keep_dataset() throws Exception {
     final OverrideJdbcConfig subject = new OverrideJdbcConfig(new Jdbc());
     final NestConfig initial = NestConfig.empty();
     final NestConfig processed = subject.apply(initial);
     assertThat(processed.getDataset(), sameInstance(initial.getDataset()));
-    assertThat(processed.getMapping(), sameInstance(initial.getMapping()));
   }
 
   @Test

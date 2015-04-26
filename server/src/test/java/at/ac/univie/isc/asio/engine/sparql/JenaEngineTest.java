@@ -162,8 +162,8 @@ public class JenaEngineTest {
     final SparqlInvocation invocation = subject.prepare(params);
     final Context context = invocation.query().getContext();
     // no username in VPH auth
-    assertThat(context.getAsString(DefaultJenaFactory.CONTEXT_AUTH_USERNAME), is(""));
-    assertThat(context.getAsString(DefaultJenaFactory.CONTEXT_AUTH_PASSWORD), is("test-token"));
+    assertThat(context.getAsString(JenaEngine.CONTEXT_AUTH_USERNAME), is(""));
+    assertThat(context.getAsString(JenaEngine.CONTEXT_AUTH_PASSWORD), is("test-token"));
   }
 
   @Test
@@ -174,8 +174,8 @@ public class JenaEngineTest {
         .owner(Identity.undefined()).build();
     final SparqlInvocation invocation = subject.prepare(params);
     final Context context = invocation.query().getContext();
-    assertThat(context.getAsString(DefaultJenaFactory.CONTEXT_AUTH_USERNAME), is(nullValue()));
-    assertThat(context.getAsString(DefaultJenaFactory.CONTEXT_AUTH_PASSWORD), is(nullValue()));
+    assertThat(context.getAsString(JenaEngine.CONTEXT_AUTH_USERNAME), is(nullValue()));
+    assertThat(context.getAsString(JenaEngine.CONTEXT_AUTH_PASSWORD), is(nullValue()));
   }
 
   // ========= ILLEGAL INPUT

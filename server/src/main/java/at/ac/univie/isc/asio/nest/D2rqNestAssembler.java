@@ -12,11 +12,6 @@ import at.ac.univie.isc.asio.database.Jdbc;
 import at.ac.univie.isc.asio.spring.SpringContextFactory;
 import com.google.common.io.ByteSource;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.ResIterator;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.vocabulary.RDF;
-import de.fuberlin.wiwiss.d2rq.vocab.D2RQ;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -88,7 +83,7 @@ final class D2rqNestAssembler implements Assembler {
         .setIdentifier(d2rq.getIdentifier())
         .setTimeout(d2rq.getTimeout())
         .setFederationEnabled(d2rq.isFederationEnabled());
-    final D2rqJdbcModel jdbcConfig = D2rqJdbcModel.parse(d2rq.getMapping());
+    final D2rqJdbcModel jdbcConfig = d2rq.getJdbcConfig();
     final Jdbc jdbc = new Jdbc()
         .setUrl(jdbcConfig.getUrl())
         .setSchema(jdbcConfig.getSchema())
@@ -96,8 +91,7 @@ final class D2rqNestAssembler implements Assembler {
         .setUsername(jdbcConfig.getUsername())
         .setPassword(jdbcConfig.getPassword())
         .setProperties(jdbcConfig.getProperties());
-    final Model cleanedModel = cleanMappingModel(model);
-    return NestConfig.create(dataset, jdbc, d2rq.getMapping(), cleanedModel);
+    return NestConfig.create(dataset, jdbc, d2rq);
   }
 
   final NestConfig postProcess(final NestConfig initial, final List<Configurer> configurers) {
@@ -116,22 +110,7 @@ final class D2rqNestAssembler implements Assembler {
     beans.registerSingleton("container-cleanup", new ContainerCleanUp(context, config, cleaners));
     beans.registerSingleton("dataset", config.getDataset());
     beans.registerSingleton("jdbc", config.getJdbc());
-    beans.registerSingleton("mapping", config.getMapping());
-    beans.registerSingleton("mappingModel", config.getMappingModel());
-  }
-
-  final Model cleanMappingModel(final Model original) {
-    final Model cleaned = ModelFactory.createDefaultModel();
-    cleaned.add(original);
-    cleaned.setNsPrefixes(original.getNsPrefixMap());
-    final ResIterator databases = cleaned.listResourcesWithProperty(RDF.type, D2RQ.Database);
-    while (databases.hasNext()) {
-      final Resource next = databases.next();
-      cleaned.removeAll(next, null, null);
-      cleaned.removeAll(null, null, next);
-    }
-    cleaned.createResource(D2RQ.Database);
-    return cleaned;
+    beans.registerSingleton("d2rq", config.getD2rq());
   }
 
   /** attach OnClose listeners to a container */

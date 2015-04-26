@@ -1,14 +1,11 @@
 package at.ac.univie.isc.asio.nest;
 
 import at.ac.univie.isc.asio.Language;
+import at.ac.univie.isc.asio.d2rq.D2rqConfigModel;
 import at.ac.univie.isc.asio.engine.Engine;
 import at.ac.univie.isc.asio.tool.Timeout;
 import com.google.common.collect.Iterables;
-import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
-import de.fuberlin.wiwiss.d2rq.map.Database;
-import de.fuberlin.wiwiss.d2rq.map.Mapping;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.context.annotation.Bean;
@@ -36,15 +33,8 @@ public abstract class BaseContainerWiring extends AbstractJUnit4SpringContextTes
   @Profile("wiring-test")
   static class BaseWiringConfig {
     @Bean
-    public Mapping d2rqMapping() {
-      final Mapping mapping = new Mapping();
-      mapping.addDatabase(new Database(ResourceFactory.createResource()));
-      return mapping;
-    }
-
-    @Bean
-    public Model mappingModel() {
-      return ModelFactory.createDefaultModel();
+    public D2rqConfigModel d2rq() {
+      return D2rqConfigModel.wrap(ModelFactory.createDefaultModel());
     }
 
     @Bean

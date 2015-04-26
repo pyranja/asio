@@ -17,7 +17,7 @@ public final class D2rqJdbcModel {
    *
    * @return initialized visitor
    */
-  public static D2rqJdbcModel parse(final Mapping mapping) {
+  static D2rqJdbcModel parse(final Mapping mapping) {
     final D2rqJdbcModel finder = new D2rqJdbcModel();
     for (Database database : mapping.databases()) {
       finder.visit(database);
@@ -37,7 +37,7 @@ public final class D2rqJdbcModel {
 
   D2rqJdbcModel() { /* --- */ }
 
-  public void visit(final Database database) {
+  void visit(final Database database) {
     if (visited) { throw new InvalidD2rqConfig(D2RQ.Database, "found more than one"); }
     visited = true;
     url = database.getJDBCDSN();

@@ -3,13 +3,14 @@ package at.ac.univie.isc.asio.d2rq;
 import at.ac.univie.isc.asio.tool.Timeout;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.Statement;
+import com.hp.hpl.jena.rdf.model.*;
+import com.hp.hpl.jena.shared.PrefixMapping;
+import com.hp.hpl.jena.vocabulary.RDF;
 import de.fuberlin.wiwiss.d2rq.map.Mapping;
 import de.fuberlin.wiwiss.d2rq.parser.MapParser;
+import de.fuberlin.wiwiss.d2rq.sql.ConnectedDB;
 import de.fuberlin.wiwiss.d2rq.vocab.D2RConfig;
+import de.fuberlin.wiwiss.d2rq.vocab.D2RQ;
 
 import javax.annotation.Nullable;
 import java.net.URI;
@@ -30,11 +31,15 @@ public final class D2rqConfigModel {
     return new D2rqConfigModel(model);
   }
 
+  private final PrefixMapping prefixes;
   private final Model model;
   private final Mapping mapping;
 
   private D2rqConfigModel(final Model model) {
     this.model = model;
+    prefixes = PrefixMapping.Factory.create()
+        .withDefaultMappings(PrefixMapping.Extended)
+        .setNsPrefixes(model);
     mapping = readMapping(model);
   }
 
@@ -43,6 +48,17 @@ public final class D2rqConfigModel {
     final Mapping mapping = new MapParser(model, base).parse();
     mapping.configuration().setUseAllOptimizations(true);
     return mapping;
+  }
+
+  /**
+   * Create a d2rq jena model from the wrapped configuration. The given database connection is
+   * injected and overrides internal settings. Each invocation creates a fresh model.
+   *
+   * @param connection connection to be used
+   * @return initialized model, independent from others
+   */
+  public Model compile(final ConnectedDB connection) {
+    return D2rqTools.compile(readMapping(model), connection);
   }
 
   /**
@@ -64,12 +80,50 @@ public final class D2rqConfigModel {
   }
 
   /**
+   * The prefixes used in this configuration.
+   *
+   * @return prefix->uri mappings
+   */
+  public PrefixMapping getPrefixes() {
+    return prefixes;
+  }
+
+  /**
+   * The mapping definition as a RDF model. Sensitive information (e.g. database credentials) are
+   * omitted.
+   *
+   * @return the mapping definition
+   */
+  public Model getDefinition() {
+    final Model cleaned = ModelFactory.createDefaultModel();
+    cleaned.add(model);
+    cleaned.setNsPrefixes(model.getNsPrefixMap());
+    final ResIterator databases = cleaned.listResourcesWithProperty(RDF.type, D2RQ.Database);
+    while (databases.hasNext()) {
+      final Resource next = databases.next();
+      cleaned.removeAll(next, null, null);
+      cleaned.removeAll(null, null, next);
+    }
+    cleaned.createResource(D2RQ.Database);
+    return cleaned;
+  }
+
+  /**
    * The d2rq mapping rules read from the wrapped configuration.
    *
    * @return the d2rq mapping
    */
-  public Mapping getMapping() {
+  Mapping getMapping() {
     return mapping;
+  }
+
+  /**
+   * The jdbc connection settings from the wrapped configuration.
+   *
+   * @return jdbc configuration model
+   */
+  public D2rqJdbcModel getJdbcConfig() {
+    return D2rqJdbcModel.parse(mapping);
   }
 
   /**
