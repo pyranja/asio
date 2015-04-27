@@ -83,9 +83,11 @@ public final class EventBusEmitter implements Emitter {
    */
   private Correlation correlation() {
     try {
-      return correlationProvider.get();
+      final Correlation scoped = correlationProvider.get();
+      log.trace("found scoped correlation - {}", scoped);
+      return scoped;
     } catch (final BeanCreationException e) {
-      log.debug("no scoped correlation found - falling back to system");
+      log.trace("no scoped correlation found - falling back to system");
       return SYSTEM_CORRELATION;
     } catch (final Exception e) {
       log.warn("unexpected error when resolving scoped correlation : {}", e.toString());
