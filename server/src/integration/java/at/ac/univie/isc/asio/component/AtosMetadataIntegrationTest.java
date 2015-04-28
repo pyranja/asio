@@ -10,7 +10,6 @@ import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.filter.LoggingFilter;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import rx.Observable;
@@ -31,7 +30,6 @@ import static org.junit.Assume.assumeThat;
 /**
  * Ensure the AtosMetadataRepository works with the actual endpoint.
  */
-@Ignore("verify deletion actually works ???")
 @Category(Integration.class)
 public class AtosMetadataIntegrationTest {
   private static final URI ATOS_SERVICE_ADDRESS =
@@ -40,7 +38,7 @@ public class AtosMetadataIntegrationTest {
   private final Client client = ClientBuilder.newBuilder()
       .property(ClientProperties.CONNECT_TIMEOUT, 2_000)
       .property(ClientProperties.READ_TIMEOUT, 30_000)
-//      .register(new LoggingFilter(Logger.getLogger("jersey.client"), true))
+          //      .register(new LoggingFilter(Logger.getLogger("jersey.client"), true))
       .build();
 
   private final AtosMetadataRepository repo =
@@ -79,7 +77,17 @@ public class AtosMetadataIntegrationTest {
         .subscribe(new Action1<AtosDataset>() {
           @Override
           public void call(final AtosDataset atosDataset) {
-            repo.delete(atosDataset.getGlobalID());
+            repo.delete(atosDataset.getGlobalID()).subscribe(
+                new Action1<String>() {
+                  @Override
+                  public void call(final String s) { /* noop */ }
+                },
+                new Action1<Throwable>() {
+                  @Override
+                  public void call(final Throwable throwable) {
+                    System.err.println("!! failed to delete " + atosDataset.getGlobalID() + " - " + throwable);
+                  }
+                });
           }
         }, new Action1<Throwable>() {
           @Override
@@ -119,11 +127,13 @@ public class AtosMetadataIntegrationTest {
       final AtosDataset retrieved = repo.findOne(saved.getGlobalID()).toBlocking().single();
       assertThat(retrieved.getProvenance(), is("modified provenance"));
     } finally {
-      repo.delete(saved.getGlobalID());
+      repo.delete(saved.getGlobalID()).subscribe();
     }
   }
 
-  /** run main to try and clean up all test metadata */
+  /**
+   * run main to try and clean up all test metadata
+   */
   public static void main(String[] args) {
     final Client client = ClientBuilder.newBuilder()
         .property(ClientProperties.CONNECT_TIMEOUT, 2_000)
@@ -138,8 +148,19 @@ public class AtosMetadataIntegrationTest {
             @Override
             public void call(final AtosDataset atosDataset) {
               System.out.println(">> delete " + atosDataset.getGlobalID());
-              repo.delete(atosDataset.getGlobalID());
-              System.out.println("<< deleted " + atosDataset.getGlobalID());
+              repo.delete(atosDataset.getGlobalID()).subscribe(
+                  new Action1<String>() {
+                    @Override
+                    public void call(final String id) {
+                      System.out.println("<< deleted " + id);
+                    }
+                  }, new Action1<Throwable>() {
+                    @Override
+                    public void call(final Throwable throwable) {
+                      System.err.println("!! failed to delete " + atosDataset.getGlobalID() + " - " + throwable);
+                    }
+                  }
+              );
             }
           }, new Action1<Throwable>() {
             @Override
