@@ -29,7 +29,7 @@ asio.feature:
 --- # vph deployment
 spring.profiles: 'vph-test'
 spring.application.name: 'vph-integration'
-spring.profiles.include: 'brood'
+spring.profiles.include: 'brood,ajp'
 server.ssl.enabled: false
 
 asio.feature:

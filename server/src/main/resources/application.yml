@@ -13,6 +13,9 @@ server.ssl:
   # use DumpSslInfo to find supported ciphers
   # cannot use list notation as backing property is an array
   ciphers: 'TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256, TLS_DHE_RSA_WITH_AES_128_CBC_SHA256, TLS_DHE_DSS_WITH_AES_128_CBC_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA'
+server.tomcat:
+  baseDir: '${asio.home}'
+  maxThreads: 50
 
 server.servletPath: '/explore'
 management.context-path: '/insight'
@@ -60,6 +63,14 @@ logging.level:
   org.springframework.boot.actuate.audit.listener.AuditListener: 'INFO'
   com.hp.hpl.jena.arq.exec: 'OFF'
   org.d2rq.db.SQLIterator: 'OFF'
+
+--- # support deployment as upstream of apache webserver
+spring.profiles: 'ajp'
+
+ajp.port: 8009
+server.tomcat:
+  remote_ip_header: 'x-forwarded-for'
+  protocol_header: 'x-forwarded-proto'
 
 --- # recommended mysql properties
 spring.profiles: 'mysql'
