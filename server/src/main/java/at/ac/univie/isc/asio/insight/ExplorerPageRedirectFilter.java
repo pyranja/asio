@@ -18,11 +18,11 @@ import java.util.regex.Pattern;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
- * Forward requests to the explorer pages of a container to the static content path.
- * <p/>
- * {@link javax.servlet.RequestDispatcher#forward(ServletRequest, ServletResponse) Forwarding} is a
+ * Forward requests to the explorer pages of a container to the static content path. Requests to
+ * the root {@code /favicon.ico} path are prefixed with the static content path.
+ * <p>{@link javax.servlet.RequestDispatcher#forward(ServletRequest, ServletResponse) Forwarding} is a
  * container-internal redirect, i.e. it is not visible to the client and circumvents external
- * authentication.
+ * authentication.</p>
  */
 @WebFilter(filterName = "explorer-redirect-filter", displayName = "explorer redirect"
     , description = "Internally redirect requests to explorer pages to the static content path"
@@ -79,14 +79,18 @@ public final class ExplorerPageRedirectFilter extends OncePerRequestFilter {
   }
 
   static class ExplorerTemplate {
+    static final String FAVICON = "/favicon.ico";
+
     private final UrlPathHelper paths;
     private final Pattern template;
+    private final String favIconPath;
 
     public ExplorerTemplate(final String marker) {
       paths = new UrlPathHelper();
       paths.setUrlDecode(true);
       paths.setRemoveSemicolonContent(true);
       template = makePattern(marker);
+      favIconPath = marker + FAVICON;
     }
 
     /**
@@ -98,6 +102,9 @@ public final class ExplorerPageRedirectFilter extends OncePerRequestFilter {
      */
     String findRedirectTarget(final HttpServletRequest request) {
       final String path = paths.getPathWithinApplication(request);
+      if (FAVICON.equals(path)) {
+        return favIconPath;
+      }
       final Matcher matcher = template.matcher(path);
       return matcher.matches() && headIsNotEmpty(matcher)
           ? matcher.group("target") : null;

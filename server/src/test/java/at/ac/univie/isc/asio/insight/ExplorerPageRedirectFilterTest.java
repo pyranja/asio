@@ -61,6 +61,10 @@ public class ExplorerPageRedirectFilterTest {
           {"/head/marker/tail", "/marker/tail"},
           {"/head/marker/tail/", "/marker/tail/"},
           {"/head/marker/tail/file.html", "/marker/tail/file.html"},
+          // redirect /favicon.ico requests to content root
+          {"/favicon.ico", "/marker/favicon.ico"},
+          {"/head/some/path/favicon.ico", null},
+          {"/head/marker/tail/favicon.ico", "/marker/tail/favicon.ico"},
           // do not get fooled by encoded slashes
           {"/head%2Fmarker/tail", "/marker/tail"},
           {"/head/marker%2Ftail/", "/marker/tail/"},
