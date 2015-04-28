@@ -16,6 +16,11 @@ logging.level:  # must override explicit base settings
 spring.security.debug: off
 spring.jersey.debug: off
 
+--- # override ajp port to avoid conflicts during test runs
+spring.profiles: 'ajp'
+
+ajp.port: 0
+
 --- # std deployment
 spring.profiles: 'std-test'
 spring.application.name: 'std-integration'
