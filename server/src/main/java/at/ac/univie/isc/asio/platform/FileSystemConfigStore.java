@@ -58,7 +58,7 @@ public final class FileSystemConfigStore implements ConfigStore {
   }
 
   /** The sub-folder of the working directory used to store configuration files. */
-  public static final Path STORE_FOLDER = Paths.get("config");
+  public static final Path STORE_FOLDER = Paths.get("brood");
 
   private final Path root;
   private final Timeout timeout;

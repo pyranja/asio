@@ -52,6 +52,12 @@ public class FileSystemConfigStoreTest {
   }
 
   @Test
+  public void should_use_a_folder_inside_configured_root_path() throws Exception {
+    assertThat("store folder outside of configured root", subject.getRoot().startsWith(root.path()), is(true));
+    assertThat("store folder equal to configured root", subject.getRoot(), not(equalTo(root.path())));
+  }
+
+  @Test
   public void should_yield_an_empty_mapping_if_no_items_stored_currently() throws Exception {
     assertThat(subject.findAllWithIdentifier("test").keySet(), empty());
   }
