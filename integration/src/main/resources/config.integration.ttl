@@ -13,6 +13,7 @@
 <urn:asio:dataset:integration> a d2r:Server;
     rdfs:label "integration_test_dataset";
     d2r:baseURI <http://example.com/asio/integration/>;
+    d2r:sparqlTimeout 5000;
     a sd:Service;
     sd:feature sd:BasicFederatedQuery;
     .
