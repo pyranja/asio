@@ -30,6 +30,7 @@ import rx.functions.Func0;
 
 import javax.sql.DataSource;
 import java.net.URI;
+import java.util.concurrent.TimeUnit;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -101,10 +102,12 @@ class NestBluePrint {
 
   @Bean(destroyMethod = "close")
   @Primary
-  public DataSource dataSource(final Dataset dataset,
+  public DataSource dataSource(final HikariConfig base,
+                               final Dataset dataset,
                                final Jdbc jdbc,
                                final Timeout timeout) {
-    final HikariConfig config = JdbcTools.hikariConfig(dataset.getName().asString(), jdbc, timeout);
+    final HikariConfig config = JdbcTools.populate(base, dataset.getName().asString(), jdbc);
+    config.setConnectionTimeout(timeout.getAs(TimeUnit.MILLISECONDS, 0));
     return new HikariDataSource(config);
   }
 

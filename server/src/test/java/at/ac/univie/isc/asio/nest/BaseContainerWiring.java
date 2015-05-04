@@ -6,11 +6,14 @@ import at.ac.univie.isc.asio.engine.Engine;
 import at.ac.univie.isc.asio.tool.Timeout;
 import com.google.common.collect.Iterables;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.zaxxer.hikari.HikariConfig;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.Scope;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -32,6 +35,14 @@ public abstract class BaseContainerWiring extends AbstractJUnit4SpringContextTes
   @Configuration
   @Profile("wiring-test")
   static class BaseWiringConfig {
+    @Bean
+    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+    public HikariConfig baseHikariConfig(final Timeout timeout) {
+      final HikariConfig base = new HikariConfig();
+      base.setConnectionTimeout(timeout.getAs(TimeUnit.MILLISECONDS, 0));
+      return base;
+    }
+
     @Bean
     public D2rqConfigModel d2rq() {
       return D2rqConfigModel.wrap(ModelFactory.createDefaultModel());

@@ -7,6 +7,7 @@ import at.ac.univie.isc.asio.database.Jdbc;
 import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
 import at.ac.univie.isc.asio.tool.Timeout;
 import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.junit.Test;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -66,8 +67,8 @@ public class MinimalConfigWiringTest extends BaseContainerWiring {
   }
 
   @Test
-  public void should_define_HikariConfig_with_default_settings() throws Exception {
-    final HikariConfig hikari = applicationContext.getBean(HikariConfig.class);
+  public void should_define_HikariDatasource_with_default_settings() throws Exception {
+    final HikariConfig hikari = applicationContext.getBean(HikariDataSource.class);
     assertThat(hikari.getJdbcUrl(), equalTo("jdbc:h2:mem:"));
     assertThat(hikari.getUsername(), isEmptyString());
     assertThat(hikari.getPassword(), isEmptyString());

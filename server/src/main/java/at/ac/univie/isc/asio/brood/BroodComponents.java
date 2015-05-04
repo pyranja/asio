@@ -3,7 +3,6 @@ package at.ac.univie.isc.asio.brood;
 import at.ac.univie.isc.asio.AsioFeatures;
 import at.ac.univie.isc.asio.AsioSettings;
 import at.ac.univie.isc.asio.Brood;
-import at.ac.univie.isc.asio.database.EventfulMysqlInterceptor;
 import at.ac.univie.isc.asio.database.MysqlUserRepository;
 import at.ac.univie.isc.asio.engine.DatasetHolder;
 import at.ac.univie.isc.asio.platform.FileSystemConfigStore;
@@ -13,12 +12,19 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.*;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.sql.DataSource;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Components required for the container management in brood.
@@ -54,6 +60,16 @@ class BroodComponents {
     return jersey;
   }
 
+  /** include custom properties in base-line config */
+  @Bean
+  @ConfigurationProperties("asio.hikari")
+  @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+  public HikariConfig baseHikariConfig(final Timeout timeout) {
+    final HikariConfig config = new HikariConfig();
+    config.setConnectionTimeout(timeout.getAs(TimeUnit.MILLISECONDS, 0));
+    return config;
+  }
+
   @Bean
   @ConditionalOnProperty(AsioFeatures.MULTI_TENANCY)
   public MysqlUserRepository userRepository(final DataSource datasource) {
@@ -62,10 +78,8 @@ class BroodComponents {
 
   @Bean
   @ConditionalOnProperty(AsioFeatures.GLOBAL_DATASOURCE)
-  public DataSource globalDatasource(final Timeout timeout) {
-    final HikariConfig config = JdbcTools.hikariConfig("global", this.config.jdbc, timeout);
-    config.getDataSourceProperties()
-        .setProperty("statementInterceptors", EventfulMysqlInterceptor.class.getName());
+  public DataSource globalDatasource(final HikariConfig base) {
+    final HikariConfig config = JdbcTools.populate(base, "global", this.config.jdbc);
     config.setCatalog(null);
     // expect infrequent usage
     config.setMaximumPoolSize(5);

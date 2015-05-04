@@ -7,7 +7,6 @@ import com.zaxxer.hikari.HikariConfig;
 
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Utility methods for working with JDBC.
@@ -47,36 +46,35 @@ public final class JdbcTools {
   }
 
   /**
-   * Create a hikari pool configuration holder from the given beans.
+   * Customize hikari configuration in place, using a jdbc settings holder.
    *
-   * @param id identifier of the pool, mainly for diagnostics
-   * @param jdbc jdbc connection settings
-   * @param timeout timeout of connections
-   * @return mutable hikari settings holder
+   * @param hikari origin hikari settings
+   * @param id     id of the enclosing context
+   * @param jdbc   jdbc settings
+   * @return customized hikari configuration
    */
-  public static HikariConfig hikariConfig(final String id, final Jdbc jdbc, final Timeout timeout) {
-    final HikariConfig config = new HikariConfig();
-    config.setJdbcUrl(jdbc.getUrl());
-    config.setCatalog(jdbc.getSchema());
-    config.setUsername(jdbc.getUsername());
-    config.setPassword(jdbc.getPassword());
+  public static HikariConfig populate(final HikariConfig hikari, final String id, final Jdbc jdbc) {
+    hikari.setCatalog(jdbc.getSchema());
+
+    hikari.setJdbcUrl(jdbc.getUrl());
+    hikari.setUsername(jdbc.getUsername());
+    hikari.setPassword(jdbc.getPassword());
+    if (jdbc.getDriver() != null) { hikari.setDriverClassName(jdbc.getDriver()); }
     final Properties properties = injectRequiredProperties(jdbc.getProperties(), jdbc.getUrl());
-    config.setDataSourceProperties(properties);
-    if (jdbc.getDriver() != null) { config.setDriverClassName(jdbc.getDriver()); }
-    config.setConnectionTimeout(timeout.getAs(TimeUnit.MILLISECONDS, 0));
+    hikari.setDataSourceProperties(properties);
+
     final String poolName = Pretty.format("%s-hikari-pool", id);
-    config.setPoolName(poolName);
-    config.setThreadFactory(new ThreadFactoryBuilder().setNameFormat(poolName + "-thread-%d").build());
-    return config;
+    hikari.setPoolName(poolName);
+    hikari.setThreadFactory(new ThreadFactoryBuilder().setNameFormat(
+        poolName + "-thread-%d").build());
+
+    return hikari;
   }
 
-
-  public static Properties injectRequiredProperties(final Map<String, String> original,
-                                                   final String url) {
+  static Properties injectRequiredProperties(final Map<String, String> original,
+                                             final String url) {
     final Properties result = Beans.asProperties(original);
-    if (url.startsWith("jdbc:mysql")) {
-//      result.setProperty("statementInterceptors", EventfulMysqlInterceptor.class.getName());
-    } else if (url.startsWith("jdbc:h2:")) {
+    if (url.startsWith("jdbc:h2:")) {
       result.setProperty("MODE", "MYSQL");
       result.setProperty("DATABASE_TO_UPPER", "false");
     }

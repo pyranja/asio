@@ -43,6 +43,16 @@ asio:
   # override jdbc settings of containers
   # jdbc:
   d2rq.pool-size: 5
+  hikari: # per dataset settings for jdbc pool
+    maximum-pool-size: 5
+    minimum-idle: 2
+    idle-timeout: 300000  # == 5 minutes
+    max-lifetime: 3600000 # == 60 minutes
+    leak-detection-threshold: 60000 # == 1 minute
+    auto-commit: on
+    initialization-fail-fast: on
+    isolate-internal-queries: off
+    read-only: off
 
 # serialization settings
 spring.mvc:
@@ -74,6 +84,8 @@ server.tomcat:
 
 --- # recommended mysql properties
 spring.profiles: 'mysql'
+
+asio.hikari.data-source-class-name: 'com.mysql.jdbc.jdbc2.optional.MysqlDataSource'
 
 asio.jdbc.properties:
   zeroDateTimeBehavior: 'convertToNull'

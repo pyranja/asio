@@ -8,6 +8,7 @@ import at.ac.univie.isc.asio.metadata.DescriptorService;
 import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
 import at.ac.univie.isc.asio.tool.Timeout;
 import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.springframework.context.annotation.Bean;
@@ -92,8 +93,8 @@ public class OverrideConfigWiringTest extends BaseContainerWiring {
   }
 
   @Test
-  public void should_define_HikariConfig_with_given_settings() throws Exception {
-    final HikariConfig hikari = applicationContext.getBean(HikariConfig.class);
+  public void should_define_HikariDatasource_with_given_settings() throws Exception {
+    final HikariConfig hikari = applicationContext.getBean(HikariDataSource.class);
     assertThat(hikari.getJdbcUrl(), equalTo("jdbc:h2:mem:"));
     assertThat(hikari.getCatalog(), equalTo("schema"));
     assertThat(hikari.getUsername(), equalTo("root"));
