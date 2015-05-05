@@ -77,31 +77,48 @@
     </plugins>
   </reporting>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-site-plugin</artifactId>
-        <configuration>
-          <skip>false</skip>
-          <siteDirectory>${basedir}/documentation/site</siteDirectory>
-        </configuration>
-      </plugin>
-      <!-- aggregator does not produce installable/deployable artifacts -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-install-plugin</artifactId>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-deploy-plugin</artifactId>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+  <!-- conditionally create distribution archives -->
+
+  <profiles>
+    <profile>
+      <id>release</id>
+
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>update-license</id>
+                <goals>
+                  <goal>update-project-license</goal>
+                </goals>
+                <configuration>
+                  <licenseFile>${project.basedir}/LICENSE</licenseFile>
+                </configuration>
+              </execution>
+              <execution>
+                <id>aggregate-third_party_licenses</id>
+                <goals>
+                  <goal>aggregate-add-third-party</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${project.basedir}</outputDirectory>
+                  <thirdPartyFilename>THIRD-PARTY</thirdPartyFilename>
+                  <useMissingFile>true</useMissingFile>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+
+    </profile>
+  </profiles>
+
 </project>
