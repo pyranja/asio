@@ -32,6 +32,19 @@
     <site-version>${project.version}</site-version>
   </properties>
 
+  <build>
+    <plugins>
+      <plugin> <!-- create single application site -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <configuration>
+          <skip>false</skip>
+          <siteDirectory>${project.basedir}/site</siteDirectory>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
   <reporting>
     <plugins>
       <plugin>
