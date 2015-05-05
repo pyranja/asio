@@ -1,80 +1,8 @@
-# core server settings - override only if you know what you are doing
-spring.application.name: 'asio'
-# spring.pidfile: '/path'
-server.session-timeout: 0
-server.port: 8443
-server.ssl:
-  enabled: true
-  # this must be provided by deployers
-  # key-store: '/path/to/keystore'
-  key-store-password: 'asio_keys'
-  key-alias: 'asio'
-  key-password: 'asio_keys'
-  # use DumpSslInfo to find supported ciphers
-  # cannot use list notation as backing property is an array
-  ciphers: 'TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256, TLS_DHE_RSA_WITH_AES_128_CBC_SHA256, TLS_DHE_DSS_WITH_AES_128_CBC_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA'
-server.tomcat:
-  baseDir: '${asio.home}'
-  maxThreads: 50
+# ========================= #
+# asio server configuration #
+# ========================= #
 
-server.servletPath: '/explore'
-management.context-path: '/insight'
-
-security:
-  user.name: 'root'
-  # if not provided by deployer a random UUID is the password
-  # user.password: 'password'
-  basic.realm: 'asio'
-  basic.enabled: false
-  ignored: ['/*.html', '/css/**', '/js/**', '/img/**', '/fonts/**', '/snorql/**', '/**/favicon.ico']
-  require-ssl: '${server.ssl.enabled:false}'
-
-# asio default settings
-asio:
-  home: '${defaults.home:${java.io.tmpdir}}'
-  timeout: 30000
-  metadata-repository: 'http://vphshare.atosresearch.eu/metadata-extended/rest/'
-  api:
-    delegate-authorization-header: 'Authorization'
-    override-accept-parameter: '_type'
-    default-media-type: ['application/xml', '*/*;q=0.5']
-    default-language: 'en'
-    reserved-container-names: ['api', 'explore']
-  # override jdbc settings of containers
-  # jdbc:
-  d2rq.pool-size: 5
-  hikari: # per dataset settings for jdbc pool
-    maximum-pool-size: 5
-    minimum-idle: 2
-    idle-timeout: 300000  # == 5 minutes
-    max-lifetime: 3600000 # == 60 minutes
-    leak-detection-threshold: 60000 # == 1 minute
-    auto-commit: on
-    initialization-fail-fast: on
-    isolate-internal-queries: off
-    read-only: off
-
-# serialization settings
-spring.mvc:
-  locale: 'en_UK'
-  date-format: "yyyy-MM-dd'T'HH:mm:ss'Z'"
-spring.jackson:
-  date-format: 'com.fasterxml.jackson.databind.util.ISO8601DateFormat'
-  serialization:
-    WRITE_DATES_AS_TIMESTAMPS: false
-  deserialization:
-    FAIL_ON_NUMBERS_FOR_ENUMS: true
-    ADJUST_DATES_TO_CONTEXT_TIME_ZONE: false
-
-# log errors and top level events, but disable some noisy loggers in libraries
-logging.level.: 'WARN'
-logging.level:
-  at.ac.univie.isc.asio.events: 'INFO'
-  org.springframework.boot.actuate.audit.listener.AuditListener: 'INFO'
-  com.hp.hpl.jena.arq.exec: 'OFF'
-  org.d2rq.db.SQLIterator: 'OFF'
-
---- # support deployment as upstream of apache webserver
+--- # support deployment as upstream of an apache webserver via AJP protocol
 spring.profiles: 'ajp'
 
 ajp.port: 8009
@@ -97,3 +25,102 @@ asio.jdbc.properties:
 #  useLegacyDatetimeCode=false
 #  serverTimezone=UTC
 #  logSlowQueries: 'true'
+
+--- # general server customizations
+spring.application.name: '${app-id:asio}'
+server.port: 8443
+
+asio:
+  timeout: 30000  # timeout used for actions during request processing, e.g. connecting to DB
+  metadata-repository: 'http://example.com'  # remote metadata http service
+
+asio.feature: # feature toggles
+  vph-metadata: off # fetch metadata from a remote http service (URL set in metadata-repostiory)
+  vph-uri-auth: off # enable the URI based authentication mechanism for VPH
+  allow-federation: off # enable processing of federated SPARQL queries in local datasets
+  global-datasource: off  # override local connection settings with global one from asio.jdbc
+  multi-tenancy: off  # create an isolated user per deployed dataset
+
+# asio.jdbc:  # provide optional global jdbc connection settings, required for multi-tenancy support
+  # url: 'jdbc:mysql:///'
+  # username: 'root'
+  # password: 'change'
+  # privileges: ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'DROP']
+
+asio.d2rq.pool-size: 5  # fixed size of d2rq model pool per deployed dataset
+asio.hikari: # per dataset settings for jdbc pool
+    maximum-pool-size: 5
+    minimum-idle: 2
+    idle-timeout: 300000  # == 5 minutes
+    max-lifetime: 3600000 # == 60 minutes
+    leak-detection-threshold: 60000 # == 1 minute
+    auto-commit: on
+    initialization-fail-fast: on
+    isolate-internal-queries: off
+    read-only: off
+
+security: # basic auth settings of management api
+  user.name: 'root'
+  # if password is not set, a random UUID is used (logged during startup)
+  # user.password: 'password'
+  basic.realm: 'asio'
+
+server.ssl:
+  enabled: true
+  # required configuration for ssl-support
+  key-store: '/path/to/keystore'
+  key-store-password: 'asio_keys'
+  key-alias: 'asio'
+  key-password: 'asio_keys'
+
+# logging settings
+# logging.file: /path/to/file.log
+logging.level:
+  .: 'WARN'  # root log level
+  at.ac.univie.isc.asio: 'INFO'
+  at.ac.univie.isc.asio.events: 'OFF'
+
+--- # core server settings - override only if you know what you are doing
+server.session-timeout: 0
+server.ssl:
+  # hard coded, safer list of ciphers (use DumpSslInfo to find supported ciphers)
+  # cannot use list notation as backing property is an array
+  ciphers: 'TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256, TLS_DHE_RSA_WITH_AES_128_CBC_SHA256, TLS_DHE_DSS_WITH_AES_128_CBC_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA'
+server.tomcat:
+  baseDir: '${asio.home}'
+  maxThreads: 50
+
+server.servletPath: '/explore'
+management.context-path: '/insight'
+
+security:
+  basic.enabled: false
+  ignored: ['/*.html', '/css/**', '/js/**', '/img/**', '/fonts/**', '/snorql/**', '/**/favicon.ico']
+  require-ssl: '${server.ssl.enabled:false}'
+
+# asio default settings
+asio:
+  home: '${java.io.tmpdir}'
+  api:
+    delegate-authorization-header: 'Authorization'
+    override-accept-parameter: '_type'
+    default-media-type: ['application/xml', '*/*;q=0.5']
+    default-language: 'en'
+    reserved-container-names: ['api', 'explore']
+
+# framework settings
+spring.mvc:
+  locale: 'en_UK'
+  date-format: "yyyy-MM-dd'T'HH:mm:ss'Z'"
+spring.jackson:
+  date-format: 'com.fasterxml.jackson.databind.util.ISO8601DateFormat'
+  serialization:
+    WRITE_DATES_AS_TIMESTAMPS: false
+  deserialization:
+    FAIL_ON_NUMBERS_FOR_ENUMS: true
+    ADJUST_DATES_TO_CONTEXT_TIME_ZONE: false
+
+# disable noisy library logger
+logging.level:
+  com.hp.hpl.jena.arq.exec: 'OFF'
+  org.d2rq.db.SQLIterator: 'OFF'

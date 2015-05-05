@@ -1,0 +1,26 @@
+# --------------------------------------------------------------------------------------------------
+# asio environment descriptor // sourced from /etc/sysconfig/asio by management scripts
+#
+#   ASIO_MODE     :   server profile used by the daemon
+#   ASIO_BASE     :   installation directory
+#   ASIO_HOME     :   path to runtime state
+#   ASIO_OWNER    :   the user owning asio processes
+#
+#   JAVA          :   java executable
+#   JAVA_OPTS     :   jvm flags
+# --------------------------------------------------------------------------------------------------
+
+# required : select the server profile (vph or sparqler)
+# ASIO_MODE="vph"
+# ASIO_MODE="sparqler"
+
+# configure the java runtime
+JAVA="$(which java)"
+JAVA_OPTS="-server"
+# enable if IPv6 config invalid
+JAVA_OPTS+=" -Djava.net.preferIPv4Stack=true -Djava.net.preferIPv4Addresses=true"
+
+## ! do not change ! ##
+ASIO_BASE="/usr/local/share/asio"
+ASIO_HOME="/var/local/asio"
+ASIO_OWNER="asio"

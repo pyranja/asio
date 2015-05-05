@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <artifactId>asio-parent</artifactId>
+    <groupId>at.ac.univie.isc</groupId>
+    <version>0.5.3-SNAPSHOT</version>
+    <relativePath>../parent/pom.xml</relativePath>
+  </parent>
+
+  <artifactId>asio-distribution</artifactId>
+  <name>asio distribution</name>
+  <description>package asio server and client binaries as deployment archives</description>
+  <packaging>pom</packaging>
+
+  <dependencies>
+    <dependency>
+      <groupId>at.ac.univie.isc</groupId>
+      <artifactId>asio-server</artifactId>
+      <version>0.5.3-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>at.ac.univie.isc</groupId>
+      <artifactId>asio-cli</artifactId>
+      <version>0.5.3-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+
+    <plugins>
+      <plugin>  <!-- explicitly enable resource processing -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>assemble-resources</id>
+            <goals>
+              <goal>resources</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>unpack-config_files</id>
+            <goals>
+              <goal>unpack-dependencies</goal>
+            </goals>
+            <configuration>
+              <includeGroupIds>at.ac.univie.isc</includeGroupIds>
+              <outputDirectory>${project.build.outputDirectory}/etc</outputDirectory>
+              <classifier>config</classifier>
+              <excludes>META-INF/**</excludes>
+              <excludeTransitive>true</excludeTransitive>
+              <failOnMissingClassifierArtifact>true</failOnMissingClassifierArtifact>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>update-license</id>
+            <goals>
+              <goal>update-project-license</goal>
+            </goals>
+            <configuration>
+              <licenseFile>${project.build.outputDirectory}/LICENSE</licenseFile>
+            </configuration>
+          </execution>
+          <execution>
+            <id>third_party_licenses</id>
+            <goals>
+              <goal>add-third-party</goal>
+            </goals>
+            <configuration>
+              <acceptPomPackaging>true</acceptPomPackaging>
+              <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+              <thirdPartyFilename>THIRD-PARTY</thirdPartyFilename>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>  <!-- assemble deployable archive -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <descriptor>${project.basedir}/src/assembly/distribution.xml</descriptor>
+          <finalName>${app.name}-${project.version}</finalName>
+        </configuration>
+        <executions>
+          <execution>
+            <id>assemble-distribution</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <!-- build rpm if running on unix platform -->
+      <id>rpm</id>
+
+      <activation>
+        <os>
+          <family>unix</family>
+        </os>
+      </activation>
+
+      <build>
+        <plugins>
+
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>rpm-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>package-rpm</id>
+                <goals>
+                  <goal>attached-rpm</goal>
+                </goals>
+                <configuration>
+                  <name>${app.name}</name>
+                  <summary>sparql/sql http wrapper for mysql</summary>
+                  <description>expose mysql databases as sparql/sql datasets through a http service</description>
+                  <license>${app.license}</license>
+                  <group>Applications/Databases</group>
+
+                  <defineStatements>
+                    <defineStatement>_unpackaged_files_terminate_build 0</defineStatement>
+                  </defineStatements>
+
+                  <requires>
+                    <require>jre-headless >= 1.7</require>
+                  </requires>
+
+                  <!-- see https://fedoraproject.org/wiki/Packaging:UsersAndGroups -->
+                  <preinstallScriptlet>
+                    <script>getent group asio > /dev/null || groupadd -r asio; getent passwd asio > /dev/null || useradd --system --gid asio --shell /bin/false --comment 'asio service' 'asio'; exit 0</script>
+                  </preinstallScriptlet>
+
+                  <postinstallScriptlet>
+                    <script>chkconfig --add asio</script>
+                  </postinstallScriptlet>
+
+                  <defaultFilemode>644</defaultFilemode>
+                  <defaultDirmode>755</defaultDirmode>
+                  <defaultGroupname>asio</defaultGroupname>
+                  <defaultUsername>asio</defaultUsername>
+
+                  <mappings>
+                    <mapping> <!-- binaries -->
+                      <directory>/usr/local/share/asio</directory>
+                      <sources>
+                        <source>
+                          <location>${project.build.outputDirectory}/.asio</location>
+                        </source>
+                      </sources>
+                      <dependency>
+                        <includes>
+                          <include>at.ac.univie.isc:asio-server</include>
+                          <include>at.ac.univie.isc:asio-cli</include>
+                        </includes>
+                        <stripVersion>true</stripVersion>
+                      </dependency>
+                    </mapping>
+                    <mapping> <!-- system config -->
+                      <directory>/etc/sysconfig</directory>
+                      <directoryIncluded>false</directoryIncluded>
+                      <configuration>true</configuration>
+                      <sources>
+                        <source>
+                          <location>${project.build.outputDirectory}/etc/asio.default</location>
+                          <destination>asio</destination>
+                        </source>
+                      </sources>
+                    </mapping>
+                    <mapping> <!-- management script -->
+                      <directory>/usr/local/bin</directory>
+                      <directoryIncluded>false</directoryIncluded>
+                      <filemode>755</filemode>
+                      <username>asio</username>
+                      <groupname>asio</groupname>
+                      <sources>
+                        <source>
+                          <location>${project.build.scriptSourceDirectory}/asio.sh</location>
+                          <destination>asio</destination>
+                        </source>
+                      </sources>
+                    </mapping>
+                    <mapping> <!-- daemon script -->
+                      <directory>/etc/init.d</directory>
+                      <directoryIncluded>false</directoryIncluded>
+                      <filemode>755</filemode>
+                      <username>asio</username>
+                      <groupname>asio</groupname>
+                      <sources>
+                        <source>
+                          <location>${project.build.scriptSourceDirectory}/asiod.sh</location>
+                          <destination>asio</destination>
+                        </source>
+                      </sources>
+                    </mapping>
+
+                    <mapping> <!-- runtime state -->
+                      <directory>/var/local/asio</directory>
+                      <configuration>noreplace</configuration>
+                      <sources>
+                        <source>
+                          <location>${project.build.outputDirectory}/etc</location>
+                          <excludes>
+                            <exclude>asio.default</exclude>
+                          </excludes>
+                        </source>
+                      </sources>
+                    </mapping>
+
+                    <mapping> <!-- prepare empty log directory -->
+                      <directory>/var/log/asio</directory>
+                    </mapping>
+                    <mapping> <!-- prepare empty pidfile directory -->
+                      <directory>/var/run/asio</directory>
+                    </mapping>
+                  </mappings>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+        </plugins>
+      </build>
+
+    </profile>
+  </profiles>
+
+</project>

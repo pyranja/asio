@@ -87,6 +87,10 @@
         <activeByDefault>true</activeByDefault>
       </activation>
 
+      <modules>
+        <module>distribution</module>
+      </modules>
+
       <build>
         <plugins>
           <plugin>

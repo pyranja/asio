@@ -1,41 +1,47 @@
 <assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
-  <id>tarball</id>
-  <baseDirectory>asio</baseDirectory>
+
+  <!-- create an archive holding client/server executables, configuration and script files -->
+
+  <id>distribution</id>
+
   <formats>
-    <format>tar.gz</format>
+    <format>zip</format>
+    <format>tgz</format>
   </formats>
 
+  <baseDirectory>${app.name}</baseDirectory>
+
   <dependencySets>
-    <dependencySet>
-      <includes>
-        <include>${project.groupId}:asio-lair:war</include>
-      </includes>
-      <outputDirectory>/webapp</outputDirectory>
-      <unpack>true</unpack>
+    <dependencySet> <!-- include all executable .jars -->
+      <unpack>false</unpack>
+      <fileMode>0644</fileMode>
+      <outputDirectory>/</outputDirectory>
+      <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
       <useTransitiveDependencies>false</useTransitiveDependencies>
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
   </dependencySets>
 
   <fileSets>
-    <fileSet>
-      <directory>${project.build.scriptOutputDirectory}</directory>
+    <fileSet> <!-- *nix scripts -->
+      <directory>${project.build.scriptSourceDirectory}</directory>
       <outputDirectory>/bin</outputDirectory>
       <lineEnding>unix</lineEnding>
-      <filtered>false</filtered>
-      <fileMode>755</fileMode>
-      <directoryMode>755</directoryMode>
+      <fileMode>0755</fileMode>
+      <includes>
+        <include>*.sh</include>
+      </includes>
     </fileSet>
-    <fileSet>
+
+    <fileSet> <!-- meta/config files -->
       <directory>${project.build.outputDirectory}</directory>
       <outputDirectory>/</outputDirectory>
       <lineEnding>unix</lineEnding>
-      <filtered>false</filtered>
-      <fileMode>644</fileMode>
-      <directoryMode>755</directoryMode>
+      <fileMode>0644</fileMode>
     </fileSet>
   </fileSets>
 
 </assembly>
+

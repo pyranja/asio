@@ -97,7 +97,7 @@ public final class Launcher {
 
     void log(final String template, final Object... args) {
       final String message = Pretty.format(template, args);
-      System.out.printf(Locale.ENGLISH, "[asio/%s] %s%n", id(), message);
+      System.out.printf(Locale.ENGLISH, "[%s/daemon] %s%n", id(), message);
     }
   }
 

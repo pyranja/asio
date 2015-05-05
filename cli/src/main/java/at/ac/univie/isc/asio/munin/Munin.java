@@ -22,7 +22,7 @@ import java.util.logging.Logger;
  * Command line runner.
  */
 public final class Munin {
-  static final String EMBEDDED_PROPERTIES = "munin.properties";
+  static final String EMBEDDED_PROPERTIES = "cli.properties";
   static final String LOGGING_PROPERTIES = "logging.properties";
 
   /**

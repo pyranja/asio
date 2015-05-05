@@ -11,7 +11,7 @@ class FlockSettings {
    * Global identifier of the flock service. (default = 'asio:///flock/')
    */
   @NotNull
-  public URI identifier;
+  public URI identifier = URI.create("asio:///flock/");
 
   @Override
   public String toString() {

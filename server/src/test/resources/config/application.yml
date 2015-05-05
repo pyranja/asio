@@ -10,7 +10,7 @@ asio.d2rq.pool-size: 2
 
 logging.level.: 'OFF'  # be quiet during test runs
 logging.level:  # must override explicit base settings
-  at.ac.univie.isc.asio.events: 'OFF'
+  at.ac.univie.isc.asio: 'OFF'
   org.springframework.boot.actuate.audit.listener.AuditListener: 'OFF'
 
 spring.security.debug: off

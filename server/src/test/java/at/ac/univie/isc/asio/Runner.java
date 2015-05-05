@@ -6,6 +6,7 @@ import at.ac.univie.isc.asio.io.Classpath;
 import at.ac.univie.isc.asio.io.TransientPath;
 import at.ac.univie.isc.asio.platform.FileSystemConfigStore;
 import at.ac.univie.isc.asio.sql.Database;
+import at.ac.univie.isc.asio.tool.Beans;
 import at.ac.univie.isc.asio.web.HttpServer;
 import com.google.common.collect.Lists;
 
@@ -39,14 +40,15 @@ public class Runner {
           FileSystemConfigStore.STORE_FOLDER.resolve("public##config"),
           Classpath.load("config.integration.ttl").read());
 
+      final String[] arguments = Beans.extend(args
+          , "--server.ssl.key-store=" + keystore.path()
+          , "--asio.home=" + workingDirectory.path()
+      );
+
       Asio.application()
           .profiles(profiles.toArray(new String[profiles.size()]))
-          .properties(
-              "server.ssl.key-store:" + keystore.path()
-              , "defaults.home:" + workingDirectory.path()
-          )
           .logStartupInfo(true)
-          .run(args);
+          .run(arguments);
 
       System.out.println("  ===  running...  ===  ");
       System.in.read();
