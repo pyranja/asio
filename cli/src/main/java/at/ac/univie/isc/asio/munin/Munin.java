@@ -23,13 +23,14 @@ import java.util.logging.Logger;
  */
 public final class Munin {
   static final String EMBEDDED_PROPERTIES = "munin.properties";
+  static final String LOGGING_PROPERTIES = "logging.properties";
 
   /**
    * Run the client with parameters from the command line.
    */
   public static void main(String[] args) throws Exception {
     try {
-      try (final InputStream stream = Resources.getResource(EMBEDDED_PROPERTIES).openStream()) {
+      try (final InputStream stream = Resources.getResource(LOGGING_PROPERTIES).openStream()) {
         LogManager.getLogManager().readConfiguration(stream);
       }
 

@@ -133,7 +133,7 @@ public /* final */ class Pigeon {
           .resolveTemplate("id", target)
           .request(MediaType.APPLICATION_JSON_TYPE)
           .put(Entity.entity(mapping, MediaType.valueOf("text/turtle")), new JsonMap());
-      log.debug("container {} deployed successfully");
+      log.debug("container {} deployed successfully", target);
       return deployed == null ? Collections.<String, Object>emptyMap() : deployed;
     } catch (ProcessingException | WebApplicationException e) {
       throw wrap(e);
@@ -153,7 +153,7 @@ public /* final */ class Pigeon {
           .resolveTemplate("id", target)
           .request(MediaType.APPLICATION_JSON_TYPE)
           .delete(Map.class);
-      log.debug("container {} undeployed successfully");
+      log.debug("container {} undeployed successfully", target);
       return true;
     } catch (NotFoundException ignore) {
       log.debug("container {} not found on undeploy", target);

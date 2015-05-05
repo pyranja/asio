@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 
@@ -68,10 +69,11 @@ public final class PropertyHierarchy {
       hierarchy = loadFromSystem(hierarchy);
       final String externalLocation = hierarchy.getProperty(EXTERNAL_LOCATION_PROPERTY);
       if (externalLocation != null) {
-        hierarchy = loadExternal(externalLocation, hierarchy);
+        final Path external = Paths.get(externalLocation, classpathLocation);
+        hierarchy = loadExternal(external, hierarchy);
       }
     } catch (IOException e) {
-      throw new IllegalStateException("failed to load property hierarchy", e);
+      throw new IllegalStateException("failed to load property hierarchy - " + e.getMessage(), e);
     }
     return hierarchy;
   }
@@ -94,11 +96,13 @@ public final class PropertyHierarchy {
     return props;
   }
 
-  private Properties loadExternal(final String path, final Properties fallback) throws IOException {
+  private Properties loadExternal(final Path path, final Properties fallback) {
     log.debug("loading external properties from {}", path);
     final Properties props = new Properties(fallback);
-    try (final InputStream stream = Files.newInputStream(Paths.get(path))) {
+    try (final InputStream stream = Files.newInputStream(path)) {
       props.load(stream);
+    } catch (final IOException e) {
+      log.error("failed to load external properties from {}", path);
     }
     return props;
   }

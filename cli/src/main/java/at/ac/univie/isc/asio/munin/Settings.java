@@ -13,7 +13,7 @@ class Settings {
     it.setServerAddress(URI.create(input.getProperty("server-address", "server address is missing")));
     it.setUsername(input.getProperty("username"));
     it.setPassword(input.getProperty("password"));
-    it.setInsecureConnection(Boolean.parseBoolean(input.getProperty("insecure-connection")));
+    it.setInsecureConnection(Boolean.parseBoolean(input.getProperty("insecure-connection", "false")));
     return it;
   }
 
