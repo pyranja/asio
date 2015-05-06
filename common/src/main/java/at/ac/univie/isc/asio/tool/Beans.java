@@ -3,6 +3,7 @@ package at.ac.univie.isc.asio.tool;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
 
@@ -39,6 +40,23 @@ public final class Beans {
   public static Properties asProperties(final Map<String, String> map) {
     final Properties result = new Properties();
     result.putAll(map);
+    return result;
+  }
+
+  /**
+   * Create an array holding every member of the {@code input} array and every additional
+   * {@code extension} argument. This method will always return a fresh array, even if no
+   * {@code extension} arguments are given.
+   *
+   * @param input the source array
+   * @param extension additional arguments to be merged with input
+   * @param <T> type of array contents
+   * @return new array containing all member of {@code input} and all other arguments.
+   */
+  @SafeVarargs
+  public static <T> T[] extend(final T[] input, final T... extension) {
+    final T[] result = Arrays.copyOf(input, input.length + extension.length);
+    System.arraycopy(extension, 0, result, input.length, extension.length);
     return result;
   }
 }

@@ -16,6 +16,34 @@ import static org.junit.Assert.assertThat;
 @RunWith(Enclosed.class)
 public class BeansTest {
 
+  public static class Extend {
+    @Test
+    public void should_return_copy_of_input_with_same_content_if_no_extension_args_given() throws Exception {
+      final String[] input = new String[] { "one", "two" };
+      final String[] result = Beans.extend(input);
+      assertThat(result, not(sameInstance(input)));
+      assertThat(result, equalTo(input));
+    }
+
+    @Test
+    public void should_add_all_extension_args() throws Exception {
+      final String[] result = Beans.extend(new String[0], "one", "two");
+      assertThat(result, arrayContaining("one", "two"));
+    }
+
+    @Test
+    public void should_handle_empty_input() throws Exception {
+      assertThat(Beans.extend(new Integer[0]), arrayWithSize(0));
+    }
+
+    @Test
+    public void should_merge_input_with_extension_args() throws Exception {
+      final Double[] input = new Double[] { 1.0d, 5.0d, 7.84d };
+      final Double[] result = Beans.extend(input, 3.14, 1.337);
+      assertThat(result, arrayContaining(1.0d, 5.0d, 7.84d, 3.14, 1.337));
+    }
+  }
+  
   public static class AsProperties {
     @Test
     public void should_create_empty_properties_from_empty_map() throws Exception {
