@@ -10,7 +10,7 @@
 source /etc/sysconfig/asio
 source /etc/init.d/functions
 
-${ASIO_MODE:?"asio mode not set - check config in /etc/sysconfig/asio"}
+echo "selected mode ${ASIO_MODE:?"asio mode not set - check config in /etc/sysconfig/asio"}"
 
 APP="asio"
 PID_FILE="/var/run/asio/${APP}.pid"
