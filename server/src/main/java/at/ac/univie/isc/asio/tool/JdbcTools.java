@@ -59,7 +59,10 @@ public final class JdbcTools {
     hikari.setJdbcUrl(jdbc.getUrl());
     hikari.setUsername(jdbc.getUsername());
     hikari.setPassword(jdbc.getPassword());
-    if (jdbc.getDriver() != null) { hikari.setDriverClassName(jdbc.getDriver()); }
+    if (jdbc.getDriver() != null && hikari.getDataSourceClassName() == null) {
+      // only set the driver class if no DataSource class is given - hikari will not accept both
+      hikari.setDriverClassName(jdbc.getDriver());
+    }
     final Properties properties = injectRequiredProperties(jdbc.getProperties(), jdbc.getUrl());
     hikari.setDataSourceProperties(properties);
 

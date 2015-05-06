@@ -62,6 +62,7 @@ class BroodComponents {
 
   /** include custom properties in base-line config */
   @Bean
+  @Primary  // required to override globalDatasource
   @ConfigurationProperties("asio.hikari")
   @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
   public HikariConfig baseHikariConfig(final Timeout timeout) {

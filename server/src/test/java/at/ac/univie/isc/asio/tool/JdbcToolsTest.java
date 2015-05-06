@@ -92,6 +92,15 @@ public class JdbcToolsTest {
     }
 
     @Test
+    public void should_ignore_driverClass_if_dataSourceClass_already_set() throws Exception {
+      final HikariConfig input = new HikariConfig();
+      input.setDataSourceClassName("DatasourceClass");
+      // this would fail with ClassNotFound if driver class is used (see should_eagerly_load_driver_class)
+      JdbcTools.populate(input, "test", jdbc.setDriver("not-existing"));
+      assertThat(input.getDataSourceClassName(), equalTo("DatasourceClass"));
+    }
+
+    @Test
     public void should_eagerly_load_driver_class() throws Exception {
       error.expect(RuntimeException.class);
       error.expectCause(Matchers.<Throwable>instanceOf(ClassNotFoundException.class));
