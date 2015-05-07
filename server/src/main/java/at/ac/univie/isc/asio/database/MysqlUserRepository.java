@@ -99,6 +99,7 @@ public /* final */ class MysqlUserRepository {
    * @return derived, unique credentials
    */
   private Identity translateToCredentials(final String schema) {
+    Preconditions.checkNotNull(schema, "jdbc schema name missing");
     final String hashedSchemaName = BaseEncoding.base64().encode(
         Hashing.sha256().hashString(schema, Charsets.UTF_8).asBytes()
     );
