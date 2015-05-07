@@ -53,7 +53,7 @@ public final class VndErrorMapper implements ExceptionMapper<Exception> {
   @Override
   public Response toResponse(final Exception exception) {
     final Response.StatusType status = selectErrorCode(exception);
-    log.debug(Scope.REQUEST.marker(), "mapping exception {} to {} http response", exception.toString(), status);
+    log.debug(Scope.REQUEST.marker(), "mapping exception {} to {} http response", exception.toString(), status, exception);
     final VndError error = events.emit(exception);
     return Response.status(status).type(ERROR_MIME).entity(error).build();
   }
