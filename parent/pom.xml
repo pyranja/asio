@@ -105,7 +105,7 @@
     <site>
       <id>isc.elvira</id>
       <name>asio website</name>
-      <url>dav:http://elvira.par.univie.ac.at/asio</url>
+      <url>dav:http://elvira.par.univie.ac.at/</url>
     </site>
   </distributionManagement>
 
