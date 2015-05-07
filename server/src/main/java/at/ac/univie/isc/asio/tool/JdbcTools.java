@@ -7,6 +7,8 @@ import com.zaxxer.hikari.HikariConfig;
 
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Utility methods for working with JDBC.
@@ -43,6 +45,26 @@ public final class JdbcTools {
       }
     }
     return result;
+  }
+
+  static final Pattern MYSQL_URL_PATTERN =
+      Pattern.compile("^jdbc:mysql://([^/]*)/(?<schema>[^\\?]+)(\\?.*)?");
+
+  /**
+   * Attempt to extract the default database from a given mysql jdbc url.
+   *
+   * @param jdbcUrl jdbc connection string in mysql format
+   * @return default database embedded in given jdbc url or {@link Optional#absent()}
+   */
+  public static Optional<String> inferSchema(final String jdbcUrl) {
+    String found = null;
+    if (jdbcUrl != null) {
+      final Matcher matcher = MYSQL_URL_PATTERN.matcher(jdbcUrl);
+      if (matcher.matches()) {
+        found = matcher.group("schema");
+      }
+    }
+    return Optional.fromNullable(found);
   }
 
   /**

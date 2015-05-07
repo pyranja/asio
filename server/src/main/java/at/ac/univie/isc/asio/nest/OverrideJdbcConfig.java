@@ -19,7 +19,7 @@ import static java.util.Objects.requireNonNull;
  * All properties, except for the name of the backing database schema, are discarded.
  */
 @Brood
-@Order(Ordered.HIGHEST_PRECEDENCE)
+@Order(Ordered.HIGHEST_PRECEDENCE + 50) // allow other configurers access to original config
 @ConditionalOnProperty(AsioFeatures.GLOBAL_DATASOURCE)
 final class OverrideJdbcConfig implements Configurer {
   private final Jdbc override;

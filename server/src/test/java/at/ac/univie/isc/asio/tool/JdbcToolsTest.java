@@ -9,7 +9,9 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -69,6 +71,43 @@ public class JdbcToolsTest {
     }
   }
 
+  @RunWith(Parameterized.class)
+  public static class InferSchema {
+    @Parameterized.Parameters(name = "{index} : {0} -> {1}")
+    public static Iterable<Object[]> urls() {
+      // { <jdbc-url>, <expected-schema> }
+      return Arrays.asList(new Object[][] {
+          { "jdbc:mysql:///database", "database" }
+          , { "jdbc:mysql://localhost:9090/database", "database" }
+          , { "jdbc:mysql:///database?key=value", "database" }
+          , { "jdbc:mysql://localhost:9090/database?key=value", "database" }
+          , { "jdbc:mysql://120.39.45.12/database", "database" }
+          , { "jdbc:mysql://120.39.45.12/database?key=value&other=value", "database" }
+          , { "jdbc:mysql://120.39.45.12/database?key=value?other=value", "database" }
+          , { "jdbc:mysql://database", null }
+          , { "jdbc:mysql://localhost:8080", null }
+          , { "jdbc:mysql", null }
+          , { "jdbc:mysql://", null }
+          , { "jdbc:mysql://123?key=value/database", "database" } // malformed jdbc url - will fail on connect
+          , { "jdbc:mysql:///", null }
+          , { "jdbc:mysql:///?key=value", null }
+          , { "jdbc:mysql://localhost/?key=value", null }
+          , { "jdbc:h2:mem", null }
+          , { "gaga1234", null }
+          , { null, null }
+      });
+    }
+
+    @Parameterized.Parameter(0)
+    public String jdbcUrl;
+    @Parameterized.Parameter(1)
+    public String expected;
+
+    @Test
+    public void should_find_expected_schema() throws Exception {
+      assertThat(JdbcTools.inferSchema(jdbcUrl).orNull(), equalTo(expected));
+    }
+  }
 
   public static class PopulateSettings {
     @Rule
@@ -89,15 +128,6 @@ public class JdbcToolsTest {
       assertThat(hikari.getPassword(), equalTo("password"));
       assertThat(hikari.getCatalog(), equalTo("schema"));
       assertThat(hikari.getDataSourceProperties(), Matchers.<Object, Object>hasEntry("key", "value"));
-    }
-
-    @Test
-    public void should_ignore_driverClass_if_dataSourceClass_already_set() throws Exception {
-      final HikariConfig input = new HikariConfig();
-      input.setDataSourceClassName("DatasourceClass");
-      // this would fail with ClassNotFound if driver class is used (see should_eagerly_load_driver_class)
-      JdbcTools.populate(input, "test", jdbc.setDriver("not-existing"));
-      assertThat(input.getDataSourceClassName(), equalTo("DatasourceClass"));
     }
 
     @Test
