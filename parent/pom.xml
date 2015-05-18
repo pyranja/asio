@@ -584,6 +584,7 @@
             <failIfWarning>true</failIfWarning>
             <useMissingFile>true</useMissingFile>
             <excludedScopes>system,test</excludedScopes>
+            <excludedArtifacts>asio*</excludedArtifacts>  <!-- omit module dependencies -->
             <licenseMerges>
               <licenseMerge>Apache License, Version 2.0|The Apache Software License, Version 2.0|Apache 2|Apache 2.0|Apache License 2.0|Apache License Version 2.0|Apache License, version 2.0|Apache Software Licenses</licenseMerge>
               <licenseMerge>CDDL + GPLv2 with classpath exception|CDDL+GPL|CDDL+GPL License|COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0|CDDL 1.1|GPL2 w/ CPE|GNU General Public Library</licenseMerge>
