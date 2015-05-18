@@ -17,7 +17,7 @@ PID_FILE="/var/run/asio/${APP}.pid"
 LOCK_FILE="/var/lock/subsys/${APP}"
 LOG_FILE="/var/log/asio/${APP}.out"
 
-EXECUTABLE="${ASIO_BASE}/asio-server.jar --spring.profiles.active=${ASIO_MODE} --spring.config.location=file:${ASIO_HOME}/ --logging.file=${LOG_FILE}"
+EXECUTABLE="${ASIO_BASE}/asio-server.jar --spring.profiles.active=${ASIO_MODE} --spring.config.location=file:${ASIO_HOME}/server.yml --logging.file=${LOG_FILE}"
 COMMAND="${JAVA} ${JAVA_OPTS} -Dasio.home=${ASIO_HOME} -Ddaemon=true -Dapp-id=${APP} -Dpidfile=${PID_FILE} -jar ${EXECUTABLE}"
 
 function new_line () {

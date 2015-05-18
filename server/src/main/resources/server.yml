@@ -1,0 +1,55 @@
+## asio server configuration ##
+#
+# common customizations of asio-server, consider using the provided profiles 'sparqler' or 'vph'
+#
+
+server.port: 8080
+ajp.port: 8009  # no effect unless profile 'ajp' activated
+
+asio.timeout: 30000 # timeout (ms) used for actions during request processing, e.g. connecting to DB
+asio.feature: # feature toggles
+  vph-metadata: off # fetch metadata from a remote http service (URL set in metadata-repostiory)
+  vph-uri-auth: off # enable the URI based authentication mechanism for VPH
+  allow-federation: off # enable processing of federated SPARQL queries in local datasets
+  global-datasource: off  # override local connection settings with global one from asio.jdbc
+  multi-tenancy: off  # create an isolated user per deployed dataset
+
+security.user:  # basic auth credentials for /api
+  name: root
+  password: change
+
+# logging settings
+logging.file: 'file:server.log' # log to home directory by default
+logging.level:
+  .: 'WARN'  # root log level
+  at.ac.univie.isc.asio: 'INFO'
+  at.ac.univie.isc.asio.events: 'OFF'
+
+--- # vph deployment
+spring.profiles: 'vph'
+
+spring.profiles.include: 'brood,ajp,mysql'
+server.ssl.enabled: false
+
+asio.metadata-repository: 'http://vphshare.atosresearch.eu/metadata-extended/rest/'  # atos metadata endpoint
+
+asio.feature: # feature toggles
+  vph-metadata: on # fetch metadata from a remote http service (URL set in metadata-repostiory)
+  vph-uri-auth: on # enable the URI based authentication mechanism for VPH
+  global-datasource: off # override local connection settings with global one from asio.jdbc
+  multi-tenancy: off # create an isolated user per deployed dataset
+
+asio.d2rq.pool-size: 5  # fixed size of d2rq model pool per deployed dataset
+# asio.jdbc:  # provide global jdbc connection settings, required for multi-tenancy support
+  # url: 'jdbc:mysql:///'
+  # username: 'root'
+  # password: 'change'
+  # privileges: ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'DROP']
+
+--- # sparql processor node
+spring.profiles: 'sparqler'
+
+spring.profiles.include: 'flock'
+flock.identifier: 'urn:asio:flock'
+asio.timeout: 60000
+asio.feature.allow-federation: on

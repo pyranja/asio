@@ -234,7 +234,7 @@
             </goals>
             <configuration>
               <includes>
-                <include>*.yml</include>
+                <include>server.yml</include>
               </includes>
             </configuration>
           </execution>

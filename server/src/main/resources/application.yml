@@ -1,6 +1,7 @@
-# ========================= #
-# asio server configuration #
-# ========================= #
+## default asio configuration ##
+#
+# define fallback values for each existing property and profile
+#
 
 --- # support deployment as upstream of an apache webserver via AJP protocol
 spring.profiles: 'ajp'
@@ -68,13 +69,13 @@ security: # basic auth settings of management api
 server.ssl:
   enabled: true
   # required configuration for ssl-support
-  key-store: '/path/to/keystore'
+  key-store: 'file:.keystore' # by default picked up from asio home directory
   key-store-password: 'asio_keys'
   key-alias: 'asio'
   key-password: 'asio_keys'
 
 # logging settings
-# logging.file: /path/to/file.log
+logging.file: 'file:server.log' # log to home directory by default
 logging.level:
   .: 'WARN'  # root log level
   at.ac.univie.isc.asio: 'INFO'
