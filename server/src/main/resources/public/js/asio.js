@@ -1,11 +1,24 @@
-/* 
+/*
+ * Copyright (C) 2013 - 2015 Research Group Scientific Computing, University of Vienna
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
  * asio - js library
  * 
  * requires jquery
- * 
- * pyranja, 2014
  */
-
 //==============================================================>
 // NAMESPACE
 var asio = (function() {
@@ -99,7 +112,7 @@ var asio = (function() {
   exports.endpoint = function() {
     return endpoint();
   }
-  
+
   // parse a xml webrowset into a SqlResult object
   exports.parseWebrowset = function(xml) {
     var table = new SqlResult();
@@ -118,7 +131,7 @@ var asio = (function() {
   };
 
   // parse an OGSADAI xml database schema into a list of table names
-  
+
   /**
   * WARNING: jQuery selector inconsistency bug still unsolved http://bugs.jquery.com/ticket/4208
   * Firefox/IE required namespace, while chrome apprerently doesn't need namespace specification!
@@ -158,7 +171,7 @@ var asio = (function() {
   exports.fetchSchema = function(callback) {
     var target = serviceRoot() + SERVICE_SCHEMA;
 	var pleaseWaitDiv = $('<div class="modal hide fade" id="pleaseWaitDialog" data-backdrop="static" data-keyboard="false"><div class="modal-header"><h1>Loading dataset schema. <br/>Please wait...</h1></div><div class="modal-body"><div class="progress progress-striped active"><div class="bar" style="width: 100%;"></div></div></div></div>');
-    
+
     var req = $.ajax({
       url : target,
 	  beforeSend: function () {
@@ -229,10 +242,10 @@ var asio = (function() {
       },
       dataType : 'xml',
     });
-	
+
     req.done(forwardTo(callback)).fail(escalateTo(callback));
   };
- 
+
   // ==============================================================>
   // EXPORTS
   return exports;
