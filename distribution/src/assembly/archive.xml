@@ -4,7 +4,7 @@
 
   <!-- create an archive holding client/server executables, configuration and script files -->
 
-  <id>distribution</id>
+  <id>archive</id>
 
   <formats>
     <format>zip</format>
