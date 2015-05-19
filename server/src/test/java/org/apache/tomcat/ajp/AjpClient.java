@@ -27,6 +27,7 @@ import java.net.URI;
 
 /**
  * Ported from https://github.com/kohsuke/ajp-client
+ * %%Ignore-License%%
  */
 public class AjpClient implements AutoCloseable {
 

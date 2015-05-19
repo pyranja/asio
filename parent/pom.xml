@@ -418,6 +418,24 @@
         </executions>
       </plugin>
 
+      <plugin>  <!-- fail the build if license headers are missing or outdated -->
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>check-license-header</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>check-file-header</goal>
+            </goals>
+            <configuration>
+              <failOnMissingHeader>true</failOnMissingHeader>
+              <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
     </plugins>
 
     <pluginManagement>
@@ -581,6 +599,16 @@
           <version>1.8</version>
           <configuration>
             <licenseName>apache_v2</licenseName>
+            <!-- header generation -->
+            <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
+            <ignoreTag>%%Ignore-License%%</ignoreTag>
+            <roots> <!-- do not include generated sources -->
+              <root>src/</root>
+            </roots>
+            <includes>
+              <include>**/*.java</include>
+            </includes>
+            <!-- license/third-party generation -->
             <failIfWarning>true</failIfWarning>
             <useMissingFile>true</useMissingFile>
             <excludedScopes>system,test</excludedScopes>

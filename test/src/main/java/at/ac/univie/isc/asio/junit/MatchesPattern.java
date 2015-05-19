@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
  * Match strings against regular expressions.
  *
  * Ported from future hamcrest : https://github.com/hamcrest/JavaHamcrest/blob/master/hamcrest-library/src/main/java/org/hamcrest/text/MatchesPattern.java
+ * %%Ignore-License%%
  */
 public final class MatchesPattern extends TypeSafeMatcher<String> {
   /**

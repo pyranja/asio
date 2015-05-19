@@ -22,6 +22,7 @@ import org.apache.tomcat.util.buf.MessageBytes;
 
 /**
  * Ported from https://github.com/kohsuke/ajp-client
+ * %%Ignore-License%%
  */
 public class ClientMessage extends AjpMessage {
   private final MessageBytes message = MessageBytes.newInstance();
