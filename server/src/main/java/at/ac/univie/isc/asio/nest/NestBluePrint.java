@@ -7,6 +7,7 @@ import at.ac.univie.isc.asio.d2rq.pool.PooledD2rqFactory;
 import at.ac.univie.isc.asio.database.DatabaseInspector;
 import at.ac.univie.isc.asio.database.DefinitionService;
 import at.ac.univie.isc.asio.database.Jdbc;
+import at.ac.univie.isc.asio.database.MysqlUserRepository;
 import at.ac.univie.isc.asio.engine.sparql.JenaEngine;
 import at.ac.univie.isc.asio.engine.sparql.JenaFactory;
 import at.ac.univie.isc.asio.engine.sql.JdbcSpec;
@@ -20,6 +21,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,6 +30,7 @@ import org.springframework.core.env.Environment;
 import rx.Observable;
 import rx.functions.Func0;
 
+import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
@@ -118,6 +121,24 @@ class NestBluePrint {
     log.debug(Scope.SYSTEM.marker(), "choosing timeout (local:{}) (global:{})", local, global);
     return local.orIfUndefined(global);
   }
+
+  // fix mysql user management conflict on re-deployments
+  // TODO formalize initializer || fix assembly/destruction inerleaving in another way
+
+  @Autowired(required = false)
+  private MysqlUserRepository mysql;
+  @Autowired
+  private Jdbc jdbc;
+
+  @PostConstruct
+  public void ensureMysqlUserPresent() {
+    if (mysql != null) {
+      final String schema = jdbc.getSchema();
+      log.info(Scope.SYSTEM.marker(), "ensure mysql user for {} is present", schema);
+      mysql.createUserFor(schema);
+    }
+  }
+
 
   // Observable factories as nest static classes to avoid inner classes with implicit references.
 

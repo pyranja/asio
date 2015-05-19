@@ -50,4 +50,27 @@ public class FeatureContainerManagement extends IntegrationTest {
 
     assertThat(received, both(sequence("deployed", "dropped")).and(not(correlated())));
   }
+  
+  @Test
+  public void redeployment_is_a_drop_deploy_sequence() throws Exception {
+    // this test guards against a regression where redeploying with multi-tenancy enabled fails,
+    // due to the reordering of mysql user creation on assembly and dropping the user while
+    // destroying the former container instance
+    final String name = UUID.randomUUID().toString();
+    final byte[] mapping = Payload.asArray(Classpath.load("config.integration.ttl"));
+
+    final Iterable<InboundEvent> received = EventStream.collectAll(eventStream().filter(only("container", "error")).take(4));
+
+    given().manage().and().contentType("text/turtle").content(mapping)
+      .when().put("container/{name}", name)
+      .then().statusCode(HttpStatus.SC_CREATED);
+    given().manage().and().contentType("text/turtle").content(mapping)
+      .when().put("container/{name}", name)
+      .then().statusCode(HttpStatus.SC_CREATED);
+    given().manage().spec()
+      .when().delete("container/{name}", name)
+      .then().statusCode(HttpStatus.SC_OK);
+
+    assertThat(received, both(sequence("deployed", "dropped", "deployed", "dropped")).and(not(correlated())));
+  }
 }
