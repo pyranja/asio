@@ -30,6 +30,10 @@ $h3 Quick start
 Release notes
 -------------
 
+$h3 v0.6.3
+
+  * Add license headers to source files
+
 $h3 v0.6.2
 
   * Server configuration is now centralized in `server.yml`

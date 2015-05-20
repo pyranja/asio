@@ -7,7 +7,7 @@
   <parent>
     <artifactId>asio-parent</artifactId>
     <groupId>at.ac.univie.isc</groupId>
-    <version>0.6.2</version>
+    <version>0.6.3</version>
     <relativePath>../parent/pom.xml</relativePath>
   </parent>
 
