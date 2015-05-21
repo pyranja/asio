@@ -33,30 +33,84 @@ import java.util.Properties;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
- * Create layered {@link java.util.Properties} with default values defined at (in order of precedence):
- *  - .properties file on the classpath
- *  - system properties
- *  - external .properties file
- *  - command line
+ * Create layered {@link java.util.Properties} with values defined in one or more sources.
+ * - .properties file on the classpath
+ * - system properties
+ * - external .properties file
+ * - command line
  */
 public final class PropertyHierarchy {
   private static final Logger log = getLogger(PropertyHierarchy.class);
 
-  /** key of the property pointing to an external .properties file */
+  /**
+   * key of the property pointing to an external .properties file
+   */
   public static final String EXTERNAL_LOCATION_PROPERTY = "config_location";
 
-  private final Properties merged;
+  private Properties merged;
 
-  public PropertyHierarchy(final String classpathLocation) {
-    this.merged = createHierarchy(classpathLocation);
+  public PropertyHierarchy() {
+    merged = new Properties();
   }
 
-  /** the merged property hierarchiy */
+  private static RuntimeException wrapped(final Exception e) {
+    throw new IllegalStateException("failed to load property hierarchy - " + e.getMessage(), e);
+  }
+
+  /**
+   * The merged property hierarchy.
+   */
   public Properties get() {
     return merged;
   }
 
-  /** add all non-positional arguments as property, expects --key=value or --toggle format */
+  /**
+   * Add all properties from a file in the classpath, e.g. embedded in the .jar.
+   */
+  public PropertyHierarchy loadEmbedded(final String location) {
+    log.debug("loading embedded properties from {}", location);
+    final URL resource = Resources.getResource(location);
+    try (final InputStream stream = resource.openStream()) {
+      merged.load(stream);
+    } catch (IOException e) {
+      throw wrapped(e);
+    }
+    return this;
+  }
+
+  /**
+   * Add all properties from the system environment.
+   */
+  public PropertyHierarchy loadSystem() {
+    log.debug("loading system properties");
+    merged.putAll(System.getenv());
+    merged.putAll(System.getProperties());
+    return this;
+  }
+
+  /**
+   * Load properties from an external file. If present the {@link #EXTERNAL_LOCATION_PROPERTY} is
+   * searched instead of the current directory
+   */
+  public PropertyHierarchy loadExternal(final String filename) {
+    final String externalLocation = merged.getProperty(EXTERNAL_LOCATION_PROPERTY, "");
+    final Path path = Paths.get(externalLocation, filename);
+    if (Files.isReadable(path)) {
+      log.debug("loading external properties from {}", path);
+      try (final InputStream stream = Files.newInputStream(path)) {
+        merged.load(stream);
+      } catch (final IOException e) {
+        throw wrapped(e);
+      }
+    } else {
+      log.warn("cannot read properties from {} - check permissions if the file exists", path);
+    }
+    return this;
+  }
+
+  /**
+   * Add all non-positional arguments as property, expects --key=value or --toggle format.
+   */
   public PropertyHierarchy parseCommandLine(final String[] arguments) {
     log.debug("parsing cli arguments {}", (Object) arguments);
     for (final String arg : arguments) {
@@ -81,48 +135,8 @@ public final class PropertyHierarchy {
     }
   }
 
-  private Properties createHierarchy(final String classpathLocation) {
-    Properties hierarchy;
-    try {
-      hierarchy = loadFromClasspath(classpathLocation);
-      hierarchy = loadFromSystem(hierarchy);
-      final String externalLocation = hierarchy.getProperty(EXTERNAL_LOCATION_PROPERTY);
-      if (externalLocation != null) {
-        final Path external = Paths.get(externalLocation, classpathLocation);
-        hierarchy = loadExternal(external, hierarchy);
-      }
-    } catch (IOException e) {
-      throw new IllegalStateException("failed to load property hierarchy - " + e.getMessage(), e);
-    }
-    return hierarchy;
-  }
-
-  private Properties loadFromClasspath(final String location) throws IOException {
-    log.debug("loading properties from {}", location);
-    final Properties props = new Properties();
-    final URL resource = Resources.getResource(location);
-    try (final InputStream stream = resource.openStream()) {
-      props.load(stream);
-    }
-    return props;
-  }
-
-  private Properties loadFromSystem(final Properties fallback) {
-    log.debug("loading system properties");
-    final Properties props = new Properties(fallback);
-    props.putAll(System.getenv());
-    props.putAll(System.getProperties());
-    return props;
-  }
-
-  private Properties loadExternal(final Path path, final Properties fallback) {
-    log.debug("loading external properties from {}", path);
-    final Properties props = new Properties(fallback);
-    try (final InputStream stream = Files.newInputStream(path)) {
-      props.load(stream);
-    } catch (final IOException e) {
-      log.error("failed to load external properties from {}", path);
-    }
-    return props;
+  PropertyHierarchy single(final String key, final String value) {
+    merged.setProperty(key, value);
+    return this;
   }
 }

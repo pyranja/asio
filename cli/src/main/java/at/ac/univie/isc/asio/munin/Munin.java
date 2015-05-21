@@ -41,7 +41,7 @@ import java.util.logging.Logger;
  * Command line runner.
  */
 public final class Munin {
-  static final String EMBEDDED_PROPERTIES = "cli.properties";
+  static final String CLI_PROPERTIES = "cli.properties";
   static final String LOGGING_PROPERTIES = "logging.properties";
 
   /**
@@ -53,8 +53,12 @@ public final class Munin {
         LogManager.getLogManager().readConfiguration(stream);
       }
 
-      final Properties props =
-          new PropertyHierarchy(EMBEDDED_PROPERTIES).parseCommandLine(args).get();
+      final Properties props = new PropertyHierarchy()
+          .loadEmbedded(CLI_PROPERTIES)
+          .loadSystem()
+          .loadExternal(CLI_PROPERTIES)
+          .parseCommandLine(args)
+          .get();
 
       if (Boolean.parseBoolean(props.getProperty("debug"))) {
         Logger.getLogger("at.ac.univie.isc.asio").setLevel(Level.FINE);
