@@ -46,14 +46,15 @@ public interface Command {
 
   // === factory
 
-  public static final class Create {
+  final class Create {
     /** initialize all defined commands */
-    public static Map<String, Command> all(final Appendable sink, final Pigeon pigeon) {
+    public static Map<String, Command> all(final Appendable sink, final Pigeon pigeon, final Settings config) {
       final HashMap<String, Command> commands = new HashMap<>();
       commands.put("status", new Status(sink, pigeon));
       commands.put("trace", new Trace(sink, pigeon));
       commands.put("deploy", new Deploy(sink, pigeon));
       commands.put("undeploy", new Undeploy(sink, pigeon));
+      commands.put("version", new Version(sink, config));
       return commands;
     }
 

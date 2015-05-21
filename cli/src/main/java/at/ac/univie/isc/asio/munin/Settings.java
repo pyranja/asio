@@ -33,6 +33,7 @@ class Settings {
     it.setUsername(input.getProperty("username"));
     it.setPassword(input.getProperty("password"));
     it.setInsecureConnection(Boolean.parseBoolean(input.getProperty("insecure-connection", "false")));
+    it.setVersion(input.getProperty("asio.version", "SNAPSHOT"));
     return it;
   }
 
@@ -57,13 +58,19 @@ class Settings {
    */
   public String password;
 
+  /**
+   * asio version
+   */
+  public String version;
+
   @Override
   public String toString() {
-    return "MuninSettings{" +
+    return "Settings{" +
         "serverAddress=" + serverAddress +
         ", insecureConnection=" + insecureConnection +
         ", username='" + username + '\'' +
         ", password='" + password + '\'' +
+        ", version='" + version + '\'' +
         '}';
   }
 
@@ -98,5 +105,13 @@ class Settings {
 
   public void setPassword(final String password) {
     this.password = password;
+  }
+
+  public String getVersion() {
+    return version;
+  }
+
+  public void setVersion(final String version) {
+    this.version = version;
   }
 }

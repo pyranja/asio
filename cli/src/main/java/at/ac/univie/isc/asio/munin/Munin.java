@@ -42,6 +42,7 @@ import java.util.logging.Logger;
  */
 public final class Munin {
   static final String CLI_PROPERTIES = "cli.properties";
+  static final String APPLICATION_PROPERTIES = "application.properties";
   static final String LOGGING_PROPERTIES = "logging.properties";
 
   /**
@@ -58,6 +59,7 @@ public final class Munin {
           .loadSystem()
           .loadExternal(CLI_PROPERTIES)
           .parseCommandLine(args)
+          .loadEmbedded(APPLICATION_PROPERTIES)
           .get();
 
       if (Boolean.parseBoolean(props.getProperty("debug"))) {
@@ -81,7 +83,7 @@ public final class Munin {
   public int run(final String[] args) throws Exception {
     final Client client = httpClient();
     try {
-      final Map<String, Command> mappings = Command.Create.all(console(), pigeon(client));
+      final Map<String, Command> mappings = Command.Create.all(console(), pigeon(client), config);
       final Controller controller = new Controller(console(), mappings);
       controller.run(args);
       return controller.getExitCode();
