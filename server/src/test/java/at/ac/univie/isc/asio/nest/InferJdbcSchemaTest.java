@@ -19,6 +19,7 @@
  */
 package at.ac.univie.isc.asio.nest;
 
+import at.ac.univie.isc.asio.Id;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -43,13 +44,20 @@ public class InferJdbcSchemaTest {
   }
 
   @Test
-  public void should_leave_schema_blank_if_jdbc_url_missing() throws Exception {
+  public void should_leave_schema_blank_if_no_jdbc_or_dataset_name_found() throws Exception {
     assertThat(subject.apply(input).getJdbc(), hasProperty("schema", nullValue()));
   }
 
   @Test
-  public void should_leave_schema_blank_if_jdbc_url_unknown() throws Exception {
+  public void should_use_dataset_name_if_jdbc_url_missing() throws Exception {
+    input.getDataset().setName(Id.valueOf("test"));
+    assertThat(subject.apply(input).getJdbc(), hasProperty("schema", equalTo("test")));
+  }
+
+  @Test
+  public void should_use_dataset_name_if_jdbc_url_unknown() throws Exception {
+    input.getDataset().setName(Id.valueOf("test"));
     input.getJdbc().setUrl("jdbc:h2:mem");
-    assertThat(subject.apply(input).getJdbc(), hasProperty("schema", nullValue()));
+    assertThat(subject.apply(input).getJdbc(), hasProperty("schema", equalTo("test")));
   }
 }

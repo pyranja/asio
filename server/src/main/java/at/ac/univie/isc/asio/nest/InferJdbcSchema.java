@@ -22,6 +22,8 @@ package at.ac.univie.isc.asio.nest;
 import at.ac.univie.isc.asio.Brood;
 import at.ac.univie.isc.asio.database.Jdbc;
 import at.ac.univie.isc.asio.tool.JdbcTools;
+import com.google.common.base.Functions;
+import com.google.common.base.Optional;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 
@@ -29,18 +31,20 @@ import javax.annotation.Nonnull;
 
 /**
  * If no jdbc:schema attribute is set explicitly, attempt to infer the default database from the
- * jdbc url. Works only for mysql connection strings.
+ * jdbc url or from the dataset name.
  */
 @Brood
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class InferJdbcSchema implements Configurer {
+class InferJdbcSchema implements Configurer {
 
   @Nonnull
   @Override
   public NestConfig apply(final NestConfig input) {
     final Jdbc jdbc = input.getJdbc();
+    final Optional<String> dataset =
+        Optional.fromNullable(input.getDataset().getName()).transform(Functions.toStringFunction());
     if (jdbc.getSchema() == null) {
-      jdbc.setSchema(JdbcTools.inferSchema(jdbc.getUrl()).orNull());
+      jdbc.setSchema(JdbcTools.inferSchema(jdbc.getUrl()).or(dataset).orNull());
     }
     return input;
   }
