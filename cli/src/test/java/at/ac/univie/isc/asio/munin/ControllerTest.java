@@ -34,7 +34,7 @@ import static org.junit.Assert.assertThat;
 public class ControllerTest {
   private final Map<String, Command> commands = new HashMap<>();
   private final Appendable sink = new StringWriter();
-  private final Controller subject = new Controller(sink, commands);
+  private final Controller subject = new Controller(sink, sink, commands);
   private final TestCommand command = new TestCommand();
 
   @Before

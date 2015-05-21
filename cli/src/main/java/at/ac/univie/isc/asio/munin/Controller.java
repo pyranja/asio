@@ -44,7 +44,8 @@ class Controller {
   public static final int CODE_ERROR = 1;
   public static final int CODE_WRONG_USAGE = 2;
 
-  private final Appendable sink;
+  private final Appendable out;
+  private final Appendable err;
   private final Map<String, Command> commands;
 
   // set during run
@@ -53,8 +54,9 @@ class Controller {
 
   private int exitCode = CODE_ERROR;
 
-  public Controller(final Appendable sink, final Map<String, Command> commands) {
-    this.sink = sink;
+  public Controller(final Appendable out, final Appendable err, final Map<String, Command> commands) {
+    this.out = out;
+    this.err = err;
     this.commands = commands;
   }
 
@@ -68,7 +70,7 @@ class Controller {
     log.info("dispatching command {} with arguments {}", commandName, commandArguments);
     dispatch(commandName, commandArguments);
     log.info("done");
-    sink.append(System.lineSeparator());
+    out.append(System.lineSeparator());
   }
 
   /**
@@ -93,22 +95,22 @@ class Controller {
    */
   void dispatch(final String name, final List<String> arguments) throws Exception {
     if (name == null) {
-      sink.append(Pretty.format(MISSING_COMMAND, usage()));
+      err.append(Pretty.format(MISSING_COMMAND, usage()));
       exitCode = CODE_WRONG_USAGE;
     } else if (name.equalsIgnoreCase("help")) {
-      sink.append(usage());
+      out.append(usage());
       exitCode = CODE_SUCCESS;
     } else {
       final Command command = commands.get(name);
       if (command == null) {
-        sink.append(Pretty.format(UNKNOWN_COMMAND, name, usage()));
+        err.append(Pretty.format(UNKNOWN_COMMAND, name, usage()));
         exitCode = CODE_WRONG_USAGE;
       } else {
         try {
           exitCode = command.call(arguments);
         } catch (Exception error) {
           exitCode = CODE_ERROR;
-          sink.append(Pretty.format(COMMAND_FAILED, name, error.getMessage()));
+          err.append(Pretty.format(COMMAND_FAILED, name, error.getMessage()));
         }
       }
     }

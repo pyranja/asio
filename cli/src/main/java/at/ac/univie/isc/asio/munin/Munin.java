@@ -84,7 +84,7 @@ public final class Munin {
     final Client client = httpClient();
     try {
       final Map<String, Command> mappings = Command.Create.all(console(), pigeon(client), config);
-      final Controller controller = new Controller(console(), mappings);
+      final Controller controller = new Controller(console(), errors(), mappings);
       controller.run(args);
       return controller.getExitCode();
     } finally {
@@ -95,6 +95,8 @@ public final class Munin {
   public Appendable console() {
     return System.out;
   }
+
+  public Appendable errors() { return System.err; }
 
   public Pigeon pigeon(final Client client) {
     return Pigeon.connectTo(client.target(config.getServerAddress()));
