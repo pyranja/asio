@@ -281,7 +281,7 @@ public class JooqEngineTest {
 
   @Test
   public void no_format_accepted() throws Exception {
-    final Command params = CommandBuilder.empty().language(Language.SPARQL)
+    final Command params = CommandBuilder.empty().language(Language.SQL)
         .single(JooqEngine.PARAM_QUERY, REFERENCE_SELECT).build();
     error.expect(InvalidUsage.class);
     subject.prepare(params);
@@ -289,7 +289,7 @@ public class JooqEngineTest {
 
   @Test
   public void no_supported_format() throws Exception {
-    final Command params = CommandBuilder.empty().language(Language.SPARQL)
+    final Command params = CommandBuilder.empty().language(Language.SQL)
         .single(JooqEngine.PARAM_QUERY, REFERENCE_SELECT)
         .accept(MediaType.valueOf("image/jpeg")).build();
     error.expect(InvalidUsage.class);

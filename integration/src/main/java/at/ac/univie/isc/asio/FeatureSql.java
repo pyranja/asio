@@ -30,6 +30,7 @@ import org.junit.experimental.categories.Category;
 
 import static at.ac.univie.isc.asio.matcher.RestAssuredMatchers.compatibleTo;
 import static at.ac.univie.isc.asio.matcher.RestAssuredMatchers.sqlCsvEqualTo;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 
 /**
@@ -57,6 +58,16 @@ public class FeatureSql extends IntegrationTest {
       .post("/sql")
     .then()
       .statusCode(is(HttpStatus.SC_FORBIDDEN));
+  }
+
+  @Test
+  public void deny__USE__command() throws Exception {
+    given().role("full").and()
+      .formParam("query", "USE information_schema")
+    .when()
+      .post("/sql")
+    .then()
+      .statusCode(equalTo(HttpStatus.SC_BAD_REQUEST));
   }
 
   public class Execute {

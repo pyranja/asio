@@ -29,6 +29,7 @@ import at.ac.univie.isc.asio.database.Jdbc;
 import at.ac.univie.isc.asio.database.MysqlUserRepository;
 import at.ac.univie.isc.asio.engine.sparql.JenaEngine;
 import at.ac.univie.isc.asio.engine.sparql.JenaFactory;
+import at.ac.univie.isc.asio.engine.sql.CommandWhitelist;
 import at.ac.univie.isc.asio.engine.sql.JdbcSpec;
 import at.ac.univie.isc.asio.engine.sql.JooqEngine;
 import at.ac.univie.isc.asio.metadata.DescriptorService;
@@ -36,11 +37,13 @@ import at.ac.univie.isc.asio.metadata.SchemaDescriptor;
 import at.ac.univie.isc.asio.spring.ExplicitWiring;
 import at.ac.univie.isc.asio.tool.JdbcTools;
 import at.ac.univie.isc.asio.tool.Timeout;
+import com.google.common.base.Predicate;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -65,6 +68,10 @@ class NestBluePrint {
   static final String BEAN_DESCRIPTOR_SOURCE = "metadata";
   static final String BEAN_MAPPING_SOURCE = "mapping";
 
+  @Autowired(required = false)
+  @Qualifier("sqlCommandWhitelist")
+  private Predicate<String> whitelist = CommandWhitelist.any();
+
   @Bean(destroyMethod = "close")
   public JooqEngine jooqEngine(final Jdbc jdbc,
                                final DataSource pool,
@@ -72,7 +79,9 @@ class NestBluePrint {
     final JdbcSpec spec = JdbcSpec.connectTo(jdbc.getUrl())
         .authenticateAs(jdbc.getUrl(), jdbc.getPassword())
         .use(timeout).complete();
-    return JooqEngine.create(ClosableDataSourceProxy.wrap(pool), spec);
+    final JooqEngine engine = JooqEngine.create(ClosableDataSourceProxy.wrap(pool), spec);
+    engine.setWhitelist(whitelist);
+    return engine;
   }
 
   @Bean(destroyMethod = "close")

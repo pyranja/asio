@@ -24,9 +24,11 @@ import at.ac.univie.isc.asio.AsioSettings;
 import at.ac.univie.isc.asio.Brood;
 import at.ac.univie.isc.asio.database.MysqlUserRepository;
 import at.ac.univie.isc.asio.engine.DatasetHolder;
+import at.ac.univie.isc.asio.engine.sql.CommandWhitelist;
 import at.ac.univie.isc.asio.platform.FileSystemConfigStore;
 import at.ac.univie.isc.asio.tool.JdbcTools;
 import at.ac.univie.isc.asio.tool.Timeout;
+import com.google.common.base.Predicate;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -77,6 +79,11 @@ class BroodComponents {
       jersey.register(DefaultRoutingResource.class);
     }
     return jersey;
+  }
+
+  @Bean
+  public Predicate<String> sqlCommandWhitelist() {
+    return CommandWhitelist.allowOnly(config.getJdbc().getAllowedCommands());
   }
 
   /** include custom properties in base-line config */

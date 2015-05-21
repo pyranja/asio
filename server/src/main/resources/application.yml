@@ -50,6 +50,8 @@ asio.feature: # feature toggles
   # privileges: ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'DROP']
 
 asio.d2rq.pool-size: 5  # fixed size of d2rq model pool per deployed dataset
+# white list of allowed sql commands
+asio.jdbc.allowed-commands: [ 'SELECT', 'DELETE', 'INSERT', 'REPLACE', 'UPDATE', 'ALTER', 'CREATE', 'DROP', 'RENAME', 'TRUNCATE', 'SHOW' ]
 asio.hikari: # per dataset settings for jdbc pool
     maximum-pool-size: 5
     minimum-idle: 2

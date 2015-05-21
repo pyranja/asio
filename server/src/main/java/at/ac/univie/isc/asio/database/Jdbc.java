@@ -60,6 +60,10 @@ public final class Jdbc {
   @NotNull
   private Map<String, String> properties = new HashMap<>();
   /**
+   * A white list of allowed SQL commands.
+   */
+  private List<String> allowedCommands = new ArrayList<>();
+  /**
    * Privileges that are granted to the user. If multi-tenancy is enabled, these are propagated to
    * the segragated users.
    */
@@ -140,6 +144,14 @@ public final class Jdbc {
     return this;
   }
 
+  public List<String> getAllowedCommands() {
+    return allowedCommands;
+  }
+
+  public void setAllowedCommands(List<String> allowedCommands) {
+    this.allowedCommands = allowedCommands;
+  }
+
   @Override
   public String toString() {
     return "Jdbc{" +
@@ -149,6 +161,7 @@ public final class Jdbc {
         ", username='" + username + '\'' +
         ", password='" + password + '\'' +
         ", properties=" + properties +
+        ", allowedCommands=" + allowedCommands +
         ", privileges=" + privileges +
         '}';
   }
@@ -166,11 +179,12 @@ public final class Jdbc {
         Objects.equals(username, jdbc.username) &&
         Objects.equals(password, jdbc.password) &&
         Objects.equals(properties, jdbc.properties) &&
+        Objects.equals(allowedCommands, jdbc.allowedCommands) &&
         Objects.equals(privileges, jdbc.privileges);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(schema, url, driver, username, password, properties, privileges);
+    return Objects.hash(schema, url, driver, username, password, properties, allowedCommands, privileges);
   }
 }

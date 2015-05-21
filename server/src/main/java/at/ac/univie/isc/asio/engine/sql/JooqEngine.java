@@ -20,11 +20,14 @@
 package at.ac.univie.isc.asio.engine.sql;
 
 import at.ac.univie.isc.asio.AsioError;
+import at.ac.univie.isc.asio.InvalidUsage;
 import at.ac.univie.isc.asio.Language;
 import at.ac.univie.isc.asio.engine.Command;
 import at.ac.univie.isc.asio.engine.Engine;
 import at.ac.univie.isc.asio.engine.Invocation;
 import at.ac.univie.isc.asio.engine.TypeMatchingResolver;
+import at.ac.univie.isc.asio.tool.Pretty;
+import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 
 import javax.sql.DataSource;
@@ -65,6 +68,7 @@ public final class JooqEngine implements Engine {
   private final TypeMatchingResolver<UpdateInvocation.ModCountWriter> updateRegistry;
 
   private final JdbcFactory<?> state;
+  private Predicate<String> whitelist = CommandWhitelist.any();
 
   private JooqEngine(final JdbcFactory<?> state) {
     this.state = state;
@@ -101,6 +105,10 @@ public final class JooqEngine implements Engine {
         .make();
   }
 
+  public void setWhitelist(Predicate<String> whitelist) {
+    this.whitelist = whitelist;
+  }
+
   @Override
   public Language language() {
     return Language.SQL;
@@ -127,6 +135,7 @@ public final class JooqEngine implements Engine {
 
   private Invocation createUpdate(final Command command, final JdbcExecution execution) {
     final String sql = command.require(PARAM_UPDATE);
+    rejectForbidden(sql);
     final TypeMatchingResolver.Selection<UpdateInvocation.ModCountWriter> selection
         = updateRegistry.select(command.acceptable());
     return new UpdateInvocation(execution, sql, selection.value(), selection.type());
@@ -134,8 +143,21 @@ public final class JooqEngine implements Engine {
 
   private Invocation createSelect(final Command command, final JdbcExecution execution) {
     final String sql = command.require(PARAM_QUERY);
+    rejectForbidden(sql);
     final TypeMatchingResolver.Selection<SelectInvocation.CursorWriter> selection
         = queryRegistry.select(command.acceptable());
     return new SelectInvocation(execution, sql, selection.value(), selection.type());
+  }
+
+  public static final class IllegalSqlCommand extends InvalidUsage {
+    private IllegalSqlCommand(final String message) {
+      super(message);
+    }
+  }
+
+  private void rejectForbidden(final String sql) {
+    if (!whitelist.apply(sql)) {
+      throw new IllegalSqlCommand(Pretty.format("Illegal sql command <%s>", sql));
+    }
   }
 }
