@@ -20,6 +20,7 @@
 package at.ac.univie.isc.asio;
 
 import at.ac.univie.isc.asio.io.Payload;
+import at.ac.univie.isc.asio.junit.Rules;
 import at.ac.univie.isc.asio.web.CaptureHttpExchange;
 import at.ac.univie.isc.asio.web.HttpServer;
 import org.apache.http.HttpStatus;
@@ -28,11 +29,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import java.net.URI;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -41,6 +44,8 @@ public class PigeonTest {
   private final CaptureHttpExchange endpoint = CaptureHttpExchange.create()
       .delegateTo(HttpServer.noContent());
 
+  @Rule
+  public final Timeout timeout = Rules.timeout(3, TimeUnit.SECONDS);
   @Rule
   public final HttpServer http = HttpServer.create("asio-fake").with("/", endpoint);
 
