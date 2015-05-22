@@ -31,6 +31,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -50,6 +51,8 @@ public final class Munin {
    */
   public static void main(String[] args) throws Exception {
     try {
+      Locale.setDefault(Locale.ENGLISH);
+
       try (final InputStream stream = Resources.getResource(LOGGING_PROPERTIES).openStream()) {
         LogManager.getLogManager().readConfiguration(stream);
       }
