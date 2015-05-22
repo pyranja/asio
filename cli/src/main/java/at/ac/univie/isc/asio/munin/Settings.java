@@ -34,6 +34,7 @@ class Settings {
     it.setPassword(input.getProperty("password"));
     it.setInsecureConnection(Boolean.parseBoolean(input.getProperty("insecure-connection", "false")));
     it.setVersion(input.getProperty("asio.version", "SNAPSHOT"));
+    it.setProperties(input);
     return it;
   }
 
@@ -62,6 +63,11 @@ class Settings {
    * asio version
    */
   public String version;
+
+  /**
+   * all implicit and explicit properties
+   */
+  private Properties properties;
 
   @Override
   public String toString() {
@@ -113,5 +119,28 @@ class Settings {
 
   public void setVersion(final String version) {
     this.version = version;
+  }
+
+  /** true if a property with given key exists */
+  public boolean present(final String key) {
+    return properties.contains(key);
+  }
+
+  /** find a property by its name */
+  public String get(final String key, final String fallback) {
+    return properties.getProperty(key, fallback);
+  }
+
+  /** find a property by name, failing if it is not present */
+  public String require(final String key) {
+    final String value = properties.getProperty(key);
+    if (value == null) {
+      throw new IllegalArgumentException("Property " + key + " is missing");
+    }
+    return value;
+  }
+
+  private void setProperties(final Properties properties) {
+    this.properties = properties;
   }
 }
