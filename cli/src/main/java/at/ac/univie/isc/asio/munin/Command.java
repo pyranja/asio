@@ -55,6 +55,7 @@ public interface Command {
       commands.put("deploy", new Deploy(sink, pigeon));
       commands.put("undeploy", new Undeploy(sink, pigeon));
       commands.put("version", new Version(sink, config));
+      commands.put("configure", new Configure(sink, config));
       return commands;
     }
 
