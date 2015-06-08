@@ -20,6 +20,7 @@
 package at.ac.univie.isc.asio.d2rq;
 
 import com.google.common.base.Optional;
+import com.hp.hpl.jena.graph.Graph;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.ResIterator;
@@ -127,9 +128,26 @@ public final class D2rqTools {
     return model;
   }
 
+  /**
+   * Attempt to extract a single {@link ConnectedDB jdbc connection} from a d2rq-jena model. The
+   * model <strong>MUST</strong> be a {@link de.fuberlin.wiwiss.d2rq.jena.ModelD2RQ d2rq-jena model}
+   * and it <strong>MUST</strong> be configured to connect to exactly one backing database.
+   * If more than one database connection is found, an exception is thrown. In case of non-d2rq
+   * models, behaviour is undefined.
+   *
+   * @param model a d2rq-jena model
+   * @return the single database connection backing the given model, never <code>null</code>
+   */
+  public static ConnectedDB unwrapDatabaseConnection(final Model model) {
+    final Graph graph = model.getGraph();
+    assert graph instanceof GraphD2RQ : "expected d2rq graph but found " + graph;
+    final Database database = expectSingle(((GraphD2RQ) graph).getMapping().databases());
+    return database.connectedDB();
+  }
+
   private static Database expectSingle(final Collection<Database> databases) {
     if (databases.size() != 1) {
-      throw new InvalidD2rqConfig(D2RQ.Database, "found more than one");
+      throw new InvalidD2rqConfig(D2RQ.Database, "expected a single definition but found " + databases.size());
     }
     return databases.iterator().next();
   }

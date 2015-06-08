@@ -160,4 +160,5 @@ public class D2rqToolsTest {
       D2rqTools.compile(mapping, conn);
     }
   }
+
 }
