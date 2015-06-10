@@ -97,6 +97,10 @@ server.tomcat:
 server.servletPath: '/explore'
 management.context-path: '/insight'
 
+info.app:
+  id: '@project.artifactId@'
+  version: '@project.version@'
+
 security:
   basic.enabled: false
   ignored: ['/*.html', '/css/**', '/js/**', '/img/**', '/fonts/**', '/snorql/**', '/**/favicon.ico']
