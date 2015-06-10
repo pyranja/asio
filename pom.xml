@@ -39,6 +39,7 @@
         <artifactId>maven-site-plugin</artifactId>
         <configuration>
           <skip>false</skip>
+          <skipDeploy>false</skipDeploy>
           <siteDirectory>${project.basedir}/site</siteDirectory>
         </configuration>
       </plugin>

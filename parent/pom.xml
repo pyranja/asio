@@ -561,6 +561,7 @@
           <version>3.3</version>
           <configuration> <!-- skip site generation by default -->
             <skip>true</skip>
+            <skipDeploy>true</skipDeploy>
           </configuration>
           <dependencies>
             <dependency>
