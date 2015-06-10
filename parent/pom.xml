@@ -34,14 +34,14 @@
   </licenses>
 
   <scm>
-    <connection>scm:git|git@gitorious.cs.univie.ac.at:vce/asio.git</connection>
-    <developerConnection>scm:git|git@gitorious.cs.univie.ac.at:vce/asio.git</developerConnection>
-    <url>https://gitorious.cs.univie.ac.at/vce/asio</url>
+    <connection>scm:git:https://github.com/pyranja/asio.git</connection>
+    <developerConnection>scm:git|git@github.com:pyranja/asio.git</developerConnection>
+    <url>https://github.com/pyranja/asio</url>
   </scm>
 
   <issueManagement>
-    <system>spreadsheet</system>
-    <url>https://docs.google.com/spreadsheet/ccc?key=0An8_mhXy15zNdFFuUlZTMl9yY0xxWFllbUI1R1dUNHc&amp;usp=drive_web#gid=0</url>
+    <system>github</system>
+    <url>https://github.com/pyranja/asio</url>
   </issueManagement>
 
   <developers>
