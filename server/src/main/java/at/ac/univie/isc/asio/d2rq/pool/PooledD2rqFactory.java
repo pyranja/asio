@@ -51,10 +51,12 @@ public final class PooledD2rqFactory implements JenaFactory {
                                   final Timeout timeout,
                                   final int size) {
     final Config<PooledModel> config = new Config<>()
+        // D2rqModelAllocator performs validation checks on #reallocate()
+        // set a short expiration period to enable frequent liveness checks
         .setAllocator(new D2rqModelAllocator(d2rq, jdbc))
+        .setExpiration(new TimeSpreadExpiration(15, 30, TimeUnit.SECONDS))
         .setPreciseLeakDetectionEnabled(true)
         .setThreadFactory(new ThreadFactoryBuilder().setNameFormat("d2rq-pool-%d").build())
-        .setExpiration(new TimeSpreadExpiration(3, 5, TimeUnit.HOURS))
         .setSize(size)
         ;
     final QueuePool<PooledModel> pool = new QueuePool<>(config);

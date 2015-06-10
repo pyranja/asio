@@ -24,13 +24,14 @@ import at.ac.univie.isc.asio.d2rq.D2rqConfigModel;
 import at.ac.univie.isc.asio.d2rq.D2rqTools;
 import at.ac.univie.isc.asio.database.Jdbc;
 import at.ac.univie.isc.asio.tool.Beans;
-import com.hp.hpl.jena.graph.Graph;
 import com.hp.hpl.jena.rdf.model.Model;
-import de.fuberlin.wiwiss.d2rq.jena.GraphD2RQ;
 import de.fuberlin.wiwiss.d2rq.sql.ConnectedDB;
 import org.slf4j.Logger;
 import stormpot.Reallocator;
 import stormpot.Slot;
+
+import java.sql.Connection;
+import java.sql.SQLException;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -39,6 +40,8 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 final class D2rqModelAllocator implements Reallocator<PooledModel> {
   private static final Logger log = getLogger(D2rqModelAllocator.class);
+
+  public static final int VALIDATION_TIMEOUT = 2; // seconds
 
   private final D2rqConfigModel d2rq;
   private final Jdbc jdbc;
@@ -72,15 +75,28 @@ final class D2rqModelAllocator implements Reallocator<PooledModel> {
   public PooledModel reallocate(final Slot slot, final PooledModel poolable) throws Exception {
     log.debug(Scope.SYSTEM.marker(), "attempting reuse of d2rq model");
     final Model model = poolable.getModel();
-    final Graph graph = model.getGraph();
-    assert graph instanceof GraphD2RQ : "unexpected graph - not a d2rq graph : " + graph;
-    try { // try to uncover connection problems
-      ((GraphD2RQ) graph).getMapping().connect();
+    try {
+      if (canBeReused(model)) {
+        log.debug(Scope.SYSTEM.marker(), "reusing live d2rq model");
+        return new PooledModel(slot, model);
+      } else {
+        log.debug(Scope.SYSTEM.marker(), "replacing invalid d2rq model with a fresh one");
+        deallocate(poolable);
+        return allocate(slot);
+      }
     } catch (Exception e) {
-      log.warn(Scope.SYSTEM.marker(), "cannot reuse d2rq module - {}", e.getMessage());
-      model.close();
+      log.warn(Scope.SYSTEM.marker(), "failure during reallocation", e);
+      deallocate(poolable);
       throw e;
     }
-    return new PooledModel(slot, model);
+  }
+
+  private boolean canBeReused(final Model model) throws SQLException {
+    if (model.isClosed()) {
+      return false;
+    } else {
+      final Connection connection = D2rqTools.unwrapDatabaseConnection(model).connection();
+      return connection.isValid(VALIDATION_TIMEOUT);
+    }
   }
 }
