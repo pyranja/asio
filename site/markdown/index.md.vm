@@ -30,6 +30,13 @@ $h3 Quick start
 Release notes
 -------------
 
+$h3 v0.6.4
+
+  * asio has moved to [github.com](https://github.com/pyranja/asio)!
+  * SQL endpoints now enforce a configurable command whitelist
+  * The command line client provides the new `version` and `configure` commands
+  * SPARQL endpoints now validate and if necessary refresh database connections
+
 $h3 v0.6.3
 
   * Add license headers to source files
