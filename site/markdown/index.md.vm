@@ -30,6 +30,10 @@ $h3 Quick start
 Release notes
 -------------
 
+$h3 v0.6.6
+
+  * fix build errors during bintray publishing
+
 $h3 v0.6.5
 
   * virtual datasets (providing federated SPARQL queries) may now be deployed to the asio server
