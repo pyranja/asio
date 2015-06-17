@@ -28,6 +28,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import javax.ws.rs.NotSupportedException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Collection;
 
@@ -61,8 +63,13 @@ public class ContainerResourceTest {
 
   @Test
   public void should_respond_with_CREATED_if_deployed_successfully() throws Exception {
-    final Response response = subject.createD2rqContainer(Id.valueOf("test"), temp.path().toFile());
+    final Response response = subject.createContainer(Id.valueOf("test"), temp.path().toFile(), MediaType.APPLICATION_JSON_TYPE);
     assertThat(response, hasStatus(Response.Status.CREATED));
+  }
+
+  @Test(expected = NotSupportedException.class)
+  public void should_reject_unsupported_media_type() throws Exception {
+    final Response response = subject.createContainer(Id.valueOf("test"), temp.path().toFile(), MediaType.APPLICATION_XML_TYPE);
   }
 
   @Test

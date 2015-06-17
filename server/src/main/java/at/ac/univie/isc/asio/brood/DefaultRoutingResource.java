@@ -19,7 +19,6 @@
  */
 package at.ac.univie.isc.asio.brood;
 
-import at.ac.univie.isc.asio.Brood;
 import at.ac.univie.isc.asio.Dataset;
 import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.Scope;
@@ -27,6 +26,7 @@ import at.ac.univie.isc.asio.engine.DatasetResource;
 import at.ac.univie.isc.asio.security.WhoamiResource;
 import at.ac.univie.isc.asio.spring.Holder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.ws.rs.Path;
@@ -35,7 +35,7 @@ import javax.ws.rs.PathParam;
 /**
  * Route requests to the correct dataset resource.
  */
-@Brood
+@Component
 @Path("/{target}")
 public class DefaultRoutingResource extends BaseContainerRegistry {
   private final DatasetResource dataset;

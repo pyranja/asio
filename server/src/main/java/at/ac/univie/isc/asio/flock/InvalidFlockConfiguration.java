@@ -17,22 +17,15 @@
  * limitations under the License.
  * #L%
  */
-package at.ac.univie.isc.asio;
+package at.ac.univie.isc.asio.flock;
 
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
-
-import java.lang.annotation.*;
+import at.ac.univie.isc.asio.InvalidUsage;
 
 /**
- * Mark components that are required for the {@code brood}-profile.
+ * Thrown if a flock json configuration is invalid, e.g. values are missing or illegal.
  */
-@Component
-@Profile(Brood.PROFILE)
-@Retention(RetentionPolicy.RUNTIME)
-@Target(value = {ElementType.TYPE, ElementType.METHOD})
-@Documented
-public @interface Brood {
-  /** name of the brood profile */
-  public static final String PROFILE = "brood";
+public final class InvalidFlockConfiguration extends InvalidUsage {
+  protected InvalidFlockConfiguration(final Throwable cause) {
+    super(null, cause);
+  }
 }

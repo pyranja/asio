@@ -20,14 +20,17 @@
 package at.ac.univie.isc.asio;
 
 import at.ac.univie.isc.asio.integration.IntegrationTest;
+import at.ac.univie.isc.asio.io.Payload;
 import at.ac.univie.isc.asio.security.AuthMechanism;
 import at.ac.univie.isc.asio.security.Role;
 import at.ac.univie.isc.asio.spring.ApplicationRunner;
+import com.google.common.io.ByteSource;
 import org.apache.http.HttpHeaders;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
+import org.springframework.http.MediaType;
 
 import java.net.URI;
 
@@ -46,11 +49,12 @@ public class FlockIntegrationSuite {
 
     IntegrationTest.configure()
         .baseService(URI.create("http://localhost:" + application.getPort() + "/"))
-        .auth(AuthMechanism.none().overrideCredentialDelegationHeader(HttpHeaders.AUTHORIZATION))
+        .auth(AuthMechanism.uri().overrideCredentialDelegationHeader(HttpHeaders.AUTHORIZATION))
         .rootCredentials("root", "change")
         .timeoutInSeconds(10)
-        .defaults().noSchema().role(Role.NONE.name());
+        .defaults().schema("public").role(Role.NONE.name());
 
+    IntegrationTest.deploy("public", ByteSource.wrap(Payload.encodeUtf8("{\"identifier\":\"urn:asio:dataset:integration\"}")), MediaType.APPLICATION_JSON_VALUE);
     IntegrationTest.warmup();
   }
 }

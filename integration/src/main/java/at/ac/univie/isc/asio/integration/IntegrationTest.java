@@ -124,11 +124,11 @@ public abstract class IntegrationTest {
   /**
    * Deploy test container.
    */
-  public static void deploy(final String name, final ByteSource mapping) {
+  public static void deploy(final String name, final ByteSource mapping, final String format) {
     init(Interactions.empty()).manage()
       .and()
         .header(HttpHeaders.ACCEPT, "application/json")
-        .contentType("text/turtle")
+        .contentType(format)
         .content(Payload.asArray(mapping))
         .log().ifValidationFails(LogDetail.ALL)
       .when()

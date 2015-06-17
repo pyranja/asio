@@ -22,7 +22,9 @@ package at.ac.univie.isc.asio.brood;
 import at.ac.univie.isc.asio.ConfigStore;
 import at.ac.univie.isc.asio.Container;
 import at.ac.univie.isc.asio.Id;
+import at.ac.univie.isc.asio.flock.FlockAssembler;
 import at.ac.univie.isc.asio.io.Payload;
+import at.ac.univie.isc.asio.nest.D2rqNestAssembler;
 import at.ac.univie.isc.asio.tool.StatefulMonitor;
 import at.ac.univie.isc.asio.tool.Timeout;
 import com.google.common.base.Optional;
@@ -46,7 +48,10 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 @RunWith(HierarchicalContextRunner.class)
 public class WardenTest {
@@ -61,10 +66,11 @@ public class WardenTest {
   public final ExpectedException error = ExpectedException.none();
 
   private final ConfigStore store = Mockito.mock(ConfigStore.class);
-  private final Assembler assembler = Mockito.mock(Assembler.class);
+  private final D2rqNestAssembler d2rq = Mockito.mock(D2rqNestAssembler.class);
+  private final FlockAssembler json = Mockito.mock(FlockAssembler.class);
   private final Catalog catalog = Mockito.mock(Catalog.class);
 
-  private final Warden subject = new Warden(catalog, assembler, store, Timeout.undefined());
+  private final Warden subject = new Warden(catalog, d2rq, json, store, Timeout.undefined());
 
   @Test
   public void should_have_correct_lifecycle_settings() throws Exception {
@@ -82,7 +88,8 @@ public class WardenTest {
     @Test
     public void should_reject_deploy() throws Exception {
       error.expect(StatefulMonitor.IllegalMonitorState.class);
-      subject.assembleAndDeploy(Id.valueOf("test"), ByteSource.empty());
+      subject.deployFromD2rqMapping(Id.valueOf("test"), ByteSource.empty());
+      subject.deployFromJson(Id.valueOf("test"), ByteSource.empty());
       verifyZeroInteractions();
     }
 
@@ -100,15 +107,22 @@ public class WardenTest {
     }
 
     public class Start {
-      private final Map<String, ByteSource> twoConfigItems = ImmutableMap.of(
+      private final Map<String, ByteSource> d2rqConfigItems = ImmutableMap.of(
           "first", ByteSource.empty()
           , "second", ByteSource.empty()
       );
 
+      private final Map<String, ByteSource> jsonConfigItems = ImmutableMap.of(
+          "single-json", ByteSource.empty()
+      );
+
       @Before
       public void mocks() throws Exception {
-        given(store.findAllWithIdentifier(Warden.CONFIG_SUFFIX)).willReturn(twoConfigItems);
-        given(assembler.assemble(any(Id.class), any(ByteSource.class)))
+        given(store.findAllWithIdentifier(Warden.D2RQ_SUFFIX)).willReturn(d2rqConfigItems);
+        given(store.findAllWithIdentifier(Warden.JSON_SUFFIX)).willReturn(jsonConfigItems);
+        given(d2rq.assemble(any(Id.class), any(ByteSource.class)))
+            .willReturn(StubContainer.create("test"));
+        given(json.assemble(any(Id.class), any(ByteSource.class)))
             .willReturn(StubContainer.create("test"));
         given(catalog.deploy(any(Container.class))).willReturn(Optional.<Container>absent());
       }
@@ -125,17 +139,23 @@ public class WardenTest {
       }
 
       @Test
-      public void should_assemble_each_found_config_item() throws Exception {
+      public void should_assemble_each_found_d2rq_config_item() throws Exception {
         subject.start();
-        verify(assembler).assemble(Id.valueOf("second"), ByteSource.empty());
-        verify(assembler).assemble(Id.valueOf("first"), ByteSource.empty());
+        verify(d2rq).assemble(Id.valueOf("second"), ByteSource.empty());
+        verify(d2rq).assemble(Id.valueOf("first"), ByteSource.empty());
+      }
+
+      @Test
+      public void should_assemble_json_config_items() throws Exception {
+        subject.start();
+        verify(json).assemble(Id.valueOf("single-json"), ByteSource.empty());
       }
 
       @Test
       public void should_activate_assembled_container() throws Exception {
         final StubContainer first = StubContainer.create("first");
         final StubContainer second = StubContainer.create("second");
-        given(assembler.assemble(any(Id.class), any(ByteSource.class))).willReturn(first, second);
+        given(d2rq.assemble(any(Id.class), any(ByteSource.class))).willReturn(first, second);
         subject.start();
         assertThat(first.isActivated(), equalTo(true));
         assertThat(second.isActivated(), equalTo(true));
@@ -144,9 +164,10 @@ public class WardenTest {
       @Test
       public void should_deploy_each_assembled_container() throws Exception {
         final StubContainer expected = StubContainer.create("dummy");
-        given(assembler.assemble(any(Id.class), any(ByteSource.class))).willReturn(expected);
+        given(d2rq.assemble(any(Id.class), any(ByteSource.class))).willReturn(expected);
+        given(json.assemble(any(Id.class), any(ByteSource.class))).willReturn(expected);
         subject.start();
-        verify(catalog, times(2)).deploy(expected);
+        verify(catalog, times(3)).deploy(expected);
       }
 
       @Test
@@ -166,11 +187,11 @@ public class WardenTest {
 
       @Test
       public void should_continue_if_one_deployment_fails() throws Exception {
-        given(assembler.assemble(any(Id.class), any(ByteSource.class)))
+        given(d2rq.assemble(any(Id.class), any(ByteSource.class)))
             .willThrow(new RuntimeException())
             .willReturn(StubContainer.create("test"));
         subject.start();
-        verify(catalog).deploy(any(Container.class));
+        verify(catalog, times(2)).deploy(any(Container.class));
       }
     }
   }
@@ -196,7 +217,9 @@ public class WardenTest {
     public class Deploy {
       @Before
       public void mockAssembler() {
-        given(assembler.assemble(eq(Id.valueOf("test")), any(ByteSource.class)))
+        given(d2rq.assemble(eq(Id.valueOf("test")), any(ByteSource.class)))
+            .willReturn(StubContainer.create("test"));
+        given(json.assemble(eq(Id.valueOf("test")), any(ByteSource.class)))
             .willReturn(StubContainer.create("test"));
         given(catalog.deploy(any(Container.class))).willReturn(Optional.<Container>absent());
         given(catalog.drop(any(Id.class))).willReturn(Optional.<Container>absent());
@@ -205,23 +228,23 @@ public class WardenTest {
       @Test
       public void should_deploy_assembled_container() throws Exception {
         final StubContainer created = StubContainer.create("created");
-        given(assembler.assemble(Id.valueOf("test"), ByteSource.empty())).willReturn(created);
-        subject.assembleAndDeploy(Id.valueOf("test"), ByteSource.empty());
+        given(d2rq.assemble(Id.valueOf("test"), ByteSource.empty())).willReturn(created);
+        subject.deployFromD2rqMapping(Id.valueOf("test"), ByteSource.empty());
         verify(catalog).deploy(created);
       }
 
       @Test
       public void should_save_config_of_new_container() throws Exception {
         final ByteSource raw = ByteSource.wrap(Payload.randomWithLength(1024));
-        subject.assembleAndDeploy(Id.valueOf("test"), raw);
-        verify(store).save("test", Warden.CONFIG_SUFFIX, raw);
+        subject.deployFromD2rqMapping(Id.valueOf("test"), raw);
+        verify(store).save("test", Warden.D2RQ_SUFFIX, raw);
       }
 
       @Test
       public void should_activate_new_container() throws Exception {
         final StubContainer deployed = StubContainer.create("test");
-        given(assembler.assemble(Id.valueOf("test"), ByteSource.empty())).willReturn(deployed);
-        subject.assembleAndDeploy(Id.valueOf("test"), ByteSource.empty());
+        given(d2rq.assemble(Id.valueOf("test"), ByteSource.empty())).willReturn(deployed);
+        subject.deployFromD2rqMapping(Id.valueOf("test"), ByteSource.empty());
         assertThat(deployed.isActivated(), equalTo(true));
       }
 
@@ -229,7 +252,7 @@ public class WardenTest {
       public void should_dispose_former_container() throws Exception {
         final StubContainer it = StubContainer.create("test");
         given(catalog.drop(Id.valueOf("test"))).willReturn(Optional.<Container>of(it));
-        subject.assembleAndDeploy(Id.valueOf("test"), ByteSource.empty());
+        subject.deployFromD2rqMapping(Id.valueOf("test"), ByteSource.empty());
         assertThat("former container was not closed", it.isClosed(), equalTo(true));
       }
 
@@ -237,7 +260,7 @@ public class WardenTest {
       public void should_clear_config_of_former_container() throws Exception {
         given(catalog.drop(Id.valueOf("test")))
             .willReturn(Optional.<Container>of(StubContainer.create("test")));
-        subject.assembleAndDeploy(Id.valueOf("test"), ByteSource.empty());
+        subject.deployFromD2rqMapping(Id.valueOf("test"), ByteSource.empty());
         verify(store).clear("test");
       }
     }

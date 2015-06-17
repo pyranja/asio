@@ -1,7 +1,6 @@
 # --------------------------------------------------------------------------------------------------
 # asio environment descriptor // sourced from /etc/sysconfig/asio by management scripts
 #
-#   ASIO_MODE     :   server profile used by the daemon
 #   ASIO_BASE     :   installation directory
 #   ASIO_HOME     :   path to runtime state
 #   ASIO_OWNER    :   the user owning asio processes
@@ -9,10 +8,6 @@
 #   JAVA          :   java executable
 #   JAVA_OPTS     :   jvm flags
 # --------------------------------------------------------------------------------------------------
-
-# required : select the server profile (vph or sparqler)
-# ASIO_MODE="vph"
-# ASIO_MODE="sparqler"
 
 # configure the java runtime
 JAVA="$(which java)"

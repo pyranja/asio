@@ -20,11 +20,11 @@
 package at.ac.univie.isc.asio.nest;
 
 import at.ac.univie.isc.asio.AsioSettings;
-import at.ac.univie.isc.asio.Brood;
 import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.InvalidUsage;
 import com.google.common.collect.ImmutableSet;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
@@ -33,7 +33,7 @@ import java.util.Set;
 /**
  * Prevent assembly of containers with names of system resource paths.
  */
-@Brood
+@Component
 final class ForbidReservedNames implements Configurer {
 
   /**

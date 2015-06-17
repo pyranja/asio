@@ -19,7 +19,6 @@
  */
 package at.ac.univie.isc.asio.brood;
 
-import at.ac.univie.isc.asio.Brood;
 import at.ac.univie.isc.asio.Container;
 import at.ac.univie.isc.asio.Id;
 import at.ac.univie.isc.asio.Scope;
@@ -28,8 +27,13 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -39,7 +43,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  * Adding or removing a container will trigger {@code Deployed} and {@code Dropped} events
  * respectively.
  */
-@Brood
+@Component
 /* final */ class Catalog {
   private static final Logger log = getLogger(Catalog.class);
 

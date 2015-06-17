@@ -19,7 +19,12 @@
  */
 package at.ac.univie.isc.asio.brood;
 
-import at.ac.univie.isc.asio.*;
+import at.ac.univie.isc.asio.ConfigStore;
+import at.ac.univie.isc.asio.Container;
+import at.ac.univie.isc.asio.Id;
+import at.ac.univie.isc.asio.Scope;
+import at.ac.univie.isc.asio.flock.FlockAssembler;
+import at.ac.univie.isc.asio.nest.D2rqNestAssembler;
 import at.ac.univie.isc.asio.tool.Closer;
 import at.ac.univie.isc.asio.tool.StatefulMonitor;
 import at.ac.univie.isc.asio.tool.Timeout;
@@ -29,6 +34,7 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.core.Ordered;
+import org.springframework.stereotype.Component;
 
 import java.net.URI;
 import java.util.Map;
@@ -41,34 +47,38 @@ import static org.slf4j.LoggerFactory.getLogger;
  * items are scanned for containers, that need to be deployed. On shutdown all deployed containers
  * are dropped (but not disposed).
  */
-@Brood
+@Component
 class Warden implements SmartLifecycle {
   private static final Logger log = getLogger(Warden.class);
 
   /**
    * identifier of configuration files originating from this warden
    */
-  static final String CONFIG_SUFFIX = "config";
+  static final String D2RQ_SUFFIX = "config";
+  public static final String JSON_SUFFIX = "json";
 
   private final Catalog catalog;
-  private final Assembler assembler;
+  private final Assembler d2rqAssembler;
+  private final FlockAssembler jsonAssembler;
   private final ConfigStore config;
   private final StatefulMonitor monitor;
 
   @Autowired
-  Warden(final Catalog catalog, final Assembler assembler, final ConfigStore config, final Timeout timeout) {
-    log.info(Scope.SYSTEM.marker(), "warden loaded, config-store={}, assembler={}", config, assembler);
+  Warden(final Catalog catalog, final D2rqNestAssembler d2rqAssembler, final FlockAssembler jsonAssembler, final ConfigStore config, final Timeout timeout) {
+    log.info(Scope.SYSTEM.marker(), "warden loaded, config-store={}, json-assembler={}, d2rq-assembler={}", config, jsonAssembler, d2rqAssembler);
     this.catalog = catalog;
     this.config = config;
-    this.assembler = assembler;
+    this.d2rqAssembler = d2rqAssembler;
+    this.jsonAssembler = jsonAssembler;
     monitor = StatefulMonitor.withMaximalWaitingTime(timeout);
   }
 
   @Override
   public String toString() {
     return "Warden{" +
-        "assembler=" + assembler +
-        ", config=" + config +
+        "config=" + config +
+        ", d2rqAssembler=" + d2rqAssembler +
+        ", jsonAssembler=" + jsonAssembler +
         '}';
   }
 
@@ -89,21 +99,32 @@ class Warden implements SmartLifecycle {
 
   // === internal api
 
+
+  void deployFromD2rqMapping(final Id target, final ByteSource source) {
+    assembleAndDeploy(target, source, d2rqAssembler, D2RQ_SUFFIX);
+  }
+
+  void deployFromJson(final Id target, final ByteSource source) {
+    assembleAndDeploy(target, source, jsonAssembler, JSON_SUFFIX);
+  }
+
   /**
    * Assemble a container from the given configuration data and deploy it with the given id.
    *
-   * @param target id of the new container
-   * @param source raw configuration data of the deployed container
+   * @param target  id of the new container
+   * @param source  raw configuration data of the deployed container
+   * @param factory Assembler compatible with the given source
+   * @param format  identifier of config format
    */
-  void assembleAndDeploy(final Id target, final ByteSource source) {
-    log.debug(Scope.SYSTEM.marker(), "create container <{}>", target);
+  private void assembleAndDeploy(final Id target, final ByteSource source, final Assembler factory, final String format) {
+    log.debug(Scope.SYSTEM.marker(), "creating <{}> from '{}' sources using {}", target, format, factory.getClass());
     monitor.ensureActive(); // fail fast before doing a costly assembly
-    final Container container = assembler.assemble(target, source);
+    final Container container = factory.assemble(target, source);
     monitor.atomic(new Callable<Void>() {
       @Override
       public Void call() throws Exception {
         dispose(target);
-        final URI location = config.save(target.asString(), CONFIG_SUFFIX, source);
+        final URI location = config.save(target.asString(), format, source);
         log.debug(Scope.SYSTEM.marker(), "saved configuration at <{}>", location);
         container.activate();
         log.debug(Scope.SYSTEM.marker(), "activated {} as <{}>", container, target);
@@ -149,14 +170,10 @@ class Warden implements SmartLifecycle {
     monitor.activate(new StatefulMonitor.Action() {
       @Override
       public void run() throws Exception {
-        final Map<String, ByteSource> found = config.findAllWithIdentifier(CONFIG_SUFFIX);
-        log.debug(Scope.SYSTEM.marker(), "found configurations of {}", found.keySet());
-        for (Map.Entry<String, ByteSource> current : found.entrySet()) {
-          final Id name = Id.valueOf(current.getKey());
-          log.info(Scope.SYSTEM.marker(), "deploying <{}> on startup", name);
-          final Optional<Container> replaced = deployQuietly(name, current.getValue());
-          cleanUpIfNecessary(replaced);
-        }
+        final Map<String, ByteSource> d2rqMappings = config.findAllWithIdentifier(D2RQ_SUFFIX);
+        deployBatch(d2rqMappings, d2rqAssembler);
+        final Map<String, ByteSource> jsonMappings = config.findAllWithIdentifier(JSON_SUFFIX);
+        deployBatch(jsonMappings, jsonAssembler);
       }
     });
   }
@@ -164,7 +181,7 @@ class Warden implements SmartLifecycle {
   /**
    * Stop this Warden. All currently deployed containers are cleared from the {@link Catalog} and
    * closed. As long as this is stopped, no containers may be
-   * {@link #assembleAndDeploy(Id, ByteSource) deployed} or {@link #dispose(Id) disposed}.
+   * {@link #deployFromD2rqMapping(Id, ByteSource) deployed} or {@link #dispose(Id) disposed}.
    *
    * @throws IllegalMonitorStateException if the warden is not running
    */
@@ -193,12 +210,25 @@ class Warden implements SmartLifecycle {
   }
 
   /**
-   * Attempt to assembled, activate and deploy a container with given name and config,
+   * Deploy all given id->configurations mappings as container, using the given assembler type.
+   */
+  private void deployBatch(final Map<String, ByteSource> found, final Assembler factory) {
+    log.debug(Scope.SYSTEM.marker(), "found configurations of {}", found.keySet());
+    for (Map.Entry<String, ByteSource> current : found.entrySet()) {
+      final Id name = Id.valueOf(current.getKey());
+      log.info(Scope.SYSTEM.marker(), "deploying <{}> on startup", name);
+      final Optional<Container> replaced = deployQuietly(name, current.getValue(), factory);
+      cleanUpIfNecessary(replaced);
+    }
+  }
+
+  /**
+   * Attempt to assemble, activate and deploy a container with given name and config,
    * but suppress any errors. Return any replaced, if one was present.
    */
-  private Optional<Container> deployQuietly(final Id name, final ByteSource config) {
+  private Optional<Container> deployQuietly(final Id name, final ByteSource config, final Assembler factory) {
     try {
-      final Container container = assembler.assemble(name, config);
+      final Container container = factory.assemble(name, config);
       container.activate();
       return catalog.deploy(container);
     } catch (final Exception cause) {
@@ -207,7 +237,9 @@ class Warden implements SmartLifecycle {
     }
   }
 
-  /** if present close the given container */
+  /**
+   * if present close the given container
+   */
   private void cleanUpIfNecessary(final Optional<Container> dropped) {
     if (dropped.isPresent()) {
       final Container container = dropped.get();

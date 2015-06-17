@@ -19,13 +19,13 @@
  */
 package at.ac.univie.isc.asio.brood;
 
-import at.ac.univie.isc.asio.Brood;
 import at.ac.univie.isc.asio.Container;
 import at.ac.univie.isc.asio.Language;
 import at.ac.univie.isc.asio.Scope;
 import at.ac.univie.isc.asio.engine.Command;
 import at.ac.univie.isc.asio.engine.Engine;
 import at.ac.univie.isc.asio.engine.EngineRouter;
+import org.springframework.stereotype.Component;
 
 import java.util.Set;
 
@@ -34,7 +34,7 @@ import java.util.Set;
  * pairs to find the right {@code Engine}. The mapping may be modified by raising appropriate
  * {@link ContainerEvent events}.
  */
-@Brood
+@Component
 final class EngineRegistry extends BaseContainerRegistry implements EngineRouter {
   public EngineRegistry() {
     log.info(Scope.SYSTEM.marker(), "engine registry enabled");

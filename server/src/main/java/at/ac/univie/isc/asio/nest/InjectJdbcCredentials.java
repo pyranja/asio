@@ -20,7 +20,6 @@
 package at.ac.univie.isc.asio.nest;
 
 import at.ac.univie.isc.asio.AsioFeatures;
-import at.ac.univie.isc.asio.Brood;
 import at.ac.univie.isc.asio.database.Jdbc;
 import at.ac.univie.isc.asio.database.MysqlUserRepository;
 import at.ac.univie.isc.asio.security.Identity;
@@ -28,10 +27,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 
-@Brood
+@Component
 @Order(Ordered.LOWEST_PRECEDENCE) // must be ordered after OverrideJdbcConfig
 @ConditionalOnProperty(AsioFeatures.MULTI_TENANCY)
 final class InjectJdbcCredentials implements Configurer, OnClose {

@@ -45,14 +45,13 @@ asio.feature:
 --- # flock node
 spring.profiles: 'flock-test'
 spring.application.name: 'flock-integration'
-spring.profiles.include: 'flock'
+spring.profiles.include: 'brood'
 server.ssl.enabled: false
 
 asio.feature:
     vph-metadata: on
+    vph-uri-auth: on
     allow-federation: on
-
-flock.identifier: 'urn:asio:dataset:integration'
 
 --- # override jdbc if mysql available
 spring.profiles: 'mysql'

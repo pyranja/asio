@@ -69,7 +69,6 @@ final class Configure implements Command {
   }
 
   private void printPaths() throws IOException {
-    copy("ASIO_MODE");
     line("## ! do not change ! ##");
     copy("ASIO_BASE", "ASIO_HOME", "ASIO_OWNER");
   }

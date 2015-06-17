@@ -21,12 +21,12 @@ package at.ac.univie.isc.asio.nest;
 
 import at.ac.univie.isc.asio.AsioFeatures;
 import at.ac.univie.isc.asio.AsioSettings;
-import at.ac.univie.isc.asio.Brood;
 import at.ac.univie.isc.asio.database.Jdbc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -37,7 +37,7 @@ import static java.util.Objects.requireNonNull;
  * If global jdbc connection settings are present, override the config in any deployed container.
  * All properties, except for the name of the backing database schema, are discarded.
  */
-@Brood
+@Component
 @Order(Ordered.HIGHEST_PRECEDENCE + 50) // allow other configurers access to original config
 @ConditionalOnProperty(AsioFeatures.GLOBAL_DATASOURCE)
 final class OverrideJdbcConfig implements Configurer {

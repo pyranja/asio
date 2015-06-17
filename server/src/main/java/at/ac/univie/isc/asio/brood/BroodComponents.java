@@ -21,7 +21,6 @@ package at.ac.univie.isc.asio.brood;
 
 import at.ac.univie.isc.asio.AsioFeatures;
 import at.ac.univie.isc.asio.AsioSettings;
-import at.ac.univie.isc.asio.Brood;
 import at.ac.univie.isc.asio.database.MysqlUserRepository;
 import at.ac.univie.isc.asio.engine.DatasetHolder;
 import at.ac.univie.isc.asio.engine.sql.CommandWhitelist;
@@ -51,7 +50,6 @@ import java.util.concurrent.TimeUnit;
  * Components required for the container management in brood.
  */
 @Configuration
-@Brood
 class BroodComponents {
 
   @Autowired

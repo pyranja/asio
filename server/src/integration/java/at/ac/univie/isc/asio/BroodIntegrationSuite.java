@@ -23,6 +23,7 @@ import at.ac.univie.isc.asio.integration.IntegrationDatabase;
 import at.ac.univie.isc.asio.integration.IntegrationTest;
 import at.ac.univie.isc.asio.io.Classpath;
 import at.ac.univie.isc.asio.io.TransientPath;
+import at.ac.univie.isc.asio.jaxrs.Mime;
 import at.ac.univie.isc.asio.security.AuthMechanism;
 import at.ac.univie.isc.asio.security.Role;
 import at.ac.univie.isc.asio.spring.ApplicationRunner;
@@ -66,7 +67,7 @@ public class BroodIntegrationSuite {
         .timeoutInSeconds(10)
         .defaults().schema("public").role(Role.NONE.name());
 
-    IntegrationTest.deploy("public", Classpath.load("config.integration.ttl"));
+    IntegrationTest.deploy("public", Classpath.load("config.integration.ttl"), Mime.GRAPH_TURTLE.toString());
     IntegrationTest.warmup();
   }
 }

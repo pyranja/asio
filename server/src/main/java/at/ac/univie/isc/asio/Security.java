@@ -143,7 +143,8 @@ class Security {
   /**
    * Datasets are protected by basic authentication, using the global user registrations.
    * <p/>
-   * Anonymous users are assigned {@link Role#USER} and therefore have read access to the datasets.
+   * Anonymous users are assigned {@link Role#USER} and therefore have read access to the datasets
+   * and may also provide credentials for delegation.
    */
   @Configuration
   @Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
@@ -156,33 +157,6 @@ class Security {
     @Autowired
     private AuthenticationDetailsSource<HttpServletRequest, ?> detailsSource;
 
-    @Override
-    protected void configure(final HttpSecurity http) throws Exception {
-      // @formatter:off
-      defaultHttpOptions(http);
-      http  // match any request
-          .httpBasic().realmName(security.getBasic().getRealm()).authenticationDetailsSource(detailsSource)
-        .and()
-          .anonymous().principal(Identity.undefined()).authorities(Role.USER.expand())
-        .and()
-          .addFilterAfter(new HttpMethodRestrictionFilter(), AnonymousAuthenticationFilter.class)
-      ;
-      // @formatter:on
-    }
-  }
-
-
-  /**
-   * Grant {@link Role#USER} access level to all dataset requests and support delegated credentials
-   * for anonymous requests.
-   */
-  @Configuration
-  @Order(DefaultDatasetAccessRules.OVERRIDE_DEFAULT_RULES)
-  @Flock
-  static class FlockAccessRules extends WebSecurityConfigurerAdapter {
-    @Autowired
-    private AuthenticationDetailsSource<HttpServletRequest, ?> detailsSource;
-
     private final String anonAuthKey = UUID.randomUUID().toString();
 
     @Override
@@ -190,6 +164,8 @@ class Security {
       // @formatter:off
       defaultHttpOptions(http);
       http  // match any request
+          .httpBasic().realmName(security.getBasic().getRealm()).authenticationDetailsSource(detailsSource)
+        .and()
           .anonymous().key(anonAuthKey).authenticationFilter(anonymousAuthentication())
         .and()
           .addFilterAfter(new HttpMethodRestrictionFilter(), AnonymousAuthenticationFilter.class)
@@ -205,14 +181,12 @@ class Security {
     }
   }
 
-
   /**
    * Enable uri based authentication or dataset, anonymous access is not allowed, but authentication
    * can be overridden through basic auth.
    */
   @Configuration
   @Order(DefaultDatasetAccessRules.OVERRIDE_DEFAULT_RULES)
-  @Brood
   @ConditionalOnProperty(AsioFeatures.VPH_URI_AUTH)
   static class UriBasedDatasetAccessRules extends WebSecurityConfigurerAdapter {
     @Autowired

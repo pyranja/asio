@@ -19,13 +19,13 @@
  */
 package at.ac.univie.isc.asio.nest;
 
-import at.ac.univie.isc.asio.Brood;
 import at.ac.univie.isc.asio.database.Jdbc;
 import at.ac.univie.isc.asio.tool.JdbcTools;
 import com.google.common.base.Functions;
 import com.google.common.base.Optional;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 
@@ -33,7 +33,7 @@ import javax.annotation.Nonnull;
  * If no jdbc:schema attribute is set explicitly, attempt to infer the default database from the
  * jdbc url or from the dataset name.
  */
-@Brood
+@Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 class InferJdbcSchema implements Configurer {
 
