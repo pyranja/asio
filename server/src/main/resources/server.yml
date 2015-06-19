@@ -1,5 +1,5 @@
 ## asio server configuration ##
-spring.profiles.include: 'brood,ajp,mysql'
+spring.profiles.include: 'ajp,mysql'
 
 server.port: 8080
 ajp.port: 8009  # no effect unless profile 'ajp' activated

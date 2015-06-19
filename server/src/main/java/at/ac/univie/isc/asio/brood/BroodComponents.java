@@ -69,7 +69,7 @@ class BroodComponents {
   @Bean
   @Primary
   public ResourceConfig broodJerseyConfiguration(final ResourceConfig jersey) {
-    jersey.setApplicationName("jersey-brood");
+    jersey.setApplicationName("asio-jersey");
     jersey.register(ApiResource.class);
     if (config.feature.isVphUriAuth()) {
       jersey.register(UriBasedRoutingResource.class);

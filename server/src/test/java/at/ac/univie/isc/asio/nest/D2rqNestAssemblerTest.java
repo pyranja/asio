@@ -120,7 +120,6 @@ public class D2rqNestAssemblerTest {
   public void should_create_singleton_assembler_if_no_optional_listeners_present() throws Exception {
     final StaticApplicationContext parent = new StaticApplicationContext();
     final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
-    context.getEnvironment().addActiveProfile("brood");
     context.getBeanFactory().registerSingleton("factory", new SpringContextFactory(parent));
     context.register(D2rqNestAssembler.class);
     context.refresh();

@@ -39,7 +39,7 @@ public class Runner {
   /**
    * active profiles
    */
-  static final List<String> profiles = Lists.newArrayList("brood", "dev", "ajp");
+  static final List<String> profiles = Lists.newArrayList("dev", "ajp");
 
   public static void main(final String[] args) throws IOException {
     final Database database = IntegrationDatabase.defaultCatalog()

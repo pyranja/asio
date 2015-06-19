@@ -24,7 +24,6 @@ ajp.port: 0
 --- # std deployment
 spring.profiles: 'std-test'
 spring.application.name: 'std-integration'
-spring.profiles.include: 'brood'
 
 asio.api.delegate-authorization-header: 'Delegate-Authorization'
 asio.feature:
@@ -34,7 +33,7 @@ asio.feature:
 --- # vph deployment
 spring.profiles: 'vph-test'
 spring.application.name: 'vph-integration'
-spring.profiles.include: 'brood,ajp'
+spring.profiles.include: 'ajp'
 server.ssl.enabled: false
 
 asio.feature:
@@ -45,7 +44,6 @@ asio.feature:
 --- # flock node
 spring.profiles: 'flock-test'
 spring.application.name: 'flock-integration'
-spring.profiles.include: 'brood'
 server.ssl.enabled: false
 
 asio.feature:
