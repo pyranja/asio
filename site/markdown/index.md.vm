@@ -30,6 +30,11 @@ $h3 Quick start
 Release notes
 -------------
 
+$h3 v0.6.7
+
+  * minimize required configuration properties in server.yml
+  * by default asio-server api is now protected by a random password, instead of a fixed one (check the startup logs for the generated password)
+
 $h3 v0.6.6
 
   * fix build errors during bintray publishing
