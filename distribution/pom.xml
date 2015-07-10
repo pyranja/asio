@@ -123,12 +123,11 @@
 
   <profiles>
     <profile>
-      <!-- build rpm if running on unix platform -->
       <id>rpm</id>
 
       <activation>
-        <os>
-          <family>unix</family>
+        <os>  <!-- assumes that only build environments run on linux -->
+          <name>linux</name>
         </os>
       </activation>
 
