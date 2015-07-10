@@ -50,10 +50,13 @@ public final class PooledD2rqFactory implements JenaFactory {
                                   final Jdbc jdbc,
                                   final Timeout timeout,
                                   final int size) {
+    final D2rqModelAllocator allocator = new D2rqModelAllocator(d2rq, jdbc);
+    // fail fast if d2rq config is corrupt - stormpot may endlessly try to allocate models otherwise
+    allocator.newModel().close(); // this should throw if config is corrupt
     final Config<PooledModel> config = new Config<>()
         // D2rqModelAllocator performs validation checks on #reallocate()
         // set a short expiration period to enable frequent liveness checks
-        .setAllocator(new D2rqModelAllocator(d2rq, jdbc))
+        .setAllocator(allocator)
         .setExpiration(new TimeSpreadExpiration(15, 30, TimeUnit.SECONDS))
         .setPreciseLeakDetectionEnabled(true)
         .setThreadFactory(new ThreadFactoryBuilder().setNameFormat("d2rq-pool-%d").build())

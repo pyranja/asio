@@ -24,8 +24,10 @@ import at.ac.univie.isc.asio.d2rq.D2rqConfigModel;
 import at.ac.univie.isc.asio.engine.Engine;
 import at.ac.univie.isc.asio.tool.Timeout;
 import com.google.common.collect.Iterables;
+import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.zaxxer.hikari.HikariConfig;
+import de.fuberlin.wiwiss.d2rq.vocab.D2RQ;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -64,7 +66,9 @@ public abstract class BaseContainerWiring extends AbstractJUnit4SpringContextTes
 
     @Bean
     public D2rqConfigModel d2rq() {
-      return D2rqConfigModel.wrap(ModelFactory.createDefaultModel());
+      final Model model = ModelFactory.createDefaultModel();
+      model.createResource(D2RQ.Database);
+      return D2rqConfigModel.wrap(model);
     }
 
     @Bean

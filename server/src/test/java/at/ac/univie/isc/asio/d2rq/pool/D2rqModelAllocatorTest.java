@@ -22,6 +22,8 @@ package at.ac.univie.isc.asio.d2rq.pool;
 import at.ac.univie.isc.asio.d2rq.D2rqConfigModel;
 import at.ac.univie.isc.asio.d2rq.D2rqTools;
 import at.ac.univie.isc.asio.database.Jdbc;
+import at.ac.univie.isc.asio.engine.sparql.JenaFactory;
+import at.ac.univie.isc.asio.tool.Timeout;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import de.fuberlin.wiwiss.d2rq.vocab.D2RQ;
@@ -37,12 +39,25 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.verify;
 
 public class D2rqModelAllocatorTest {
 
   private final Slot slot = Mockito.mock(Slot.class);
   private D2rqModelAllocator subject;
+
+  @Test
+  public void pool_instantiation_should_fail_fast_if_config_is_corrupt() throws Exception {
+    // minimal valid d2rq configuration
+    final Model d2rqModel = ModelFactory.createDefaultModel();
+    d2rqModel.createResource(D2RQ.Database);
+    final D2rqConfigModel d2rq = D2rqConfigModel.wrap(d2rqModel);
+    final Jdbc jdbc = new Jdbc().setUrl("illegal");  // mock jdbc connection
+    try (final JenaFactory ignored = PooledD2rqFactory.using(d2rq, jdbc, Timeout.undefined(), 2)) {
+      fail("pool creation should have failed");
+    } catch (final Exception expected) {}
+  }
 
   @Before
   public void createAllocator() {
@@ -87,7 +102,8 @@ public class D2rqModelAllocatorTest {
   }
 
   private void sabotageConnectionOn(final PooledModel pooled) throws SQLException {
-    final Connection connection = D2rqTools.unwrapDatabaseConnection(pooled.getModel()).connection();
+    final Connection connection =
+        D2rqTools.unwrapDatabaseConnection(pooled.getModel()).connection();
     connection.close();
     assertThat(connection.isValid(5), is(false));
   }
