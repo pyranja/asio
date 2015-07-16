@@ -54,8 +54,22 @@ final class D2rqModelAllocator implements Reallocator<PooledModel> {
   @Override
   public PooledModel allocate(final Slot slot) throws Exception {
     log.debug(Scope.SYSTEM.marker(), "allocating a new d2rq model");
-    final Model model = d2rq.compile(newConnection());
-    return new PooledModel(slot, model);
+    return new PooledModel(slot, newModel());
+  }
+
+  /**
+   * Compile a d2rq model, failing fast on any error. Ensure the jdbc connection is cleaned up if
+   * compilation fails.
+   */
+  Model newModel() {
+    final ConnectedDB connection = newConnection();
+    try {
+      return d2rq.compile(connection);
+    } catch (final Exception e) {
+      log.warn(Scope.SYSTEM.marker(), "compilation of a d2rq model failed", e);
+      connection.close();
+      throw e;
+    }
   }
 
   private ConnectedDB newConnection() {
@@ -93,10 +107,13 @@ final class D2rqModelAllocator implements Reallocator<PooledModel> {
 
   private boolean canBeReused(final Model model) throws SQLException {
     if (model.isClosed()) {
+      log.debug(Scope.SYSTEM.marker(), "reallocate - model is closed");
       return false;
     } else {
       final Connection connection = D2rqTools.unwrapDatabaseConnection(model).connection();
-      return connection.isValid(VALIDATION_TIMEOUT);
+      final boolean valid = connection.isValid(VALIDATION_TIMEOUT);
+      log.debug(Scope.SYSTEM.marker(), "reallocate - connection is{} valid", valid ? "" : " not");
+      return valid;
     }
   }
 }
