@@ -30,6 +30,11 @@ $h3 Quick start
 Release notes
 -------------
 
+$h3 v0.6.8
+
+  * fail fast on corrupt d2rq configuration
+  * improve build scripts
+
 $h3 v0.6.7
 
   * minimize required configuration properties in server.yml
