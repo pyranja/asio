@@ -13,7 +13,7 @@
 
   <groupId>at.ac.univie.isc</groupId>
   <artifactId>asio-parent</artifactId>
-  <version>0.6.8</version>
+  <version>0.6.9-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>asio parent</name>
