@@ -39,7 +39,7 @@ Lists of 135 third-party dependencies.
      (CDDL + GPLv2 with classpath exception) javax.ws.rs-api (javax.ws.rs:javax.ws.rs-api:2.0 - http://jax-rs-spec.java.net)
      (CDDL + GPLv2 with classpath exception) Streaming API for XML (javax.xml.stream:stax-api:1.0-2 - no url defined)
      (Eclipse Public License 1.0) JUnit (junit:junit:4.12 - http://junit.org)
-     (The GNU General Public License, Version 2) MySQL java connector (mysql:mysql-connector-java:5.1.34 - http://dev.mysql.com/usingmysql/java/)
+     (The GNU General Public License, Version 2) MySQL Connector/J (mysql:mysql-connector-java:5.1.34 - http://dev.mysql.com/doc/connector-j/en/)
      (LGPL 2.1) Java Native Access (net.java.dev.jna:jna:3.4.0 - https://github.com/twall/jna)
      (Apache License, Version 2.0) opencsv (net.sf.opencsv:opencsv:2.0 - http://opencsv.sf.net)
      (Apache License, Version 2.0) Apache Commons Lang (org.apache.commons:commons-lang3:3.3.2 - http://commons.apache.org/proper/commons-lang/)
