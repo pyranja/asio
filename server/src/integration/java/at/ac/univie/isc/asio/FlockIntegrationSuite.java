@@ -19,11 +19,15 @@
  */
 package at.ac.univie.isc.asio;
 
+import at.ac.univie.isc.asio.integration.IntegrationDatabase;
 import at.ac.univie.isc.asio.integration.IntegrationTest;
+import at.ac.univie.isc.asio.io.Classpath;
 import at.ac.univie.isc.asio.io.Payload;
 import at.ac.univie.isc.asio.security.AuthMechanism;
 import at.ac.univie.isc.asio.security.Role;
 import at.ac.univie.isc.asio.spring.ApplicationRunner;
+import at.ac.univie.isc.asio.sql.Database;
+
 import com.google.common.io.ByteSource;
 import org.apache.http.HttpHeaders;
 import org.junit.BeforeClass;
@@ -42,6 +46,10 @@ public class FlockIntegrationSuite {
 
   @BeforeClass
   public static void start() {
+    // required for container feature test cases
+    IntegrationDatabase.defaultCatalog().h2InMemory()
+            .execute(Classpath.read("sql/database.integration.sql"));
+
     final String[] args = new String[] {
         "--asio.metadata-repository=" + IntegrationTest.atos.address()
     };

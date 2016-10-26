@@ -29,6 +29,7 @@ import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.filter.LoggingFilter;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import rx.Observable;
@@ -49,6 +50,7 @@ import static org.junit.Assume.assumeThat;
 /**
  * Ensure the AtosMetadataRepository works with the actual endpoint.
  */
+@Ignore("atos metadata repository is gone")
 @Category(Integration.class)
 public class AtosMetadataIntegrationTest {
   private static final URI ATOS_SERVICE_ADDRESS =
